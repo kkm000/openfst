@@ -1,0 +1,16 @@
+# Ignore extensionless files
+*
+!*.*
+!*/
+
+# Other patterns
+/config.h
+/config.log
+/config.status
+.deps/
+.libs/
+.dirstamp
+*.la
+*.lo
+*.o
+
