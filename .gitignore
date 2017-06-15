@@ -14,3 +14,11 @@
 *.lo
 *.o
 
+# Windows-specific files
+.vs/
+*.VC.db
+Win32/
+x64/
+Debug/
+Release/
+*proj.user
