@@ -136,7 +136,7 @@ inline std::ostream &operator<<(std::ostream &strm,
     return strm << "Infinity";
   } else if (w.Value() == FloatLimits<T>::NegInfinity()) {
     return strm << "-Infinity";
-  } else if (w.Value() != w.Value()) {  // Fails for NaN.
+  } else if (w.Value() != w.Value()) {  // Fails for IEEE NaN.
     return strm << "BadNumber";
   } else {
     return strm << w.Value();
@@ -170,6 +170,7 @@ class TropicalWeightTpl : public FloatWeightTpl<T> {
   using typename FloatWeightTpl<T>::ValueType;
   using FloatWeightTpl<T>::Value;
   using ReverseWeight = TropicalWeightTpl<T>;
+  using Limits = FloatLimits<T>;
 
   constexpr TropicalWeightTpl() : FloatWeightTpl<T>() {}
 
@@ -179,7 +180,7 @@ class TropicalWeightTpl : public FloatWeightTpl<T> {
       : FloatWeightTpl<T>(weight) {}
 
   static const TropicalWeightTpl<T> &Zero() {
-    static const TropicalWeightTpl zero(FloatLimits<T>::PosInfinity());
+    static const TropicalWeightTpl zero(Limits::PosInfinity());
     return zero;
   }
 
@@ -189,24 +190,24 @@ class TropicalWeightTpl : public FloatWeightTpl<T> {
   }
 
   static const TropicalWeightTpl<T> &NoWeight() {
-    static const TropicalWeightTpl no_weight(FloatLimits<T>::NumberBad());
+    static const TropicalWeightTpl no_weight(Limits::NumberBad());
     return no_weight;
   }
 
   static const string &Type() {
-    static const string type =
-        string("tropical") + FloatWeightTpl<T>::GetPrecisionString();
-    return type;
+    static const string *const type =
+        new string(string("tropical") +
+                   FloatWeightTpl<T>::GetPrecisionString());
+    return *type;
   }
 
   bool Member() const {
     // First part fails for IEEE NaN.
-    return Value() == Value() && Value() != FloatLimits<T>::NegInfinity();
+    return Value() == Value() && Value() != Limits::NegInfinity();
   }
 
   TropicalWeightTpl<T> Quantize(float delta = kDelta) const {
-    if (Value() == FloatLimits<T>::NegInfinity() ||
-        Value() == FloatLimits<T>::PosInfinity() || Value() != Value()) {
+    if (!Member() || Value() == Limits::PosInfinity()) {
       return *this;
     } else {
       return TropicalWeightTpl<T>(floor(Value() / delta + 0.5F) * delta);
@@ -243,11 +244,13 @@ inline TropicalWeightTpl<double> Plus(const TropicalWeightTpl<double> &w1,
 template <class T>
 inline TropicalWeightTpl<T> Times(const TropicalWeightTpl<T> &w1,
                                   const TropicalWeightTpl<T> &w2) {
+  using Limits = FloatLimits<T>;
   if (!w1.Member() || !w2.Member()) return TropicalWeightTpl<T>::NoWeight();
-  T f1 = w1.Value(), f2 = w2.Value();
-  if (f1 == FloatLimits<T>::PosInfinity()) {
+  const T f1 = w1.Value();
+  const T f2 = w2.Value();
+  if (f1 == Limits::PosInfinity()) {
     return w1;
-  } else if (f2 == FloatLimits<T>::PosInfinity()) {
+  } else if (f2 == Limits::PosInfinity()) {
     return w2;
   } else {
     return TropicalWeightTpl<T>(f1 + f2);
@@ -268,12 +271,14 @@ template <class T>
 inline TropicalWeightTpl<T> Divide(const TropicalWeightTpl<T> &w1,
                                    const TropicalWeightTpl<T> &w2,
                                    DivideType typ = DIVIDE_ANY) {
+  using Limits = FloatLimits<T>;
   if (!w1.Member() || !w2.Member()) return TropicalWeightTpl<T>::NoWeight();
-  T f1 = w1.Value(), f2 = w2.Value();
-  if (f2 == FloatLimits<T>::PosInfinity()) {
-    return FloatLimits<T>::NumberBad();
-  } else if (f1 == FloatLimits<T>::PosInfinity()) {
-    return FloatLimits<T>::PosInfinity();
+  const T f1 = w1.Value();
+  const T f2 = w2.Value();
+  if (f2 == Limits::PosInfinity()) {
+    return Limits::NumberBad();
+  } else if (f1 == Limits::PosInfinity()) {
+    return Limits::PosInfinity();
   } else {
     return TropicalWeightTpl<T>(f1 - f2);
   }
@@ -304,6 +309,7 @@ class LogWeightTpl : public FloatWeightTpl<T> {
   using typename FloatWeightTpl<T>::ValueType;
   using FloatWeightTpl<T>::Value;
   using ReverseWeight = LogWeightTpl;
+  using Limits = FloatLimits<T>;
 
   constexpr LogWeightTpl() : FloatWeightTpl<T>() {}
 
@@ -313,7 +319,7 @@ class LogWeightTpl : public FloatWeightTpl<T> {
       : FloatWeightTpl<T>(weight) {}
 
   static const LogWeightTpl &Zero() {
-    static const LogWeightTpl zero(FloatLimits<T>::PosInfinity());
+    static const LogWeightTpl zero(Limits::PosInfinity());
     return zero;
   }
 
@@ -323,24 +329,23 @@ class LogWeightTpl : public FloatWeightTpl<T> {
   }
 
   static const LogWeightTpl &NoWeight() {
-    static const LogWeightTpl no_weight(FloatLimits<T>::NumberBad());
+    static const LogWeightTpl no_weight(Limits::NumberBad());
     return no_weight;
   }
 
   static const string &Type() {
-    static const string type =
-        string("log") + FloatWeightTpl<T>::GetPrecisionString();
-    return type;
+    static const string *const type =
+        new string(string("log") + FloatWeightTpl<T>::GetPrecisionString());
+    return *type;
   }
 
   bool Member() const {
     // First part fails for IEEE NaN.
-    return Value() == Value() && Value() != FloatLimits<T>::NegInfinity();
+    return Value() == Value() && Value() != Limits::NegInfinity();
   }
 
   LogWeightTpl<T> Quantize(float delta = kDelta) const {
-    if (Value() == FloatLimits<T>::NegInfinity() ||
-        Value() == FloatLimits<T>::PosInfinity() || Value() != Value()) {
+    if (!Member() || Value() == Limits::PosInfinity()) {
       return *this;
     } else {
       return LogWeightTpl<T>(floor(Value() / delta + 0.5F) * delta);
@@ -362,54 +367,18 @@ using Log64Weight = LogWeightTpl<double>;
 
 namespace internal {
 
-// -log(e^-x + e^-y) = x - LogPosExp(y - x)
-// Assumes x >= 0.0.
-inline double LogPosExp(double x) {
-  return std::log(1.0 + std::exp(-x));
-}
+// -log(e^-x + e^-y) = x - LogPosExp(y - x), assuming x >= 0.0.
+inline double LogPosExp(double x) { return log1p(exp(-x)); }
 
-// -log(e^-x - e^-y) = x - LogNegExp(y - x)
-// Assumes x >= 0.0.
-inline double LogNegExp(double x) {
-  return std::log(1.0 - std::exp(-x));
-}
-
-// Alternative LogPosExp that is more accurate for large x.
-// Assumes x >= 0.0.
-inline double AltLogPosExp(double x) {
-  double y = std::exp(-x);
-  if (y > kDelta) {
-    return std::log(1.0 + y);
-  } else {
-    // Mercator series
-    double y2 = y * y;
-    double y3 = y2 * y;
-    double y4 = y2 * y2;
-    return y - y2/2.0 + y3/3.0 - y4/4.0;
-  }
-}
-
-// Alternative LogNegExp that is more accurate for large x.
-// Assumes x > 0.0.
-inline double AltLogNegExp(double x) {
-  double y = std::exp(-x);
-  if (y > kDelta) {
-    return std::log(1.0 - y);
-  } else {
-    // Mercator series
-    double y2 = y * y;
-    double y3 = y2 * y;
-    double y4 = y2 * y2;
-    return -y - y2/2.0 - y3/3.0 - y4/4.0;
-  }
-}
+// -log(e^-x - e^-y) = x - LogNegExp(y - x), assuming x > 0.0.
+inline double LogNegExp(double x) { return log1p(-exp(-x)); }
 
 // a +_log b = -log(e^-a + e^-b) = KahanLogSum(a, b, ...).
 // Kahan compensated summation provides an error bound that is
 // independent of the number of addends. Assumes b >= a;
 // c is the compensation.
 inline double KahanLogSum(double a, double b, double *c) {
-  double y = -AltLogPosExp(b - a) - *c;
+  double y = -LogPosExp(b - a) - *c;
   double t = a + y;
   *c = (t - a) - y;
   return t;
@@ -420,7 +389,7 @@ inline double KahanLogSum(double a, double b, double *c) {
 // independent of the number of addends. Assumes b > a;
 // c is the compensation.
 inline double KahanLogDiff(double a, double b, double *c) {
-  double y = -AltLogNegExp(b - a) - *c;
+  double y = -LogNegExp(b - a) - *c;
   double t = a + y;
   *c = (t - a) - y;
   return t;
@@ -431,10 +400,12 @@ inline double KahanLogDiff(double a, double b, double *c) {
 template <class T>
 inline LogWeightTpl<T> Plus(const LogWeightTpl<T> &w1,
                             const LogWeightTpl<T> &w2) {
-  T f1 = w1.Value(), f2 = w2.Value();
-  if (f1 == FloatLimits<T>::PosInfinity()) {
+  using Limits = FloatLimits<T>;
+  const T f1 = w1.Value();
+  const T f2 = w2.Value();
+  if (f1 == Limits::PosInfinity()) {
     return w2;
-  } else if (f2 == FloatLimits<T>::PosInfinity()) {
+  } else if (f2 == Limits::PosInfinity()) {
     return w1;
   } else if (f1 > f2) {
     return LogWeightTpl<T>(f2 - internal::LogPosExp(f1 - f2));
@@ -456,11 +427,13 @@ inline LogWeightTpl<double> Plus(const LogWeightTpl<double> &w1,
 template <class T>
 inline LogWeightTpl<T> Times(const LogWeightTpl<T> &w1,
                              const LogWeightTpl<T> &w2) {
+  using Limits = FloatLimits<T>;
   if (!w1.Member() || !w2.Member()) return LogWeightTpl<T>::NoWeight();
-  T f1 = w1.Value(), f2 = w2.Value();
-  if (f1 == FloatLimits<T>::PosInfinity()) {
+  const T f1 = w1.Value();
+  const T f2 = w2.Value();
+  if (f1 == Limits::PosInfinity()) {
     return w1;
-  } else if (f2 == FloatLimits<T>::PosInfinity()) {
+  } else if (f2 == Limits::PosInfinity()) {
     return w2;
   } else {
     return LogWeightTpl<T>(f1 + f2);
@@ -481,12 +454,14 @@ template <class T>
 inline LogWeightTpl<T> Divide(const LogWeightTpl<T> &w1,
                               const LogWeightTpl<T> &w2,
                               DivideType typ = DIVIDE_ANY) {
+  using Limits = FloatLimits<T>;
   if (!w1.Member() || !w2.Member()) return LogWeightTpl<T>::NoWeight();
-  T f1 = w1.Value(), f2 = w2.Value();
-  if (f2 == FloatLimits<T>::PosInfinity()) {
-    return FloatLimits<T>::NumberBad();
-  } else if (f1 == FloatLimits<T>::PosInfinity()) {
-    return FloatLimits<T>::PosInfinity();
+  const T f1 = w1.Value();
+  const T f2 = w2.Value();
+  if (f2 == Limits::PosInfinity()) {
+    return Limits::NumberBad();
+  } else if (f1 == Limits::PosInfinity()) {
+    return Limits::PosInfinity();
   } else {
     return LogWeightTpl<T>(f1 - f2);
   }
@@ -509,7 +484,7 @@ inline LogWeightTpl<T> Power(const LogWeightTpl<T> &weight, T scalar) {
   return LogWeightTpl<T>(weight.Value() * scalar);
 }
 
-// Specialization using the Kahan compensated summation
+// Specialization using the Kahan compensated summation.
 template <class T>
 class Adder<LogWeightTpl<T>> {
  public:
@@ -520,10 +495,11 @@ class Adder<LogWeightTpl<T>> {
         c_(0.0) { }
 
   Weight Add(const Weight &w) {
-    T f = w.Value();
-    if (f == FloatLimits<T>::PosInfinity()) {
+  using Limits = FloatLimits<T>;
+    const T f = w.Value();
+    if (f == Limits::PosInfinity()) {
       return Sum();
-    } else if (sum_ == FloatLimits<T>::PosInfinity()) {
+    } else if (sum_ == Limits::PosInfinity()) {
       sum_ = f;
       c_ = 0.0;
     } else if (f > sum_) {
@@ -543,7 +519,7 @@ class Adder<LogWeightTpl<T>> {
 
  private:
   double sum_;
-  double c_;   // Kahan compensation
+  double c_;   // Kahan compensation.
 };
 
 // MinMax semiring: (min, max, inf, -inf).
@@ -552,8 +528,8 @@ class MinMaxWeightTpl : public FloatWeightTpl<T> {
  public:
   using typename FloatWeightTpl<T>::ValueType;
   using FloatWeightTpl<T>::Value;
-
   using ReverseWeight = MinMaxWeightTpl<T>;
+  using Limits = FloatLimits<T>;
 
   MinMaxWeightTpl() : FloatWeightTpl<T>() {}
 
@@ -563,35 +539,33 @@ class MinMaxWeightTpl : public FloatWeightTpl<T> {
       : FloatWeightTpl<T>(weight) {}
 
   static const MinMaxWeightTpl &Zero() {
-    static const MinMaxWeightTpl zero(FloatLimits<T>::PosInfinity());
+    static const MinMaxWeightTpl zero(Limits::PosInfinity());
     return zero;
   }
 
   static const MinMaxWeightTpl &One() {
-    static const MinMaxWeightTpl one(FloatLimits<T>::NegInfinity());
+    static const MinMaxWeightTpl one(Limits::NegInfinity());
     return one;
   }
 
   static const MinMaxWeightTpl &NoWeight() {
-    static const MinMaxWeightTpl no_weight(FloatLimits<T>::NumberBad());
+    static const MinMaxWeightTpl no_weight(Limits::NumberBad());
     return no_weight;
   }
 
   static const string &Type() {
-    static const string type =
-        string("minmax") + FloatWeightTpl<T>::GetPrecisionString();
-    return type;
+    static const string *const type =
+        new string(string("minmax") + FloatWeightTpl<T>::GetPrecisionString());
+    return *type;
   }
 
-  bool Member() const {
-    // Fails for IEEE NaN
-    return Value() == Value();
-  }
+  // Fails for IEEE NaN.
+  bool Member() const { return Value() == Value(); }
 
   MinMaxWeightTpl<T> Quantize(float delta = kDelta) const {
-    // If one of infinities, or a NaN
-    if (Value() == FloatLimits<T>::NegInfinity() ||
-        Value() == FloatLimits<T>::PosInfinity() || Value() != Value()) {
+    // If one of infinities, or a NaN.
+    if (!Member() ||
+        Value() == Limits::NegInfinity() || Value() == Limits::PosInfinity()) {
       return *this;
     } else {
       return MinMaxWeightTpl<T>(floor(Value() / delta + 0.5F) * delta);
@@ -712,14 +686,14 @@ class FloatWeightGenerate {
       : allow_zero_(allow_zero), num_random_weights_(num_random_weights) {}
 
   Weight operator()() const {
-    int n = rand() % (num_random_weights_ + allow_zero_);  // NOLINT
+    const int n = rand() % (num_random_weights_ + allow_zero_);  // NOLINT
     if (allow_zero_ && n == num_random_weights_) return Weight::Zero();
     return Weight(n);
   }
 
  private:
   // Permits Zero() and zero divisors.
-  bool allow_zero_;
+  const bool allow_zero_;
   // Number of alternative random weights.
   const size_t num_random_weights_;
 };
@@ -766,8 +740,9 @@ class WeightGenerate<MinMaxWeightTpl<T>> {
       : allow_zero_(allow_zero), num_random_weights_(num_random_weights) {}
 
   Weight operator()() const {
-    int n = (rand() % (2 * num_random_weights_ + allow_zero_)) -  // NOLINT
-            num_random_weights_;
+    const int n = (rand() %  // NOLINT
+                   (2 * num_random_weights_ + allow_zero_)) -
+                  num_random_weights_;
     if (allow_zero_ && n == num_random_weights_) {
       return Weight::Zero();
     } else if (n == -num_random_weights_) {
@@ -779,7 +754,7 @@ class WeightGenerate<MinMaxWeightTpl<T>> {
 
  private:
   // Permits Zero() and zero divisors.
-  bool allow_zero_;
+  const bool allow_zero_;
   // Number of alternative random weights.
   const size_t num_random_weights_;
 };

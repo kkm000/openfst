@@ -60,6 +60,13 @@ void FarInfo(const std::vector<string> &filenames, const string &arc_type,
   Apply<Operation<FarInfoArgs>>("FarInfo", arc_type, &args);
 }
 
+void GetFarInfo(const std::vector<string> &filenames, const string &arc_type,
+                const string &begin_key, const string &end_key,
+                const bool list_fsts, FarInfoData *data) {
+  GetFarInfoArgs args(filenames, begin_key, end_key, list_fsts, data);
+  Apply<Operation<GetFarInfoArgs>>("GetFarInfo", arc_type, &args);
+}
+
 bool FarIsomorphic(const string &filename1, const string &filename2,
                    const string &arc_type, float delta, const string &begin_key,
                    const string &end_key) {

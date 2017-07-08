@@ -17,14 +17,27 @@ using InfoArgs = args::Package<const FstClass &, bool, const string &,
 template <class Arc>
 void PrintFstInfo(InfoArgs *args) {
   const Fst<Arc> &fst = *(args->arg1.GetFst<Arc>());
-  FstInfo<Arc> fstinfo(fst, args->arg2, args->arg3, args->arg4, args->arg5);
-  PrintFstInfo(fstinfo, args->arg6);
+  FstInfo fstinfo(fst, args->arg2, args->arg3, args->arg4, args->arg5);
+  PrintFstInfoImpl(fstinfo, args->arg6);
   if (args->arg6) fst.Write("");
 }
 
 void PrintFstInfo(const FstClass &f, bool test_properties,
                   const string &arc_filter, const string &info_type, bool pipe,
                   bool verify);
+
+using GetInfoArgs = args::Package<const FstClass &, bool, const string &,
+                                  const string &, bool, FstInfo *>;
+
+template <class Arc>
+void GetFstInfo(GetInfoArgs *args) {
+  const Fst<Arc> &fst = *(args->arg1.GetFst<Arc>());
+  *(args->arg6) = FstInfo(fst, args->arg2, args->arg3, args->arg4, args->arg5);
+}
+
+void GetFstInfo(const FstClass &f, bool test_properties,
+                const string &arc_filter, const string &info_type, bool verify,
+                FstInfo *info);
 
 }  // namespace script
 }  // namespace fst

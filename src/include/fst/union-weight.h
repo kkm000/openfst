@@ -105,8 +105,8 @@ class UnionWeight {
   }
 
   static const string &Type() {
-    static const string type = W::Type() + "_union";
-    return type;
+    static const string *const type = new string(W::Type() + "_union");
+    return *type;
   }
 
   static constexpr uint64 Properties() {

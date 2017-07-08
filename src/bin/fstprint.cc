@@ -95,11 +95,11 @@ int main(int argc, char **argv) {
               FLAGS_acceptor, FLAGS_show_weight_one, FLAGS_missing_symbol);
 
   if (isyms && !FLAGS_save_isymbols.empty()) {
-    isyms->WriteText(FLAGS_save_isymbols);
+    if (!isyms->WriteText(FLAGS_save_isymbols)) return 1;
   }
 
   if (osyms && !FLAGS_save_osymbols.empty()) {
-    osyms->WriteText(FLAGS_save_osymbols);
+    if (!osyms->WriteText(FLAGS_save_osymbols)) return 1;
   }
 
   return 0;

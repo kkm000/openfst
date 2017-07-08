@@ -39,7 +39,5 @@ int main(int argc, char **argv) {
 
   s::EpsNormalize(*ifst, &ofst, s::GetEpsNormalizeType(FLAGS_eps_norm_output));
 
-  ofst.Write(out_name);
-
-  return 0;
+  return !ofst.Write(out_name);
 }

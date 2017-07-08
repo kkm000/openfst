@@ -7,15 +7,15 @@
 #define FST_SCRIPT_COMPILE_IMPL_H_
 
 #include <iostream>
-#include <sstream>
 #include <memory>
+#include <sstream>
 #include <string>
-#include <unordered_map>
 #include <vector>
 
 #include <fst/fst.h>
 #include <fst/util.h>
 #include <fst/vector-fst.h>
+#include <unordered_map>
 
 DECLARE_string(fst_field_separator);
 

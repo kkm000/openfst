@@ -36,7 +36,5 @@ int main(int argc, char **argv) {
 
   if (!acyclic) LOG(WARNING) << argv[0] << ": Input FST is cyclic";
 
-  fst->Write(out_name);
-
-  return 0;
+  return !fst->Write(out_name);
 }

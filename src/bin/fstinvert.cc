@@ -32,7 +32,6 @@ int main(int argc, char **argv) {
   if (!fst) return 1;
 
   s::Invert(fst.get());
-  fst->Write(out_name);
 
-  return 0;
+  return !fst->Write(out_name);
 }

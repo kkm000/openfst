@@ -48,8 +48,7 @@ FstT *ReadFst(std::istream &istrm, const string &fname) {
 
 FstClass *FstClass::Read(const string &fname) {
   if (!fname.empty()) {
-    std::ifstream istrm(fname.c_str(),
-                             std::ios_base::in | std::ios_base::binary);
+    std::ifstream istrm(fname, std::ios_base::in | std::ios_base::binary);
     return ReadFst<FstClass>(istrm, fname);
   } else {
     return ReadFst<FstClass>(std::cin, "standard input");
@@ -86,8 +85,7 @@ bool FstClass::WeightTypesMatch(const WeightClass &weight,
 MutableFstClass *MutableFstClass::Read(const string &fname, bool convert) {
   if (convert == false) {
     if (!fname.empty()) {
-      std::ifstream in(fname.c_str(),
-                            std::ios_base::in | std::ios_base::binary);
+      std::ifstream in(fname, std::ios_base::in | std::ios_base::binary);
       return ReadFst<MutableFstClass>(in, fname);
     } else {
       return ReadFst<MutableFstClass>(std::cin, "standard input");
@@ -109,8 +107,7 @@ MutableFstClass *MutableFstClass::Read(const string &fname, bool convert) {
 
 VectorFstClass *VectorFstClass::Read(const string &fname) {
   if (!fname.empty()) {
-    std::ifstream in(fname.c_str(),
-                          std::ios_base::in | std::ios_base::binary);
+    std::ifstream in(fname, std::ios_base::in | std::ios_base::binary);
     return ReadFst<VectorFstClass>(in, fname);
   } else {
     return ReadFst<VectorFstClass>(std::cin, "standard input");

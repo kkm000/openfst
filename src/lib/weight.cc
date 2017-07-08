@@ -12,68 +12,88 @@ DEFINE_string(fst_weight_parentheses, "",
 
 namespace fst {
 
-CompositeWeightWriter::CompositeWeightWriter(std::ostream &ostrm)
-    : ostrm_(ostrm), i_(0) {
-  if (FLAGS_fst_weight_separator.size() != 1) {
-    FSTERROR() << "CompositeWeightWriter: "
-               << "FLAGS_fst_weight_separator.size() is not equal to 1";
-    ostrm.clear(std::ios::badbit);
-    return;
-  }
-  if (!FLAGS_fst_weight_parentheses.empty()) {
-    if (FLAGS_fst_weight_parentheses.size() != 2) {
-      FSTERROR() << "CompositeWeightWriter: "
-                 << "FLAGS_fst_weight_parentheses.size() is not equal to 2";
-      ostrm.clear(std::ios::badbit);
-      return;
-    }
+namespace internal {
+
+CompositeWeightIO::CompositeWeightIO(char separator,
+                                     std::pair<char, char> parentheses)
+    : separator_(separator),
+      open_paren_(parentheses.first),
+      close_paren_(parentheses.second),
+      error_(false) {
+  if ((open_paren_ == 0 || close_paren_ == 0) && open_paren_ != close_paren_) {
+    FSTERROR() << "Invalid configuration of weight parentheses: "
+               << static_cast<int>(open_paren_) << " "
+               << static_cast<int>(close_paren_);
+    error_ = true;
   }
 }
 
+CompositeWeightIO::CompositeWeightIO()
+    : CompositeWeightIO(FLAGS_fst_weight_separator.empty()
+                            ? 0
+                            : FLAGS_fst_weight_separator.front(),
+                        {FLAGS_fst_weight_parentheses.empty()
+                             ? 0
+                             : FLAGS_fst_weight_parentheses[0],
+                         FLAGS_fst_weight_parentheses.size() < 2
+                             ? 0
+                             : FLAGS_fst_weight_parentheses[1]}) {
+  if (FLAGS_fst_weight_separator.size() != 1) {
+    FSTERROR() << "CompositeWeight: "
+               << "FLAGS_fst_weight_separator.size() is not equal to 1";
+    error_ = true;
+  }
+  if (!FLAGS_fst_weight_parentheses.empty() &&
+      FLAGS_fst_weight_parentheses.size() != 2) {
+    FSTERROR() << "CompositeWeight: "
+               << "FLAGS_fst_weight_parentheses.size() is not equal to 2";
+    error_ = true;
+  }
+}
+
+}  // namespace internal
+
+CompositeWeightWriter::CompositeWeightWriter(std::ostream &ostrm)
+    : ostrm_(ostrm) {
+  if (error()) ostrm.clear(std::ios::badbit);
+}
+
+CompositeWeightWriter::CompositeWeightWriter(std::ostream &ostrm,
+                                             char separator,
+                                             std::pair<char, char> parentheses)
+    : internal::CompositeWeightIO(separator, parentheses), ostrm_(ostrm) {
+  if (error()) ostrm_.clear(std::ios::badbit);
+}
+
 void CompositeWeightWriter::WriteBegin() {
-  if (!FLAGS_fst_weight_parentheses.empty()) {
-    ostrm_ << FLAGS_fst_weight_parentheses[0];
+  if (open_paren_ != 0) {
+    ostrm_ << open_paren_;
   }
 }
 
 void CompositeWeightWriter::WriteEnd() {
-  if (!FLAGS_fst_weight_parentheses.empty()) {
-    ostrm_ << FLAGS_fst_weight_parentheses[1];
+  if (close_paren_ != 0) {
+    ostrm_ << close_paren_;
   }
 }
 
 CompositeWeightReader::CompositeWeightReader(std::istream &istrm)
-    : istrm_(istrm),
-      c_(0),
-      has_parens_(false),
-      depth_(0),
-      open_paren_(0),
-      close_paren_(0) {
-  if (FLAGS_fst_weight_separator.size() != 1) {
-    FSTERROR() << "ComposeWeightReader: "
-               << "FLAGS_fst_weight_separator.size() is not equal to 1";
-    istrm_.clear(std::ios::badbit);
-    return;
-  }
-  separator_ = FLAGS_fst_weight_separator[0];
-  if (!FLAGS_fst_weight_parentheses.empty()) {
-    if (FLAGS_fst_weight_parentheses.size() != 2) {
-      FSTERROR() << "ComposeWeightReader: "
-                 << "FLAGS_fst_weight_parentheses.size() is not equal to 2";
-      istrm_.clear(std::ios::badbit);
-      return;
-    }
-    has_parens_ = true;
-    open_paren_ = FLAGS_fst_weight_parentheses[0];
-    close_paren_ = FLAGS_fst_weight_parentheses[1];
-  }
+    : istrm_(istrm) {
+  if (error()) istrm_.clear(std::ios::badbit);
+}
+
+CompositeWeightReader::CompositeWeightReader(std::istream &istrm,
+                                             char separator,
+                                             std::pair<char, char> parentheses)
+    : internal::CompositeWeightIO(separator, parentheses), istrm_(istrm) {
+  if (error()) istrm_.clear(std::ios::badbit);
 }
 
 void CompositeWeightReader::ReadBegin() {
   do {  // Skips whitespace.
     c_ = istrm_.get();
   } while (std::isspace(c_));
-  if (has_parens_) {
+  if (open_paren_ != 0) {
     if (c_ != open_paren_) {
       FSTERROR() << "CompositeWeightReader: Open paren missing: "
                  << "fst_weight_parentheses flag set correcty?";

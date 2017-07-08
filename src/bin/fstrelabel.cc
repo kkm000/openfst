@@ -104,7 +104,5 @@ int main(int argc, char** argv) {
     s::Relabel(fst.get(), ipairs, opairs);
   }
 
-  fst->Write(out_name);
-
-  return 0;
+  return !fst->Write(out_name);
 }

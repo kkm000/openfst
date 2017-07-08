@@ -43,7 +43,6 @@ int main(int argc, char **argv) {
   if (!fst2) return 1;
 
   s::Concat(fst1.get(), *fst2);
-  fst1->Write(out_name);
 
-  return 0;
+  return !fst1->Write(out_name);
 }

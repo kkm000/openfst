@@ -250,7 +250,7 @@ cdef class _Fst(object):
 
   cpdef void write(self, filename) except *
 
-  cpdef string WriteToString(self)
+  cpdef string write_to_string(self)
 
 
 cdef class _MutableFst(_Fst):
@@ -313,7 +313,7 @@ cdef class _MutableFst(_Fst):
 
   cdef void _set_final(self, int64 state, weight=?) except *
 
-  cdef void _set_properties(self, uint64 props, uint64 mask) except *
+  cdef void _set_properties(self, uint64 props, uint64 mask)
 
   cdef void _set_start(self, int64 state) except *
 

@@ -34,7 +34,7 @@ class MappedFile {
 
   const void *data() const { return region_.data; }
 
-  // Returns a MappedFile object that contains the contents of the input strea
+  // Returns a MappedFile object that contains the contents of the input stream
   // strm starting from the current file position with size bytes. The memorymap
   // bool is advisory, and Map will default to allocating and reading. The
   // source argument needs to contain the filename that was used to open the

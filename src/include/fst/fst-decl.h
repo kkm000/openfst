@@ -60,8 +60,8 @@ class DefaultCacheStore;
 
 // FST templates.
 
-template <class A, class Compactor, class Unsigned = uint32,
-    class CompactStore = DefaultCompactStore<typename Compactor::Element, Unsigned>,
+template <class A, class ArcCompactor, class Unsigned = uint32,
+    class CompactStore = DefaultCompactStore<typename ArcCompactor::Element, Unsigned>,
     class CacheStore = DefaultCacheStore<A>>
 class CompactFst;
 

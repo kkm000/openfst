@@ -75,8 +75,9 @@ struct ComposeFstImplOptions : public CacheImplOptions<CacheStore> {
   M2 *matcher2;    // FST2 matcher.
   Filter *filter;  // Composition filter (see compose-filter.h).
   StateTable
-      *state_table;      // Composition state table (see compose-state-table.h).
-  bool own_state_table;  // ComposeFstImpl takes ownership of 'state_table'?
+    *state_table;        // Composition state table (see compose-state-table.h).
+  bool own_state_table;   // ComposeFstImpl takes ownership of 'state_table'?
+  bool allow_noncommute;  // Allow non-commutative weights
 
   explicit ComposeFstImplOptions(const CacheOptions &opts,
                                  M1 *matcher1 = nullptr, M2 *matcher2 = nullptr,
@@ -87,7 +88,8 @@ struct ComposeFstImplOptions : public CacheImplOptions<CacheStore> {
         matcher2(matcher2),
         filter(filter),
         state_table(state_table),
-        own_state_table(true) {}
+        own_state_table(true),
+        allow_noncommute(false) {}
 
   explicit ComposeFstImplOptions(const CacheImplOptions<CacheStore> &opts,
                                  M1 *matcher1 = nullptr, M2 *matcher2 = nullptr,
@@ -98,14 +100,16 @@ struct ComposeFstImplOptions : public CacheImplOptions<CacheStore> {
         matcher2(matcher2),
         filter(filter),
         state_table(state_table),
-        own_state_table(true) {}
+        own_state_table(true),
+        allow_noncommute(false) {}
 
   ComposeFstImplOptions()
       : matcher1(nullptr),
         matcher2(nullptr),
         filter(nullptr),
         state_table(nullptr),
-        own_state_table(true) {}
+        own_state_table(true),
+        allow_noncommute(false) {}
 };
 
 namespace internal {
@@ -616,9 +620,7 @@ class ComposeFst
     auto impl = std::make_shared<
         internal::ComposeFstImpl<CacheStore, Filter, StateTuple>>(fst1, fst2,
                                                                   opts);
-    // TODO(kbg): Make this a compile-time static_assert once all weight
-    // properties are made constexpr for all weight types.
-    if (!(Weight::Properties() & kCommutative)) {
+    if (!(Weight::Properties() & kCommutative) && !opts.allow_noncommute) {
       const auto props1 = fst1.Properties(kUnweighted, true);
       const auto props2 = fst2.Properties(kUnweighted, true);
       if (!(props1 & kUnweighted) && !(props2 & kUnweighted)) {

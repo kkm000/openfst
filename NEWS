@@ -1,5 +1,12 @@
 OpenFst: Release 1.6
-    * Finalizes most virtual overrides (1.6.2)
+    * Removes restriction that Prune argument have commutative weights (1.6.3)
+    * Improves configuration of CompositeWeight readers and writers (1.6.3)
+    * Improves accuracy of ShortestDistance summation (1.6.3)
+    * SetFinal now "moves" its weight argument (1.6.3)
+    * Exposes ArcIterator and EncodeMapper flags in Python (1.6.3)
+    * Properly sets return codes in FST binaries (1.6.3)
+    * Eliminates StringWeight macros (1.6.3)
+    * Finalizes most virtual method overrides (1.6.2)
     * Fixes missing includes of <fst/log.h> (1.6.1)
     * Adds float format support to FST drawing (1.6.1)
     * Extensive modernization for C++11 style (1.6.0)

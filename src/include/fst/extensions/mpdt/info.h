@@ -151,9 +151,9 @@ template <class Arc, typename Arc::Label nlevels>
 void MPdtInfo<Arc, nlevels>::Print() {
   const auto old = std::cout.setf(std::ios::left);
   std::cout.width(50);
-  std::cout << "fst type" << FstType().c_str() << std::endl;
+  std::cout << "fst type" << FstType() << std::endl;
   std::cout.width(50);
-  std::cout << "arc type" << ArcType().c_str() << std::endl;
+  std::cout << "arc type" << ArcType() << std::endl;
   std::cout.width(50);
   std::cout << "# of states" << NumStates() << std::endl;
   std::cout.width(50);

@@ -67,7 +67,5 @@ int main(int argc, char **argv) {
     s::ShortestDistance(*ifst, &distance, opts);
   }
 
-  s::WritePotentials(out_name, distance);
-
-  return 0;
+  return !s::WritePotentials(out_name, distance);
 }

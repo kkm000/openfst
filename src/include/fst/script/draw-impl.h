@@ -125,9 +125,7 @@ class FstDrawer {
       EscapeChars(symbol, &nsymbol);
       PrintString(nsymbol);
     } else {
-      string idstr;
-      Int64ToStr(id, &idstr);
-      PrintString(idstr);
+      PrintString(std::to_string(id));
     }
   }
 

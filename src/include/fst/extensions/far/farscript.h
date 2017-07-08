@@ -165,6 +165,20 @@ void FarInfo(const std::vector<string> &filenames, const string &arc_type,
              const string &begin_key, const string &end_key,
              const bool list_fsts);
 
+using GetFarInfoArgs =
+    args::Package<const std::vector<string> &, const string &, const string &,
+                  const bool, FarInfoData *>;
+
+template <class Arc>
+void GetFarInfo(GetFarInfoArgs *args) {
+  fst::GetFarInfo<Arc>(args->arg1, args->arg2, args->arg3, args->arg4,
+                           args->arg5);
+}
+
+void GetFarInfo(const std::vector<string> &filenames, const string &arc_type,
+                const string &begin_key, const string &end_key,
+                const bool list_fsts, FarInfoData *);
+
 using FarIsomorphicInnerArgs =
     args::Package<const string &, const string &, float, const string &,
                   const string &>;
@@ -247,6 +261,7 @@ void FarPrintStrings(const std::vector<string> &ifilenames,
   REGISTER_FST_OPERATION(FarExtract, ArcType, FarExtractArgs);               \
   REGISTER_FST_OPERATION(FarInfo, ArcType, FarInfoArgs);                     \
   REGISTER_FST_OPERATION(FarIsomorphic, ArcType, FarIsomorphicArgs);         \
-  REGISTER_FST_OPERATION(FarPrintStrings, ArcType, FarPrintStringsArgs)
+  REGISTER_FST_OPERATION(FarPrintStrings, ArcType, FarPrintStringsArgs);     \
+  REGISTER_FST_OPERATION(GetFarInfo, ArcType, GetFarInfoArgs)
 
 #endif  // FST_EXTENSIONS_FAR_FARSCRIPT_H_

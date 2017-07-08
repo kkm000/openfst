@@ -73,8 +73,9 @@ class ExpectationWeight : public PairWeight<X1, X2> {
   }
 
   static const string &Type() {
-    static const string type = "expectation_" + X1::Type() + "_" + X2::Type();
-    return type;
+    static const string *const type =
+        new string("expectation_" + X1::Type() + "_" + X2::Type());
+    return *type;
   }
 
   PairWeight<X1, X2> Quantize(float delta = kDelta) const {

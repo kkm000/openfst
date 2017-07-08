@@ -6,6 +6,7 @@
 #ifndef FST_LIB_ARC_H_
 #define FST_LIB_ARC_H_
 
+#include <climits>
 #include <string>
 #include <utility>
 
@@ -43,9 +44,9 @@ struct ArcTpl {
         nextstate(nextstate) {}
 
   static const string &Type() {
-    static const string type =
-        (Weight::Type() == "tropical") ? "standard" : Weight::Type();
-    return type;
+    static const string *const type =
+        new string(Weight::Type() == "tropical" ? "standard" : Weight::Type());
+    return *type;
   }
 };
 
@@ -78,11 +79,12 @@ struct StringArc {
         nextstate(nextstate) {}
 
   static const string &Type() {
-    static const string type =
-        S == STRING_LEFT ? "left_standard_string"
-                         : (S == STRING_RIGHT ? "right_standard_string"
-                                              : "restricted_standard_string");
-    return type;
+    static const string *const type =
+        new string(S == STRING_LEFT
+                       ? "left_standard_string"
+                       : (S == STRING_RIGHT ? "right_standard_string"
+                                            : "restricted_standard_string"));
+    return *type;
   }
 };
 
@@ -113,16 +115,18 @@ struct GallicArc {
         nextstate(arc.nextstate) {}
 
   static const string &Type() {
-    static const string type =
-        (G == GALLIC_LEFT
-             ? "left_gallic_"
-             : (G == GALLIC_RIGHT
-                    ? "right_gallic_"
-                    : (G == GALLIC_RESTRICT
-                           ? "restricted_gallic_"
-                           : (G == GALLIC_MIN ? "min_gallic_" : "gallic_")))) +
-        Arc::Type();
-    return type;
+    static const string *const type =
+        new string(
+            (G == GALLIC_LEFT
+                 ? "left_gallic_"
+                 : (G == GALLIC_RIGHT
+                        ? "right_gallic_"
+                        : (G == GALLIC_RESTRICT
+                               ? "restricted_gallic_"
+                               : (G == GALLIC_MIN
+                                      ? "min_gallic_" : "gallic_")))) +
+            Arc::Type());
+    return *type;
   }
 };
 
@@ -149,8 +153,8 @@ struct ReverseArc {
         nextstate(nextstate) {}
 
   static const string &Type() {
-    static const string type = "reverse_" + Arc::Type();
-    return type;
+    static const string *const type = new string("reverse_" + Arc::Type());
+    return *type;
   }
 };
 
@@ -175,8 +179,8 @@ struct LexicographicArc {
         nextstate(nextstate) {}
 
   static const string &Type() {
-    static const string type = Weight::Type();
-    return type;
+    static const string *const type = new string(Weight::Type());
+    return *type;
   }
 };
 
@@ -201,8 +205,8 @@ struct ProductArc {
         nextstate(nextstate) {}
 
   static const string &Type() {
-    static const string type = Weight::Type();
-    return type;
+    static const string *const type = new string(Weight::Type());
+    return *type;
   }
 };
 
@@ -230,12 +234,9 @@ struct PowerArc {
         nextstate(nextstate) {}
 
   static const string &Type() {
-    static string type;
-    if (!type.empty()) return type;
-    string power;
-    Int64ToStr(N, &power);
-    type = Arc::Type() + "_^" + power;
-    return type;
+    static string *const type =
+        new string(Arc::Type() + "_^" + std::to_string(N));
+    return *type;
   }
 };
 
@@ -262,15 +263,14 @@ struct SparsePowerArc {
         nextstate(nextstate) {}
 
   static const string &Type() {
-    static string type;
-    if (!type.empty()) return type;
-    type = Arc::Type() + "_^n";
-    if (sizeof(K) != sizeof(uint32)) {
-      string size;
-      Int64ToStr(8 * sizeof(K), &size);
-      type += "_" + size;
-    }
-    return type;
+    static string *const type = [] {
+      string type = Arc::Type() + "_^n";
+      if (sizeof(K) != sizeof(uint32)) {
+        type += "_" + std::to_string(CHAR_BIT * sizeof(K));
+      }
+      return new string(type);
+    }();
+    return *type;
   }
 };
 
@@ -299,10 +299,9 @@ struct ExpectationArc {
         nextstate(nextstate) {}
 
   static const string &Type() {
-    static string type;
-    if (!type.empty()) return type;
-    type = "expectation_" + Arc::Type() + "_" + X2::Type();
-    return type;
+    static string *const type =
+        new string("expectation_" + Arc::Type() + "_" + X2::Type());
+    return *type;
   }
 };
 

@@ -44,7 +44,5 @@ int main(int argc, char **argv) {
 
   s::Union(fst1.get(), *fst2);
 
-  fst1->Write(out_name);
-
-  return 0;
+  return !fst1->Write(out_name);
 }

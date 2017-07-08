@@ -384,7 +384,7 @@ class NGramFst : public ImplToExpandedFst<internal::NGramFstImpl<A>> {
 
   static NGramFst<A> *Read(const string &filename) {
     if (!filename.empty()) {
-      std::ifstream strm(filename.c_str(),
+      std::ifstream strm(filename,
                               std::ios_base::in | std::ios_base::binary);
       if (!strm.good()) {
         LOG(ERROR) << "NGramFst::Read: Can't open file: " << filename;

@@ -31,66 +31,83 @@ void AccumulateStatesAndArcs(const Fst<Arc> &fst, size_t *nstate, size_t *narc,
 struct KeyInfo {
   string key;
   string type;
-  size_t nstate;
-  size_t narc;
-  size_t nfinal;
-
-  KeyInfo(string k, string t, int64 ns = 0, int64 na = 0, int nf = 0)
-      : key(std::move(k)),
-        type(std::move(t)),
-        nstate(ns),
-        narc(na),
-        nfinal(nf) {}
+  size_t nstate = 0;
+  size_t narc = 0;
+  size_t nfinal = 0;
 };
 
-template <class Arc>
-void FarInfo(const std::vector<string> &filenames, const string &begin_key,
-             const string &end_key, const bool list_fsts) {
-  std::unique_ptr<FarReader<Arc>> reader(FarReader<Arc>::Open(filenames));
-  if (!reader) return;
-  if (!begin_key.empty()) reader->Find(begin_key);
-  auto *infos = list_fsts ? new std::vector<KeyInfo>() : nullptr;
+struct FarInfoData {
+  std::vector<KeyInfo> key_infos;
+  string far_type;
+  string arc_type;
   size_t nfst = 0;
   size_t nstate = 0;
   size_t narc = 0;
   size_t nfinal = 0;
   std::set<string> fst_types;
+};
+
+template <class Arc>
+void GetFarInfo(const std::vector<string> &filenames, const string &begin_key,
+                const string &end_key, const bool list_fsts,
+                FarInfoData *far_info) {
+  *far_info = FarInfoData();
+  std::unique_ptr<FarReader<Arc>> reader(FarReader<Arc>::Open(filenames));
+  if (!reader) {
+    LOG(ERROR) << "GetFarInfo: failed to create far reader.";
+    return;
+  }
+  if (!begin_key.empty()) reader->Find(begin_key);
+
   for (; !reader->Done(); reader->Next()) {
     const auto &key = reader->GetKey();
     if (!end_key.empty() && end_key < key) break;
-    ++nfst;
+    ++far_info->nfst;
     const auto *fst = reader->GetFst();
-    fst_types.insert(fst->Type());
-    if (infos) {
-      KeyInfo info(key, fst->Type());
+    far_info->fst_types.insert(fst->Type());
+    if (list_fsts) {
+      KeyInfo info;
+      info.key = key;
+      info.type = fst->Type();
       AccumulateStatesAndArcs(*fst, &info.nstate, &info.narc, &info.nfinal);
-      nstate += info.nstate;
-      narc += info.narc;
-      nfinal += info.nfinal;
-      infos->push_back(info);
+      far_info->nstate += info.nstate;
+      far_info->narc += info.narc;
+      far_info->nfinal += info.nfinal;
+      far_info->key_infos.push_back(info);
     } else {
-      AccumulateStatesAndArcs(*fst, &nstate, &narc, &nfinal);
+      AccumulateStatesAndArcs(*fst, &far_info->nstate, &far_info->narc,
+                              &far_info->nfinal);
     }
   }
-  if (!infos) {
-    std::cout << std::left << std::setw(50) << "far type"
-              << GetFarTypeString(reader->Type()) << std::endl;
+  far_info->far_type = GetFarTypeString(reader->Type());
+  far_info->arc_type = Arc::Type();
+}
+
+template <class Arc>
+void FarInfo(const std::vector<string> &filenames, const string &begin_key,
+             const string &end_key, const bool list_fsts) {
+  FarInfoData info;
+  GetFarInfo<Arc>(filenames, begin_key, end_key, list_fsts, &info);
+  if (!list_fsts) {
+    std::cout << std::left << std::setw(50) << "far type" << info.far_type
+              << std::endl;
     std::cout << std::left << std::setw(50) << "arc type" << Arc::Type()
               << std::endl;
     std::cout << std::left << std::setw(50) << "fst type";
-    for (std::set<string>::const_iterator iter = fst_types.begin();
-         iter != fst_types.end(); ++iter) {
-      if (iter != fst_types.begin()) std::cout << ",";
+    for (auto iter = info.fst_types.begin(); iter != info.fst_types.end();
+         ++iter) {
+      if (iter != info.fst_types.begin()) std::cout << ",";
       std::cout << *iter;
     }
     std::cout << std::endl;
-    std::cout << std::left << std::setw(50) << "# of FSTs" << nfst << std::endl;
-    std::cout << std::left << std::setw(50) << "total # of states" << nstate
+    std::cout << std::left << std::setw(50) << "# of FSTs" << info.nfst
               << std::endl;
-    std::cout << std::left << std::setw(50) << "total # of arcs" << narc
+    std::cout << std::left << std::setw(50) << "total # of states"
+              << info.nstate << std::endl;
+    std::cout << std::left << std::setw(50) << "total # of arcs" << info.narc
               << std::endl;
     std::cout << std::left << std::setw(50) << "total # of final states"
-              << nfinal << std::endl;
+              << info.nfinal << std::endl;
   } else {
     // FIXME(kbg): Grok, then document this.
     int wkey = 10;
@@ -98,30 +115,29 @@ void FarInfo(const std::vector<string> &filenames, const string &begin_key,
     int wnstate = 14;
     int wnarc = 12;
     int wnfinal = 20;
-    for (size_t i = 0; i < infos->size(); ++i) {
-      const auto &info = (*infos)[i];
-      if (info.key.size() + 2 > wkey) wkey = info.key.size() + 2;
-      if (info.type.size() + 2 > wtype) wtype = info.type.size() + 2;
-      if (ceil(log10(info.nstate)) + 2 > wnstate) {
-        wnstate = ceil(log10(info.nstate)) + 2;
+    for (const auto &key_info : info.key_infos) {
+      if (key_info.key.size() + 2 > wkey) wkey = key_info.key.size() + 2;
+      if (key_info.type.size() + 2 > wtype) wtype = key_info.type.size() + 2;
+      if (ceil(log10(key_info.nstate)) + 2 > wnstate) {
+        wnstate = ceil(log10(key_info.nstate)) + 2;
       }
-      if (ceil(log10(info.narc)) + 2 > wnarc) {
-        wnarc = ceil(log10(info.narc)) + 2;
+      if (ceil(log10(key_info.narc)) + 2 > wnarc) {
+        wnarc = ceil(log10(key_info.narc)) + 2;
       }
-      if (ceil(log10(info.nfinal)) + 2 > wnfinal) {
-        wnfinal = ceil(log10(info.nfinal)) + 2;
+      if (ceil(log10(key_info.nfinal)) + 2 > wnfinal) {
+        wnfinal = ceil(log10(key_info.nfinal)) + 2;
       }
     }
     std::cout << std::left << std::setw(wkey) << "key" << std::setw(wtype)
               << "type" << std::right << std::setw(wnstate) << "# of states"
               << std::setw(wnarc) << "# of arcs" << std::setw(wnfinal)
               << "# of final states" << std::endl;
-    for (size_t i = 0; i < infos->size(); ++i) {
-      const auto &info = (*infos)[i];
-      std::cout << std::left << std::setw(wkey) << info.key << std::setw(wtype)
-                << info.type << std::right << std::setw(wnstate) << info.nstate
-                << std::setw(wnarc) << info.narc << std::setw(wnfinal)
-                << info.nfinal << std::endl;
+    for (const auto &key_info : info.key_infos) {
+      std::cout << std::left << std::setw(wkey) << key_info.key
+                << std::setw(wtype) << key_info.type << std::right
+                << std::setw(wnstate) << key_info.nstate << std::setw(wnarc)
+                << key_info.narc << std::setw(wnfinal) << key_info.nfinal
+                << std::endl;
     }
   }
 }

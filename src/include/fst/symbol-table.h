@@ -243,7 +243,7 @@ class SymbolTable {
   // Reads a text representation of the symbol table.
   static SymbolTable *ReadText(const string &filename,
       const SymbolTableTextOptions &opts = SymbolTableTextOptions()) {
-    std::ifstream strm(filename.c_str(), std::ios_base::in);
+    std::ifstream strm(filename, std::ios_base::in);
     if (!strm.good()) {
       LOG(ERROR) << "SymbolTable::ReadText: Can't open file " << filename;
       return nullptr;
@@ -269,7 +269,7 @@ class SymbolTable {
 
   // Reads a binary dump of the symbol table.
   static SymbolTable *Read(const string& filename) {
-    std::ifstream strm(filename.c_str(),
+    std::ifstream strm(filename,
                             std::ios_base::in | std::ios_base::binary);
     if (!strm.good()) {
       LOG(ERROR) << "SymbolTable::Read: Can't open file " << filename;
@@ -329,7 +329,7 @@ class SymbolTable {
   virtual bool Write(std::ostream &strm) const { return impl_->Write(strm); }
 
   bool Write(const string &filename) const {
-    std::ofstream strm(filename.c_str(),
+    std::ofstream strm(filename,
                              std::ios_base::out | std::ios_base::binary);
     if (!strm.good()) {
       LOG(ERROR) << "SymbolTable::Write: Can't open file " << filename;

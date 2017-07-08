@@ -246,7 +246,7 @@ class ArcIterator<ComplementFst<Arc>> : public ArcIteratorBase<Arc> {
     pos_ = a;
   }
 
-  constexpr uint32 Flags() const final { return kArcValueFlags; }
+  uint32 Flags() const final { return kArcValueFlags; }
 
   void SetFlags(uint32, uint32) final {}
 

@@ -66,7 +66,5 @@ int main(int argc, char **argv) {
                  ras, FLAGS_max_length, FLAGS_npath, FLAGS_weighted,
                  FLAGS_remove_total_weight));
 
-  ofst.Write(out_name);
-
-  return 0;
+  return !ofst.Write(out_name);
 }

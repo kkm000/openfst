@@ -18,7 +18,7 @@ namespace {
 
 // A user-defined arc type.
 struct CustomArc {
-  typedef short Label;
+  typedef int16 Label;
   typedef ProductWeight<TropicalWeight, LogWeight> Weight;
   typedef int64 StateId;
 
@@ -27,8 +27,8 @@ struct CustomArc {
   CustomArc() {}
 
   static const string &Type() {  // Arc type name
-    static const string type = "my";
-    return type;
+    static const string *const type = new string("my");
+    return *type;
   }
 
   Label ilabel;       // Transition input label
@@ -63,8 +63,8 @@ class CustomCompactor {
   bool Compatible(const Fst<A> &fst) const { return true; }
 
   static const string &Type() {
-    static const string type = "my";
-    return type;
+    static const string *const type = new string("my");
+    return *type;
   }
 
   bool Write(std::ostream &strm) const { return true; }

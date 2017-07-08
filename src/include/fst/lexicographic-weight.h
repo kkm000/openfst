@@ -75,8 +75,9 @@ class LexicographicWeight : public PairWeight<W1, W2> {
   }
 
   static const string &Type() {
-    static const string type = W1::Type() + "_LT_" + W2::Type();
-    return type;
+    static const string *const type =
+        new string(W1::Type() + "_LT_" + W2::Type());
+    return *type;
   }
 
   bool Member() const {

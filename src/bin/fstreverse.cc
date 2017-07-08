@@ -36,11 +36,9 @@ int main(int argc, char **argv) {
   std::unique_ptr<FstClass> ifst(FstClass::Read(in_name));
   if (!ifst) return 1;
 
-  VectorFstClass out(ifst->ArcType());
+  VectorFstClass ofst(ifst->ArcType());
 
-  s::Reverse(*ifst, &out, FLAGS_require_superinitial);
+  s::Reverse(*ifst, &ofst, FLAGS_require_superinitial);
 
-  out.Write(out_name);
-
-  return 0;
+  return !ofst.Write(out_name);
 }

@@ -65,7 +65,7 @@ class Heap {
     }
   }
 
-  // Returns the greatest (max=true) / least (max=false) value.
+  // Returns the least value.
   Value Pop() {
     Value top = values_.front();
     Swap(0, size_-1);
@@ -74,8 +74,8 @@ class Heap {
     return top;
   }
 
-  // Returns the greatest (max=true) / least (max=false) value w.r.t.
-  // the comparison function from the heap.
+  // Returns the least value w.r.t.  the comparison function from the
+  // heap.
   const Value &Top() const { return values_.front(); }
 
   // Returns the element for the given key.

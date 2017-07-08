@@ -38,7 +38,5 @@ int main(int argc, char **argv) {
 
   s::Project(fst.get(), s::GetProjectType(FLAGS_project_output));
 
-  fst->Write(out_name);
-
-  return 0;
+  return !fst->Write(out_name);
 }

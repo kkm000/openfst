@@ -7,6 +7,7 @@
 #ifndef FST_LIB_SPARSE_POWER_WEIGHT_H_
 #define FST_LIB_SPARSE_POWER_WEIGHT_H_
 
+#include <climits>
 #include <string>
 
 #include <fst/sparse-tuple-weight.h>
@@ -103,9 +104,7 @@ class SparsePowerWeight : public SparseTupleWeight<W, K> {
     if (type.empty()) {
       type = W::Type() + "_^n";
       if (sizeof(K) != sizeof(uint32)) {
-        string size;
-        Int64ToStr(8 * sizeof(K), &size);
-        type += "_" + size;
+        type += "_" + std::to_string(CHAR_BIT * sizeof(K));
       }
     }
     return type;

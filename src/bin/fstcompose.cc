@@ -67,7 +67,5 @@ int main(int argc, char **argv) {
 
   s::Compose(*ifst1, *ifst2, &ofst, opts);
 
-  ofst.Write(out_name);
-
-  return 0;
+  return !ofst.Write(out_name);
 }

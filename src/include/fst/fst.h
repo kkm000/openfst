@@ -254,7 +254,7 @@ class Fst {
   // results in reading from standard input.
   static Fst<Arc> *Read(const string &filename) {
     if (!filename.empty()) {
-      std::ifstream strm(filename.c_str(),
+      std::ifstream strm(filename,
                               std::ios_base::in | std::ios_base::binary);
       if (!strm) {
         LOG(ERROR) << "Fst::Read: Can't open file: " << filename;
@@ -301,7 +301,7 @@ class Fst {
  protected:
   bool WriteFile(const string &filename) const {
     if (!filename.empty()) {
-      std::ofstream strm(filename.c_str(),
+      std::ofstream strm(filename,
                                std::ios_base::out | std::ios_base::binary);
       if (!strm) {
         LOG(ERROR) << "Fst::Write: Can't open file: " << filename;
@@ -923,7 +923,9 @@ class ImplToFst : public FST {
 // (which excludes implementations with weight-dependent virtual methods).
 // Must be a friend of the FST classes involved (currently the concrete FSTs:
 // ConstFst, CompactFst, and VectorFst). This can only be safely used for arc
-// types that have identical storage characteristics.
+// types that have identical storage characteristics. As with an FST
+// copy constructor and Copy() method, this is a constant time operation
+// (but subject to copy-on-write if it is a MutableFst and modified).
 template <class IFST, class OFST>
 void Cast(const IFST &ifst, OFST *ofst) {
   using OImpl = typename OFST::Impl;
