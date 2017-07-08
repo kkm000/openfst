@@ -45,7 +45,5 @@ int main(int argc, char **argv) {
 
   s::Reweight(fst.get(), potential, s::GetReweightType(FLAGS_to_final));
 
-  fst->Write(out_name);
-
-  return 0;
+  return !fst->Write(out_name);
 }

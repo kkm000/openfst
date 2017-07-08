@@ -40,11 +40,10 @@ int main(int argc, char **argv) {
       FLAGS_weight.empty() ? WeightClass::Zero(fst->WeightType())
                            : WeightClass(fst->WeightType(), FLAGS_weight);
 
-  s::PruneOptions opts(weight_threshold, FLAGS_nstate, nullptr, FLAGS_delta);
+  const s::PruneOptions opts(weight_threshold, FLAGS_nstate, nullptr,
+                             FLAGS_delta);
 
   s::Prune(fst.get(), opts);
 
-  fst->Write(out_name);
-
-  return 0;
+  return !fst->Write(out_name);
 }

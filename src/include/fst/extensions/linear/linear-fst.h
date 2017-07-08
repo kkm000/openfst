@@ -495,7 +495,7 @@ class LinearTaggerFst : public ImplToFst<internal::LinearTaggerFstImpl<A>> {
 
   static LinearTaggerFst<A> *Read(const string &filename) {
     if (!filename.empty()) {
-      std::ifstream strm(filename.c_str(),
+      std::ifstream strm(filename,
                               std::ios_base::in | std::ios_base::binary);
       if (!strm) {
         LOG(ERROR) << "LinearTaggerFst::Read: Can't open file: " << filename;
@@ -515,7 +515,7 @@ class LinearTaggerFst : public ImplToFst<internal::LinearTaggerFstImpl<A>> {
 
   bool Write(const string &filename) const override {
     if (!filename.empty()) {
-      std::ofstream strm(filename.c_str(),
+      std::ofstream strm(filename,
                                std::ios_base::out | std::ios_base::binary);
       if (!strm) {
         LOG(ERROR) << "LinearTaggerFst::Write: Can't open file: " << filename;
@@ -952,7 +952,7 @@ class LinearClassifierFst
 
   static LinearClassifierFst<A> *Read(const string &filename) {
     if (!filename.empty()) {
-      std::ifstream strm(filename.c_str(),
+      std::ifstream strm(filename,
                               std::ios_base::in | std::ios_base::binary);
       if (!strm) {
         LOG(ERROR) << "LinearClassifierFst::Read: Can't open file: "
@@ -974,7 +974,7 @@ class LinearClassifierFst
 
   bool Write(const string &filename) const override {
     if (!filename.empty()) {
-      std::ofstream strm(filename.c_str(),
+      std::ofstream strm(filename,
                                std::ios_base::out | std::ios_base::binary);
       if (!strm) {
         LOG(ERROR) << "ProdLmFst::Write: Can't open file: " << filename;

@@ -7,7 +7,9 @@
 #define FST_LIB_VECTOR_FST_H_
 
 #include <string>
+#include <utility>
 #include <vector>
+
 #include <fst/log.h>
 
 #include <fst/fst-decl.h>  // For optional argument declarations
@@ -68,7 +70,7 @@ class VectorState {
 
   void ReserveArcs(size_t n) { arcs_.reserve(n); }
 
-  void SetFinal(Weight weight) { final_ = weight; }
+  void SetFinal(Weight weight) { final_ = std::move(weight); }
 
   void SetNumInputEpsilons(size_t n) { niepsilons_ = n; }
 
@@ -161,7 +163,7 @@ class VectorFstBaseImpl : public FstImpl<typename S::Arc> {
   void SetStart(StateId state) { start_ = state; }
 
   void SetFinal(StateId state, Weight weight) {
-    states_[state]->SetFinal(weight);
+    states_[state]->SetFinal(std::move(weight));
   }
 
   StateId AddState() {
@@ -301,7 +303,7 @@ class VectorFstImpl : public VectorFstBaseImpl<S> {
 
   void SetFinal(StateId state, Weight weight) {
     const auto old_weight = BaseImpl::Final(state);
-    BaseImpl::SetFinal(state, weight);
+    BaseImpl::SetFinal(state, std::move(weight));
     SetProperties(SetFinalProperties(Properties(), old_weight, weight));
   }
 
@@ -690,7 +692,7 @@ class MutableArcIterator<VectorFst<Arc, State>>
                     kNoOEpsilons | kWeighted | kUnweighted;
   }
 
-  constexpr uint32 Flags() const final { return kArcValueFlags; }
+  uint32 Flags() const final { return kArcValueFlags; }
 
   void SetFlags(uint32, uint32) final {}
 

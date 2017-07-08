@@ -54,8 +54,9 @@ class SignedLogWeightTpl : public PairWeight<TropicalWeight, LogWeightTpl<T>> {
   }
 
   static const string &Type() {
-    static const string type = "signed_log_" + X1::Type() + "_" + X2::Type();
-    return type;
+    static const string *const type =
+        new string("signed_log_" + X1::Type() + "_" + X2::Type());
+    return *type;
   }
 
   SignedLogWeightTpl Quantize(float delta = kDelta) const {
@@ -208,8 +209,8 @@ using SignedLog64Weight = SignedLogWeightTpl<double>;
 template <class W1, class W2>
 bool SignedLogConvertCheck(W1 weight) {
   if (weight.Value1().Value() < 0.0) {
-    FSTERROR() << "WeightConvert: Can't convert weight from " << W1::Type()
-               << " to " << W2::Type();
+    FSTERROR() << "WeightConvert: Can't convert weight " << weight
+               << " from " << W1::Type() << " to " << W2::Type();
     return false;
   }
   return true;

@@ -48,7 +48,5 @@ int main(int argc, char **argv) {
 
   s::ArcSort(fst.get(), sort_type);
 
-  fst->Write(out_name);
-
-  return 0;
+  return !fst->Write(out_name);
 }

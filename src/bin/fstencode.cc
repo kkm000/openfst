@@ -43,13 +43,11 @@ int main(int argc, char **argv) {
 
   if (FLAGS_decode) {
     s::Decode(fst.get(), codex_name);
-    fst->Write(out_name);
+    return !fst->Write(out_name);
   } else {
     const auto flags =
         s::GetEncodeFlags(FLAGS_encode_labels, FLAGS_encode_weights);
     s::Encode(fst.get(), flags, FLAGS_encode_reuse, codex_name);
-    fst->Write(out_name);
+    return !fst->Write(out_name);
   }
-
-  return 0;
 }

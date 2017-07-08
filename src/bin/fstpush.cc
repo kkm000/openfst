@@ -52,7 +52,5 @@ int main(int argc, char **argv) {
   s::Push(*ifst, &ofst, flags, s::GetReweightType(FLAGS_to_final),
           FLAGS_delta);
 
-  ofst.Write(out_name);
-
-  return 0;
+  return !ofst.Write(out_name);
 }

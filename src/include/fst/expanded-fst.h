@@ -61,7 +61,7 @@ class ExpandedFst : public Fst<A> {
   // Empty filename reads from standard input.
   static ExpandedFst<Arc> *Read(const string &filename) {
     if (!filename.empty()) {
-      std::ifstream strm(filename.c_str(),
+      std::ifstream strm(filename,
                               std::ios_base::in | std::ios_base::binary);
       if (!strm) {
         LOG(ERROR) << "ExpandedFst::Read: Can't open file: " << filename;
@@ -139,7 +139,7 @@ class ImplToExpandedFst : public ImplToFst<Impl, FST> {
   // Empty filename reads from standard input.
   static Impl *Read(const string &filename) {
     if (!filename.empty()) {
-      std::ifstream strm(filename.c_str(),
+      std::ifstream strm(filename,
                               std::ios_base::in | std::ios_base::binary);
       if (!strm) {
         LOG(ERROR) << "ExpandedFst::Read: Can't open file: " << filename;

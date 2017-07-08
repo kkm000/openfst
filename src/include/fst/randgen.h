@@ -6,10 +6,6 @@
 #ifndef FST_LIB_RANDGEN_H_
 #define FST_LIB_RANDGEN_H_
 
-#include <cmath>
-#include <cstdlib>
-#include <ctime>
-#include <limits>
 #include <map>
 #include <random>
 
@@ -32,32 +28,44 @@ namespace fst {
 // selected. It is assumed these are not applied to any state which is neither
 // final nor has any arcs leaving it.
 
-// Randomly selects a transition using the uniform distribution.
+// Randomly selects a transition using the uniform distribution. This class is
+// not thread-safe.
 template <class Arc>
-struct UniformArcSelector {
+class UniformArcSelector {
+ public:
   using StateId = typename Arc::StateId;
   using Weight = typename Arc::Weight;
 
-  explicit UniformArcSelector(time_t seed = time(nullptr)) { srand(seed); }
+  // Constructs a selector with a non-deterministic seed.
+  UniformArcSelector() : rand_(std::random_device()()) {}
+  // Constructs a selector with a given seed.
+  explicit UniformArcSelector(uint64 seed) : rand_(seed) {}
 
   size_t operator()(const Fst<Arc> &fst, StateId s) const {
-    const double r = rand() / (RAND_MAX + 1.0);  // NOLINT
     const auto n = fst.NumArcs(s) + (fst.Final(s) != Weight::Zero());
-    return static_cast<size_t>(r * n);
+    return static_cast<size_t>(
+        std::uniform_int_distribution<>(0, n - 1)(rand_));
   }
+
+ private:
+  mutable std::mt19937_64 rand_;
 };
 
 // Randomly selects a transition w.r.t. the weights treated as negative log
 // probabilities after normalizing for the total weight leaving the state. Zero
 // transitions are disregarded. It assumed that Arc::Weight::Value() accesses
-// the floating point representation of the weight.
+// the floating point representation of the weight. This class is not
+// thread-safe.
 template <class Arc>
 class LogProbArcSelector {
  public:
   using StateId = typename Arc::StateId;
   using Weight = typename Arc::Weight;
 
-  explicit LogProbArcSelector(time_t seed = time(nullptr)) { srand(seed); }
+  // Constructs a selector with a non-deterministic seed.
+  LogProbArcSelector() : rand_(std::random_device()()) {}
+  // Constructs a selector with a given seed.
+  explicit LogProbArcSelector(uint64 seed) : rand_(seed) {}
 
   size_t operator()(const Fst<Arc> &fst, StateId s) const {
     // Finds total weight leaving state.
@@ -69,7 +77,7 @@ class LogProbArcSelector {
     }
     sum = Plus(sum, to_log_weight_(fst.Final(s)));
     const double threshold =
-        (exp(-sum.Value()) * (rand() / (RAND_MAX + 1.0)));  // NOLINT
+        std::uniform_real_distribution<>(0, exp(-sum.Value()))(rand_);
     auto p = Log64Weight::Zero();
     size_t n = 0;
     for (aiter.Reset(); !aiter.Done(); aiter.Next(), ++n) {
@@ -80,14 +88,15 @@ class LogProbArcSelector {
   }
 
  private:
+  mutable std::mt19937_64 rand_;
   WeightConvert<Weight, Log64Weight> to_log_weight_;
 };
 
 // Useful alias when using StdArc.
 using StdArcSelector = LogProbArcSelector<StdArc>;
 
-// Same as LogProbArcSelector but use CacheLogAccumulator to cache the
-// weight accumulation computations.
+// Same as LogProbArcSelector but use CacheLogAccumulator to cache the weight
+// accumulation computations. This class is not thread-safe.
 template <class Arc>
 class FastLogProbArcSelector : public LogProbArcSelector<Arc> {
  public:
@@ -96,8 +105,10 @@ class FastLogProbArcSelector : public LogProbArcSelector<Arc> {
 
   using LogProbArcSelector<Arc>::operator();
 
-  explicit FastLogProbArcSelector(time_t seed = time(nullptr))
-      : LogProbArcSelector<Arc>(seed), seed_(seed) {}
+  // Constructs a selector with a non-deterministic seed.
+  FastLogProbArcSelector() : seed_(std::random_device()()), rand_(seed_) {}
+  // Constructs a selector with a given seed.
+  explicit FastLogProbArcSelector(uint64 seed) : seed_(seed), rand_(seed_) {}
 
   size_t operator()(const Fst<Arc> &fst, StateId s,
                     CacheLogAccumulator<Arc> *accumulator) const {
@@ -107,16 +118,17 @@ class FastLogProbArcSelector : public LogProbArcSelector<Arc> {
     const double sum = to_log_weight_(accumulator->Sum(fst.Final(s), &aiter, 0,
                                                        fst.NumArcs(s)))
                            .Value();
-    const double r = -log(rand() / (RAND_MAX + 1.0));  // NOLINT
+    const double r = -log(std::uniform_real_distribution<>(0, 1)(rand_));
     Weight w = from_log_weight_(r + sum);
     aiter.Reset();
     return accumulator->LowerBound(w, &aiter);
   }
 
-  time_t Seed() const { return seed_; }
+  uint64 Seed() const { return seed_; }
 
  private:
-  const time_t seed_;
+  const uint64 seed_;
+  mutable std::mt19937_64 rand_;
   WeightConvert<Weight, Log64Weight> to_log_weight_;
   WeightConvert<Log64Weight, Weight> from_log_weight_;
 };

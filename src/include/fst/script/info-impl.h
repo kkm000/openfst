@@ -27,18 +27,16 @@ namespace fst {
 // WARNING: Stand-alone use of this class is not recommended, most code
 // should call directly the relevant library functions: Fst<Arc>::NumStates,
 // Fst<Arc>::NumArcs, TestProperties, etc.
-template <class Arc>
 class FstInfo {
  public:
-  using Label = typename Arc::Label;
-  using StateId = typename Arc::StateId;
-  using Weight = typename Arc::Weight;
+  FstInfo() {}
 
   // When info_type is "short" (or "auto" and not an ExpandedFst) then only
   // minimal info is computed and can be requested.
+  template <typename Arc>
   FstInfo(const Fst<Arc> &fst, bool test_properties,
-          const string &arc_filter_type = "any", string info_type = "auto",
-          bool verify = true)
+          const string &arc_filter_type = "any",
+          const string &info_type = "auto", bool verify = true)
       : fst_type_(fst.Type()),
         input_symbols_(fst.InputSymbols() ? fst.InputSymbols()->Name()
                                           : "none"),
@@ -64,7 +62,11 @@ class FstInfo {
         output_lookahead_(false),
         properties_(0),
         arc_filter_type_(arc_filter_type),
-        long_info_(true) {
+        long_info_(true),
+        arc_type_(Arc::Type()) {
+    using Label = typename Arc::Label;
+    using StateId = typename Arc::StateId;
+    using Weight = typename Arc::Weight;
     if (info_type == "long") {
       long_info_ = true;
     } else if (info_type == "short") {
@@ -165,7 +167,7 @@ class FstInfo {
 
   const string &FstType() const { return fst_type_; }
 
-  const string &ArcType() const { return Arc::Type(); }
+  const string &ArcType() const { return arc_type_; }
 
   const string &InputSymbols() const { return input_symbols_; }
 
@@ -197,7 +199,7 @@ class FstInfo {
     return output_lookahead_;
   }
 
-  StateId NumStates() const {
+  int64 NumStates() const {
     CheckLong();
     return nstates_;
   }
@@ -207,7 +209,7 @@ class FstInfo {
     return narcs_;
   }
 
-  StateId Start() const {
+  int64 Start() const {
     CheckLong();
     return start_;
   }
@@ -281,9 +283,9 @@ class FstInfo {
   string fst_type_;
   string input_symbols_;
   string output_symbols_;
-  StateId nstates_;
+  int64 nstates_;
   size_t narcs_;
-  StateId start_;
+  int64 start_;
   size_t nfinal_;
   size_t nepsilons_;
   size_t niepsilons_;
@@ -302,104 +304,10 @@ class FstInfo {
   uint64 properties_;
   string arc_filter_type_;
   bool long_info_;
+  string arc_type_;
 };
 
-template <class Arc>
-void PrintFstInfo(const FstInfo<Arc> &fstinfo, bool pipe = false) {
-  std::ostream &ostrm = pipe ? std::cerr : std::cout;
-  const auto old = ostrm.setf(std::ios::left);
-  ostrm.width(50);
-  ostrm << "fst type" << fstinfo.FstType() << std::endl;
-  ostrm.width(50);
-  ostrm << "arc type" << fstinfo.ArcType() << std::endl;
-  ostrm.width(50);
-  ostrm << "input symbol table" << fstinfo.InputSymbols() << std::endl;
-  ostrm.width(50);
-  ostrm << "output symbol table" << fstinfo.OutputSymbols() << std::endl;
-  if (!fstinfo.LongInfo()) {
-    ostrm.setf(old);
-    return;
-  }
-  ostrm.width(50);
-  ostrm << "# of states" << fstinfo.NumStates() << std::endl;
-  ostrm.width(50);
-  ostrm << "# of arcs" << fstinfo.NumArcs() << std::endl;
-  ostrm.width(50);
-  ostrm << "initial state" << fstinfo.Start() << std::endl;
-  ostrm.width(50);
-  ostrm << "# of final states" << fstinfo.NumFinal() << std::endl;
-  ostrm.width(50);
-  ostrm << "# of input/output epsilons" << fstinfo.NumEpsilons() << std::endl;
-  ostrm.width(50);
-  ostrm << "# of input epsilons" << fstinfo.NumInputEpsilons() << std::endl;
-  ostrm.width(50);
-  ostrm << "# of output epsilons" << fstinfo.NumOutputEpsilons() << std::endl;
-  ostrm.width(50);
-  ostrm << "input label multiplicity" << fstinfo.InputLabelMultiplicity()
-        << std::endl;
-  ostrm.width(50);
-  ostrm << "output label multiplicity" << fstinfo.OutputLabelMultiplicity()
-        << std::endl;
-  ostrm.width(50);
-  string arc_type = "";
-  if (fstinfo.ArcFilterType() == "epsilon")
-    arc_type = "epsilon ";
-  else if (fstinfo.ArcFilterType() == "iepsilon")
-    arc_type = "input-epsilon ";
-  else if (fstinfo.ArcFilterType() == "oepsilon")
-    arc_type = "output-epsilon ";
-  const auto accessible_label = "# of " + arc_type + "accessible states";
-  ostrm.width(50);
-  ostrm << accessible_label << fstinfo.NumAccessible() << std::endl;
-  const auto coaccessible_label = "# of " + arc_type + "coaccessible states";
-  ostrm.width(50);
-  ostrm << coaccessible_label << fstinfo.NumCoAccessible() << std::endl;
-  const auto connected_label = "# of " + arc_type + "connected states";
-  ostrm.width(50);
-  ostrm << connected_label << fstinfo.NumConnected() << std::endl;
-  const auto numcc_label = "# of " + arc_type + "connected components";
-  ostrm.width(50);
-  ostrm << numcc_label << fstinfo.NumCc() << std::endl;
-  const auto numscc_label = "# of " + arc_type + "strongly conn components";
-  ostrm.width(50);
-  ostrm << numscc_label << fstinfo.NumScc() << std::endl;
-  ostrm.width(50);
-  ostrm << "input matcher"
-        << (fstinfo.InputMatchType() == MATCH_INPUT
-                ? 'y'
-                : fstinfo.InputMatchType() == MATCH_NONE ? 'n' : '?')
-        << std::endl;
-  ostrm.width(50);
-  ostrm << "output matcher"
-        << (fstinfo.OutputMatchType() == MATCH_OUTPUT
-                ? 'y'
-                : fstinfo.OutputMatchType() == MATCH_NONE ? 'n' : '?')
-        << std::endl;
-  ostrm.width(50);
-  ostrm << "input lookahead" << (fstinfo.InputLookAhead() ? 'y' : 'n')
-        << std::endl;
-  ostrm.width(50);
-  ostrm << "output lookahead" << (fstinfo.OutputLookAhead() ? 'y' : 'n')
-        << std::endl;
-  uint64 prop = 1;
-  for (auto i = 0; i < 64; ++i, prop <<= 1) {
-    if (prop & kBinaryProperties) {
-      char value = 'n';
-      if (fstinfo.Properties() & prop) value = 'y';
-      ostrm.width(50);
-      ostrm << PropertyNames[i] << value << std::endl;
-    } else if (prop & kPosTrinaryProperties) {
-      char value = '?';
-      if (fstinfo.Properties() & prop)
-        value = 'y';
-      else if (fstinfo.Properties() & prop << 1)
-        value = 'n';
-      ostrm.width(50);
-      ostrm << PropertyNames[i] << value << std::endl;
-    }
-  }
-  ostrm.setf(old);
-}
+void PrintFstInfoImpl(const FstInfo &fstinfo, bool pipe = false);
 
 }  // namespace fst
 

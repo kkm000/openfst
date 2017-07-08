@@ -51,8 +51,8 @@ struct LabelCommonDivisor {
   using Weight = StringWeight<Label, S>;
 
   Weight operator()(const Weight &w1, const Weight &w2) const {
-    StringWeightIterator<Label, S> iter1(w1);
-    StringWeightIterator<Label, S> iter2(w2);
+    typename Weight::Iterator iter1(w1);
+    typename Weight::Iterator iter2(w2);
     if (!(StringWeight<Label, S>::Properties() & kLeftSemiring)) {
       FSTERROR() << "LabelCommonDivisor: Weight needs to be left semiring";
       return Weight::NoWeight();
@@ -85,7 +85,7 @@ class GallicCommonDivisor {
   }
 
  private:
-  LabelCommonDivisor<Label, GALLIC_STRING_TYPE(G)> label_common_divisor_;
+  LabelCommonDivisor<Label, GallicStringType(G)> label_common_divisor_;
   CommonDivisor weight_common_divisor_;
 };
 

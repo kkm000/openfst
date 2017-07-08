@@ -81,7 +81,5 @@ int main(int argc, char **argv) {
   VectorFstClass ofst(ifst->ArcType());
   s::Replace(pairs, &ofst, opts);
 
-  ofst.Write(out_name);
-
-  return 0;
+  return !ofst.Write(out_name);
 }

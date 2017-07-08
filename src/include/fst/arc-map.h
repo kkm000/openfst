@@ -800,7 +800,7 @@ class ToGallicMapper {
   using FromArc = A;
   using ToArc = GallicArc<A, G>;
 
-  using SW = StringWeight<typename A::Label, GALLIC_STRING_TYPE(G)>;
+  using SW = StringWeight<typename A::Label, GallicStringType(G)>;
   using AW = typename FromArc::Weight;
   using GW = typename ToArc::Weight;
 
@@ -893,10 +893,10 @@ class FromGallicMapper {
   template <GallicType GT>
   static bool Extract(const GallicWeight<Label, AW, GT> &gallic_weight,
                       typename A::Weight *weight, typename A::Label *label) {
-    const StringWeight<Label, GALLIC_STRING_TYPE(GT)> &w1 =
-        gallic_weight.Value1();
+    using GW = StringWeight<Label, GallicStringType(GT)>;
+    const GW &w1 = gallic_weight.Value1();
     const AW &w2 = gallic_weight.Value2();
-    StringWeightIterator<Label, GALLIC_STRING_TYPE(GT)> iter1(w1);
+    typename GW::Iterator iter1(w1);
     const Label l = w1.Size() == 1 ? iter1.Value() : 0;
     if (l == kStringInfinity || l == kStringBad || w1.Size() > 1) return false;
     *label = l;
@@ -930,7 +930,7 @@ class GallicToNewSymbolsMapper {
   using StateId = typename ToArc::StateId;
   using AW = typename ToArc::Weight;
   using GW = typename FromArc::Weight;
-  using SW = StringWeight<Label, GALLIC_STRING_TYPE(G)>;
+  using SW = StringWeight<Label, GallicStringType(G)>;
 
   explicit GallicToNewSymbolsMapper(MutableFst<ToArc> *fst)
       : fst_(fst),
@@ -970,7 +970,7 @@ class GallicToNewSymbolsMapper {
       } else {
         l = ++lmax_;
         insert_result.first->second = l;
-        StringWeightIterator<Label, GALLIC_STRING_TYPE(G)> iter1(w1);
+        StringWeightIterator<SW> iter1(w1);
         StateId n;
         string s;
         for (size_t i = 0, p = state_; i < w1.Size();

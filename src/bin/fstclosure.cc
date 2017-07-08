@@ -37,7 +37,5 @@ int main(int argc, char **argv) {
 
   s::Closure(fst.get(), s::GetClosureType(FLAGS_closure_plus));
 
-  fst->Write(out_name);
-
-  return 0;
+  return !fst->Write(out_name);
 }

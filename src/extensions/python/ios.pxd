@@ -35,11 +35,11 @@ cdef extern from "<fstream>" namespace "std" nogil:
 
   cdef cppclass ifstream(istream):
 
-    ifstream(const char *)
+    ifstream(const string &)
 
   cdef cppclass ofstream(ostream):
 
-    ofstream(const char *)
+    ofstream(const string &)
 
 
 cdef extern from "<sstream>" namespace "std" nogil:

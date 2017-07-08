@@ -33,11 +33,13 @@ class GzFile {
   GzFile(const char *filename, const char *mode)
       : gzfile_(gzopen(filename, mode)), error_(check_handle()) {
   }
+
   // The caller is responsible to ensure the corresponding FD is open and has
   // the needed modes ("r" for reading, "w" or "a" for writing).
   explicit GzFile(const int fd, const char *mode)
       : gzfile_(gzdopen(fd, mode)), error_(check_handle()), close_me_(false) {
   }
+
   // If the instance was constructed from an FD, flush the buffer; otherwise,
   // close the file, which flushes the buffer as a side-effect.
   ~GzFile() { close_me_ ? gzclose(gzfile_) : gzflush(gzfile_, Z_FINISH); }
@@ -69,8 +71,11 @@ class GzFile {
 class OGzFile {
  public:
   explicit OGzFile(const string &filename) : OGzFile(filename.c_str()) {}
+
   explicit OGzFile(const char *filename) : gz_(GzFile(filename, mode_)) {}
+
   explicit OGzFile(const int fd) : gz_(GzFile(fd, mode_)) {}
+
   inline bool operator!() const { return !gz_; }
 
   void write(const stringstream &ssbuf) {
@@ -87,7 +92,9 @@ class OGzFile {
 class IGzFile {
  public:
   explicit IGzFile(const string &filename) : IGzFile(filename.c_str()) {}
+
   explicit IGzFile(const char *filename) : gz_(GzFile(filename, mode_)) {}
+
   explicit IGzFile(const int fd) : gz_(GzFile(fd, mode_)) {}
 
   inline bool operator!() const { return !gz_; }

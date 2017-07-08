@@ -1216,7 +1216,7 @@ class CacheMutableArcIterator
 
   void SetValue(const Arc &arc) final { state_->SetArc(arc, i_); }
 
-  constexpr uint32 Flags() const final { return kArcValueFlags; }
+  uint32 Flags() const final { return kArcValueFlags; }
 
   void SetFlags(uint32, uint32) final {}
 

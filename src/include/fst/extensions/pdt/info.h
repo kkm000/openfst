@@ -121,9 +121,9 @@ template <class Arc>
 void PrintPdtInfo(const PdtInfo<Arc> &info) {
   const auto old = std::cout.setf(std::ios::left);
   std::cout.width(50);
-  std::cout << "fst type" << info.FstType().c_str() << std::endl;
+  std::cout << "fst type" << info.FstType() << std::endl;
   std::cout.width(50);
-  std::cout << "arc type" << info.ArcType().c_str() << std::endl;
+  std::cout << "arc type" << info.ArcType() << std::endl;
   std::cout.width(50);
   std::cout << "# of states" << info.NumStates() << std::endl;
   std::cout.width(50);

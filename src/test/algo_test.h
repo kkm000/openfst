@@ -373,6 +373,7 @@ class WeightedTester {
       std::vector<Label> labelset(kNumLabels);
       for (size_t i = 0; i < kNumLabels; ++i) labelset[i] = i;
       for (size_t i = 0; i < kNumLabels; ++i) {
+        using std::swap;
         swap(labelset[i], labelset[rand() % kNumLabels]);
       }
 

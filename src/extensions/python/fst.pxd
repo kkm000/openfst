@@ -27,6 +27,7 @@ cdef extern from "<fst/util.h>" nogil:
 
 cdef extern from "<fst/fstlib.h>" namespace "fst" nogil:
 
+  # FST properties.
   const uint64 kExpanded
   const uint64 kMutable
   const uint64 kError
@@ -86,20 +87,23 @@ cdef extern from "<fst/fstlib.h>" namespace "fst" nogil:
   const uint64 kNegTrinaryProperties
   const uint64 kFstProperties
 
-  # Default argument constants.
-  const float kDelta
-  const int64 kNoStateId
+  # ArcIterator flags.
+  const uint32 kArcILabelValue
+  const uint32 kArcOLabelValue
+  const uint32 kArcWeightValue
+  const uint32 kArcNextStateValue
+  const uint32 kArcNoCache
+  const uint32 kArcValueFlags
+  const uint32 kArcFlags
 
   # EncodeMapper flags.
   const uint32 kEncodeLabels
   const uint32 kEncodeWeights
   const uint32 kEncodeFlags
 
-  # Push flags.
-  const uint32 kPushLabels
-  const uint32 kPushRemoveCommonAffix
-  const uint32 kPushRemoveTotalWeight
-  const uint32 kPushWeights
+  # Default argument constants.
+  const float kDelta
+  const int64 kNoStateId
 
 
   enum ClosureType:

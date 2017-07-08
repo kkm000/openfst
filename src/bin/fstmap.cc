@@ -59,7 +59,5 @@ int main(int argc, char **argv) {
   std::unique_ptr<FstClass> ofst(s::Map(*ifst, map_type, FLAGS_delta,
                                         weight_param));
 
-  ofst->Write(out_name);
-
-  return 0;
+  return !ofst->Write(out_name);
 }

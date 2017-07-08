@@ -107,9 +107,10 @@ class StringFactor {
   void Next() { done_ = true; }
 
   std::pair<StringWeight<Label, S>, StringWeight<Label, S>> Value() const {
-    StringWeightIterator<Label, S> siter(weight_);
-    StringWeight<Label, S> w1(siter.Value());
-    StringWeight<Label, S> w2;
+    using Weight = StringWeight<Label, S>;
+    typename Weight::Iterator siter(weight_);
+    Weight w1(siter.Value());
+    Weight w2;
     for (siter.Next(); !siter.Done(); siter.Next()) w2.PushBack(siter.Value());
     return std::make_pair(w1, w2);
   }
@@ -135,7 +136,7 @@ class GallicFactor {
   void Next() { done_ = true; }
 
   std::pair<GW, GW> Value() const {
-    StringFactor<Label, GALLIC_STRING_TYPE(G)> siter(weight_.Value1());
+    StringFactor<Label, GallicStringType(G)> siter(weight_.Value1());
     GW w1(siter.Value().first, weight_.Value2());
     GW w2(siter.Value().second, W::One());
     return std::make_pair(w1, w2);
@@ -168,7 +169,7 @@ class GallicFactor<Label, W, GALLIC> {
 
   std::pair<GW, GW> Value() const {
     const auto weight = iter_.Value();
-    StringFactor<Label, GALLIC_STRING_TYPE(GALLIC_RESTRICT)> siter(
+    StringFactor<Label, GallicStringType(GALLIC_RESTRICT)> siter(
         weight.Value1());
     GRW w1(siter.Value().first, weight.Value2());
     GRW w2(siter.Value().second, W::One());

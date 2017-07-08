@@ -46,12 +46,6 @@ int64 StrToInt64(const string &s, const string &src, size_t nline,
   return n;
 }
 
-void Int64ToStr(int64 n, string *s) {
-  std::ostringstream nstr;
-  nstr << n;
-  s->append(nstr.str().data(), nstr.str().size());
-}
-
 void ConvertToLegalCSymbol(string *s) {
   for (auto it = s->begin(); it != s->end(); ++it) {
     if (!isalnum(*it)) {

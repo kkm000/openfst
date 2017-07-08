@@ -35,7 +35,5 @@ int main(int argc, char **argv) {
 
   s::Connect(fst.get());
 
-  fst->Write(out_name);
-
-  return 0;
+  return !fst->Write(out_name);
 }

@@ -252,8 +252,6 @@ Weight StrToWeight(const string &s, const string &src, size_t nline) {
   return w;
 }
 
-void Int64ToStr(int64 n, string *s);
-
 template <typename Weight>
 void WeightToStr(Weight w, string *s) {
   std::ostringstream strm;
@@ -271,7 +269,7 @@ void SplitToVector(char *line, const char *delim, std::vector<char *> *vec,
 template <typename I>
 bool ReadIntPairs(const string &filename, std::vector<std::pair<I, I>> *pairs,
                   bool allow_negative = false) {
-  std::ifstream strm(filename.c_str(), std::ios_base::in);
+  std::ifstream strm(filename, std::ios_base::in);
   if (!strm) {
     LOG(ERROR) << "ReadIntPairs: Can't open file: " << filename;
     return false;

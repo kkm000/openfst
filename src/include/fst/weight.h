@@ -10,6 +10,7 @@
 #include <cmath>
 #include <iostream>
 #include <sstream>
+#include <utility>
 
 #include <fst/compat.h>
 #include <fst/log.h>
@@ -219,10 +220,45 @@ struct WeightGenerate {
   }
 };
 
-// Helper class for writing textual composite weights.
-class CompositeWeightWriter {
+namespace internal {
+
+class CompositeWeightIO {
  public:
+  CompositeWeightIO();
+  CompositeWeightIO(char separator, std::pair<char, char> parentheses);
+
+  std::pair<char, char> parentheses() const {
+    return {open_paren_, close_paren_};
+  }
+  char separator() const { return separator_; }
+
+  bool error() const { return error_; }
+
+ protected:
+  const char separator_;
+  const char open_paren_;
+  const char close_paren_;
+
+ private:
+  bool error_;
+};
+
+}  // namespace internal
+
+// Helper class for writing textual composite weights.
+class CompositeWeightWriter : public internal::CompositeWeightIO {
+ public:
+  // Uses configuration from flags (FLAGS_fst_weight_separator,
+  // FLAGS_fst_weight_parentheses).
   explicit CompositeWeightWriter(std::ostream &ostrm);
+
+  // parentheses defines the opening and closing parenthesis characters.
+  // Set parentheses = {0, 0} to disable writing parenthesis.
+  CompositeWeightWriter(std::ostream &ostrm, char separator,
+                        std::pair<char, char> parentheses);
+
+  CompositeWeightWriter(const CompositeWeightWriter &) = delete;
+  CompositeWeightWriter &operator=(const CompositeWeightWriter &) = delete;
 
   // Writes open parenthesis to a stream if option selected.
   void WriteBegin();
@@ -230,7 +266,7 @@ class CompositeWeightWriter {
   // Writes element to a stream.
   template <class T>
   void WriteElement(const T &comp) {
-    if (i_++ > 0) ostrm_ << FLAGS_fst_weight_separator[0];
+    if (i_++ > 0) ostrm_ << separator_;
     ostrm_ << comp;
   }
 
@@ -239,18 +275,26 @@ class CompositeWeightWriter {
 
  private:
   std::ostream &ostrm_;
-  int i_;  // Element position.
-  CompositeWeightWriter(const CompositeWeightWriter &) = delete;
-  CompositeWeightWriter &operator=(const CompositeWeightWriter &) = delete;
+  int i_ = 0;  // Element position.
 };
 
 // Helper class for reading textual composite weights. Elements are separated by
-// FLAGS_fst_weight_separator. There must be at least one element per textual
-// representation.  FLAGS_fst_weight_parentheses should be set if the composite
+// a separator character. There must be at least one element per textual
+// representation.  Parentheses characters should be set if the composite
 // weights themselves contain composite weights to ensure proper parsing.
-class CompositeWeightReader {
+class CompositeWeightReader : public internal::CompositeWeightIO {
  public:
+  // Uses configuration from flags (FLAGS_fst_weight_separator,
+  // FLAGS_fst_weight_parentheses).
   explicit CompositeWeightReader(std::istream &istrm);
+
+  // parentheses defines the opening and closing parenthesis characters.
+  // Set parentheses = {0, 0} to disable reading parenthesis.
+  CompositeWeightReader(std::istream &istrm, char separator,
+                        std::pair<char, char> parentheses);
+
+  CompositeWeightReader(const CompositeWeightReader &) = delete;
+  CompositeWeightReader &operator=(const CompositeWeightReader &) = delete;
 
   // Reads open parenthesis from a stream if option selected.
   void ReadBegin();
@@ -266,32 +310,26 @@ class CompositeWeightReader {
 
  private:
   std::istream &istrm_;  // Input stream.
-  int c_;                // Last character read, or EOF.
-  char separator_;
-  bool has_parens_;
-  int depth_;  // Weight parentheses depth.
-  char open_paren_;
-  char close_paren_;
-
-  CompositeWeightReader(const CompositeWeightReader &) = delete;
-  CompositeWeightReader &operator=(const CompositeWeightReader &) = delete;
+  int c_ = 0;            // Last character read, or EOF.
+  int depth_ = 0;        // Weight parentheses depth.
 };
 
 template <class T>
 inline bool CompositeWeightReader::ReadElement(T *comp, bool last) {
   string s;
-  while ((c_ != EOF) && !std::isspace(c_) &&
+  const bool has_parens = open_paren_ != 0;
+  while ((c_ != std::istream::traits_type::eof()) && !std::isspace(c_) &&
          (c_ != separator_ || depth_ > 1 || last) &&
          (c_ != close_paren_ || depth_ != 1)) {
     s += c_;
     // If parentheses encountered before separator, they must be matched.
-    if (has_parens_ && c_ == open_paren_) {
+    if (has_parens && c_ == open_paren_) {
       ++depth_;
-    } else if (has_parens_ && c_ == close_paren_) {
+    } else if (has_parens && c_ == close_paren_) {
       // Failure on unmatched parentheses.
       if (depth_ == 0) {
         FSTERROR() << "CompositeWeightReader: Unmatched close paren: "
-                   << "Is the fst_weight_parentheses flag set correcty?";
+                   << "Is the fst_weight_parentheses flag set correctly?";
         istrm_.clear(std::ios::badbit);
         return false;
       }
@@ -301,17 +339,18 @@ inline bool CompositeWeightReader::ReadElement(T *comp, bool last) {
   }
   if (s.empty()) {
     FSTERROR() << "CompositeWeightReader: Empty element: "
-               << "Is the fst_weight_parentheses flag set correcty?";
+               << "Is the fst_weight_parentheses flag set correctly?";
     istrm_.clear(std::ios::badbit);
     return false;
   }
   std::istringstream istrm(s);
   istrm >> *comp;
   // Skips separator/close parenthesis.
-  if (c_ != EOF && !std::isspace(c_)) c_ = istrm_.get();
+  const bool is_eof = c_ == std::istream::traits_type::eof();
+  if (!is_eof && !std::isspace(c_)) c_ = istrm_.get();
   // Clears fail bit if just EOF.
-  if (c_ == EOF && !istrm_.bad()) istrm_.clear(std::ios::eofbit);
-  return c_ != EOF && !std::isspace(c_);
+  if (is_eof && !istrm_.bad()) istrm_.clear(std::ios::eofbit);
+  return !is_eof && !std::isspace(c_);
 }
 
 }  // namespace fst

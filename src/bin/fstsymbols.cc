@@ -107,7 +107,5 @@ int main(int argc, char **argv) {
 
   if (FLAGS_verify && !s::Verify(*fst)) return 1;
 
-  fst->Write(out_name);
-
-  return 0;
+  return !fst->Write(out_name);
 }

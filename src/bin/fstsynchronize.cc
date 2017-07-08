@@ -36,7 +36,5 @@ int main(int argc, char **argv) {
 
   s::Synchronize(*ifst, &ofst);
 
-  ofst.Write(out_name);
-
-  return 0;
+  return !ofst.Write(out_name);
 }

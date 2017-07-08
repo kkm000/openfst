@@ -54,9 +54,7 @@ class PowerWeight : public TupleWeight<W, n> {
   static const string &Type() {
     static string type;
     if (type.empty()) {
-      string power;
-      Int64ToStr(n, &power);
-      type = W::Type() + "_^" + power;
+      type = W::Type() + "_^" + std::to_string(n);
     }
     return type;
   }

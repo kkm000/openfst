@@ -17,9 +17,20 @@ void PrintFstInfo(const FstClass &fst, bool test_properties,
   Apply<Operation<InfoArgs>>("PrintFstInfo", fst.ArcType(), &args);
 }
 
+void GetFstInfo(const FstClass &fst, bool test_properties,
+                const string &arc_filter, const string &info_type, bool verify,
+                FstInfo *result) {
+  GetInfoArgs args(fst, test_properties, arc_filter, info_type, verify, result);
+  Apply<Operation<GetInfoArgs>>("GetFstInfo", fst.ArcType(), &args);
+}
+
 REGISTER_FST_OPERATION(PrintFstInfo, StdArc, InfoArgs);
 REGISTER_FST_OPERATION(PrintFstInfo, LogArc, InfoArgs);
 REGISTER_FST_OPERATION(PrintFstInfo, Log64Arc, InfoArgs);
+
+REGISTER_FST_OPERATION(GetFstInfo, StdArc, GetInfoArgs);
+REGISTER_FST_OPERATION(GetFstInfo, LogArc, GetInfoArgs);
+REGISTER_FST_OPERATION(GetFstInfo, Log64Arc, GetInfoArgs);
 
 }  // namespace script
 }  // namespace fst

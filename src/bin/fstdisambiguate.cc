@@ -51,7 +51,5 @@ int main(int argc, char **argv) {
 
   s::Disambiguate(*ifst, &ofst, opts);
 
-  ofst.Write(out_name);
-
-  return 0;
+  return !ofst.Write(out_name);
 }
