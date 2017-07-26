@@ -3,7 +3,12 @@
 //
 // Two DFAs are equivalent iff their exit status is zero.
 
+#ifndef _MSC_VER
 #include <unistd.h>
+#else
+#include <process.h>
+#define getpid _getpid
+#endif
 
 #include <climits>
 #include <cstring>

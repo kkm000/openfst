@@ -20,8 +20,13 @@ static const char *private_tmpdir = getenv("TMPDIR");
 DEFINE_int32(v, 0, "verbosity level");
 DEFINE_bool(help, false, "show usage information");
 DEFINE_bool(helpshort, false, "show brief usage information");
+#ifndef _MSC_VER
 DEFINE_string(tmpdir, private_tmpdir ? private_tmpdir : "/tmp",
               "temporary directory");
+#else
+DEFINE_string(tmpdir, private_tmpdir ? private_tmpdir : getenv("TEMP"),
+              "temporary directory");
+#endif // !_MSC_VER
 
 using namespace std;
 

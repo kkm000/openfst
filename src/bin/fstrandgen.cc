@@ -2,8 +2,12 @@
 // finite-state transducer library.
 //
 // Generates random paths through an FST.
-
+#ifndef _MSC_VER
 #include <unistd.h>
+#else
+#include <process.h>
+#define getpid _getpid
+#endif
 
 #include <climits>
 #include <cstring>

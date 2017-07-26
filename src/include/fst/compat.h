@@ -48,6 +48,31 @@ using std::string;
 
 void FailedNewHandler();
 
+#ifdef _MSC_VER
+#include <intrin.h>
+const char* basename(const char* path);
+#define __builtin_popcount __popcnt
+
+#ifdef _M_X64
+// Using 64-bit MSVC intrinsics.
+#define __builtin_popcountll __popcnt64
+inline unsigned int __builtin_ctzll(std::uint64_t w) {
+  unsigned long v;
+  return _BitScanForward64(&v, std::uint32_t(w)) ? v : 0;
+}
+#else
+// Using 32-bit MSVC intrinsics.
+inline unsigned int __builtin_popcountll(std::uint64_t w) {
+  return __popcnt(std::uint32_t(w)) + __popcnt(std::uint32_t(w >> 32));
+}
+inline unsigned int __builtin_ctzll(std::uint64_t w) {
+  unsigned long v;
+  return (_BitScanForward(&v, std::uint32_t(w)) ? v :
+          _BitScanForward(&v, std::uint32_t(w >> 32)) ? v + 32 : 0);
+}
+#endif  // _M_X64
+#endif  // _MSC_VER
+
 namespace fst {
 
 // Downcasting.
