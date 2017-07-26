@@ -23,6 +23,7 @@ add_library(fstscript
   fst-class.cc
   getters.cc
   info.cc
+  info-impl.cc
   intersect.cc
   invert.cc
   isomorphic.cc

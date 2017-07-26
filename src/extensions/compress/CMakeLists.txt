@@ -9,7 +9,7 @@ add_library(fstcompressscript
 target_link_libraries(fstcompressscript 
   fstscript
   fst
-  z
+  ${ZLIBS}
 )
 set_target_properties(fstcompressscript PROPERTIES
   SOVERSION "7"
@@ -28,6 +28,7 @@ if(HAVE_BIN)
     fstcompressscript 
     fstscript 
     fst
+    ${ZLIBS}
     ${CMAKE_DL_LIBS}
    )
 
@@ -39,12 +40,13 @@ if(HAVE_BIN)
     fstcompressscript 
     fstscript 
     fst
+    ${ZLIBS}
     ${CMAKE_DL_LIBS}
   )
 
   install(TARGETS fstcompress fstrandmod 
-	        LIBRARY DESTINATION lib
-			ARCHIVE DESTINATION lib
-            RUNTIME DESTINATION lib
+	        LIBRARY DESTINATION bin
+			ARCHIVE DESTINATION bin
+            RUNTIME DESTINATION bin
 		)
 endif(HAVE_BIN)

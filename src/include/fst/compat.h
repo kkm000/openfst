@@ -49,20 +49,14 @@ using std::string;
 void FailedNewHandler();
 
 #ifdef _MSC_VER
+#  include <intrin.h>
+#  define __builtin_popcount __popcnt
+unsigned long long __builtin_ctzll(unsigned long long x);
+unsigned long long __builtin_popcountll(unsigned long long  w);
 
-inline const char *basename(const char *path) {
-  //the man page for the original basename states the function
-  //can return a pointer to an internal static structure
-  //so this might be ugly but still within the scope of acceptable behavior
-  char basename[_MAX_FNAME];
-  char ext[_MAX_EXT];
-  static char full_path[_MAX_EXT + _MAX_FNAME];
-
-  _splitpath(path, NULL, NULL, basename, ext);
-  _makepath(full_path, NULL, NULL, basename, ext);
-  return full_path;
-}
+const char *basename(const char *path);
 #endif
+
 namespace fst {
 
 // Downcasting.

@@ -37,6 +37,7 @@ target_link_libraries(fstspecial
 install(TARGETS fstspecial fstspecial-bin
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
+  ARCHIVE DESTINATION lib
 )
 
 function (add_module _name)
