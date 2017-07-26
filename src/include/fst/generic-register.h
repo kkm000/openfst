@@ -5,7 +5,9 @@
 #define FST_LIB_GENERIC_REGISTER_H_
 
 #ifndef FST_NO_DYNAMIC_LINKING
+#ifndef _MSC_VER
 #include <dlfcn.h>
+#endif // !_MSC_VER
 #include <fst/compat.h>
 #endif
 #include <map>

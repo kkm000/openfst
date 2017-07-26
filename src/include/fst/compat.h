@@ -48,6 +48,21 @@ using std::string;
 
 void FailedNewHandler();
 
+#ifdef _MSC_VER
+
+inline const char *basename(const char *path) {
+  //the man page for the original basename states the function
+  //can return a pointer to an internal static structure
+  //so this might be ugly but still within the scope of acceptable behavior
+  char basename[_MAX_FNAME];
+  char ext[_MAX_EXT];
+  static char full_path[_MAX_EXT + _MAX_FNAME];
+
+  _splitpath(path, NULL, NULL, basename, ext);
+  _makepath(full_path, NULL, NULL, basename, ext);
+  return full_path;
+}
+#endif
 namespace fst {
 
 // Downcasting.
