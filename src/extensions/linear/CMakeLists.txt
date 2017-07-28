@@ -14,6 +14,7 @@ if(HAVE_SCRIPT)
   set_target_properties(fstlinearscript 
     PROPERTIES SOVERSION "7"
   )
+  
   install(TARGETS fstlinearscript
 	LIBRARY DESTINATION lib
 	ARCHIVE DESTINATION lib
@@ -49,6 +50,7 @@ function (add_module _name)
     add_library(${ARGV})
     if (TARGET ${_name})
         target_link_libraries(${_name} fst)
+        set_target_properties(${_name} PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS true)
     endif()
 
     install(TARGETS ${_name} LIBRARY DESTINATION lib/fst)

@@ -31,6 +31,7 @@ function (add_module _name)
     add_library(${ARGV})
     if (TARGET ${_name})
         target_link_libraries(${_name} fst)
+        set_target_properties(${_name} PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS true)
     endif()
 
     #set_target_properties(${_name} PROPERTIES SOVERSION "1")

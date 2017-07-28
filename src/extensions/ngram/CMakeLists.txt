@@ -28,6 +28,10 @@ add_library(ngram_fst MODULE
   nthbit.cc
 )
 
+set_target_properties(ngram_fst 
+  PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS true
+)
+
 target_link_libraries(ngram_fst
   fst
 )

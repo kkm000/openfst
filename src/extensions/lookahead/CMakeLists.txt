@@ -20,6 +20,7 @@ function (add_module _name)
     if (TARGET ${_name})
         target_link_libraries(${_name} fst)
     endif()
+    set_target_properties(${_name} PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS true)
 
     install(TARGETS ${_name} LIBRARY DESTINATION lib/fst)
 endfunction()
