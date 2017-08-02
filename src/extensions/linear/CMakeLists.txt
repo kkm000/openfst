@@ -11,8 +11,9 @@ if(HAVE_SCRIPT)
     fstscript
     fst
   )
-  set_target_properties(fstlinearscript 
-    PROPERTIES SOVERSION "7"
+  set_target_properties(fstlinearscript PROPERTIES 
+    SOVERSION "7"
+    FOLDER linear
   )
   
   install(TARGETS fstlinearscript
@@ -43,6 +44,9 @@ if(HAVE_BIN)
   install(TARGETS fstlinear fstloglinearapply
     RUNTIME DESTINATION bin
   )
+  set_target_properties(fstlinear fstloglinearapply PROPERTIES
+    FOLDER linear/bin
+  )
 endif(HAVE_BIN)
 
 
@@ -50,7 +54,10 @@ function (add_module _name)
     add_library(${ARGV})
     if (TARGET ${_name})
         target_link_libraries(${_name} fst)
-        set_target_properties(${_name} PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS true)
+        set_target_properties(${_name} PROPERTIES 
+            WINDOWS_EXPORT_ALL_SYMBOLS true
+            FOLDER linear/modules
+        )
     endif()
 
     install(TARGETS ${_name} LIBRARY DESTINATION lib/fst)

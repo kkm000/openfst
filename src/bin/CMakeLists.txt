@@ -2,6 +2,7 @@ function (add_executable2 _name)
     add_executable(${ARGV})
     if (TARGET ${_name})
         target_link_libraries(${_name} fstscript fst ${CMAKE_DL_LIBS})
+        set_target_properties(${_name} PROPERTIES FOLDER bin)
     endif()
 
     install(TARGETS ${_name} RUNTIME DESTINATION bin)

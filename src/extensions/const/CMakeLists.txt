@@ -2,7 +2,10 @@ function (add_module _name)
     add_library(${ARGV})
     if (TARGET ${_name})
         target_link_libraries(${_name} fst)
-        set_target_properties(${_name} PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS true)
+        set_target_properties(${_name} PROPERTIES 
+            WINDOWS_EXPORT_ALL_SYMBOLS true
+            FOLDER constant/modules
+        )
     endif()
 
     install(TARGETS ${_name} LIBRARY DESTINATION lib/fst)
@@ -22,6 +25,7 @@ add_library(fstconst
 target_link_libraries(fstconst fst)
 set_target_properties(fstconst
   PROPERTIES SOVERSION "7"
+  FOLDER constant
 )
 
 install(TARGETS fstconst 

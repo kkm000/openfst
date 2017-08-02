@@ -7,8 +7,9 @@ add_library(fstfar
   ${HEADER_FILES}
 )
 target_link_libraries(fstfar fst)
-set_target_properties(fstfar
-  PROPERTIES SOVERSION "7"
+set_target_properties(fstfar PROPERTIES 
+    SOVERSION "7"
+    FOLDER far
 )
 
 install(TARGETS fstfar
@@ -26,8 +27,9 @@ if(HAVE_SCRIPT)
     strings.cc
   )
   target_link_libraries(fstfarscript fstfar fstscript fst)
-  set_target_properties(fstfarscript
-    PROPERTIES SOVERSION "7"
+  set_target_properties(fstfarscript PROPERTIES 
+    SOVERSION "7"
+    FOLDER far
   )
 
   install(TARGETS fstfarscript
@@ -42,6 +44,7 @@ if(HAVE_BIN)
       add_executable(${ARGV})
       if (TARGET ${_name})
           target_link_libraries(${_name} fstfarscript fstscript fst ${CMAKE_DL_LIBS})
+          set_target_properties(${_name} PROPERTIES FOLDER far/bin)
       endif()
       install(TARGETS ${_name} RUNTIME DESTINATION bin)
   endfunction()

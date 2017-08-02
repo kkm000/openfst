@@ -4,8 +4,9 @@ message(STATUS "${HEADER_FILES}")
 if(HAVE_SCRIPT)
   add_library(fstmpdtscript mpdtscript.cc ${HEADER_FILES})
   target_link_libraries(fstmpdtscript fstscript fst)
-  set_target_properties(fstmpdtscript
-    PROPERTIES SOVERSION "7"
+  set_target_properties(fstmpdtscript PROPERTIES 
+    SOVERSION "7"
+    FOLDER mpdt
   )
   install(TARGETS fstmpdtscript 
 	LIBRARY DESTINATION lib
@@ -19,6 +20,9 @@ if(HAVE_BIN)
       add_executable(${ARGV})
       if (TARGET ${_name})
           target_link_libraries(${_name} fstmpdtscript fstpdtscript fstscript fst ${CMAKE_DL_LIBS})
+          set_target_properties(${_name} PROPERTIES
+            FOLDER mpdt/bin
+          )
       endif()
     install(TARGETS ${_name} RUNTIME DESTINATION bin)
   endfunction()

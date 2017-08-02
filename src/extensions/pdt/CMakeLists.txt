@@ -4,8 +4,9 @@ message(STATUS "${HEADER_FILES}")
 if(HAVE_SCRIPT)
   add_library(fstpdtscript getters.cc pdtscript.cc ${HEADER_FILES})
   target_link_libraries(fstpdtscript fstscript fst)
-  set_target_properties(fstpdtscript
-    PROPERTIES SOVERSION "7"
+  set_target_properties(fstpdtscript PROPERTIES 
+    SOVERSION "7"
+    FOLDER pdt
   )
 
   install(TARGETS fstpdtscript
@@ -20,6 +21,9 @@ if(HAVE_BIN)
       add_executable(${ARGV})
       if (TARGET ${_name})
           target_link_libraries(${_name} fstpdtscript fstscript fst ${CMAKE_DL_LIBS})
+          set_target_properties(${_name} PROPERTIES
+            FOLDER pdt/bin
+          )
       endif()
       install(TARGETS ${_name} RUNTIME DESTINATION bin)
   endfunction()

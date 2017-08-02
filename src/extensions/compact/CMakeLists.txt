@@ -17,8 +17,9 @@ add_library(fstcompact
 )
 
 target_link_libraries(fstcompact fst)
-set_target_properties(fstcompact 
-  PROPERTIES SOVERSION "7"
+set_target_properties(fstcompact PROPERTIES 
+  SOVERSION "7"
+  FOLDER compact
 )
 
 install(TARGETS fstcompact 
@@ -31,7 +32,10 @@ function (add_module _name)
     add_library(${ARGV})
     if (TARGET ${_name})
         target_link_libraries(${_name} fst)
-        set_target_properties(${_name} PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS true)
+        set_target_properties(${_name} PROPERTIES 
+            WINDOWS_EXPORT_ALL_SYMBOLS true
+            FOLDER compact/modules
+        )
     endif()
 
     #set_target_properties(${_name} PROPERTIES SOVERSION "1")

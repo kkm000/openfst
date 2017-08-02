@@ -9,8 +9,10 @@ if(HAVE_BIN)
     sigma-fst.cc
   )
 
-  set_target_properties(fstspecial-bin
-    PROPERTIES OUTPUT_NAME fstspecial)
+  set_target_properties(fstspecial-bin PROPERTIES 
+    FOLDER special/bin
+    OUTPUT_NAME fstspecial
+  )
 
   target_link_libraries(fstspecial-bin
     fstscript
@@ -29,6 +31,7 @@ add_library(fstspecial
 
 set_target_properties(fstspecial
   PROPERTIES SOVERSION "7"
+  FOLDER special
 )
 target_link_libraries(fstspecial
   fst
@@ -46,6 +49,7 @@ function (add_module _name)
         target_link_libraries(${_name} fst)
         set_target_properties(${_name} 
           PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS true
+          FOLDER special/modules
         )
     endif()
 
