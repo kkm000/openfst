@@ -22,3 +22,5 @@ x64/
 Debug/
 Release/
 *proj.user
+/cmake
+/cmake64

@@ -48,6 +48,15 @@ using std::string;
 
 void FailedNewHandler();
 
+#ifdef _MSC_VER
+#  include <intrin.h>
+#  define __builtin_popcount __popcnt
+unsigned long long __builtin_ctzll(unsigned long long x);
+unsigned long long __builtin_popcountll(unsigned long long  w);
+
+const char *basename(const char *path);
+#endif
+
 namespace fst {
 
 // Downcasting.

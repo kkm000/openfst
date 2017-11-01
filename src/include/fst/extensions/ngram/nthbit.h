@@ -5,6 +5,7 @@
 #define FST_EXTENSIONS_NGRAM_NTHBIT_H_
 
 #include <fst/types.h>
+#include <fst/compat.h>
 
 extern uint32 nth_bit_bit_offset[];
 

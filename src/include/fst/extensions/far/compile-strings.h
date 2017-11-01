@@ -4,7 +4,11 @@
 #ifndef FST_EXTENSIONS_FAR_COMPILE_STRINGS_H_
 #define FST_EXTENSIONS_FAR_COMPILE_STRINGS_H_
 
+#ifndef _MSC_VER
 #include <libgen.h>
+#else
+#include <fst/compat.h>
+#endif
 
 #include <fstream>
 #include <istream>
