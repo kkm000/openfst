@@ -1,4 +1,11 @@
 OpenFst: Release 1.6
+    * Prevents unreachable code generation in libfstscript (1.6.5)
+    * Adds move constructors for non-trivial weight types (1.6.5)
+    * Standardizes method names for tuple weight types (1.6.5)
+    * Eliminates undefined behavior in weight hashing (1.6.5)
+    * Optimizes binary search in SortedMatcher (1.6.5)
+    * Adds SetWeight (1.6.5)
+    * Fixes typing error in Python FAR reader (1.6.4)
     * Removes restriction that Prune argument have commutative weights (1.6.3)
     * Improves configuration of CompositeWeight readers and writers (1.6.3)
     * Improves accuracy of ShortestDistance summation (1.6.3)

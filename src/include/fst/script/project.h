@@ -4,22 +4,23 @@
 #ifndef FST_SCRIPT_PROJECT_H_
 #define FST_SCRIPT_PROJECT_H_
 
-#include <fst/project.h>  // for ProjectType
-#include <fst/script/arg-packs.h>
+#include <utility>
+
+#include <fst/project.h>
 #include <fst/script/fst-class.h>
 
 namespace fst {
 namespace script {
 
-using ProjectArgs = args::Package<MutableFstClass *, ProjectType>;
+using ProjectArgs = std::pair<MutableFstClass *, ProjectType>;
 
 template <class Arc>
 void Project(ProjectArgs *args) {
-  MutableFst<Arc> *ofst = args->arg1->GetMutableFst<Arc>();
-  Project(ofst, args->arg2);
+  MutableFst<Arc> *fst = std::get<0>(*args)->GetMutableFst<Arc>();
+  Project(fst, std::get<1>(*args));
 }
 
-void Project(MutableFstClass *ofst, ProjectType project_type);
+void Project(MutableFstClass *fst, ProjectType project_type);
 
 }  // namespace script
 }  // namespace fst

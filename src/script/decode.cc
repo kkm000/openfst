@@ -9,18 +9,13 @@
 namespace fst {
 namespace script {
 
-// 1: Decode using encoder on disk.
 void Decode(MutableFstClass *fst, const string &coder_fname) {
   DecodeArgs1 args(fst, coder_fname);
   Apply<Operation<DecodeArgs1>>("Decode", fst->ArcType(), &args);
 }
 
-// 2: Decode using an EncodeMapperClass.
 void Decode(MutableFstClass *fst, const EncodeMapperClass &encoder) {
-  if (fst->ArcType() != encoder.ArcType()) {
-    FSTERROR() << "FST and encoder with non-matching arc types passed to "
-               << "Decode:\n\t" << fst->ArcType() << " and "
-               << encoder.ArcType();
+  if (!internal::ArcTypesMatch(*fst, encoder, "Decode")) {
     fst->SetProperties(kError, kError);
     return;
   }

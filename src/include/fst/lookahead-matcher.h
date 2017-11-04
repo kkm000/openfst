@@ -4,13 +4,14 @@
 // Classes to add lookahead to FST matchers, useful for improving composition
 // efficiency with certain inputs.
 
-#ifndef FST_LIB_LOOKAHEAD_MATCHER_H_
-#define FST_LIB_LOOKAHEAD_MATCHER_H_
+#ifndef FST_LOOKAHEAD_MATCHER_H_
+#define FST_LOOKAHEAD_MATCHER_H_
 
 #include <memory>
 #include <utility>
 #include <vector>
 
+#include <fst/flags.h>
 #include <fst/log.h>
 
 #include <fst/add-on.h>
@@ -782,4 +783,4 @@ class LookAheadMatcher {
 
 }  // namespace fst
 
-#endif  // FST_LIB_LOOKAHEAD_MATCHER_H_
+#endif  // FST_LOOKAHEAD_MATCHER_H_

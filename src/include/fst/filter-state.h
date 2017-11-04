@@ -3,8 +3,8 @@
 //
 // Classes for storing filter state in various algorithms like composition.
 
-#ifndef FST_LIB_FILTER_STATE_H_
-#define FST_LIB_FILTER_STATE_H_
+#ifndef FST_FILTER_STATE_H_
+#define FST_FILTER_STATE_H_
 
 #include <forward_list>
 #include <utility>
@@ -196,4 +196,4 @@ class TrivialFilterState {
 
 }  // namespace fst
 
-#endif  // FST_LIB_FILTER_STATE_H_
+#endif  // FST_FILTER_STATE_H_

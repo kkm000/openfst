@@ -107,6 +107,7 @@
     <ClInclude Include="..\include\fst\reweight.h" />
     <ClInclude Include="..\include\fst\rmepsilon.h" />
     <ClInclude Include="..\include\fst\rmfinalepsilon.h" />
+    <ClInclude Include="..\include\fst\set-weight.h" />
     <ClInclude Include="..\include\fst\shortest-distance.h" />
     <ClInclude Include="..\include\fst\shortest-path.h" />
     <ClInclude Include="..\include\fst\signed-log-weight.h" />

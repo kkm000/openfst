@@ -3,10 +3,11 @@
 //
 // Functions to find shortest paths in an FST.
 
-#ifndef FST_LIB_SHORTEST_PATH_H_
-#define FST_LIB_SHORTEST_PATH_H_
+#ifndef FST_SHORTEST_PATH_H_
+#define FST_SHORTEST_PATH_H_
 
 #include <functional>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -146,6 +147,10 @@ bool SingleShortestPath(
     std::vector<std::pair<typename Arc::StateId, size_t>> *parent) {
   using StateId = typename Arc::StateId;
   using Weight = typename Arc::Weight;
+  static_assert((Weight::Properties() & kPath) == kPath,
+                "Weight must have path property.");
+  static_assert((Weight::Properties() & kRightSemiring) == kRightSemiring,
+                "Weight must be right distributive.");
   parent->clear();
   *f_parent = kNoStateId;
   if (ifst.Start() == kNoStateId) return true;
@@ -156,12 +161,6 @@ bool SingleShortestPath(
   auto f_distance = Weight::Zero();
   distance->clear();
   state_queue->Clear();
-  if ((Weight::Properties() & (kPath | kRightSemiring)) !=
-      (kPath | kRightSemiring)) {
-    FSTERROR() << "SingleShortestPath: Weight needs to have the path"
-               << " property and be right distributive: " << Weight::Type();
-    return false;
-  }
   while (distance->size() < source) {
     distance->push_back(Weight::Zero());
     enqueued.push_back(false);
@@ -298,18 +297,11 @@ void NShortestPath(const Fst<RevArc> &ifst, MutableFst<Arc> *ofst,
   using StateId = typename Arc::StateId;
   using Weight = typename Arc::Weight;
   using Pair = std::pair<StateId, Weight>;
+  static_assert((Weight::Properties() & kPath) == kPath,
+                "Weight must have path property.");
+  static_assert((Weight::Properties() & kSemiring) == kSemiring,
+                "Weight must be distributive.");
   if (nshortest <= 0) return;
-  // TODO(kbg): Make this a compile-time static_assert once:
-  // 1) All weight properties are made constexpr for all weight types.
-  // 2) We have a pleasant way to "deregister" this operation for non-path
-  //    semirings so an informative error message is produced. The best
-  //    solution will probably involve some kind of SFINAE magic.
-  if ((Weight::Properties() & (kPath | kSemiring)) != (kPath | kSemiring)) {
-    FSTERROR() << "NShortestPath: Weight needs to have the "
-               << "path property and be distributive: " << Weight::Type();
-    ofst->SetProperties(kError, kError);
-    return;
-  }
   ofst->DeleteStates();
   ofst->SetInputSymbols(ifst.InputSymbols());
   ofst->SetOutputSymbols(ifst.OutputSymbols());
@@ -422,7 +414,10 @@ void NShortestPath(const Fst<RevArc> &ifst, MutableFst<Arc> *ofst,
 //
 // The algorithm relies on the shortest-distance algorithm. There are some
 // issues with the pseudo-code as written in the paper (viz., line 11).
-template <class Arc, class Queue, class ArcFilter>
+template <class Arc, class Queue, class ArcFilter,
+          typename std::enable_if<
+              (Arc::Weight::Properties() & (kPath | kSemiring)) ==
+              (kPath | kSemiring)>::type * = nullptr>
 void ShortestPath(const Fst<Arc> &ifst, MutableFst<Arc> *ofst,
                   std::vector<typename Arc::Weight> *distance,
                   const ShortestPathOptions<Arc, Queue, ArcFilter> &opts) {
@@ -441,17 +436,6 @@ void ShortestPath(const Fst<Arc> &ifst, MutableFst<Arc> *ofst,
     return;
   }
   if (opts.nshortest <= 0) return;
-  // TODO(kbg): Make this a compile-time static_assert once:
-  // 1) All weight properties are made constexpr for all weight types.
-  // 2) We have a pleasant way to "deregister" this operation for non-path
-  //    semirings so an informative error message is produced. The best
-  //    solution will probably involve some kind of SFINAE magic.
-  if ((Weight::Properties() & (kPath | kSemiring)) != (kPath | kSemiring)) {
-    FSTERROR() << "ShortestPath: Weight needs to have the "
-               << "path property and be distributive: " << Weight::Type();
-    ofst->SetProperties(kError, kError);
-    return;
-  }
   if (!opts.has_distance) {
     ShortestDistance(ifst, distance, opts);
     if (distance->size() == 1 && !(*distance)[0].Member()) {
@@ -489,6 +473,18 @@ void ShortestPath(const Fst<Arc> &ifst, MutableFst<Arc> *ofst,
   distance->erase(distance->begin());
 }
 
+template <class Arc, class Queue, class ArcFilter,
+          typename std::enable_if<
+              (Arc::Weight::Properties() & (kPath | kSemiring)) !=
+              (kPath | kSemiring)>::type * = nullptr>
+void ShortestPath(const Fst<Arc> &, MutableFst<Arc> *ofst,
+                  std::vector<typename Arc::Weight> *,
+                  const ShortestPathOptions<Arc, Queue, ArcFilter> &) {
+  FSTERROR() << "ShortestPath: Weight needs to have the "
+             << "path property and be distributive: " << Arc::Weight::Type();
+  ofst->SetProperties(kError, kError);
+}
+
 // Shortest-path algorithm: simplified interface. See above for a version that
 // allows finer control. The output mutable FST contains the n-shortest paths
 // in the input FST. The queue discipline is automatically selected. When unique
@@ -516,4 +512,4 @@ void ShortestPath(const Fst<Arc> &ifst, MutableFst<Arc> *ofst,
 
 }  // namespace fst
 
-#endif  // FST_LIB_SHORTEST_PATH_H_
+#endif  // FST_SHORTEST_PATH_H_

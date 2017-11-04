@@ -4,8 +4,8 @@
 // Classes for representing a bijective mapping between an arbitrary entry
 // of type T and a signed integral ID.
 
-#ifndef FST_LIB_BI_TABLE_H_
-#define FST_LIB_BI_TABLE_H_
+#ifndef FST_BI_TABLE_H_
+#define FST_BI_TABLE_H_
 
 #include <deque>
 #include <memory>
@@ -51,7 +51,7 @@ class HashBiTable {
   // constructor, this class owns them.
   explicit HashBiTable(size_t table_size = 0, H *h = nullptr, E *e = nullptr) :
       hash_func_(h ? h : new H()), hash_equal_(e ? e : new E()),
-      entry2id_(table_size, *h, *e) {
+      entry2id_(table_size, *hash_func_, *hash_equal_) {
     if (table_size) id2entry_.reserve(table_size);
   }
 
@@ -93,7 +93,7 @@ class HashBiTable {
 };
 
 // Enables alternative hash set representations below.
-enum HSType { HS_STL = 0, HS_DENSE = 1, HS_SPARSE = 2 };
+enum HSType { HS_STL = 0, HS_DENSE = 1, HS_SPARSE = 2, HS_FLAT = 3 };
 
 // Default hash set is STL hash_set.
 template <class K, class H, class E, HSType HS>
@@ -111,7 +111,7 @@ struct HashSet : public std::unordered_set<K, H, E, PoolAllocator<K>> {
 // is the hash function and E is the equality function. If passed to the
 // constructor, ownership is given to this class.
 template <class I, class T, class H, class E = std::equal_to<T>,
-          HSType HS = HS_DENSE>
+          HSType HS = HS_FLAT>
 class CompactHashBiTable {
  public:
   friend class HashFunc;
@@ -470,4 +470,4 @@ class ErasableBiTable {
 
 }  // namespace fst
 
-#endif  // FST_LIB_BI_TABLE_H_
+#endif  // FST_BI_TABLE_H_

@@ -3,8 +3,8 @@
 //
 // Functions and classes to compute the union of two FSTs.
 
-#ifndef FST_LIB_UNION_H_
-#define FST_LIB_UNION_H_
+#ifndef FST_UNION_H_
+#define FST_UNION_H_
 
 #include <algorithm>
 #include <vector>
@@ -155,4 +155,4 @@ using StdUnionFst = UnionFst<StdArc>;
 
 }  // namespace fst
 
-#endif  // FST_LIB_UNION_H_
+#endif  // FST_UNION_H_

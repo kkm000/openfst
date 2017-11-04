@@ -5,6 +5,7 @@
 
 #include <fst/symbol-table.h>
 
+#include <fst/flags.h>
 #include <fst/log.h>
 
 #include <fstream>

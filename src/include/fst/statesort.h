@@ -3,8 +3,8 @@
 //
 // Function to sort states of an FST.
 
-#ifndef FST_LIB_STATESORT_H_
-#define FST_LIB_STATESORT_H_
+#ifndef FST_STATESORT_H_
+#define FST_STATESORT_H_
 
 #include <algorithm>
 #include <vector>
@@ -71,4 +71,4 @@ void StateSort(MutableFst<Arc> *fst,
 
 }  // namespace fst
 
-#endif  // FST_LIB_STATESORT_H_
+#endif  // FST_STATESORT_H_

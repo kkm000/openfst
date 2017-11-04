@@ -3,9 +3,10 @@
 //
 // Functions implementing pruning.
 
-#ifndef FST_LIB_PRUNE_H_
-#define FST_LIB_PRUNE_H_
+#ifndef FST_PRUNE_H_
+#define FST_PRUNE_H_
 
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -90,22 +91,13 @@ struct PruneOptions {
 // have the path property. The weight of any cycle needs to be bounded; i.e.,
 //
 //   Plus(weight, Weight::One()) == Weight::One()
-template <class Arc, class ArcFilter>
+template <class Arc, class ArcFilter,
+          typename std::enable_if<
+              (Arc::Weight::Properties() & kPath) == kPath>::type * = nullptr>
 void Prune(MutableFst<Arc> *fst, const PruneOptions<Arc, ArcFilter> &opts) {
   using StateId = typename Arc::StateId;
   using Weight = typename Arc::Weight;
   using StateHeap = Heap<StateId, internal::PruneCompare<StateId, Weight>>;
-  // TODO(kbg): Make this a compile-time static_assert once:
-  // 1) All weight properties are made constexpr for all weight types.
-  // 2) We have a pleasant way to "deregister" this operation for non-path
-  //    semirings so an informative error message is produced. The best
-  //    solution will probably involve some kind of SFINAE magic.
-  if ((Weight::Properties() & kPath) != kPath) {
-    FSTERROR() << "Prune: Weight needs to have the path property: "
-               << Weight::Type();
-    fst->SetProperties(kError, kError);
-    return;
-  }
   auto ns = fst->NumStates();
   if (ns < 1) return;
   std::vector<Weight> idistance(ns, Weight::Zero());
@@ -180,6 +172,15 @@ void Prune(MutableFst<Arc> *fst, const PruneOptions<Arc, ArcFilter> &opts) {
   fst->DeleteStates(dead);
 }
 
+template <class Arc, class ArcFilter,
+          typename std::enable_if<
+              (Arc::Weight::Properties() & kPath) != kPath>::type * = nullptr>
+void Prune(MutableFst<Arc> *fst, const PruneOptions<Arc, ArcFilter> &) {
+  FSTERROR() << "Prune: Weight needs to have the path property: "
+             << Arc::Weight::Type();
+  fst->SetProperties(kError, kError);
+}
+
 // Pruning algorithm: this version modifies its input and takes the
 // pruning threshold as an argument. It deletes states and arcs in the
 // FST that do not belong to a successful path whose weight is more
@@ -210,23 +211,14 @@ void Prune(MutableFst<Arc> *fst, typename Arc::Weight weight_threshold,
 // of any cycle needs to be bounded; i.e.,
 //
 //   Plus(weight, Weight::One()) == Weight::One()
-template <class Arc, class ArcFilter>
+template <class Arc, class ArcFilter,
+          typename std::enable_if<
+              (Arc::Weight::Properties() & kPath) == kPath>::type * = nullptr>
 void Prune(const Fst<Arc> &ifst, MutableFst<Arc> *ofst,
            const PruneOptions<Arc, ArcFilter> &opts) {
   using StateId = typename Arc::StateId;
   using Weight = typename Arc::Weight;
   using StateHeap = Heap<StateId, internal::PruneCompare<StateId, Weight>>;
-  // TODO(kbg): Make this a compile-time static_assert once:
-  // 1) All weight properties are made constexpr for all weight types.
-  // 2) We have a pleasant way to "deregister" this operation for non-path
-  //    semirings so an informative error message is produced. The best
-  //    solution will probably involve some kind of SFINAE magic.
-  if ((Weight::Properties() & kPath) != kPath) {
-    FSTERROR() << "Prune: Weight needs to have the path property: "
-               << Weight::Type();
-    ofst->SetProperties(kError, kError);
-    return;
-  }
   ofst->DeleteStates();
   ofst->SetInputSymbols(ifst.InputSymbols());
   ofst->SetOutputSymbols(ifst.OutputSymbols());
@@ -308,6 +300,16 @@ void Prune(const Fst<Arc> &ifst, MutableFst<Arc> *ofst,
   }
 }
 
+template <class Arc, class ArcFilter,
+          typename std::enable_if<
+              (Arc::Weight::Properties() & kPath) != kPath>::type * = nullptr>
+void Prune(const Fst<Arc> &, MutableFst<Arc> *ofst,
+           const PruneOptions<Arc, ArcFilter> &) {
+  FSTERROR() << "Prune: Weight needs to have the path property: "
+             << Arc::Weight::Type();
+  ofst->SetProperties(kError, kError);
+}
+
 // Pruning algorithm: this version writes the pruned input FST to an
 // output MutableFst and simply takes the pruning threshold as an
 // argument. The output FST contains states and arcs that belong to a
@@ -331,4 +333,4 @@ void Prune(const Fst<Arc> &ifst, MutableFst<Arc> *ofst,
 
 }  // namespace fst
 
-#endif  // FST_LIB_PRUNE_H_
+#endif  // FST_PRUNE_H_

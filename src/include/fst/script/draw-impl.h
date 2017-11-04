@@ -49,15 +49,10 @@ class FstDrawer {
         float_format_(float_format),
         show_weight_one_(show_weight_one) {}
 
-  // Draw Fst to an output buffer (or stdout if buf = 0)
+  // Draws FST to an output buffer.
   void Draw(std::ostream *strm, const string &dest) {
     ostrm_ = strm;
-    ostrm_->precision(precision_);
-    if (float_format_ == "e")
-        ostrm_->setf(std::ios_base::scientific, std::ios_base::floatfield);
-    if (float_format_ == "f")
-        ostrm_->setf(std::ios_base::fixed, std::ios_base::floatfield);
-    // O.w. defaults to "g" per standard lib.
+    SetStreamState(ostrm_);
     dest_ = dest;
     StateId start = fst_.Start();
     if (start == kNoStateId) return;
@@ -95,35 +90,39 @@ class FstDrawer {
   }
 
  private:
-  // Maximum line length in text file.
-  static const int kLineLen = 8096;
+  void SetStreamState(std::ostream* strm) const {
+    strm->precision(precision_);
+    if (float_format_ == "e")
+        strm->setf(std::ios_base::scientific, std::ios_base::floatfield);
+    if (float_format_ == "f")
+        strm->setf(std::ios_base::fixed, std::ios_base::floatfield);
+    // O.w. defaults to "g" per standard lib.
+  }
 
   void PrintString(const string &str) const { *ostrm_ << str; }
 
   // Escapes backslash and double quote if these occur in the string. Dot will
   // not deal gracefully with these if they are not escaped.
-  inline void EscapeChars(const string &str, string *ns) const {
-    const char *c = str.c_str();
-    while (*c) {
-      if (*c == '\\' || *c == '"') ns->push_back('\\');
-      ns->push_back(*c);
-      ++c;
+  static string Escape(const string &str) {
+    string ns;
+    for (char c : str) {
+      if (c == '\\' || c == '"') ns.push_back('\\');
+      ns.push_back(c);
     }
+    return ns;
   }
 
   void PrintId(StateId id, const SymbolTable *syms, const char *name) const {
     if (syms) {
       auto symbol = syms->Find(id);
-      if (symbol == "") {
+      if (symbol.empty()) {
         FSTERROR() << "FstDrawer: Integer " << id
                    << " is not mapped to any textual symbol"
                    << ", symbol table = " << syms->Name()
                    << ", destination = " << dest_;
         symbol = "?";
       }
-      string nsymbol;
-      EscapeChars(symbol, &nsymbol);
-      PrintString(nsymbol);
+      PrintString(Escape(symbol));
     } else {
       PrintString(std::to_string(id));
     }
@@ -139,8 +138,21 @@ class FstDrawer {
     PrintId(label, osyms_, "arc output label");
   }
 
+  void PrintWeight(Weight w) const {
+    // Weight may have double quote characters in it, so escape it.
+    PrintString(Escape(ToString(w)));
+  }
+
   template <class T>
   void Print(T t) const { *ostrm_ << t; }
+
+  template <class T>
+  string ToString(T t) const {
+    std::stringstream ss;
+    SetStreamState(&ss);
+    ss << t;
+    return ss.str();
+  }
 
   void DrawState(StateId s) const {
     Print(s);
@@ -150,7 +162,7 @@ class FstDrawer {
     if (weight != Weight::Zero()) {
       if (show_weight_one_ || (weight != Weight::One())) {
         PrintString("/");
-        Print(weight);
+        PrintWeight(weight);
       }
       PrintString("\", shape = doublecircle,");
     } else {
@@ -178,7 +190,7 @@ class FstDrawer {
       }
       if (show_weight_one_ || (arc.weight != Weight::One())) {
         PrintString("/");
-        Print(arc.weight);
+        PrintWeight(arc.weight);
       }
       PrintString("\", fontsize = ");
       Print(fontsize_);

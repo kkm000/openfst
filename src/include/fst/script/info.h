@@ -4,6 +4,9 @@
 #ifndef FST_SCRIPT_INFO_H_
 #define FST_SCRIPT_INFO_H_
 
+#include <string>
+#include <tuple>
+
 #include <fst/script/arg-packs.h>
 #include <fst/script/fst-class.h>
 #include <fst/script/info-impl.h>
@@ -11,31 +14,33 @@
 namespace fst {
 namespace script {
 
-using InfoArgs = args::Package<const FstClass &, bool, const string &,
-                               const string &, bool, bool>;
+using InfoArgs = std::tuple<const FstClass &, bool, const string &,
+                            const string &, bool, bool>;
 
 template <class Arc>
 void PrintFstInfo(InfoArgs *args) {
-  const Fst<Arc> &fst = *(args->arg1.GetFst<Arc>());
-  FstInfo fstinfo(fst, args->arg2, args->arg3, args->arg4, args->arg5);
-  PrintFstInfoImpl(fstinfo, args->arg6);
-  if (args->arg6) fst.Write("");
+  const Fst<Arc> &fst = *(std::get<0>(*args).GetFst<Arc>());
+  const FstInfo fstinfo(fst, std::get<1>(*args), std::get<2>(*args),
+                        std::get<3>(*args), std::get<4>(*args));
+  PrintFstInfoImpl(fstinfo, std::get<5>(*args));
+  if (std::get<5>(*args)) fst.Write("");
 }
 
 void PrintFstInfo(const FstClass &f, bool test_properties,
                   const string &arc_filter, const string &info_type, bool pipe,
                   bool verify);
 
-using GetInfoArgs = args::Package<const FstClass &, bool, const string &,
-                                  const string &, bool, FstInfo *>;
+using GetInfoArgs = std::tuple<const FstClass &, bool, const string &,
+                               const string &, bool, FstInfo *>;
 
 template <class Arc>
 void GetFstInfo(GetInfoArgs *args) {
-  const Fst<Arc> &fst = *(args->arg1.GetFst<Arc>());
-  *(args->arg6) = FstInfo(fst, args->arg2, args->arg3, args->arg4, args->arg5);
+  const Fst<Arc> &fst = *(std::get<0>(*args).GetFst<Arc>());
+  *(std::get<5>(*args)) = FstInfo(fst, std::get<1>(*args), std::get<2>(*args),
+                                  std::get<3>(*args), std::get<4>(*args));
 }
 
-void GetFstInfo(const FstClass &f, bool test_properties,
+void GetFstInfo(const FstClass &fst, bool test_properties,
                 const string &arc_filter, const string &info_type, bool verify,
                 FstInfo *info);
 

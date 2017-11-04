@@ -4,28 +4,29 @@
 #ifndef FST_SCRIPT_CONCAT_H_
 #define FST_SCRIPT_CONCAT_H_
 
+#include <utility>
+
 #include <fst/concat.h>
-#include <fst/script/arg-packs.h>
 #include <fst/script/fst-class.h>
 
 namespace fst {
 namespace script {
 
-using ConcatArgs1 = args::Package<MutableFstClass *, const FstClass &>;
+using ConcatArgs1 = std::pair<MutableFstClass *, const FstClass &>;
 
 template <class Arc>
 void Concat(ConcatArgs1 *args) {
-  MutableFst<Arc> *ofst = args->arg1->GetMutableFst<Arc>();
-  const Fst<Arc> &ifst = *(args->arg2.GetFst<Arc>());
+  MutableFst<Arc> *ofst = std::get<0>(*args)->GetMutableFst<Arc>();
+  const Fst<Arc> &ifst = *(std::get<1>(*args).GetFst<Arc>());
   Concat(ofst, ifst);
 }
 
-using ConcatArgs2 = args::Package<const FstClass &, MutableFstClass *>;
+using ConcatArgs2 = std::pair<const FstClass &, MutableFstClass *>;
 
 template <class Arc>
 void Concat(ConcatArgs2 *args) {
-  const Fst<Arc> &ifst = *(args->arg1.GetFst<Arc>());
-  MutableFst<Arc> *ofst = args->arg2->GetMutableFst<Arc>();
+  const Fst<Arc> &ifst = *(std::get<0>(*args).GetFst<Arc>());
+  MutableFst<Arc> *ofst = std::get<1>(*args)->GetMutableFst<Arc>();
   Concat(ifst, ofst);
 }
 

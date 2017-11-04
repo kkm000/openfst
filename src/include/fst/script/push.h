@@ -4,46 +4,48 @@
 #ifndef FST_SCRIPT_PUSH_H_
 #define FST_SCRIPT_PUSH_H_
 
+#include <tuple>
+
 #include <fst/push.h>
-#include <fst/script/arg-packs.h>
 #include <fst/script/fst-class.h>
 
 namespace fst {
 namespace script {
 
-// 1
-using PushArgs1 = args::Package<MutableFstClass *, ReweightType, float, bool>;
+using PushArgs1 = std::tuple<MutableFstClass *, ReweightType, float, bool>;
 
 template <class Arc>
 void Push(PushArgs1 *args) {
-  MutableFst<Arc> *ofst = args->arg1->GetMutableFst<Arc>();
-  if (args->arg2 == REWEIGHT_TO_FINAL)
-    fst::Push(ofst, REWEIGHT_TO_FINAL, args->arg3, args->arg4);
-  else
-    fst::Push(ofst, REWEIGHT_TO_INITIAL, args->arg3, args->arg4);
+  MutableFst<Arc> *fst = std::get<0>(*args)->GetMutableFst<Arc>();
+  Push(fst, std::get<1>(*args), std::get<2>(*args), std::get<3>(*args));
 }
 
-// 2
-using PushArgs2 = args::Package<const FstClass &, MutableFstClass *, uint32,
-                                ReweightType, float>;
+using PushArgs2 = std::tuple<const FstClass &, MutableFstClass *, uint32,
+                             ReweightType, float>;
 
 template <class Arc>
 void Push(PushArgs2 *args) {
-  const Fst<Arc> &ifst = *(args->arg1.GetFst<Arc>());
-  MutableFst<Arc> *ofst = args->arg2->GetMutableFst<Arc>();
-  if (args->arg4 == REWEIGHT_TO_FINAL)
-    fst::Push<Arc, REWEIGHT_TO_FINAL>(ifst, ofst, args->arg3, args->arg5);
-  else
-    fst::Push<Arc, REWEIGHT_TO_INITIAL>(ifst, ofst, args->arg3, args->arg5);
+  const Fst<Arc> &ifst = *(std::get<0>(*args).GetFst<Arc>());
+  MutableFst<Arc> *ofst = std::get<1>(*args)->GetMutableFst<Arc>();
+  switch (std::get<3>(*args)) {
+    case REWEIGHT_TO_FINAL: {
+      Push<Arc, REWEIGHT_TO_FINAL>(ifst, ofst, std::get<2>(*args),
+                                   std::get<4>(*args));
+      return;
+    }
+    case REWEIGHT_TO_INITIAL: {
+      Push<Arc, REWEIGHT_TO_INITIAL>(ifst, ofst, std::get<2>(*args),
+                                     std::get<4>(*args));
+      return;
+    }
+  }
 }
 
-// 1
-void Push(MutableFstClass *ofst, ReweightType type, float delta = kDelta,
+void Push(MutableFstClass *fst, ReweightType rew_type, float delta = kDelta,
           bool remove_total_weight = false);
 
-// 2
 void Push(const FstClass &ifst, MutableFstClass *ofst, uint32 flags,
-          ReweightType dir, float delta);
+          ReweightType rew_type, float delta = kDelta);
 
 }  // namespace script
 }  // namespace fst

@@ -10,8 +10,8 @@
 // The + operation on two weights a and b is the lexicographically
 // prior of a and b.
 
-#ifndef FST_LIB_LEXICOGRAPHIC_WEIGHT_H_
-#define FST_LIB_LEXICOGRAPHIC_WEIGHT_H_
+#ifndef FST_LEXICOGRAPHIC_WEIGHT_H_
+#define FST_LEXICOGRAPHIC_WEIGHT_H_
 
 #include <cstdlib>
 
@@ -170,4 +170,4 @@ class WeightGenerate<LexicographicWeight<W1, W2>> {
 
 }  // namespace fst
 
-#endif  // FST_LIB_LEXICOGRAPHIC_WEIGHT_H_
+#endif  // FST_LEXICOGRAPHIC_WEIGHT_H_

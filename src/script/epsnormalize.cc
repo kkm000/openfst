@@ -10,7 +10,7 @@ namespace script {
 
 void EpsNormalize(const FstClass &ifst, MutableFstClass *ofst,
                   EpsNormalizeType norm_type) {
-  if (!ArcTypesMatch(ifst, *ofst, "EpsNormalize")) {
+  if (!internal::ArcTypesMatch(ifst, *ofst, "EpsNormalize")) {
     ofst->SetProperties(kError, kError);
     return;
   }

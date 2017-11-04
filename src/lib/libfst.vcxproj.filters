@@ -349,5 +349,8 @@
     <ClInclude Include="..\include\fst\weight.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\fst\set-weight.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

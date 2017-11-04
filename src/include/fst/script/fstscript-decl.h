@@ -16,6 +16,8 @@ class ArcClass;
 class ArcIteratorClass;
 class MutableArcIteratorClass;
 
+class EncodeMapperClass;
+
 class FstClass;
 class MutableFstClass;
 class VectorFstClass;

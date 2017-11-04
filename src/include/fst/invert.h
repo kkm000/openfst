@@ -3,8 +3,8 @@
 //
 // Functions and classes to invert an FST.
 
-#ifndef FST_LIB_INVERT_H_
-#define FST_LIB_INVERT_H_
+#ifndef FST_INVERT_H_
+#define FST_INVERT_H_
 
 #include <fst/arc-map.h>
 #include <fst/mutable-fst.h>
@@ -116,4 +116,4 @@ using StdInvertFst = InvertFst<StdArc>;
 
 }  // namespace fst
 
-#endif  // FST_LIB_INVERT_H_
+#endif  // FST_INVERT_H_

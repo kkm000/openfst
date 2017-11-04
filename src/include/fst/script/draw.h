@@ -6,7 +6,6 @@
 
 #include <ostream>
 
-#include <fst/script/arg-packs.h>
 #include <fst/script/draw-impl.h>
 #include <fst/script/fst-class.h>
 
@@ -66,11 +65,10 @@ struct FstDrawerArgs {
 template <class Arc>
 void DrawFst(FstDrawerArgs *args) {
   const Fst<Arc> &fst = *(args->fst.GetFst<Arc>());
-  FstDrawer<Arc> fstdrawer(
-      fst, args->isyms, args->osyms, args->ssyms, args->accep, args->title,
-      args->width, args->height, args->portrait, args->vertical, args->ranksep,
-      args->nodesep, args->fontsize, args->precision, args->float_format,
-      args->show_weight_one);
+  FstDrawer<Arc> fstdrawer(fst, args->isyms, args->osyms, args->ssyms,
+      args->accep, args->title, args->width, args->height, args->portrait,
+      args->vertical, args->ranksep, args->nodesep, args->fontsize,
+      args->precision, args->float_format, args->show_weight_one);
   fstdrawer.Draw(args->ostrm, args->dest);
 }
 

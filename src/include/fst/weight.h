@@ -3,8 +3,8 @@
 //
 // General weight set and associated semiring operation definitions.
 
-#ifndef FST_LIB_WEIGHT_H_
-#define FST_LIB_WEIGHT_H_
+#ifndef FST_WEIGHT_H_
+#define FST_WEIGHT_H_
 
 #include <cctype>
 #include <cmath>
@@ -150,11 +150,9 @@ class NaturalLess {
   using Weight = W;
 
   NaturalLess() {
-    // TODO(kbg): Make this a compile-time static_assert once:
-    // 1) All weight properties are made constexpr for all weight types.
-    // 2) We have a pleasant way to "deregister" this operation for non-path
-    //    semirings so an informative error message is produced. The best
-    //    solution will probably involve some kind of SFINAE magic.
+    // TODO(kbg): Make this a compile-time static_assert once we have a pleasant
+    // way to "deregister" this operation for non-path semirings so an
+    // informative error message is produced.
     if (!(W::Properties() & kIdempotent)) {
       FSTERROR() << "NaturalLess: Weight type is not idempotent: " << W::Type();
     }
@@ -346,8 +344,10 @@ inline bool CompositeWeightReader::ReadElement(T *comp, bool last) {
   std::istringstream istrm(s);
   istrm >> *comp;
   // Skips separator/close parenthesis.
+  if (c_ != std::istream::traits_type::eof() && !std::isspace(c_)) {
+    c_ = istrm_.get();
+  }
   const bool is_eof = c_ == std::istream::traits_type::eof();
-  if (!is_eof && !std::isspace(c_)) c_ = istrm_.get();
   // Clears fail bit if just EOF.
   if (is_eof && !istrm_.bad()) istrm_.clear(std::ios::eofbit);
   return !is_eof && !std::isspace(c_);
@@ -355,4 +355,4 @@ inline bool CompositeWeightReader::ReadElement(T *comp, bool last) {
 
 }  // namespace fst
 
-#endif  // FST_LIB_WEIGHT_H_
+#endif  // FST_WEIGHT_H_

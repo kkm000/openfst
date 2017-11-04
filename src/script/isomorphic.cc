@@ -9,7 +9,7 @@ namespace fst {
 namespace script {
 
 bool Isomorphic(const FstClass &fst1, const FstClass &fst2, float delta) {
-  if (!ArcTypesMatch(fst1, fst2, "Isomorphic")) return false;
+  if (!internal::ArcTypesMatch(fst1, fst2, "Isomorphic")) return false;
   IsomorphicInnerArgs iargs(fst1, fst2, delta);
   IsomorphicArgs args(iargs);
   Apply<Operation<IsomorphicArgs>>("Isomorphic", fst1.ArcType(), &args);

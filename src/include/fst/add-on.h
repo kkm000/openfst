@@ -5,8 +5,8 @@
 // method to an FST and its file representation. The FST is given a new type
 // name.
 
-#ifndef FST_LIB_ADD_ON_H_
-#define FST_LIB_ADD_ON_H_
+#ifndef FST_ADD_ON_H_
+#define FST_ADD_ON_H_
 
 #include <stddef.h>
 #include <memory>
@@ -245,4 +245,4 @@ constexpr int AddOnImpl<FST, T>::kMinFileVersion;
 }  // namespace internal
 }  // namespace fst
 
-#endif  // FST_LIB_ADD_ON_H_
+#endif  // FST_ADD_ON_H_

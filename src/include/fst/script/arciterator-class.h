@@ -8,7 +8,6 @@
 #include <utility>
 
 #include <fst/fstlib.h>
-#include <fst/script/arg-packs.h>
 #include <fst/script/fst-class.h>
 
 // Scripting API support for ArcIterator.
@@ -71,7 +70,7 @@ class ArcIteratorClassImpl : public ArcIteratorImplBase {
 class ArcIteratorClass;
 
 using InitArcIteratorClassArgs =
-    args::Package<const FstClass &, int64, ArcIteratorClass *>;
+    std::tuple<const FstClass &, int64, ArcIteratorClass *>;
 
 // Untemplated user-facing class holding a templated pimpl.
 class ArcIteratorClass {
@@ -107,8 +106,9 @@ class ArcIteratorClass {
 
 template <class Arc>
 void InitArcIteratorClass(InitArcIteratorClassArgs *args) {
-  const Fst<Arc> &fst = *(args->arg1.GetFst<Arc>());
-  args->arg3->impl_.reset(new ArcIteratorClassImpl<Arc>(fst, args->arg2));
+  const Fst<Arc> &fst = *(std::get<0>(*args).GetFst<Arc>());
+  std::get<2>(*args)->impl_.reset(
+      new ArcIteratorClassImpl<Arc>(fst, std::get<1>(*args)));
 }
 
 // Mutable arc iterators.
@@ -162,7 +162,7 @@ class MutableArcIteratorClassImpl
 class MutableArcIteratorClass;
 
 using InitMutableArcIteratorClassArgs =
-    args::Package<MutableFstClass *, int64, MutableArcIteratorClass *>;
+    std::tuple<MutableFstClass *, int64, MutableArcIteratorClass *>;
 
 // Untemplated user-facing class holding a templated pimpl.
 class MutableArcIteratorClass {
@@ -201,9 +201,9 @@ class MutableArcIteratorClass {
 
 template <class Arc>
 void InitMutableArcIteratorClass(InitMutableArcIteratorClassArgs *args) {
-  MutableFst<Arc> *fst = args->arg1->GetMutableFst<Arc>();
-  args->arg3->impl_.reset(new MutableArcIteratorClassImpl<Arc>(fst,
-                                                               args->arg2));
+  MutableFst<Arc> *fst = std::get<0>(*args)->GetMutableFst<Arc>();
+  std::get<2>(*args)->impl_.reset(
+      new MutableArcIteratorClassImpl<Arc>(fst, std::get<1>(*args)));
 }
 
 }  // namespace script

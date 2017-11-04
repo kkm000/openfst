@@ -3,8 +3,8 @@
 //
 // Functions and classes to create a partition of states.
 
-#ifndef FST_LIB_PARTITION_H_
-#define FST_LIB_PARTITION_H_
+#ifndef FST_PARTITION_H_
+#define FST_PARTITION_H_
 
 #include <algorithm>
 #include <vector>
@@ -107,13 +107,11 @@ class Partition {
     auto &element = elements[element_id];
     auto &old_class = classes_[element.class_id];
     --old_class.size;
-    CHECK(old_class.size >= 0 && old_class.yes_size == 0);
     // Excises the element from the 'no' list of its old class, where it is
     // assumed to be.
     if (element.prev_element >= 0) {
       elements[element.prev_element].next_element = element.next_element;
     } else {
-      CHECK(old_class.no_head == element_id);
       old_class.no_head = element.next_element;
     }
     if (element.next_element >= 0) {
@@ -137,7 +135,6 @@ class Partition {
     if (element.prev_element >= 0) {
       elements[element.prev_element].next_element = element.next_element;
     } else {
-      CHECK(this_class.no_head == element_id);
       this_class.no_head = element.next_element;
     }
     if (element.next_element >= 0) {
@@ -154,7 +151,6 @@ class Partition {
     element.prev_element = -1;
     this_class.yes_head = element_id;
     this_class.yes_size++;
-    CHECK(this_class.yes_size <= this_class.size);
   }
 
   // This should be called after one has possibly called SplitOn for one or more
@@ -227,7 +223,6 @@ class Partition {
     if (no_size == 0) {
       // All members are in the 'yes' subset, so we don't have to create a new
       // class, just move them all to the 'no' subset.
-      CHECK(classes_[class_id].no_head < 0);  // NOLINT
       classes_[class_id].no_head = classes_[class_id].yes_head;
       classes_[class_id].yes_head = -1;
       classes_[class_id].yes_size = 0;
@@ -307,4 +302,4 @@ class PartitionIterator {
 }  // namespace internal
 }  // namespace fst
 
-#endif  // FST_LIB_PARTITION_H_
+#endif  // FST_PARTITION_H_

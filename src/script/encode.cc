@@ -9,19 +9,14 @@
 namespace fst {
 namespace script {
 
-// 1
 void Encode(MutableFstClass *fst, uint32 flags, bool reuse_encoder,
             const string &coder_fname) {
   EncodeArgs1 args(fst, flags, reuse_encoder, coder_fname);
   Apply<Operation<EncodeArgs1>>("Encode", fst->ArcType(), &args);
 }
 
-// 2
 void Encode(MutableFstClass *fst, EncodeMapperClass *encoder) {
-  if (fst->ArcType() != encoder->ArcType()) {
-    FSTERROR() << "FST and encoder with non-matching arc types passed to "
-               << "Encode:\n\t" << fst->ArcType() << " and "
-               << encoder->ArcType();
+  if (!internal::ArcTypesMatch(*fst, *encoder, "Encode")) {
     fst->SetProperties(kError, kError);
     return;
   }

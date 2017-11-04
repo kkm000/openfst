@@ -1,5 +1,5 @@
-#ifndef FST_LIB_ARC_ARENA_H_
-#define FST_LIB_ARC_ARENA_H_
+#ifndef FST_ARC_ARENA_H_
+#define FST_ARC_ARENA_H_
 
 #include <deque>
 #include <memory>
@@ -229,4 +229,4 @@ class ArcArenaStateStore {
 
 }  // namespace fst
 
-#endif  // FST_LIB_ARC_ARENA_H_
+#endif  // FST_ARC_ARENA_H_

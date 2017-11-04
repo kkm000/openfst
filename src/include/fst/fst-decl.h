@@ -3,8 +3,8 @@
 //
 // This file contains declarations of classes in the Fst template library.
 
-#ifndef FST_LIB_FST_DECL_H_
-#define FST_LIB_FST_DECL_H_
+#ifndef FST_FST_DECL_H_
+#define FST_FST_DECL_H_
 
 #include <sys/types.h>
 #include <memory>  // for allocator<>
@@ -248,4 +248,4 @@ class MatchComposeFilter;
 
 }  // namespace fst
 
-#endif  // FST_LIB_FST_DECL_H_
+#endif  // FST_FST_DECL_H_

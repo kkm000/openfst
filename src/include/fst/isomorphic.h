@@ -5,11 +5,12 @@
 // and arc re-ordering. FSTs should be deterministic when viewed as
 // unweighted automata.
 
-#ifndef FST_LIB_ISOMORPHIC_H_
-#define FST_LIB_ISOMORPHIC_H_
+#ifndef FST_ISOMORPHIC_H_
+#define FST_ISOMORPHIC_H_
 
 #include <algorithm>
 #include <list>
+#include <type_traits>
 #include <vector>
 
 #include <fst/log.h>
@@ -21,23 +22,30 @@ namespace fst {
 namespace internal {
 
 // Orders weights for equality checking.
-template <class Weight>
+template <class Weight,
+          typename std::enable_if<
+              (Weight::Properties() & kIdempotent) == kIdempotent>::type * =
+              nullptr>
 bool WeightCompare(Weight w1, Weight w2, float delta, bool *error) {
-  if (Weight::Properties() & kIdempotent) {
-    NaturalLess<Weight> less;
-    return less(w1, w2);
-  } else {  // No natural order; use hash
-    const auto q1 = w1.Quantize(delta);
-    const auto q2 = w2.Quantize(delta);
-    auto n1 = q1.Hash();
-    auto n2 = q2.Hash();
-    // Hash not unique; very unlikely to happen.
-    if (n1 == n2 && q1 != q2) {
-      VLOG(1) << "Isomorphic: Weight hash collision";
-      *error = true;
-    }
-    return n1 < n2;
+  return NaturalLess<Weight>()(w1, w2);
+}
+
+template <class Weight,
+          typename std::enable_if<
+              (Weight::Properties() & kIdempotent) != kIdempotent>::type * =
+              nullptr>
+bool WeightCompare(Weight w1, Weight w2, float delta, bool *error) {
+  // No natural order; use hash
+  const auto q1 = w1.Quantize(delta);
+  const auto q2 = w2.Quantize(delta);
+  auto n1 = q1.Hash();
+  auto n2 = q2.Hash();
+  // Hash not unique; very unlikely to happen.
+  if (n1 == n2 && q1 != q2) {
+    VLOG(1) << "Isomorphic: Weight hash collision";
+    *error = true;
   }
+  return n1 < n2;
 }
 
 template <class Arc>
@@ -174,4 +182,4 @@ bool Isomorphic(const Fst<Arc> &fst1, const Fst<Arc> &fst2,
 
 }  // namespace fst
 
-#endif  // FST_LIB_ISOMORPHIC_H_
+#endif  // FST_ISOMORPHIC_H_

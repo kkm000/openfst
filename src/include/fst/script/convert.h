@@ -6,26 +6,28 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 
+#include <fst/register.h>
 #include <fst/script/arg-packs.h>
 #include <fst/script/fst-class.h>
 
 namespace fst {
 namespace script {
 
-using ConvertInnerArgs = args::Package<const FstClass &, const string &>;
+using ConvertInnerArgs = std::pair<const FstClass &, const string &>;
 
-using ConvertArgs = args::WithReturnValue<FstClass *, ConvertInnerArgs>;
+using ConvertArgs = WithReturnValue<FstClass *, ConvertInnerArgs>;
 
 template <class Arc>
 void Convert(ConvertArgs *args) {
-  const Fst<Arc> &fst = *(args->args.arg1.GetFst<Arc>());
-  const string &new_type = args->args.arg2;
+  const Fst<Arc> &fst = *(std::get<0>(args->args).GetFst<Arc>());
+  const string &new_type = std::get<1>(args->args);
   std::unique_ptr<Fst<Arc>> result(Convert(fst, new_type));
   args->retval = result ? new FstClass(*result) : nullptr;
 }
 
-FstClass *Convert(const FstClass &f, const string &new_type);
+FstClass *Convert(const FstClass &fst, const string &new_type);
 
 }  // namespace script
 }  // namespace fst

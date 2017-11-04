@@ -3,8 +3,8 @@
 //
 // Class to compute the composition of two FSTs.
 
-#ifndef FST_LIB_COMPOSE_H_
-#define FST_LIB_COMPOSE_H_
+#ifndef FST_COMPOSE_H_
+#define FST_COMPOSE_H_
 
 #include <algorithm>
 
@@ -967,34 +967,47 @@ void Compose(const Fst<Arc> &ifst1, const Fst<Arc> &ifst2,
              const ComposeOptions &opts = ComposeOptions()) {
   using M = Matcher<Fst<Arc>>;
   // In each case, we cache only the last state for fastest copy.
-  if (opts.filter_type == AUTO_FILTER) {
-    CacheOptions nopts;
-    nopts.gc_limit = 0;
-    *ofst = ComposeFst<Arc>(ifst1, ifst2, nopts);
-  } else if (opts.filter_type == NULL_FILTER) {
-    ComposeFstOptions<Arc, M, NullComposeFilter<M>> copts;
-    copts.gc_limit = 0;
-    *ofst = ComposeFst<Arc>(ifst1, ifst2, copts);
-  } else if (opts.filter_type == SEQUENCE_FILTER) {
-    ComposeFstOptions<Arc, M, SequenceComposeFilter<M>> copts;
-    copts.gc_limit = 0;
-    *ofst = ComposeFst<Arc>(ifst1, ifst2, copts);
-  } else if (opts.filter_type == ALT_SEQUENCE_FILTER) {
-    ComposeFstOptions<Arc, M, AltSequenceComposeFilter<M>> copts;
-    copts.gc_limit = 0;
-    *ofst = ComposeFst<Arc>(ifst1, ifst2, copts);
-  } else if (opts.filter_type == MATCH_FILTER) {
-    ComposeFstOptions<Arc, M, MatchComposeFilter<M>> copts;
-    copts.gc_limit = 0;
-    *ofst = ComposeFst<Arc>(ifst1, ifst2, copts);
-  } else if (opts.filter_type == TRIVIAL_FILTER) {
-    ComposeFstOptions<Arc, M, TrivialComposeFilter<M>> copts;
-    copts.gc_limit = 0;
-    *ofst = ComposeFst<Arc>(ifst1, ifst2, copts);
+  switch (opts.filter_type) {
+    case AUTO_FILTER: {
+      CacheOptions nopts;
+      nopts.gc_limit = 0;
+      *ofst = ComposeFst<Arc>(ifst1, ifst2, nopts);
+      break;
+    }
+    case NULL_FILTER: {
+      ComposeFstOptions<Arc, M, NullComposeFilter<M>> copts;
+      copts.gc_limit = 0;
+      *ofst = ComposeFst<Arc>(ifst1, ifst2, copts);
+      break;
+    }
+    case SEQUENCE_FILTER: {
+      ComposeFstOptions<Arc, M, SequenceComposeFilter<M>> copts;
+      copts.gc_limit = 0;
+      *ofst = ComposeFst<Arc>(ifst1, ifst2, copts);
+      break;
+    }
+    case ALT_SEQUENCE_FILTER: {
+      ComposeFstOptions<Arc, M, AltSequenceComposeFilter<M>> copts;
+      copts.gc_limit = 0;
+      *ofst = ComposeFst<Arc>(ifst1, ifst2, copts);
+      break;
+    }
+    case MATCH_FILTER: {
+      ComposeFstOptions<Arc, M, MatchComposeFilter<M>> copts;
+      copts.gc_limit = 0;
+      *ofst = ComposeFst<Arc>(ifst1, ifst2, copts);
+      break;
+    }
+    case TRIVIAL_FILTER: {
+      ComposeFstOptions<Arc, M, TrivialComposeFilter<M>> copts;
+      copts.gc_limit = 0;
+      *ofst = ComposeFst<Arc>(ifst1, ifst2, copts);
+      break;
+    }
   }
   if (opts.connect) Connect(ofst);
 }
 
 }  // namespace fst
 
-#endif  // FST_LIB_COMPOSE_H_
+#endif  // FST_COMPOSE_H_

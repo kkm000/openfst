@@ -60,8 +60,8 @@ class FstPrinter {
   void PrintId(StateId id, const SymbolTable *syms, const char *name) const {
     if (syms) {
       string symbol = syms->Find(id);
-      if (symbol == "") {
-        if (missing_symbol_ == "") {
+      if (symbol.empty()) {
+        if (missing_symbol_.empty()) {
           FSTERROR() << "FstPrinter: Integer " << id
                      << " is not mapped to any textual symbol"
                      << ", symbol table = " << syms->Name()

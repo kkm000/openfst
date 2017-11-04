@@ -3,8 +3,8 @@
 //
 // Functions and classes to project an FST on to its domain or range.
 
-#ifndef FST_LIB_PROJECT_H_
-#define FST_LIB_PROJECT_H_
+#ifndef FST_PROJECT_H_
+#define FST_PROJECT_H_
 
 #include <fst/arc-map.h>
 #include <fst/mutable-fst.h>
@@ -135,4 +135,4 @@ using StdProjectFst = ProjectFst<StdArc>;
 
 }  // namespace fst
 
-#endif  // FST_LIB_PROJECT_H_
+#endif  // FST_PROJECT_H_

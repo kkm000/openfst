@@ -3,8 +3,8 @@
 //
 // Function that implements epsilon-normalization.
 
-#ifndef FST_LIB_EPSNORMALIZE_H_
-#define FST_LIB_EPSNORMALIZE_H_
+#ifndef FST_EPSNORMALIZE_H_
+#define FST_EPSNORMALIZE_H_
 
 
 #include <fst/arc-map.h>
@@ -55,4 +55,4 @@ void EpsNormalize(const Fst<Arc> &ifst, MutableFst<Arc> *ofst,
 
 }  // namespace fst
 
-#endif  // FST_LIB_EPSNORMALIZE_H_
+#endif  // FST_EPSNORMALIZE_H_

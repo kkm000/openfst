@@ -3,8 +3,8 @@
 //
 // Functions and classes to determine the equivalence of two FSTs.
 
-#ifndef FST_LIB_EQUIVALENT_H_
-#define FST_LIB_EQUIVALENT_H_
+#ifndef FST_EQUIVALENT_H_
+#define FST_EQUIVALENT_H_
 
 #include <algorithm>
 #include <deque>
@@ -227,4 +227,4 @@ bool Equivalent(const Fst<Arc> &fst1, const Fst<Arc> &fst2,
 
 }  // namespace fst
 
-#endif  // FST_LIB_EQUIVALENT_H_
+#endif  // FST_EQUIVALENT_H_

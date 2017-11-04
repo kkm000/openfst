@@ -7,6 +7,7 @@
 
 #include <utility>
 
+#include <fst/flags.h>
 #include <fst/log.h>
 #include <fst/compact-fst.h>
 #include <fst/const-fst.h>

@@ -6,7 +6,7 @@
 
 #include <ostream>
 
-#include <fst/script/arg-packs.h>
+#include <fst/flags.h>
 #include <fst/script/fst-class.h>
 #include <fst/script/print-impl.h>
 
@@ -51,9 +51,9 @@ struct FstPrinterArgs {
 template <class Arc>
 void PrintFst(FstPrinterArgs *args) {
   const Fst<Arc> &fst = *(args->fst.GetFst<Arc>());
-  fst::FstPrinter<Arc> fstprinter(
-      fst, args->isyms, args->osyms, args->ssyms, args->accept,
-      args->show_weight_one, args->sep, args->missing_symbol);
+  FstPrinter<Arc> fstprinter(fst, args->isyms, args->osyms, args->ssyms,
+                             args->accept, args->show_weight_one, args->sep,
+                             args->missing_symbol);
   fstprinter.Print(args->ostrm, args->dest);
 }
 
@@ -62,17 +62,15 @@ void PrintFst(const FstClass &fst, std::ostream &ostrm, const string &dest,
               const SymbolTable *ssyms, bool accept, bool show_weight_one,
               const string &missing_sym = "");
 
-// Below are two printing methods with useful defaults for a few of
-// the fst printer arguments.
+// The same, but with more sensible defaults.
 template <class Arc>
-void PrintFst(const Fst<Arc> &fst, std::ostream &os, const string& dest = "",
+void PrintFst(const Fst<Arc> &fst, std::ostream &ostrm, const string &dest = "",
               const SymbolTable *isyms = nullptr,
               const SymbolTable *osyms = nullptr,
               const SymbolTable *ssyms = nullptr) {
-  string sep = FLAGS_fst_field_separator.substr(0, 1);
-  fst::FstPrinter<Arc> fstprinter(fst, isyms, osyms, ssyms, true, true,
-                                      sep);
-  fstprinter.Print(&os, dest);
+  const string sep = FLAGS_fst_field_separator.substr(0, 1);
+  FstPrinter<Arc> fstprinter(fst, isyms, osyms, ssyms, true, true, sep);
+  fstprinter.Print(&ostrm, dest);
 }
 
 }  // namespace script

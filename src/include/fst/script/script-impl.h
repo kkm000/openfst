@@ -28,7 +28,7 @@
 //     a single struct. The template structs in arg-packs.h provide a handy
 //     way to do this. In Foo's case, that might look like this:
 //
-//       using FooArgs = args::Package<const FstClass &, MutableFstClass *>;
+//       using FooArgs = std::pair<const FstClass &, MutableFstClass *>;
 //
 //     Note: this package of args is going to be passed by non-const pointer.
 //
@@ -38,8 +38,8 @@
 //       template<class Arc>
 //       void Foo(FooArgs *args) {
 //          // Pulls out the actual, arc-templated FSTs.
-//          const Fst<Arc> &ifst = args->arg1.GetFst<Arc>();
-//          MutableFst<Arc> *ofst = args->arg2->GetMutableFst<Arc>();
+//          const Fst<Arc> &ifst = std::get<0>(*args).GetFst<Arc>();
+//          MutableFst<Arc> *ofst = std::get<1>(*args)->GetMutableFst<Arc>();
 //          // Actually perform Foo on ifst and ofst.
 //       }
 //
@@ -75,19 +75,15 @@
 #ifndef FST_SCRIPT_SCRIPT_IMPL_H_
 #define FST_SCRIPT_SCRIPT_IMPL_H_
 
-//
 // This file contains general-purpose templates which are used in the
 // implementation of the operations.
-//
 
 #include <string>
 #include <utility>
 
 #include <fst/generic-register.h>
-#include <fst/script/arg-packs.h>
 #include <fst/script/fst-class.h>
 
-#include <fst/types.h>
 #include <fst/log.h>
 
 namespace fst {
@@ -161,8 +157,8 @@ struct Operation {
 template <class OpReg>
 void Apply(const string &op_name, const string &arc_type,
            typename OpReg::ArgPack *args) {
-  typename OpReg::Register *reg = OpReg::Register::GetRegister();
-  typename OpReg::OpType op = reg->GetOperation(op_name, arc_type);
+  const auto op = OpReg::Register::GetRegister()->GetOperation(op_name,
+                                                               arc_type);
   if (!op) {
     FSTERROR() << "No operation found for " << op_name << " on "
                << "arc type " << arc_type;
@@ -171,8 +167,11 @@ void Apply(const string &op_name, const string &arc_type,
   op(args);
 }
 
-// Helper that logs to ERROR if the arc types of m and n don't match. The
-// op_name is used to construct the error message.
+namespace internal {
+
+// Helper that logs to ERROR if the arc types of m and n don't match,
+// assuming that both m and n implement .ArcType(). The op_name argument is
+// used to construct the error message.
 template <class M, class N>
 bool ArcTypesMatch(const M &m, const N &n, const string &op_name) {
   if (m.ArcType() != n.ArcType()) {
@@ -183,6 +182,29 @@ bool ArcTypesMatch(const M &m, const N &n, const string &op_name) {
   return true;
 }
 
+// From untyped to typed weights.
+template <class Weight>
+void CopyWeights(const std::vector<WeightClass> &weights,
+                 std::vector<Weight> *typed_weights) {
+  typed_weights->clear();
+  typed_weights->reserve(weights.size());
+  for (const auto &weight : weights) {
+    typed_weights->push_back(*weight.GetWeight<Weight>());
+  }
+}
+
+// From typed to untyped weights.
+template <class Weight>
+void CopyWeights(const std::vector<Weight> &typed_weights,
+                 std::vector<WeightClass> *weights) {
+  weights->clear();
+  weights->reserve(typed_weights.size());
+  for (const auto &typed_weight : typed_weights) {
+    weights->emplace_back(typed_weight);
+  }
+}
+
+}  // namespace internal
 }  // namespace script
 }  // namespace fst
 

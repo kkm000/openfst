@@ -9,7 +9,7 @@ namespace fst {
 namespace script {
 
 void Synchronize(const FstClass &ifst, MutableFstClass *ofst) {
-  if (!ArcTypesMatch(ifst, *ofst, "Synchronize")) {
+  if (!internal::ArcTypesMatch(ifst, *ofst, "Synchronize")) {
     ofst->SetProperties(kError, kError);
     return;
   }

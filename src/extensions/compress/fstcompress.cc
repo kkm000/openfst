@@ -3,10 +3,12 @@
 //
 // Compresses/decompresses an FST.
 
+#include <memory>
 #include <string>
 
 #include <fst/extensions/compress/compress-script.h>
 
+#include <fst/flags.h>
 #include <fst/log.h>
 #include <fst/util.h>
 #include <fst/script/fst-class.h>
@@ -41,7 +43,7 @@ int main(int argc, char **argv) {
   string out_name = argc > 2 ? argv[2] : "";
 
   if (FLAGS_decode == false) {
-    FstClass *ifst = FstClass::Read(in_name);
+    std::unique_ptr<FstClass> ifst(FstClass::Read(in_name));
     if (!ifst) return 1;
     s::Compress(*ifst, out_name, FLAGS_gzip);
   } else {

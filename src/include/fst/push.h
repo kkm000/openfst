@@ -4,8 +4,8 @@
 // Class to reweight/push an FST, and utility functions to weigh and reweight
 // an FST.
 
-#ifndef FST_LIB_PUSH_H_
-#define FST_LIB_PUSH_H_
+#ifndef FST_PUSH_H_
+#define FST_PUSH_H_
 
 #include <vector>
 
@@ -152,4 +152,4 @@ void Push(const Fst<Arc> &ifst, MutableFst<Arc> *ofst, uint32 ptype,
 
 }  // namespace fst
 
-#endif  // FST_LIB_PUSH_H_
+#endif  // FST_PUSH_H_

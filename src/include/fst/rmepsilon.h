@@ -3,8 +3,8 @@
 //
 // Functions and classes that implemement epsilon-removal.
 
-#ifndef FST_LIB_RMEPSILON_H_
-#define FST_LIB_RMEPSILON_H_
+#ifndef FST_RMEPSILON_H_
+#define FST_RMEPSILON_H_
 
 #include <forward_list>
 #include <stack>
@@ -90,10 +90,11 @@ class RmEpsilonState {
   struct ElementHash {
    public:
     size_t operator()(const Element &element) const {
-      static constexpr auto prime0 = 7853;
-      static constexpr auto prime1 = 7867;
-      return element.nextstate + element.ilabel * prime0 +
-             element.olabel * prime1;
+      static constexpr size_t prime0 = 7853;
+      static constexpr size_t prime1 = 7867;
+      return static_cast<size_t>(element.nextstate) +
+             static_cast<size_t>(element.ilabel) * prime0 +
+             static_cast<size_t>(element.olabel) * prime1;
     }
   };
 
@@ -121,7 +122,7 @@ class RmEpsilonState {
   std::stack<StateId> eps_queue_;  // Queue used to visit the epsilon-closure.
   std::vector<bool> visited_;      // True if the state has been visited.
   std::forward_list<StateId> visited_states_;  // List of visited states.
-  std::vector<Arc> arcs_;                      // Arcs of state being expanded
+  std::vector<Arc> arcs_;                      // Arcs of state being expanded.
   Weight final_;       // Final weight of state being expanded.
   StateId expand_id_;  // Unique ID for each call to Expand
 
@@ -184,7 +185,7 @@ void RmEpsilonState<Arc, Queue>::Expand(typename Arc::StateId source) {
 // such epsilon transitions. This version modifies its input. It allows fine
 // control via the options argument; see below for a simpler interface.
 //
-// Thei distance vector will be used to hold the shortest distances during the
+// The distance vector will be used to hold the shortest distances during the
 // epsilon-closure computation. The state queue discipline and convergence delta
 // are taken in the options argument.
 template <class Arc, class Queue>
@@ -195,7 +196,7 @@ void RmEpsilon(MutableFst<Arc> *fst,
   using StateId = typename Arc::StateId;
   using Weight = typename Arc::Weight;
   if (fst->Start() == kNoStateId) return;
-  // noneps_in[s] will be set to true iff s'admits a non-epsilon incoming
+  // noneps_in[s] will be set to true iff s admits a non-epsilon incoming
   // transition or is the start state.
   std::vector<bool> noneps_in(fst->NumStates(), false);
   noneps_in[fst->Start()] = true;
@@ -544,4 +545,4 @@ using StdRmEpsilonFst = RmEpsilonFst<StdArc>;
 
 }  // namespace fst
 
-#endif  // FST_LIB_RMEPSILON_H_
+#endif  // FST_RMEPSILON_H_

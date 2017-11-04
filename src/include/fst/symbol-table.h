@@ -3,8 +3,8 @@
 //
 // Classes to provide symbol-to-integer and integer-to-symbol mappings.
 
-#ifndef FST_LIB_SYMBOL_TABLE_H_
-#define FST_LIB_SYMBOL_TABLE_H_
+#ifndef FST_SYMBOL_TABLE_H_
+#define FST_SYMBOL_TABLE_H_
 
 #include <cstring>
 #include <functional>
@@ -17,6 +17,7 @@
 #include <vector>
 
 #include <fst/compat.h>
+#include <fst/flags.h>
 #include <fst/log.h>
 #include <fstream>
 #include <map>
@@ -462,4 +463,4 @@ SymbolTable *StringToSymbolTable(const string &str);
 
 }  // namespace fst
 
-#endif  // FST_LIB_SYMBOL_TABLE_H_
+#endif  // FST_SYMBOL_TABLE_H_

@@ -3,8 +3,8 @@
 //
 // Function to reweight an FST.
 
-#ifndef FST_LIB_REWEIGHT_H_
-#define FST_LIB_REWEIGHT_H_
+#ifndef FST_REWEIGHT_H_
+#define FST_REWEIGHT_H_
 
 #include <vector>
 #include <fst/log.h>
@@ -30,22 +30,18 @@ void Reweight(MutableFst<Arc> *fst,
               ReweightType type) {
   using Weight = typename Arc::Weight;
   if (fst->NumStates() == 0) return;
-  // TODO(kbg): Make this a compile-time static_assert once:
-  // 1) All weight properties are made constexpr for all weight types.
-  // 2) We have a pleasant way to "deregister" this operation for non-path
-  //    semirings so an informative error message is produced. The best
-  //    solution will probably involve some kind of SFINAE magic.
+  // TODO(kbg): Make this a compile-time static_assert once we have a pleasant
+  // way to "deregister" this operation for non-distributive semirings so an
+  // informative error message is produced.
   if (type == REWEIGHT_TO_FINAL && !(Weight::Properties() & kRightSemiring)) {
     FSTERROR() << "Reweight: Reweighting to the final states requires "
                << "Weight to be right distributive: " << Weight::Type();
     fst->SetProperties(kError, kError);
     return;
   }
-  // TODO(kbg): Make this a compile-time static_assert once:
-  // 1) All weight properties are made constexpr for all weight types.
-  // 2) We have a pleasant way to "deregister" this operation for non-path
-  //    semirings so an informative error message is produced. The best
-  //    solution will probably involve some kind of SFINAE magic.
+  // TODO(kbg): Make this a compile-time static_assert once we have a pleasant
+  // way to "deregister" this operation for non-distributive semirings so an
+  // informative error message is produced.
   if (type == REWEIGHT_TO_INITIAL && !(Weight::Properties() & kLeftSemiring)) {
     FSTERROR() << "Reweight: Reweighting to the initial state requires "
                << "Weight to be left distributive: " << Weight::Type();
@@ -128,4 +124,4 @@ void Reweight(MutableFst<Arc> *fst,
 
 }  // namespace fst
 
-#endif  // FST_LIB_REWEIGHT_H_
+#endif  // FST_REWEIGHT_H_

@@ -20,28 +20,27 @@
 namespace fst {
 namespace script {
 
-typedef args::Package<const FstClass &, const string &, const bool>
-    CompressArgs;
+typedef std::tuple<const FstClass &, const string &, const bool> CompressArgs;
 
 template <class Arc>
 void Compress(CompressArgs *args) {
-  const Fst<Arc> &fst = *(args->arg1.GetFst<Arc>());
-  const string &filename = args->arg2;
-  const bool gzip = args->arg3;
+  const Fst<Arc> &fst = *(std::get<0>(*args).GetFst<Arc>());
+  const string &filename = std::get<1>(*args);
+  const bool gzip = std::get<2>(*args);
 
   if (!fst::Compress(fst, filename, gzip)) FSTERROR() << "Compress: failed";
 }
 
 void Compress(const FstClass &fst, const string &filename, const bool gzip);
 
-typedef args::Package<const string &, MutableFstClass *, const bool>
+typedef std::tuple<const string &, MutableFstClass *, const bool>
     DecompressArgs;
 
 template <class Arc>
 void Decompress(DecompressArgs *args) {
-  const string &filename = args->arg1;
-  MutableFst<Arc> *fst = args->arg2->GetMutableFst<Arc>();
-  const bool gzip = args->arg3;
+  const string &filename = std::get<0>(*args);
+  MutableFst<Arc> *fst = std::get<1>(*args)->GetMutableFst<Arc>();
+  const bool gzip = std::get<2>(*args);
 
   if (!fst::Decompress(filename, fst, gzip))
     FSTERROR() << "Decompress: failed";

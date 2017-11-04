@@ -3,6 +3,8 @@
 
 #include <fst/extensions/linear/linearscript.h>
 
+#include <fst/flags.h>
+
 DEFINE_string(arc_type, "standard", "Output arc type");
 
 DEFINE_string(epsilon_symbol, "<eps>", "Epsilon symbol");

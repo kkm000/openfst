@@ -9,7 +9,7 @@ namespace fst {
 namespace script {
 
 bool Equal(const FstClass &fst1, const FstClass &fst2, float delta) {
-  if (!ArcTypesMatch(fst1, fst2, "Equal")) return false;
+  if (!internal::ArcTypesMatch(fst1, fst2, "Equal")) return false;
   EqualInnerArgs iargs(fst1, fst2, delta);
   EqualArgs args(iargs);
   Apply<Operation<EqualArgs>>("Equal", fst1.ArcType(), &args);

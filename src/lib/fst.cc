@@ -7,6 +7,7 @@
 
 #include <sstream>
 
+#include <fst/flags.h>
 #include <fst/log.h>
 
 // Include these for registration.

@@ -3,8 +3,8 @@
 //
 // String weight set and associated semiring operation definitions.
 
-#ifndef FST_LIB_STRING_WEIGHT_H_
-#define FST_LIB_STRING_WEIGHT_H_
+#ifndef FST_STRING_WEIGHT_H_
+#define FST_STRING_WEIGHT_H_
 
 #include <cstdlib>
 
@@ -45,13 +45,12 @@ template <typename Label_, StringType S = STRING_LEFT>
 class StringWeight {
  public:
   using Label = Label_;
-  using Self = StringWeight<Label, S>;
   using ReverseWeight = StringWeight<Label, ReverseStringType(S)>;
-  using Iterator = StringWeightIterator<Self>;
-  using ReverseIterator = StringWeightReverseIterator<Self>;
+  using Iterator = StringWeightIterator<StringWeight>;
+  using ReverseIterator = StringWeightReverseIterator<StringWeight>;
 
-  friend class StringWeightIterator<Self>;
-  friend class StringWeightReverseIterator<Self>;
+  friend class StringWeightIterator<StringWeight>;
+  friend class StringWeightReverseIterator<StringWeight>;
 
   StringWeight() {}
 
@@ -62,18 +61,18 @@ class StringWeight {
 
   explicit StringWeight(Label label) { PushBack(label); }
 
-  static const Self &Zero() {
-    static const Self *const zero = new Self(Label(kStringInfinity));
+  static const StringWeight &Zero() {
+    static const auto *const zero = new StringWeight(Label(kStringInfinity));
     return *zero;
   }
 
-  static const Self &One() {
-    static const Self *const one = new Self();
+  static const StringWeight &One() {
+    static const auto *const one = new StringWeight();
     return *one;
   }
 
-  static const Self &NoWeight() {
-    static const Self *const no_weight = new Self(Label(kStringBad));
+  static const StringWeight &NoWeight() {
+    static const auto *const no_weight = new StringWeight(Label(kStringBad));
     return *no_weight;
   }
 
@@ -93,7 +92,7 @@ class StringWeight {
 
   size_t Hash() const;
 
-  Self Quantize(float delta = kDelta) const { return *this; }
+  StringWeight Quantize(float delta = kDelta) const { return *this; }
 
   ReverseWeight Reverse() const;
 
@@ -335,8 +334,8 @@ inline std::istream &operator>>(std::istream &strm,
 }
 
 // Default is for the restricted string semiring. String equality is required
-// (for non-Zero() input. The restriction is used (e.g., in determinization) to
-// ensure the input is functional.
+// (for non-Zero() input). The restriction is used (e.g., in determinization)
+// to ensure the input is functional.
 template <typename Label, StringType S>
 inline StringWeight<Label, S> Plus(const StringWeight<Label, S> &w1,
                                    const StringWeight<Label, S> &w2) {
@@ -506,7 +505,8 @@ class WeightGenerate<StringWeight<Label, S>> {
   Weight operator()() const {
     size_t n = rand() % (max_string_length_ + allow_zero_);  // NOLINT
     if (allow_zero_ && n == max_string_length_) return Weight::Zero();
-    std::vector<Label> labels(n);
+    std::vector<Label> labels;
+    labels.reserve(n);
     for (size_t i = 0; i < n; ++i) {
       labels.push_back(rand() % alphabet_size_ + 1);  // NOLINT
     }
@@ -804,4 +804,4 @@ class WeightGenerate<GallicWeight<Label, W, GALLIC>>
 
 }  // namespace fst
 
-#endif  // FST_LIB_STRING_WEIGHT_H_
+#endif  // FST_STRING_WEIGHT_H_

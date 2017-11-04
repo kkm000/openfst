@@ -4,9 +4,10 @@ if HAVE_BIN
 bin_PROGRAMS = fstspecial
 
 LDADD = ../../script/libfstscript.la \
-		../../lib/libfst.la -lm $(DL_LIBS)
+        ../../lib/libfst.la -lm $(DL_LIBS)
 
-fstspecial_SOURCES = ../../bin/fstconvert.cc phi-fst.cc rho-fst.cc sigma-fst.cc
+fstspecial_SOURCES = ../../bin/fstconvert.cc ../../bin/fstconvert-main.cc \
+                     phi-fst.cc rho-fst.cc sigma-fst.cc
 fstspecial_CPPFLAGS = $(AM_CPPFLAGS)
 endif
 

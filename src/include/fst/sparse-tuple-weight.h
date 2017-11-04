@@ -11,9 +11,10 @@
 //
 // Sparse tuple weight set operation definitions.
 
-#ifndef FST_LIB_SPARSE_TUPLE_WEIGHT_H_
-#define FST_LIB_SPARSE_TUPLE_WEIGHT_H_
+#ifndef FST_SPARSE_TUPLE_WEIGHT_H_
+#define FST_SPARSE_TUPLE_WEIGHT_H_
 
+#include <algorithm>
 #include <list>
 #include <stack>
 #include <string>
@@ -37,7 +38,10 @@ class SparseTupleWeight {
  public:
   using ReverseWeight = SparseTupleWeight<typename W::ReverseWeight, K>;
 
+  using Iterator = SparseTupleWeightIterator<W, K>;
   using Pair = std::pair<K, W>;
+  using Weight = W;
+  using Index = K;
 
   constexpr static K kNoKey = -1;
 
@@ -47,22 +51,33 @@ class SparseTupleWeight {
   SparseTupleWeight(Iterator begin, Iterator end) {
     Init();
     // Assumes input iterator is sorted.
-    for (auto it = begin; it != end; ++it) Push(*it);
+    for (auto it = begin; it != end; ++it) PushBack(*it);
   }
 
-  SparseTupleWeight(const K &key, const W &weight) {
-    Init();
-    Push(key, weight);
-  }
+  // Initialize component `key` to `weight`, with `default_weight` for all
+  // other components.
+  SparseTupleWeight(const K &key, const W &weight, const W &default_weight)
+      : default_(default_weight),
+        first_(weight == default_weight ? kNoKey : key, weight) {}
 
   explicit SparseTupleWeight(const W &weight) { Init(weight); }
 
   SparseTupleWeight(const SparseTupleWeight &weight) {
     Init(weight.DefaultValue());
     SetDefaultValue(weight.DefaultValue());
-    for (SparseTupleWeightIterator<W, K> it(weight); !it.Done(); it.Next()) {
-      Push(it.Value());
+    for (Iterator it(weight); !it.Done(); it.Next()) {
+      PushBack(it.Value());
     }
+  }
+
+  SparseTupleWeight(SparseTupleWeight &&weight)
+    // Don't move the default, so weight.default_ is still valid.
+    : default_(weight.default_), first_(std::move(weight.first_)),
+      rest_(std::move(weight.rest_)) {
+    // move leaves the source in a valid but unspecified state.
+    // Make sure the source weight is empty.
+    weight.first_.first = kNoKey;
+    weight.rest_.clear();
   }
 
   static const SparseTupleWeight &Zero() {
@@ -95,15 +110,23 @@ class SparseTupleWeight {
   SparseTupleWeight &operator=(const SparseTupleWeight &weight) {
     if (this == &weight) return *this;  // Checks for identity.
     Init(weight.DefaultValue());
-    for (SparseTupleWeightIterator<W, K> it(weight); !it.Done(); it.Next()) {
-      Push(it.Value());
+    for (Iterator it(weight); !it.Done(); it.Next()) {
+      PushBack(it.Value());
     }
+    return *this;
+  }
+
+  SparseTupleWeight &operator=(SparseTupleWeight &&weight) {
+    if (this == &weight) return *this;  // Checks for identity.
+    default_ = weight.default_;
+    std::swap(first_, weight.first_);
+    std::swap(rest_, weight.rest_);
     return *this;
   }
 
   bool Member() const {
     if (!DefaultValue().Member()) return false;
-    for (SparseTupleWeightIterator<W, K> it(*this); !it.Done(); it.Next()) {
+    for (Iterator it(*this); !it.Done(); it.Next()) {
       if (!it.Value().second.Member()) return false;
     }
     return true;
@@ -113,7 +136,7 @@ class SparseTupleWeight {
   size_t Hash() const {
     size_t h = 0;
     static const std::hash<K> H;
-    for (SparseTupleWeightIterator<W, K> it(*this); !it.Done(); it.Next()) {
+    for (Iterator it(*this); !it.Done(); it.Next()) {
       h = 5 * h + H(it.Value().first);
       h = 13 * h + it.Value().second.Hash();
     }
@@ -122,16 +145,16 @@ class SparseTupleWeight {
 
   SparseTupleWeight Quantize(float delta = kDelta) const {
     SparseTupleWeight weight;
-    for (SparseTupleWeightIterator<W, K> it(*this); !it.Done(); it.Next()) {
-      weight.Push(it.Value().first, it.Value().second.Quantize(delta));
+    for (Iterator it(*this); !it.Done(); it.Next()) {
+      weight.PushBack(it.Value().first, it.Value().second.Quantize(delta));
     }
     return weight;
   }
 
   ReverseWeight Reverse() const {
     SparseTupleWeight weight;
-    for (SparseTupleWeightIterator<W, K> it(*this); !it.Done(); it.Next()) {
-      weight.Push(it.Value().first, it.Value().second.Reverse());
+    for (Iterator it(*this); !it.Done(); it.Next()) {
+      weight.PushBack(it.Value().first, it.Value().second.Reverse());
     }
     return ReverseWeight(weight);
   }
@@ -151,12 +174,12 @@ class SparseTupleWeight {
     }
   }
 
-  inline void Push(const K &key, const W &weight,
-                   bool default_value_check = true) {
-    Push(std::make_pair(key, weight), default_value_check);
+  inline void PushBack(const K &key, const W &weight,
+                       bool default_value_check = true) {
+    PushBack(std::make_pair(key, weight), default_value_check);
   }
 
-  inline void Push(const Pair &pair, bool default_value_check = true) {
+  inline void PushBack(const Pair &pair, bool default_value_check = true) {
     if (default_value_check && pair.second == default_) return;
     if (first_.first == kNoKey) {
       first_ = pair;
@@ -165,11 +188,69 @@ class SparseTupleWeight {
     }
   }
 
+  // Returns the `key`-th component, or the default value if not set.
+  const W &Value(const K &key) const {
+    // TODO(rybach): Consider binary search.
+    Iterator iter(*this);
+    for (; !iter.Done() && iter.Value().first < key; iter.Next()) continue;
+    return !iter.Done() && iter.Value().first == key ? iter.Value().second
+                                                     : DefaultValue();
+  }
+
+  void SetValue(const K &key, const W &w) {
+    if (w == DefaultValue()) {
+      ClearValue(key);
+    } else {
+      SetValueToNonDefault(key, w);
+    }
+  }
+
   void SetDefaultValue(const W &value) { default_ = value; }
 
   const W &DefaultValue() const { return default_; }
 
  private:
+  void SetValueToNonDefault(const K &key, const W &w) {
+    // Don't use SparseTupleWeightIterator, since that's const.
+    if (first_.first == kNoKey) {
+      first_ = Pair(key, w);
+    } else if (key < first_.first) {
+      rest_.push_front(first_);
+      first_ = Pair(key, w);
+    } else if (key == first_.first) {
+      first_.second = w;
+    } else {
+      const auto i =
+          std::find_if(rest_.begin(), rest_.end(),
+                       [key](const Pair &p) { return p.first >= key; });
+      if (i != rest_.end() && i->first == key) {
+        i->second = w;
+      } else {
+        rest_.insert(i, Pair(key, w));
+      }
+    }
+  }
+
+  // Removes the weight value for `key`, having the effect of setting
+  // it to `DefaultValue()`.
+  void ClearValue(const K &key) {
+    if (key == first_.first) {
+      if (!rest_.empty()) {
+        first_ = rest_.front();
+        rest_.pop_front();
+      } else {
+        first_.first = kNoKey;
+      }
+    } else if (key > first_.first) {
+      const auto i =
+          std::find_if(rest_.begin(), rest_.end(),
+                       [key](const Pair &p) { return p.first >= key; });
+      if (i != rest_.end() && i->first == key) {
+        rest_.erase(i);
+      }
+    }
+  }
+
   // Assumed default value of uninitialized keys, by default W::Zero().
   W default_;
 
@@ -181,6 +262,10 @@ class SparseTupleWeight {
 
   friend class SparseTupleWeightIterator<W, K>;
 };
+
+// Declare storage for kNoKey since it is passed by reference.
+template <class W, class K>
+constexpr K SparseTupleWeight<W, K>::kNoKey;
 
 template <class W, class K>
 class SparseTupleWeightIterator {
@@ -241,14 +326,14 @@ inline void SparseTupleWeightMap(SparseTupleWeight<W, K> *result,
     const auto &v1 = (w1_it.Done()) ? v1_def : w1_it.Value().second;
     const auto &v2 = (w2_it.Done()) ? v2_def : w2_it.Value().second;
     if (k1 == k2) {
-      result->Push(k1, operator_mapper.Map(k1, v1, v2));
+      result->PushBack(k1, operator_mapper.Map(k1, v1, v2));
       if (!w1_it.Done()) w1_it.Next();
       if (!w2_it.Done()) w2_it.Next();
     } else if (k1 < k2) {
-      result->Push(k1, operator_mapper.Map(k1, v1, v2_def));
+      result->PushBack(k1, operator_mapper.Map(k1, v1, v2_def));
       w1_it.Next();
     } else {
-      result->Push(k2, operator_mapper.Map(k2, v1_def, v2));
+      result->PushBack(k2, operator_mapper.Map(k2, v1_def, v2));
       w2_it.Next();
     }
   }
@@ -315,7 +400,7 @@ inline std::istream &operator>>(std::istream &strm,
     reader.ReadElement(&key);
     W v;
     more = reader.ReadElement(&v);
-    weight.Push(key, v);
+    weight.PushBack(key, v);
   }
   reader.ReadEnd();
   return strm;
@@ -323,4 +408,4 @@ inline std::istream &operator>>(std::istream &strm,
 
 }  // namespace fst
 
-#endif  // FST_LIB_SPARSE_TUPLE_WEIGHT_H_
+#endif  // FST_SPARSE_TUPLE_WEIGHT_H_

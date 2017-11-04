@@ -3,8 +3,8 @@
 //
 // Class to add a matcher to an FST.
 
-#ifndef FST_LIB_MATCHER_FST_H_
-#define FST_LIB_MATCHER_FST_H_
+#ifndef FST_MATCHER_FST_H_
+#define FST_MATCHER_FST_H_
 
 #include <memory>
 #include <string>
@@ -180,7 +180,6 @@ class MatcherFst : public ImplToExpandedFst<internal::AddOnImpl<F, Data>> {
 
   static std::shared_ptr<Impl> CreateImpl(const FST &fst, const string &name,
                                           std::shared_ptr<Data> data) {
-    CHECK(data);
     auto impl = std::make_shared<Impl>(fst, name);
     impl->SetAddOn(data);
     Init init(&impl);
@@ -345,4 +344,4 @@ using StdOLabelLookAheadFst = MatcherFst<
 
 }  // namespace fst
 
-#endif  // FST_LIB_MATCHER_FST_H_
+#endif  // FST_MATCHER_FST_H_

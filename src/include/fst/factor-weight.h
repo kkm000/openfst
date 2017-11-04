@@ -3,8 +3,8 @@
 //
 // Classes to factor weights in an FST.
 
-#ifndef FST_LIB_FACTOR_WEIGHT_H_
-#define FST_LIB_FACTOR_WEIGHT_H_
+#ifndef FST_FACTOR_WEIGHT_H_
+#define FST_FACTOR_WEIGHT_H_
 
 #include <algorithm>
 #include <string>
@@ -493,4 +493,4 @@ inline void FactorWeightFst<Arc, FactorIterator>::InitStateIterator(
 
 }  // namespace fst
 
-#endif  // FST_LIB_FACTOR_WEIGHT_H_
+#endif  // FST_FACTOR_WEIGHT_H_

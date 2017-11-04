@@ -5,8 +5,8 @@
 //
 // Consider using when operation does not change the number of states.
 
-#ifndef FST_LIB_STATE_MAP_H_
-#define FST_LIB_STATE_MAP_H_
+#ifndef FST_STATE_MAP_H_
+#define FST_STATE_MAP_H_
 
 #include <algorithm>
 #include <string>
@@ -610,4 +610,4 @@ using StdArcUniqueMapper = ArcUniqueMapper<StdArc>;
 
 }  // namespace fst
 
-#endif  // FST_LIB_STATE_MAP_H_
+#endif  // FST_STATE_MAP_H_

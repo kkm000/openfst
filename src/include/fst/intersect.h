@@ -3,8 +3,8 @@
 //
 // Class to compute the intersection of two FSAs.
 
-#ifndef FST_LIB_INTERSECT_H_
-#define FST_LIB_INTERSECT_H_
+#ifndef FST_INTERSECT_H_
+#define FST_INTERSECT_H_
 
 #include <algorithm>
 #include <vector>
@@ -150,4 +150,4 @@ void Intersect(const Fst<Arc> &ifst1, const Fst<Arc> &ifst2,
 
 }  // namespace fst
 
-#endif  // FST_LIB_INTERSECT_H_
+#endif  // FST_INTERSECT_H_

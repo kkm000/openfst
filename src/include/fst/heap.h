@@ -5,8 +5,8 @@
 // using a key. The key can be used to do an in-place update of values in the
 // heap.
 
-#ifndef FST_LIB_HEAP_H_
-#define FST_LIB_HEAP_H_
+#ifndef FST_HEAP_H_
+#define FST_HEAP_H_
 
 #include <utility>
 #include <vector>
@@ -163,4 +163,4 @@ constexpr int Heap<T, Compare>::kNoKey;
 
 }  // namespace fst
 
-#endif  // FST_LIB_HEAP_H_
+#endif  // FST_HEAP_H_

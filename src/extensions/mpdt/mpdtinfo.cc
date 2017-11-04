@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include <fst/flags.h>
 #include <fst/log.h>
 
 #include <fst/extensions/mpdt/mpdtscript.h>

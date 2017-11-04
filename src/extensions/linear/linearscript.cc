@@ -6,6 +6,7 @@
 #include <set>
 
 #include <fst/compat.h>
+#include <fst/flags.h>
 #include <fst/extensions/linear/linearscript.h>
 #include <fst/arc.h>
 #include <fstream>

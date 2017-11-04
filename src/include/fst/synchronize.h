@@ -3,8 +3,8 @@
 //
 // Synchronize an FST with bounded delay.
 
-#ifndef FST_LIB_SYNCHRONIZE_H_
-#define FST_LIB_SYNCHRONIZE_H_
+#ifndef FST_SYNCHRONIZE_H_
+#define FST_SYNCHRONIZE_H_
 
 #include <algorithm>
 #include <string>
@@ -411,4 +411,4 @@ void Synchronize(const Fst<Arc> &ifst, MutableFst<Arc> *ofst) {
 
 }  // namespace fst
 
-#endif  // FST_LIB_SYNCHRONIZE_H_
+#endif  // FST_SYNCHRONIZE_H_

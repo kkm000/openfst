@@ -1,8 +1,8 @@
 // See www.openfst.org for extensive documentation on this weighted
 // finite-state transducer library.
 
-#ifndef FST_LIB_SYMBOL_TABLE_OPS_H_
-#define FST_LIB_SYMBOL_TABLE_OPS_H_
+#ifndef FST_SYMBOL_TABLE_OPS_H_
+#define FST_SYMBOL_TABLE_OPS_H_
 
 #include <string>
 #include <unordered_set>
@@ -73,4 +73,4 @@ bool AddAuxiliarySymbols(const string &prefix, int64 start_label,
                          int64 nlabels, SymbolTable *syms);
 
 }  // namespace fst
-#endif  // FST_LIB_SYMBOL_TABLE_OPS_H_
+#endif  // FST_SYMBOL_TABLE_OPS_H_

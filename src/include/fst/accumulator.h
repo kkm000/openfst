@@ -3,8 +3,8 @@
 //
 // Classes to accumulate arc weights. Useful for weight lookahead.
 
-#ifndef FST_LIB_ACCUMULATOR_H_
-#define FST_LIB_ACCUMULATOR_H_
+#ifndef FST_ACCUMULATOR_H_
+#define FST_ACCUMULATOR_H_
 
 #include <algorithm>
 #include <functional>
@@ -891,4 +891,4 @@ class SafeReplaceAccumulator {
 
 }  // namespace fst
 
-#endif  // FST_LIB_ACCUMULATOR_H_
+#endif  // FST_ACCUMULATOR_H_

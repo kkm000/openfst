@@ -8,6 +8,8 @@
 #include <string>
 #include <vector>
 
+#include <fst/flags.h>
+
 #include <fst/extensions/pdt/getters.h>
 #include <fst/extensions/pdt/pdtscript.h>
 #include <fst/util.h>
@@ -24,6 +26,13 @@ DEFINE_string(left_paren_prefix, "(_", "Prefix to attach to SymbolTable "
               "labels for inserted left parentheses");
 DEFINE_string(right_paren_prefix, ")_", "Prefix to attach to SymbolTable "
               "labels for inserted right parentheses");
+
+void Cleanup(std::vector<fst::script::LabelFstClassPair> *pairs) {
+  for (const auto &pair : *pairs) {
+    delete pair.second;
+  }
+  pairs->clear();
+}
 
 int main(int argc, char **argv) {
   namespace s = fst::script;
@@ -47,8 +56,6 @@ int main(int argc, char **argv) {
   const string in_name = argv[1];
   const string out_name = argc % 2 == 0 ? argv[argc - 1] : "";
 
-  // Replace takes ownership of the pointer of FST arrays, deleting all such
-  // pointers when the underlying ReplaceFst is destroyed.
   auto *ifst = FstClass::Read(in_name);
   if (!ifst) return 1;
 
@@ -56,6 +63,7 @@ int main(int argc, char **argv) {
   if (!s::GetPdtParserType(FLAGS_pdt_parser_type, &parser_type)) {
     LOG(ERROR) << argv[0] << ": Unknown PDT parser type: "
                << FLAGS_pdt_parser_type;
+    delete ifst;
     return 1;
   }
 
@@ -67,7 +75,10 @@ int main(int argc, char **argv) {
 
   for (auto i = 3; i < argc - 1; i += 2) {
     ifst = FstClass::Read(argv[i]);
-    if (!ifst) return 1;
+    if (!ifst) {
+      Cleanup(&pairs);
+      return 1;
+    }
     // Note that if the root label is beyond the range of the underlying FST's
     // labels, truncation will occur.
     const auto label = atoll(argv[i + 1]);
@@ -79,6 +90,7 @@ int main(int argc, char **argv) {
   s::PdtReplace(pairs, &ofst, &parens, root, parser_type,
                 FLAGS_start_paren_labels, FLAGS_left_paren_prefix,
                 FLAGS_right_paren_prefix);
+  Cleanup(&pairs);
 
   if (!FLAGS_pdt_parentheses.empty()) {
     if (!WriteLabelPairs(FLAGS_pdt_parentheses, parens)) return 1;

@@ -10,7 +10,6 @@
 
 #include <fst/fstlib.h>
 #include <fst/script/arc-class.h>
-#include <fst/script/arg-packs.h>
 #include <fst/script/fst-class.h>
 
 // Scripting API support for EncodeMapper.
@@ -94,7 +93,7 @@ inline ArcClass EncodeMapperClassImpl<Arc>::operator()(const ArcClass &a) {
 class EncodeMapperClass;
 
 using InitEncodeMapperClassArgs =
-    args::Package<uint32, EncodeType, EncodeMapperClass *>;
+    std::tuple<uint32, EncodeType, EncodeMapperClass *>;
 
 class EncodeMapperClass {
  public:
@@ -160,8 +159,8 @@ class EncodeMapperClass {
 
 template <class Arc>
 void InitEncodeMapperClass(InitEncodeMapperClassArgs *args) {
-  args->arg3->impl_.reset(
-      new EncodeMapperClassImpl<Arc>(args->arg1, args->arg2));
+  std::get<2>(*args)->impl_.reset(
+      new EncodeMapperClassImpl<Arc>(std::get<0>(*args), std::get<1>(*args)));
 }
 
 }  // namespace script

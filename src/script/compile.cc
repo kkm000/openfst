@@ -11,7 +11,6 @@
 namespace fst {
 namespace script {
 
-// 1
 void CompileFst(std::istream &istrm, const string &source, const string &dest,
                 const string &fst_type, const string &arc_type,
                 const SymbolTable *isyms, const SymbolTable *osyms,
@@ -23,7 +22,6 @@ void CompileFst(std::istream &istrm, const string &source, const string &dest,
   fst->Write(dest);
 }
 
-// 2
 FstClass *CompileFstInternal(std::istream &istrm, const string &source,
                              const string &fst_type, const string &arc_type,
                              const SymbolTable *isyms, const SymbolTable *osyms,

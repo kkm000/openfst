@@ -4,6 +4,8 @@
 #ifndef FST_SCRIPT_EQUAL_H_
 #define FST_SCRIPT_EQUAL_H_
 
+#include <tuple>
+
 #include <fst/equal.h>
 #include <fst/script/arg-packs.h>
 #include <fst/script/fst-class.h>
@@ -11,15 +13,15 @@
 namespace fst {
 namespace script {
 
-using EqualInnerArgs = args::Package<const FstClass &, const FstClass &, float>;
+using EqualInnerArgs = std::tuple<const FstClass &, const FstClass &, float>;
 
-using EqualArgs = args::WithReturnValue<bool, EqualInnerArgs>;
+using EqualArgs = WithReturnValue<bool, EqualInnerArgs>;
 
 template <class Arc>
 void Equal(EqualArgs *args) {
-  const Fst<Arc> &fst1 = *(args->args.arg1.GetFst<Arc>());
-  const Fst<Arc> &fst2 = *(args->args.arg2.GetFst<Arc>());
-  args->retval = Equal(fst1, fst2, args->args.arg3);
+  const Fst<Arc> &fst1 = *(std::get<0>(args->args).GetFst<Arc>());
+  const Fst<Arc> &fst2 = *(std::get<1>(args->args).GetFst<Arc>());
+  args->retval = Equal(fst1, fst2, std::get<2>(args->args));
 }
 
 bool Equal(const FstClass &fst1, const FstClass &fst2, float delta = kDelta);

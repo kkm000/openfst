@@ -10,6 +10,7 @@
 
 #include <fst/extensions/compress/randmod.h>
 
+#include <fst/flags.h>
 #include <fst/log.h>
 #include <fst/fstlib.h>
 #include <fst/util.h>

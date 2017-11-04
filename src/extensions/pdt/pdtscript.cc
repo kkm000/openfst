@@ -25,8 +25,8 @@ void PdtCompose(const FstClass &ifst1, const FstClass &ifst2,
                 const std::vector<LabelPair> &parens,
                 MutableFstClass *ofst, const PdtComposeOptions &copts,
                 bool left_pdt) {
-  if (!ArcTypesMatch(ifst1, ifst2, "PdtCompose") ||
-      !ArcTypesMatch(ifst1, *ofst, "PdtCompose"))
+  if (!internal::ArcTypesMatch(ifst1, ifst2, "PdtCompose") ||
+      !internal::ArcTypesMatch(ifst1, *ofst, "PdtCompose"))
     return;
   PdtComposeArgs args(ifst1, ifst2, parens, ofst, copts, left_pdt);
   Apply<Operation<PdtComposeArgs>>("PdtCompose", ifst1.ArcType(), &args);
@@ -52,11 +52,12 @@ void PdtReplace(const std::vector<LabelFstClassPair> &pairs,
                 int64 root, PdtParserType parser_type, int64 start_paren_labels,
                 const string &left_paren_prefix,
                 const string &right_paren_prefix) {
-  for (auto i = 0; i < pairs.size() - 1; ++i) {
-    if (!ArcTypesMatch(*pairs[i].second, *pairs[i + 1].second, "PdtReplace"))
+  for (size_t i = 1; i < pairs.size(); ++i) {
+    if (!internal::ArcTypesMatch(*pairs[i - 1].second, *pairs[i].second,
+                                 "PdtReplace"))
       return;
   }
-  if (!ArcTypesMatch(*pairs[0].second, *ofst, "PdtReplace")) return;
+  if (!internal::ArcTypesMatch(*pairs[0].second, *ofst, "PdtReplace")) return;
   PdtReplaceArgs args(pairs, ofst, parens, root, parser_type,
                       start_paren_labels, left_paren_prefix,
                       right_paren_prefix);

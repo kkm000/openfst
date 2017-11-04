@@ -8,10 +8,9 @@
 namespace fst {
 namespace script {
 
-bool Equivalent(const FstClass &fst1, const FstClass &fst2, float delta,
-                bool *error) {
-  if (!ArcTypesMatch(fst1, fst2, "Equivalent")) return false;
-  EquivalentInnerArgs iargs(fst1, fst2, delta, error);
+bool Equivalent(const FstClass &fst1, const FstClass &fst2, float delta) {
+  if (!internal::ArcTypesMatch(fst1, fst2, "Equivalent")) return false;
+  EquivalentInnerArgs iargs(fst1, fst2, delta);
   EquivalentArgs args(iargs);
   Apply<Operation<EquivalentArgs>>("Equivalent", fst1.ArcType(), &args);
   return args.retval;

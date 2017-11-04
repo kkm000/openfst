@@ -3,8 +3,8 @@
 //
 // Class to complement an FST.
 
-#ifndef FST_LIB_COMPLEMENT_H_
-#define FST_LIB_COMPLEMENT_H_
+#ifndef FST_COMPLEMENT_H_
+#define FST_COMPLEMENT_H_
 
 #include <algorithm>
 #include <string>
@@ -274,4 +274,4 @@ using StdComplementFst = ComplementFst<StdArc>;
 
 }  // namespace fst
 
-#endif  // FST_LIB_COMPLEMENT_H_
+#endif  // FST_COMPLEMENT_H_

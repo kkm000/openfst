@@ -21,7 +21,6 @@
 #include <fst/script/map.h>           // For MapType.
 #include <fst/script/script-impl.h>   // For RandArcSelection.
 
-#include <fst/types.h>
 #include <fst/log.h>
 
 namespace fst {

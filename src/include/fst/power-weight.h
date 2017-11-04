@@ -3,8 +3,8 @@
 //
 // Cartesian power weight semiring operation definitions.
 
-#ifndef FST_LIB_POWER_WEIGHT_H_
-#define FST_LIB_POWER_WEIGHT_H_
+#ifndef FST_POWER_WEIGHT_H_
+#define FST_POWER_WEIGHT_H_
 
 #include <string>
 
@@ -36,6 +36,12 @@ class PowerWeight : public TupleWeight<W, n> {
   template <class Iterator>
   PowerWeight(Iterator begin, Iterator end) : TupleWeight<W, n>(begin, end) {}
 
+  // Initialize component `index` to `weight`; initialize all other components
+  // to `default_weight`
+  PowerWeight(size_t index, const W &weight,
+              const W &default_weight = W::Zero())
+      : TupleWeight<W, n>(index, weight, default_weight) {}
+
   static const PowerWeight &Zero() {
     static const PowerWeight zero(TupleWeight<W, n>::Zero());
     return zero;
@@ -52,11 +58,9 @@ class PowerWeight : public TupleWeight<W, n> {
   }
 
   static const string &Type() {
-    static string type;
-    if (type.empty()) {
-      type = W::Type() + "_^" + std::to_string(n);
-    }
-    return type;
+    static const string *const type =
+        new string(W::Type() + "_^" + std::to_string(n));
+    return *type;
   }
 
   static constexpr uint64 Properties() {
@@ -161,4 +165,4 @@ class WeightGenerate<PowerWeight<W, n>> {
 
 }  // namespace fst
 
-#endif  // FST_LIB_POWER_WEIGHT_H_
+#endif  // FST_POWER_WEIGHT_H_
