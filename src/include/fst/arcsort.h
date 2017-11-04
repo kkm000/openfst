@@ -3,8 +3,8 @@
 //
 // Functions and classes to sort arcs in an FST.
 
-#ifndef FST_LIB_ARCSORT_H_
-#define FST_LIB_ARCSORT_H_
+#ifndef FST_ARCSORT_H_
+#define FST_ARCSORT_H_
 
 #include <algorithm>
 #include <string>
@@ -208,4 +208,4 @@ using StdOLabelCompare = OLabelCompare<StdArc>;
 
 }  // namespace fst
 
-#endif  // FST_LIB_ARCSORT_H_
+#endif  // FST_ARCSORT_H_

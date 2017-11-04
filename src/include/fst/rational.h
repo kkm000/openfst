@@ -4,8 +4,8 @@
 // An FST implementation and base interface for delayed unions, concatenations,
 // and closures.
 
-#ifndef FST_LIB_RATIONAL_H_
-#define FST_LIB_RATIONAL_H_
+#ifndef FST_RATIONAL_H_
+#define FST_RATIONAL_H_
 
 #include <algorithm>
 #include <string>
@@ -304,4 +304,4 @@ class ArcIterator<RationalFst<Arc>> : public CacheArcIterator<ReplaceFst<Arc>> {
 
 }  // namespace fst
 
-#endif  // FST_LIB_RATIONAL_H_
+#endif  // FST_RATIONAL_H_

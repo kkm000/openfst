@@ -3,8 +3,8 @@
 //
 // Function objects to restrict which arcs are traversed in an FST.
 
-#ifndef FST_LIB_ARCFILTER_H_
-#define FST_LIB_ARCFILTER_H_
+#ifndef FST_ARCFILTER_H_
+#define FST_ARCFILTER_H_
 
 
 #include <fst/fst.h>
@@ -90,4 +90,4 @@ class MultiLabelArcFilter {
 
 }  // namespace fst
 
-#endif  // FST_LIB_ARCFILTER_H_
+#endif  // FST_ARCFILTER_H_

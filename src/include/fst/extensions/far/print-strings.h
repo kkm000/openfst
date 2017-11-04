@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include <fst/flags.h>
 #include <fst/extensions/far/far.h>
 #include <fstream>
 #include <fst/shortest-distance.h>

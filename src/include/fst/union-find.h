@@ -4,8 +4,8 @@
 // Union-find algorithm for dense sets of non-negative integers, implemented
 // using disjoint tree forests with rank heuristics and path compression.
 
-#ifndef FST_LIB_UNION_FIND_H_
-#define FST_LIB_UNION_FIND_H_
+#ifndef FST_UNION_FIND_H_
+#define FST_UNION_FIND_H_
 
 #include <stack>
 #include <vector>
@@ -81,4 +81,4 @@ class UnionFind {
 
 }  // namespace fst
 
-#endif  // FST_LIB_UNION_FIND_H_
+#endif  // FST_UNION_FIND_H_

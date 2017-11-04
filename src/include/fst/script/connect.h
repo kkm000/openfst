@@ -5,8 +5,6 @@
 #define FST_SCRIPT_CONNECT_H_
 
 #include <fst/connect.h>
-#include <fst/dfs-visit.h>
-#include <fst/script/arg-packs.h>
 #include <fst/script/fst-class.h>
 
 namespace fst {
@@ -14,8 +12,7 @@ namespace script {
 
 template <class Arc>
 void Connect(MutableFstClass *fst) {
-  MutableFst<Arc> *typed_fst = fst->GetMutableFst<Arc>();
-  Connect(typed_fst);
+  Connect(fst->GetMutableFst<Arc>());
 }
 
 void Connect(MutableFstClass *fst);

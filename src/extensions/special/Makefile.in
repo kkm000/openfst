@@ -157,11 +157,13 @@ sigma_fst_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(AM_CXXFLAGS) \
 	$(CXXFLAGS) $(sigma_fst_la_LDFLAGS) $(LDFLAGS) -o $@
 PROGRAMS = $(bin_PROGRAMS)
-am__fstspecial_SOURCES_DIST = ../../bin/fstconvert.cc phi-fst.cc \
-	rho-fst.cc sigma-fst.cc
+am__fstspecial_SOURCES_DIST = ../../bin/fstconvert.cc \
+	../../bin/fstconvert-main.cc phi-fst.cc rho-fst.cc \
+	sigma-fst.cc
 am__dirstamp = $(am__leading_dot)dirstamp
 @HAVE_BIN_TRUE@am_fstspecial_OBJECTS =  \
 @HAVE_BIN_TRUE@	../../bin/fstspecial-fstconvert.$(OBJEXT) \
+@HAVE_BIN_TRUE@	../../bin/fstspecial-fstconvert-main.$(OBJEXT) \
 @HAVE_BIN_TRUE@	fstspecial-phi-fst.$(OBJEXT) \
 @HAVE_BIN_TRUE@	fstspecial-rho-fst.$(OBJEXT) \
 @HAVE_BIN_TRUE@	fstspecial-sigma-fst.$(OBJEXT)
@@ -371,9 +373,11 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 AM_CPPFLAGS = -I$(srcdir)/../../include $(ICU_CPPFLAGS)
 @HAVE_BIN_TRUE@LDADD = ../../script/libfstscript.la \
-@HAVE_BIN_TRUE@		../../lib/libfst.la -lm $(DL_LIBS)
+@HAVE_BIN_TRUE@        ../../lib/libfst.la -lm $(DL_LIBS)
 
-@HAVE_BIN_TRUE@fstspecial_SOURCES = ../../bin/fstconvert.cc phi-fst.cc rho-fst.cc sigma-fst.cc
+@HAVE_BIN_TRUE@fstspecial_SOURCES = ../../bin/fstconvert.cc ../../bin/fstconvert-main.cc \
+@HAVE_BIN_TRUE@                     phi-fst.cc rho-fst.cc sigma-fst.cc
+
 @HAVE_BIN_TRUE@fstspecial_CPPFLAGS = $(AM_CPPFLAGS)
 libfst_LTLIBRARIES = phi-fst.la rho-fst.la sigma-fst.la
 lib_LTLIBRARIES = libfstspecial.la
@@ -559,6 +563,8 @@ clean-binPROGRAMS:
 	@: > ../../bin/$(DEPDIR)/$(am__dirstamp)
 ../../bin/fstspecial-fstconvert.$(OBJEXT): ../../bin/$(am__dirstamp) \
 	../../bin/$(DEPDIR)/$(am__dirstamp)
+../../bin/fstspecial-fstconvert-main.$(OBJEXT):  \
+	../../bin/$(am__dirstamp) ../../bin/$(DEPDIR)/$(am__dirstamp)
 
 fstspecial$(EXEEXT): $(fstspecial_OBJECTS) $(fstspecial_DEPENDENCIES) $(EXTRA_fstspecial_DEPENDENCIES) 
 	@rm -f fstspecial$(EXEEXT)
@@ -571,6 +577,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@../../bin/$(DEPDIR)/fstspecial-fstconvert-main.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@../../bin/$(DEPDIR)/fstspecial-fstconvert.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fstspecial-phi-fst.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fstspecial-rho-fst.Po@am__quote@
@@ -616,6 +623,20 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='../../bin/fstconvert.cc' object='../../bin/fstspecial-fstconvert.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fstspecial_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o ../../bin/fstspecial-fstconvert.obj `if test -f '../../bin/fstconvert.cc'; then $(CYGPATH_W) '../../bin/fstconvert.cc'; else $(CYGPATH_W) '$(srcdir)/../../bin/fstconvert.cc'; fi`
+
+../../bin/fstspecial-fstconvert-main.o: ../../bin/fstconvert-main.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fstspecial_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT ../../bin/fstspecial-fstconvert-main.o -MD -MP -MF ../../bin/$(DEPDIR)/fstspecial-fstconvert-main.Tpo -c -o ../../bin/fstspecial-fstconvert-main.o `test -f '../../bin/fstconvert-main.cc' || echo '$(srcdir)/'`../../bin/fstconvert-main.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) ../../bin/$(DEPDIR)/fstspecial-fstconvert-main.Tpo ../../bin/$(DEPDIR)/fstspecial-fstconvert-main.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='../../bin/fstconvert-main.cc' object='../../bin/fstspecial-fstconvert-main.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fstspecial_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o ../../bin/fstspecial-fstconvert-main.o `test -f '../../bin/fstconvert-main.cc' || echo '$(srcdir)/'`../../bin/fstconvert-main.cc
+
+../../bin/fstspecial-fstconvert-main.obj: ../../bin/fstconvert-main.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fstspecial_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT ../../bin/fstspecial-fstconvert-main.obj -MD -MP -MF ../../bin/$(DEPDIR)/fstspecial-fstconvert-main.Tpo -c -o ../../bin/fstspecial-fstconvert-main.obj `if test -f '../../bin/fstconvert-main.cc'; then $(CYGPATH_W) '../../bin/fstconvert-main.cc'; else $(CYGPATH_W) '$(srcdir)/../../bin/fstconvert-main.cc'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) ../../bin/$(DEPDIR)/fstspecial-fstconvert-main.Tpo ../../bin/$(DEPDIR)/fstspecial-fstconvert-main.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='../../bin/fstconvert-main.cc' object='../../bin/fstspecial-fstconvert-main.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fstspecial_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o ../../bin/fstspecial-fstconvert-main.obj `if test -f '../../bin/fstconvert-main.cc'; then $(CYGPATH_W) '../../bin/fstconvert-main.cc'; else $(CYGPATH_W) '$(srcdir)/../../bin/fstconvert-main.cc'; fi`
 
 fstspecial-phi-fst.o: phi-fst.cc
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fstspecial_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT fstspecial-phi-fst.o -MD -MP -MF $(DEPDIR)/fstspecial-phi-fst.Tpo -c -o fstspecial-phi-fst.o `test -f 'phi-fst.cc' || echo '$(srcdir)/'`phi-fst.cc

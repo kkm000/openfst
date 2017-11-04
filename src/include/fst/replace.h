@@ -3,8 +3,8 @@
 //
 // Functions and classes for the recursive replacement of FSTs.
 
-#ifndef FST_LIB_REPLACE_H_
-#define FST_LIB_REPLACE_H_
+#ifndef FST_REPLACE_H_
+#define FST_REPLACE_H_
 
 #include <set>
 #include <string>
@@ -1467,4 +1467,4 @@ void Replace(const std::vector<std::pair<typename Arc::Label, const Fst<Arc> *>>
 
 }  // namespace fst
 
-#endif  // FST_LIB_REPLACE_H_
+#endif  // FST_REPLACE_H_

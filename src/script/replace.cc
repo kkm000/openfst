@@ -10,15 +10,17 @@ namespace script {
 
 void Replace(const std::vector<LabelFstClassPair> &pairs, MutableFstClass *ofst,
              const ReplaceOptions &opts) {
-  for (auto i = 0; i < pairs.size() - 1; ++i) {
-    if (!ArcTypesMatch(*pairs[i].second, *pairs[i + 1].second, "Replace")) {
+  if (!pairs.empty()) {
+    for (auto it = pairs.begin(); it != pairs.end() - 1; ++it) {
+      if (!internal::ArcTypesMatch(*it->second, *(it + 1)->second, "Replace")) {
+        ofst->SetProperties(kError, kError);
+        return;
+      }
+    }
+    if (!internal::ArcTypesMatch(*pairs[0].second, *ofst, "Replace")) {
       ofst->SetProperties(kError, kError);
       return;
     }
-  }
-  if (!ArcTypesMatch(*pairs[0].second, *ofst, "Replace")) {
-    ofst->SetProperties(kError, kError);
-    return;
   }
   ReplaceArgs args(pairs, ofst, opts);
   Apply<Operation<ReplaceArgs>>("Replace", ofst->ArcType(), &args);

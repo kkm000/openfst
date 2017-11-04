@@ -11,16 +11,23 @@ from libcpp.memory cimport unique_ptr
 from libcpp.utility cimport pair
 from libcpp.vector cimport vector
 
+from google3 cimport string
 from basictypes cimport int32
 from basictypes cimport int64
 from basictypes cimport uint32
 from basictypes cimport uint64
 cimport fst as fst
 from ios cimport stringstream
-from libcpp.string cimport string
 
 
-# Exportable helper functions
+# Constants not imported from elsewhere.
+# TODO(kbg): Figure out how to access static class variables so I don't have
+# to do it this way.
+
+cdef int64 kNoSymbol
+
+
+# Exportable helper functions.
 
 
 cdef string tostring(data, encoding=?) except *
@@ -308,8 +315,8 @@ cdef class _MutableFst(_Fst):
 
   cdef void _reweight(self, potentials, bool to_final=?) except *
 
-  cdef void _rmepsilon(self, bool connect=?, float delta=?, int64 nstate=?,
-                       weight=?) except *
+  cdef void _rmepsilon(self, queue_type=?, bool connect=?, weight=?,
+                       int64 nstate=?, float delta=?) except *
 
   cdef void _set_final(self, int64 state, weight=?) except *
 
@@ -470,10 +477,6 @@ cpdef _MutableFst replace(pairs, call_arc_labeling=?, return_arc_labeling=?,
                           bool epsilon_on_replace=?, int64 return_label=?)
 
 cpdef _MutableFst reverse(_Fst ifst, bool require_superinitial=?)
-
-cpdef _MutableFst rmepsilon(_Fst ifst, bool connect=?, float delta=?,
-                            int64 nstate=?, queue_type=?, bool reverse=?,
-                            weight=?)
 
 cdef vector[fst.WeightClass] *_shortestdistance(_Fst ifst, float delta=?,
                                                 int64 nstate=?, queue_type=?,

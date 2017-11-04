@@ -3,8 +3,8 @@
 //
 // FST utility inline definitions.
 
-#ifndef FST_LIB_UTIL_H_
-#define FST_LIB_UTIL_H_
+#ifndef FST_UTIL_H_
+#define FST_UTIL_H_
 
 #include <iostream>
 #include <iterator>
@@ -23,6 +23,8 @@
 #include <fst/types.h>
 #include <fst/log.h>
 #include <fstream>
+
+#include <fst/flags.h>
 
 
 // Utility for error handling.
@@ -423,4 +425,4 @@ class CompactSet {
 
 }  // namespace fst
 
-#endif  // FST_LIB_UTIL_H_
+#endif  // FST_UTIL_H_

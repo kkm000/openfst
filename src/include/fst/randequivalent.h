@@ -4,8 +4,8 @@
 // Tests if two FSTS are equivalent by checking if random strings from one FST
 // are transduced the same by both FSTs.
 
-#ifndef FST_LIB_RANDEQUIVALENT_H_
-#define FST_LIB_RANDEQUIVALENT_H_
+#ifndef FST_RANDEQUIVALENT_H_
+#define FST_RANDEQUIVALENT_H_
 
 #include <fst/log.h>
 
@@ -111,4 +111,4 @@ bool RandEquivalent(const Fst<Arc> &fst1, const Fst<Arc> &fst2, int32 num_paths,
 
 }  // namespace fst
 
-#endif  // FST_LIB_RANDEQUIVALENT_H_
+#endif  // FST_RANDEQUIVALENT_H_

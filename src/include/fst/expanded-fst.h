@@ -3,8 +3,8 @@
 //
 // Generic FST augmented with state count-interface class definition.
 
-#ifndef FST_LIB_EXPANDED_FST_H_
-#define FST_LIB_EXPANDED_FST_H_
+#ifndef FST_EXPANDED_FST_H_
+#define FST_EXPANDED_FST_H_
 
 #include <sys/types.h>
 #include <istream>
@@ -180,4 +180,4 @@ typename Arc::StateId CountArcs(const Fst<Arc> &fst) {
 
 }  // namespace fst
 
-#endif  // FST_LIB_EXPANDED_FST_H_
+#endif  // FST_EXPANDED_FST_H_

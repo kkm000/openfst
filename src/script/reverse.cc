@@ -10,7 +10,7 @@ namespace script {
 
 void Reverse(const FstClass &ifst, MutableFstClass *ofst,
              bool require_superinitial) {
-  if (!ArcTypesMatch(ifst, *ofst, "Reverse")) {
+  if (!internal::ArcTypesMatch(ifst, *ofst, "Reverse")) {
     ofst->SetProperties(kError, kError);
     return;
   }

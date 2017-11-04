@@ -7,7 +7,6 @@
 #include <memory>
 
 #include <fst/fstlib.h>
-#include <fst/script/arg-packs.h>
 #include <fst/script/fst-class.h>
 
 // Scripting API support for StateIterator.
@@ -48,7 +47,7 @@ class StateIteratorClassImpl : public StateIteratorImplBase {
 class StateIteratorClass;
 
 using InitStateIteratorClassArgs =
-    args::Package<const FstClass &, StateIteratorClass *>;
+    std::pair<const FstClass &, StateIteratorClass *>;
 
 // Untemplated user-facing class holding a templated pimpl.
 class StateIteratorClass {
@@ -76,8 +75,8 @@ class StateIteratorClass {
 
 template <class Arc>
 void InitStateIteratorClass(InitStateIteratorClassArgs *args) {
-  const Fst<Arc> &fst = *(args->arg1.GetFst<Arc>());
-  args->arg2->impl_.reset(new StateIteratorClassImpl<Arc>(fst));
+  const Fst<Arc> &fst = *(std::get<0>(*args).GetFst<Arc>());
+  std::get<1>(*args)->impl_.reset(new StateIteratorClassImpl<Arc>(fst));
 }
 
 }  // namespace script

@@ -3,8 +3,8 @@
 //
 // Function to verify an FST's contents.
 
-#ifndef FST_LIB_VERIFY_H_
-#define FST_LIB_VERIFY_H_
+#ifndef FST_VERIFY_H_
+#define FST_VERIFY_H_
 
 #include <fst/log.h>
 
@@ -99,4 +99,4 @@ bool Verify(const Fst<Arc> &fst, bool allow_negative_labels = false) {
 
 }  // namespace fst
 
-#endif  // FST_LIB_VERIFY_H_
+#endif  // FST_VERIFY_H_

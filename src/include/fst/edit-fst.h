@@ -22,8 +22,8 @@
 // the graph structure, graph properties and state numbering and do not change.
 // VectorFst and CompactFst, for example, are both well-behaved in this regard.
 
-#ifndef FST_LIB_EDIT_FST_H_
-#define FST_LIB_EDIT_FST_H_
+#ifndef FST_EDIT_FST_H_
+#define FST_EDIT_FST_H_
 
 #include <string>
 #include <unordered_map>
@@ -699,4 +699,4 @@ class EditFst : public ImplToMutableFst<
 
 }  // namespace fst
 
-#endif  // FST_LIB_EDIT_FST_H_
+#endif  // FST_EDIT_FST_H_

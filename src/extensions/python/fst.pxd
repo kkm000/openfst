@@ -9,11 +9,11 @@ from libcpp cimport bool
 from libcpp.vector cimport vector
 from libcpp.utility cimport pair
 
+from google3 cimport string
 from basictypes cimport int32
 from basictypes cimport int64
 from basictypes cimport uint32
 from basictypes cimport uint64
-from libcpp.string cimport string
 from ios cimport istream
 from ios cimport ostream
 
@@ -103,8 +103,8 @@ cdef extern from "<fst/fstlib.h>" namespace "fst" nogil:
 
   # Default argument constants.
   const float kDelta
+  const int64 kNoLabel
   const int64 kNoStateId
-
 
   enum ClosureType:
     CLOSURE_STAR
@@ -118,6 +118,11 @@ cdef extern from "<fst/fstlib.h>" namespace "fst" nogil:
     ALT_SEQUENCE_FILTER
     MATCH_FILTER
     TRIVIAL_FILTER
+
+
+  cdef cppclass ComposeOptions:
+
+    ComposeOptions(bool, ComposeFilter)
 
 
   enum DeterminizeType:
@@ -276,6 +281,12 @@ cdef extern from "<fst/script/fstscript.h>" namespace "fst::script" nogil:
 
     @staticmethod
     const WeightClass &NoWeight(const string &)
+
+  # Aliased so the Cython transpiler can sort out the overloading.
+
+  cdef bool Eq "operator=="(const WeightClass &, const WeightClass &)
+
+  cdef bool Ne "operator!="(const WeightClass &, const WeightClass &)
 
   cdef WeightClass Plus(const WeightClass &, const WeightClass &)
 
@@ -495,9 +506,6 @@ cdef extern from "<fst/script/fstscript.h>" namespace "fst::script" nogil:
                                     const SymbolTable *, const SymbolTable *,
                                     const SymbolTable*, bool, bool, bool, bool,
                                     bool)
-  cdef cppclass ComposeOptions:
-
-    ComposeOptions(bool, ComposeFilter)
 
   cdef void Compose(FstClass &, FstClass &, MutableFstClass *,
                     const ComposeOptions &)
@@ -541,7 +549,7 @@ cdef extern from "<fst/script/fstscript.h>" namespace "fst::script" nogil:
 
   cdef bool Equal(const FstClass &, const FstClass &, float)
 
-  cdef bool Equivalent(const FstClass &, const FstClass &, float, bool *)
+  cdef bool Equivalent(const FstClass &, const FstClass &, float)
 
   cdef void Intersect(const FstClass &, const FstClass &, MutableFstClass *,
                       const ComposeOptions &)
@@ -593,15 +601,15 @@ cdef extern from "<fst/script/fstscript.h>" namespace "fst::script" nogil:
     FAST_LOG_PROB_ARC_SELECTOR
 
   cdef bool RandEquivalent(const FstClass &, const FstClass &, int32, float,
-                           time_t, const RandGenOptions[RandArcSelection] &,
-                           bool *)
+                           time_t, const RandGenOptions[RandArcSelection] &)
 
   cdef void RandGen(const FstClass &, MutableFstClass *, time_t,
                     const RandGenOptions[RandArcSelection] &)
 
-  cdef void Relabel(MutableFstClass *,
-      const SymbolTable *, const SymbolTable *, const string &, bool,
-      const SymbolTable *, const SymbolTable *, const string &, bool)
+  cdef void Relabel(MutableFstClass *, const SymbolTable *,
+                    const SymbolTable *, const string &, bool,
+                    const SymbolTable *, const SymbolTable *, const string &,
+                    bool)
 
   cdef void Relabel(MutableFstClass *, const vector[LabelPair] &,
                     const vector[LabelPair] &)
@@ -620,13 +628,9 @@ cdef extern from "<fst/script/fstscript.h>" namespace "fst::script" nogil:
 
   cdef cppclass RmEpsilonOptions:
 
-    RmEpsilonOptions(QueueType, float, bool, const WeightClass &, int64)
+    RmEpsilonOptions(QueueType, bool, const WeightClass &, int64, float)
 
-  cdef void RmEpsilon(const FstClass &, MutableFstClass *, bool,
-                      const RmEpsilonOptions &)
-
-  cdef void RmEpsilon(MutableFstClass *, bool, const WeightClass &, int64,
-                      float)
+  cdef void RmEpsilon(MutableFstClass *, const RmEpsilonOptions &)
 
   cdef cppclass ShortestDistanceOptions:
 
@@ -640,11 +644,11 @@ cdef extern from "<fst/script/fstscript.h>" namespace "fst::script" nogil:
 
   cdef cppclass ShortestPathOptions:
 
-    ShortestPathOptions(QueueType, int32, bool, bool, float, bool,
-                        const WeightClass &, int64)
+    ShortestPathOptions(QueueType, int32, bool, float, const WeightClass &,
+                        int64)
 
   cdef void ShortestPath(const FstClass &, MutableFstClass *,
-                         vector[WeightClass] *, const ShortestPathOptions &)
+                         const ShortestPathOptions &)
 
   cdef void Synchronize(const FstClass &, MutableFstClass *)
 
@@ -655,7 +659,7 @@ cdef extern from "<fst/script/fstscript.h>" namespace "fst::script" nogil:
   cdef bool Verify(const FstClass &)
 
 
-cdef extern from "nlp/fst/script/getters.h" namespace "fst::script" nogil:
+cdef extern from "<fst/script/getters.h>" namespace "fst::script" nogil:
 
   cdef bool GetArcSortType(const string &, ArcSortType *)
 

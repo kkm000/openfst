@@ -4,6 +4,8 @@
 #ifndef FST_SCRIPT_EQUIVALENT_H_
 #define FST_SCRIPT_EQUIVALENT_H_
 
+#include <tuple>
+
 #include <fst/equivalent.h>
 #include <fst/script/arg-packs.h>
 #include <fst/script/fst-class.h>
@@ -11,19 +13,20 @@
 namespace fst {
 namespace script {
 
-using EquivalentInnerArgs =
-    args::Package<const FstClass &, const FstClass &, float, bool *>;
-using EquivalentArgs = args::WithReturnValue<bool, EquivalentInnerArgs>;
+using EquivalentInnerArgs = std::tuple<const FstClass &, const FstClass &,
+                                       float>;
+
+using EquivalentArgs = WithReturnValue<bool, EquivalentInnerArgs>;
 
 template <class Arc>
 void Equivalent(EquivalentArgs *args) {
-  const Fst<Arc> &fst1 = *(args->args.arg1.GetFst<Arc>());
-  const Fst<Arc> &fst2 = *(args->args.arg2.GetFst<Arc>());
-  args->retval = Equivalent(fst1, fst2, args->args.arg3, args->args.arg4);
+  const Fst<Arc> &fst1 = *(std::get<0>(args->args).GetFst<Arc>());
+  const Fst<Arc> &fst2 = *(std::get<1>(args->args).GetFst<Arc>());
+  args->retval = Equivalent(fst1, fst2, std::get<2>(args->args));
 }
 
 bool Equivalent(const FstClass &fst1, const FstClass &fst2,
-                float delta = kDelta, bool *error = nullptr);
+                float delta = kDelta);
 
 }  // namespace script
 }  // namespace fst

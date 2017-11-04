@@ -4,26 +4,35 @@
 #ifndef FST_SCRIPT_ARCSORT_H_
 #define FST_SCRIPT_ARCSORT_H_
 
+#include <utility>
+
 #include <fst/arcsort.h>
-#include <fst/script/arg-packs.h>
 #include <fst/script/fst-class.h>
 
 namespace fst {
 namespace script {
 
-enum ArcSortType { ILABEL_SORT, OLABEL_SORT };
+enum ArcSortType {
+  ILABEL_SORT,
+  OLABEL_SORT
+};
 
-using ArcSortArgs = args::Package<MutableFstClass *, ArcSortType>;
+using ArcSortArgs = std::pair<MutableFstClass *, ArcSortType>;
 
 template <class Arc>
 void ArcSort(ArcSortArgs *args) {
-  MutableFst<Arc> *fst = args->arg1->GetMutableFst<Arc>();
-  if (args->arg2 == ILABEL_SORT) {
-    ILabelCompare<Arc> icomp;
-    ArcSort(fst, icomp);
-  } else {  // args->arg2 == OLABEL_SORT.
-    OLabelCompare<Arc> ocomp;
-    ArcSort(fst, ocomp);
+  MutableFst<Arc> *fst = std::get<0>(*args)->GetMutableFst<Arc>();
+  switch (std::get<1>(*args)) {
+    case ILABEL_SORT: {
+      const ILabelCompare<Arc> icomp;
+      ArcSort(fst, icomp);
+      return;
+    }
+    case OLABEL_SORT: {
+      const OLabelCompare<Arc> ocomp;
+      ArcSort(fst, ocomp);
+      return;
+    }
   }
 }
 

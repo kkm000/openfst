@@ -39,7 +39,6 @@ Iter InvertedSearch(Iter first, Iter last, T value) {
 
 size_t BitmapIndex::Rank1(size_t end) const {
   if (end == 0) return 0;
-  CHECK_LE(end, Bits());
   const uint32 end_word = (end - 1) >> BitmapIndex::kStorageLogBitSize;
   const uint32 sum = get_index_ones_count(end_word);
   const size_t masked = end & kStorageBlockMask;

@@ -19,8 +19,8 @@ namespace script {
 
 // Registers for reading and converting various kinds of FST classes.
 
-// This class definition is to avoid a nested class definition inside
-// the IORegistration struct.
+// This class definition is to avoid a nested class definition inside the
+// IORegistration struct.
 
 template <class Reader, class Creator, class Converter>
 struct FstClassRegEntry {

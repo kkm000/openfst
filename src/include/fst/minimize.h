@@ -3,8 +3,8 @@
 //
 // Functions and classes to minimize an FST.
 
-#ifndef FST_LIB_MINIMIZE_H_
-#define FST_LIB_MINIMIZE_H_
+#ifndef FST_MINIMIZE_H_
+#define FST_MINIMIZE_H_
 
 #include <cmath>
 
@@ -564,4 +564,4 @@ void Minimize(MutableFst<Arc> *fst, MutableFst<Arc> *sfst = nullptr,
 
 }  // namespace fst
 
-#endif  // FST_LIB_MINIMIZE_H_
+#endif  // FST_MINIMIZE_H_

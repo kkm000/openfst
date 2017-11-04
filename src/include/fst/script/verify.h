@@ -11,7 +11,7 @@
 namespace fst {
 namespace script {
 
-using VerifyArgs = args::WithReturnValue<bool, const FstClass &>;
+using VerifyArgs = WithReturnValue<bool, const FstClass &>;
 
 template <class Arc>
 void Verify(VerifyArgs *args) {

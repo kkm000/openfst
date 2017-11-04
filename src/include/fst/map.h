@@ -4,8 +4,8 @@
 // Compatibility file for old-style Map() functions and MapFst class that have
 // been renamed to ArcMap (cf. StateMap).
 
-#ifndef FST_LIB_MAP_H_
-#define FST_LIB_MAP_H_
+#ifndef FST_MAP_H_
+#define FST_MAP_H_
 
 
 #include <fst/arc-map.h>
@@ -107,4 +107,4 @@ struct IdentityMapper {
 
 }  // namespace fst
 
-#endif  // FST_LIB_MAP_H_
+#endif  // FST_MAP_H_

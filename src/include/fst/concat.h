@@ -3,8 +3,8 @@
 //
 // Functions and classes to compute the concatenation of two FSTs.
 
-#ifndef FST_LIB_CONCAT_H_
-#define FST_LIB_CONCAT_H_
+#ifndef FST_CONCAT_H_
+#define FST_CONCAT_H_
 
 #include <algorithm>
 #include <vector>
@@ -220,4 +220,4 @@ using StdConcatFst = ConcatFst<StdArc>;
 
 }  // namespace fst
 
-#endif  // FST_LIB_CONCAT_H_
+#endif  // FST_CONCAT_H_

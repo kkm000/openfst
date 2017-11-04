@@ -4,19 +4,20 @@
 #ifndef FST_SCRIPT_SYNCHRONIZE_H_
 #define FST_SCRIPT_SYNCHRONIZE_H_
 
+#include <utility>
+
 #include <fst/synchronize.h>
-#include <fst/script/arg-packs.h>
 #include <fst/script/fst-class.h>
 
 namespace fst {
 namespace script {
 
-using SynchronizeArgs = args::Package<const FstClass &, MutableFstClass *>;
+using SynchronizeArgs = std::pair<const FstClass &, MutableFstClass *>;
 
 template <class Arc>
 void Synchronize(SynchronizeArgs *args) {
-  const Fst<Arc> &ifst = *(args->arg1.GetFst<Arc>());
-  MutableFst<Arc> *ofst = args->arg2->GetMutableFst<Arc>();
+  const Fst<Arc> &ifst = *(std::get<0>(*args).GetFst<Arc>());
+  MutableFst<Arc> *ofst = std::get<1>(*args)->GetMutableFst<Arc>();
   Synchronize(ifst, ofst);
 }
 

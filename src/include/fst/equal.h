@@ -3,8 +3,8 @@
 //
 // Function to test equality of two FSTs.
 
-#ifndef FST_LIB_EQUAL_H_
-#define FST_LIB_EQUAL_H_
+#ifndef FST_EQUAL_H_
+#define FST_EQUAL_H_
 
 #include <fst/log.h>
 
@@ -136,4 +136,4 @@ bool Equal(const Fst<Arc> &fst1, const Fst<Arc> &fst2, float delta = kDelta,
 
 }  // namespace fst
 
-#endif  // FST_LIB_EQUAL_H_
+#endif  // FST_EQUAL_H_

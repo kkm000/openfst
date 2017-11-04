@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 
+#include <fst/flags.h>
 #include <fst/extensions/far/farscript.h>
 #include <fst/extensions/far/getters.h>
 

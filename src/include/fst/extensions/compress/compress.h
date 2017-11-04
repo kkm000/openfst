@@ -70,7 +70,7 @@ bool ExpandLZCode(const std::vector<std::pair<Var, Edge>> &code,
 template <class Var, class Edge, class EdgeLessThan, class EdgeEquals>
 class LempelZiv {
  public:
-  LempelZiv() : dict_number_(0) {
+  LempelZiv() : dict_number_(0), default_edge_() {
     root_.current_number = dict_number_++;
     root_.current_edge = default_edge_;
     decode_vector_.push_back(std::make_pair(0, default_edge_));
@@ -368,10 +368,13 @@ template <class Arc>
 void Compressor<Arc>::Preprocess(const Fst<Arc> &fst,
                                  MutableFst<Arc> *preprocessedfst,
                                  EncodeMapper<Arc> *encoder) {
-  std::vector<StateId> order;
   *preprocessedfst = fst;
+  if (!preprocessedfst->NumStates()) {
+    return;
+  }
   // Relabels the edges and develops a dictionary
   Encode(preprocessedfst, encoder);
+  std::vector<StateId> order;
   // Finds the BFS sorting order of the fst
   BfsOrder(*preprocessedfst, &order);
   // Reorders the states according to the BFS order
@@ -524,18 +527,20 @@ void Compressor<Arc>::DecodeProcessedFst(const std::vector<StateId> &input,
   Transition default_transition;
   StateId seen_states = 1;
 
-  // Adding states
-
-  for (StateId temp_integer = 0; temp_integer < input.front(); ++temp_integer) {
-    fst->AddState();
+  // Adding states.
+  const StateId num_states = input.front();
+  if (num_states > 0) {
+    const StateId start_state = fst->AddState();
+    fst->SetStart(start_state);
+    for (StateId state = 1; state < num_states; ++state) {
+      fst->AddState();
+    }
   }
 
-  fst->SetStart(0);
   typename std::vector<StateId>::const_iterator main_it = input.begin();
   ++main_it;
 
-  for (StateId current_state = 0; current_state < input.front();
-       ++current_state) {
+  for (StateId current_state = 0; current_state < num_states; ++current_state) {
     if (current_state >= seen_states) ++seen_states;
     current_new_input.clear();
     current_new_output.clear();

@@ -5,6 +5,7 @@
 #define FST_SCRIPT_COMPILE_H_
 
 #include <istream>
+#include <memory>
 
 #include <fst/script/arg-packs.h>
 #include <fst/script/compile-impl.h>
@@ -54,10 +55,8 @@ struct CompileFstInnerArgs {
         allow_negative_labels(allow_negative_labels) {}
 };
 
-// 1
-using CompileFstArgs = args::WithReturnValue<FstClass *, CompileFstInnerArgs>;
+using CompileFstArgs = WithReturnValue<FstClass *, CompileFstInnerArgs>;
 
-// 2
 template <class Arc>
 void CompileFstInternal(CompileFstArgs *args) {
   using fst::Convert;
@@ -68,24 +67,24 @@ void CompileFstInternal(CompileFstArgs *args) {
       args->args.ssyms, args->args.accep, args->args.ikeep, args->args.okeep,
       args->args.nkeep, args->args.allow_negative_labels);
   const Fst<Arc> *fst = &fstcompiler.Fst();
+  std::unique_ptr<const Fst<Arc>> owned_fst;
   if (args->args.fst_type != "vector") {
-    fst = Convert<Arc>(*fst, args->args.fst_type);
-    if (!fst) {
+    owned_fst.reset(Convert<Arc>(*fst, args->args.fst_type));
+    if (!owned_fst) {
       FSTERROR() << "Failed to convert FST to desired type: "
                  << args->args.fst_type;
     }
+    fst = owned_fst.get();
   }
   args->retval = fst ? new FstClass(*fst) : nullptr;
 }
 
-// 1
 void CompileFst(std::istream &istrm, const string &source, const string &dest,
                 const string &fst_type, const string &arc_type,
                 const SymbolTable *isyms, const SymbolTable *osyms,
                 const SymbolTable *ssyms, bool accep, bool ikeep, bool okeep,
                 bool nkeep, bool allow_negative_labels);
 
-// 2
 FstClass *CompileFstInternal(std::istream &istrm, const string &source,
                              const string &fst_type, const string &arc_type,
                              const SymbolTable *isyms, const SymbolTable *osyms,

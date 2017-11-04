@@ -9,7 +9,7 @@ namespace fst {
 namespace script {
 
 void Union(MutableFstClass *fst1, const FstClass &fst2) {
-  if (!ArcTypesMatch(*fst1, fst2, "Union")) {
+  if (!internal::ArcTypesMatch(*fst1, fst2, "Union")) {
     fst1->SetProperties(kError, kError);
     return;
   }

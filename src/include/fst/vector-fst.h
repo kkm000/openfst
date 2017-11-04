@@ -3,8 +3,8 @@
 //
 // Simple concrete, mutable FST whose states and arcs are stored in STL vectors.
 
-#ifndef FST_LIB_VECTOR_FST_H_
-#define FST_LIB_VECTOR_FST_H_
+#ifndef FST_VECTOR_FST_H_
+#define FST_VECTOR_FST_H_
 
 #include <string>
 #include <utility>
@@ -714,4 +714,4 @@ using StdVectorFst = VectorFst<StdArc>;
 
 }  // namespace fst
 
-#endif  // FST_LIB_VECTOR_FST_H_
+#endif  // FST_VECTOR_FST_H_

@@ -3,13 +3,15 @@
 //
 // Utilities to convert strings into FSTs.
 
-#ifndef FST_LIB_STRING_H_
-#define FST_LIB_STRING_H_
+#ifndef FST_STRING_H_
+#define FST_STRING_H_
 
+#include <memory>
 #include <sstream>
 #include <string>
 #include <vector>
 
+#include <fst/flags.h>
 #include <fst/log.h>
 
 #include <fst/compact-fst.h>
@@ -65,22 +67,20 @@ bool ConvertStringToLabels(const string &str, StringTokenType token_type,
   } else if (token_type == StringTokenType::UTF8) {
     return UTF8StringToLabels(str, labels);
   } else {
-    auto *c_str = new char[str.size() + 1];
-    str.copy(c_str, str.size());
+    std::unique_ptr<char[]> c_str(new char[str.size() + 1]);
+    str.copy(c_str.get(), str.size());
     c_str[str.size()] = 0;
     std::vector<char *> vec;
     const string separator = "\n" + FLAGS_fst_field_separator;
-    SplitToVector(c_str, separator.c_str(), &vec, true);
+    SplitToVector(c_str.get(), separator.c_str(), &vec, true);
     for (const char *c : vec) {
       Label label;
       if (!ConvertSymbolToLabel(c, syms, unknown_label, allow_negative,
                                 &label)) {
-        delete[] c_str;
         return false;
       }
       labels->push_back(label);
     }
-    delete[] c_str;
   }
   return true;
 }
@@ -104,22 +104,7 @@ class StringCompiler {
         unknown_label_(unknown_label),
         allow_negative_(allow_negative) {}
 
-  enum OPENFST_DEPRECATED("Use fst::StringTokenType") TokenType {
-    SYMBOL = 1,
-    BYTE = 2,
-    UTF8 = 3
-  };
-
-  OPENFST_DEPRECATED("Use fst::StringTokenType")
-  explicit StringCompiler(TokenType token_type,
-                          const SymbolTable *syms = nullptr,
-                          Label unknown_label = kNoLabel,
-                          bool allow_negative = false)
-      : StringCompiler(static_cast<StringTokenType>(token_type), syms,
-                       unknown_label, allow_negative) {}
-
   // Compiles string into an FST.
-
   template <class FST>
   bool operator()(const string &str, FST *fst) const {
     std::vector<Label> labels;
@@ -195,17 +180,6 @@ class StringPrinter {
   explicit StringPrinter(StringTokenType token_type,
                          const SymbolTable *syms = nullptr)
       : token_type_(token_type), syms_(syms) {}
-
-  enum OPENFST_DEPRECATED("Use fst::StringTokenType") TokenType {
-    SYMBOL = 1,
-    BYTE = 2,
-    UTF8 = 3
-  };
-
-  OPENFST_DEPRECATED("Use fst::StringTokenType")
-  explicit StringPrinter(TokenType token_type,
-                         const SymbolTable *syms = nullptr)
-      : StringPrinter(static_cast<StringTokenType>(token_type), syms) {}
 
   // Converts the FST into a string.
   bool operator()(const Fst<Arc> &fst, string *result) {
@@ -293,4 +267,4 @@ class StringPrinter {
 
 }  // namespace fst
 
-#endif  // FST_LIB_STRING_H_
+#endif  // FST_STRING_H_

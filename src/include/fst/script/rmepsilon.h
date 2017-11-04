@@ -4,162 +4,109 @@
 #ifndef FST_SCRIPT_RMEPSILON_H_
 #define FST_SCRIPT_RMEPSILON_H_
 
+#include <utility>
 #include <vector>
 
 #include <fst/queue.h>
 #include <fst/rmepsilon.h>
-#include <fst/script/arg-packs.h>
 #include <fst/script/fst-class.h>
-#include <fst/script/shortest-distance.h>  // for ShortestDistanceOptions
+#include <fst/script/shortest-distance.h>
 #include <fst/script/weight-class.h>
 
 namespace fst {
 namespace script {
 
-struct RmEpsilonOptions : public fst::script::ShortestDistanceOptions {
-  bool connect;
-  const WeightClass &weight_threshold;
-  int64 state_threshold;
 
-  RmEpsilonOptions(QueueType qt, float d, bool c, const WeightClass &w,
-                   int64 n = kNoStateId)
-      : ShortestDistanceOptions(qt, EPSILON_ARC_FILTER, kNoStateId, d),
-        connect(c), weight_threshold(w), state_threshold(n) {}
+struct RmEpsilonOptions : public ShortestDistanceOptions {
+  const bool connect;
+  const WeightClass &weight_threshold;
+  const int64 state_threshold;
+
+  RmEpsilonOptions(QueueType queue_type, bool connect,
+                   const WeightClass &weight_threshold,
+                   int64 state_threshold = kNoStateId,
+                   float delta = kDelta)
+      : ShortestDistanceOptions(queue_type, EPSILON_ARC_FILTER, kNoStateId,
+                                delta),
+        connect(connect),
+        weight_threshold(weight_threshold),
+        state_threshold(state_threshold) {}
 };
 
-// This function transforms a script-land RmEpsilonOptions into a lib-land
-// RmEpsilonOptions, and then calls the operation.
+namespace internal {
+
+// Code to implement switching on queue types.
+
+template <class Arc, class Queue>
+void RmEpsilon(MutableFst<Arc> *fst,
+               std::vector<typename Arc::Weight> *distance,
+               const RmEpsilonOptions &opts,
+               Queue *queue) {
+  using Weight = typename Arc::Weight;
+  const fst::RmEpsilonOptions<Arc, Queue> ropts(queue, opts.delta,
+      opts.connect, *opts.weight_threshold.GetWeight<Weight>(),
+      opts.state_threshold);
+  RmEpsilon(fst, distance, ropts);
+}
+
 template <class Arc>
-void RmEpsilonHelper(MutableFst<Arc> *fst,
-                     std::vector<typename Arc::Weight> *distance,
-                     const RmEpsilonOptions &opts) {
+void RmEpsilon(MutableFst<Arc> *fst,
+               const RmEpsilonOptions &opts) {
   using StateId = typename Arc::StateId;
   using Weight = typename Arc::Weight;
-  const Weight weight_threshold = *(opts.weight_threshold.GetWeight<Weight>());
+  std::vector<Weight> distance;
   switch (opts.queue_type) {
     case AUTO_QUEUE: {
-      AutoQueue<StateId> queue(*fst, distance, EpsilonArcFilter<Arc>());
-      fst::RmEpsilonOptions<Arc, AutoQueue<StateId>> ropts(
-          &queue, opts.delta, opts.connect, weight_threshold,
-          opts.state_threshold);
-      RmEpsilon(fst, distance, ropts);
-      break;
+      AutoQueue<StateId> queue(*fst, &distance, EpsilonArcFilter<Arc>());
+      RmEpsilon(fst, &distance, opts, &queue);
+      return;
     }
     case FIFO_QUEUE: {
       FifoQueue<StateId> queue;
-      fst::RmEpsilonOptions<Arc, FifoQueue<StateId>> ropts(
-          &queue, opts.delta, opts.connect, weight_threshold,
-          opts.state_threshold);
-      RmEpsilon(fst, distance, ropts);
-      break;
+      RmEpsilon(fst, &distance, opts, &queue);
+      return;
     }
     case LIFO_QUEUE: {
       LifoQueue<StateId> queue;
-      fst::RmEpsilonOptions<Arc, LifoQueue<StateId>> ropts(
-          &queue, opts.delta, opts.connect, weight_threshold,
-          opts.state_threshold);
-      RmEpsilon(fst, distance, ropts);
-      break;
+      RmEpsilon(fst, &distance, opts, &queue);
+      return;
     }
     case SHORTEST_FIRST_QUEUE: {
-      NaturalShortestFirstQueue<StateId, Weight> queue(*distance);
-      fst::RmEpsilonOptions<Arc, NaturalShortestFirstQueue<StateId, Weight>>
-          ropts(&queue, opts.delta, opts.connect, weight_threshold,
-                opts.state_threshold);
-      RmEpsilon(fst, distance, ropts);
-      break;
+      NaturalShortestFirstQueue<StateId, Weight> queue(distance);
+      RmEpsilon(fst, &distance, opts, &queue);
+      return;
     }
     case STATE_ORDER_QUEUE: {
       StateOrderQueue<StateId> queue;
-      fst::RmEpsilonOptions<Arc, StateOrderQueue<StateId>> ropts(
-          &queue, opts.delta, opts.connect, weight_threshold,
-          opts.state_threshold);
-      RmEpsilon(fst, distance, ropts);
-      break;
+      RmEpsilon(fst, &distance, opts, &queue);
+      return;
     }
     case TOP_ORDER_QUEUE: {
       TopOrderQueue<StateId> queue(*fst, EpsilonArcFilter<Arc>());
-      fst::RmEpsilonOptions<Arc, TopOrderQueue<StateId>> ropts(
-          &queue, opts.delta, opts.connect, weight_threshold,
-          opts.state_threshold);
-      RmEpsilon(fst, distance, ropts);
-      break;
+      internal::RmEpsilon(fst, &distance, opts, &queue);
+      return;
     }
-    default:
-      FSTERROR() << "Unknown queue type: " << opts.queue_type;
+    default: {
+      FSTERROR() << "RmEpsilon: Unknown queue type: "
+                 << opts.queue_type;
       fst->SetProperties(kError, kError);
+      return;
+    }
   }
 }
 
-// 1: Full signature with RmEpsilonOptions.
-using RmEpsilonArgs1 = args::Package<const FstClass &, MutableFstClass *, bool,
-                                     const RmEpsilonOptions &>;
+}  // namespace internal
+
+using RmEpsilonArgs = std::pair<MutableFstClass *, const RmEpsilonOptions &>;
 
 template <class Arc>
-void RmEpsilon(RmEpsilonArgs1 *args) {
-  const Fst<Arc> &ifst = *(args->arg1.GetFst<Arc>());
-  MutableFst<Arc> *ofst = args->arg2->GetMutableFst<Arc>();
-  std::vector<typename Arc::Weight> distance;
-  if (args->arg3) {
-    VectorFst<Arc> rfst;
-    Reverse(ifst, &rfst, false);
-    RmEpsilonHelper(&rfst, &distance, args->arg4);
-    Reverse(rfst, ofst, false);
-    if (rfst.NumStates() != ofst->NumStates())
-      RmEpsilonHelper(ofst, &distance, args->arg4);
-  } else {
-    *ofst = ifst;
-    RmEpsilonHelper(ofst, &distance, args->arg4);
-  }
+void RmEpsilon(RmEpsilonArgs *args) {
+  MutableFst<Arc> *fst = std::get<0>(*args)->GetMutableFst<Arc>();
+  const auto &opts = std::get<1>(*args);
+  internal::RmEpsilon(fst, opts);
 }
 
-// 2: Full signature with flat arguments.
-using RmEpsilonArgs2 =
-    args::Package<MutableFstClass *, bool, const WeightClass, int64, float>;
-
-template <class Arc>
-void RmEpsilon(RmEpsilonArgs2 *args) {
-  MutableFst<Arc> *fst = args->arg1->GetMutableFst<Arc>();
-  typename Arc::Weight weight = *(args->arg3.GetWeight<typename Arc::Weight>());
-  RmEpsilon(fst, args->arg2, weight, args->arg4, args->arg5);
-}
-
-// 3: Full signature with RmEpsilonOptions and weight vector.
-using RmEpsilonArgs3 =
-    args::Package<MutableFstClass *, std::vector<WeightClass> *,
-                  const RmEpsilonOptions &>;
-
-template <class Arc>
-void RmEpsilon(RmEpsilonArgs3 *args) {
-  MutableFst<Arc> *fst = args->arg1->GetMutableFst<Arc>();
-  const RmEpsilonOptions &opts = args->arg3;
-  std::vector<typename Arc::Weight> weights;
-  RmEpsilonHelper(fst, &weights, opts);
-  // Copy the weights back....
-  args->arg2->resize(weights.size());
-  for (auto i = 0; i < weights.size(); ++i) {
-    (*args->arg2)[i] = WeightClass(weights[i]);
-  }
-}
-
-// 1
-void RmEpsilon(const FstClass &ifst, MutableFstClass *ofst, bool reverse,
-               const RmEpsilonOptions &opts);
-
-// 2
-void RmEpsilon(MutableFstClass *fst, bool connect,
-               const WeightClass &weight_threshold,
-               int64 state_threshold = fst::kNoStateId,
-               float delta = fst::kDelta);
-
-// #2 signature with default WeightClass argument.
-void RmEpsilon(MutableFstClass *fst, bool connect,
-               int64 state_threshold = fst::kNoStateId,
-               float delta = fst::kDelta);
-
-// 3
-void RmEpsilon(MutableFstClass *fst, std::vector<WeightClass> *distance,
-               const RmEpsilonOptions &opts);
+void RmEpsilon(MutableFstClass *fst, const RmEpsilonOptions &opts);
 
 }  // namespace script
 }  // namespace fst

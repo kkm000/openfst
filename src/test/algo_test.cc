@@ -9,6 +9,8 @@
 
 #include <vector>
 
+#include <fst/flags.h>
+
 // DEFINEs determine which semirings are tested; these are controlled by
 // the `defines` attributes of the associated build rules.
 

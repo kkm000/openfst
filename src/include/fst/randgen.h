@@ -3,16 +3,30 @@
 //
 // Classes and functions to generate random paths through an FST.
 
-#ifndef FST_LIB_RANDGEN_H_
-#define FST_LIB_RANDGEN_H_
+#ifndef FST_RANDGEN_H_
+#define FST_RANDGEN_H_
 
+#include <math.h>
+#include <stddef.h>
+#include <limits>
 #include <map>
+#include <memory>
 #include <random>
+#include <utility>
+#include <vector>
+
+#include <fst/log.h>
 
 #include <fst/accumulator.h>
 #include <fst/cache.h>
 #include <fst/dfs-visit.h>
+#include <fst/float-weight.h>
+#include <fst/fst-decl.h>
+#include <fst/fst.h>
 #include <fst/mutable-fst.h>
+#include <fst/properties.h>
+#include <fst/util.h>
+#include <fst/weight.h>
 
 namespace fst {
 
@@ -733,4 +747,4 @@ void RandGen(const Fst<FromArc> &ifst, MutableFst<ToArc> *ofst) {
 
 }  // namespace fst
 
-#endif  // FST_LIB_RANDGEN_H_
+#endif  // FST_RANDGEN_H_

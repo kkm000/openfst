@@ -3,8 +3,8 @@
 //
 // Queue-dependent visitation of finite-state transducers. See also dfs-visit.h.
 
-#ifndef FST_LIB_VISIT_H_
-#define FST_LIB_VISIT_H_
+#ifndef FST_VISIT_H_
+#define FST_VISIT_H_
 
 
 #include <fst/arcfilter.h>
@@ -318,4 +318,4 @@ class PartialCopyVisitor : public CopyVisitor<A> {
 
 }  // namespace fst
 
-#endif  // FST_LIB_VISIT_H_
+#endif  // FST_VISIT_H_

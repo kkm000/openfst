@@ -4,19 +4,20 @@
 #ifndef FST_SCRIPT_UNION_H_
 #define FST_SCRIPT_UNION_H_
 
+#include <utility>
+
 #include <fst/union.h>
-#include <fst/script/arg-packs.h>
 #include <fst/script/fst-class.h>
 
 namespace fst {
 namespace script {
 
-using UnionArgs = args::Package<MutableFstClass *, const FstClass &>;
+using UnionArgs = std::pair<MutableFstClass *, const FstClass &>;
 
 template <class Arc>
 void Union(UnionArgs *args) {
-  MutableFst<Arc> *fst1 = args->arg1->GetMutableFst<Arc>();
-  const Fst<Arc> &fst2 = *(args->arg2.GetFst<Arc>());
+  MutableFst<Arc> *fst1 = std::get<0>(*args)->GetMutableFst<Arc>();
+  const Fst<Arc> &fst2 = *(std::get<1>(*args).GetFst<Arc>());
   Union(fst1, fst2);
 }
 

@@ -4,8 +4,8 @@
 // Depth-first search visitation. See visit.h for more general search queue
 // disciplines.
 
-#ifndef FST_LIB_DFS_VISIT_H_
-#define FST_LIB_DFS_VISIT_H_
+#ifndef FST_DFS_VISIT_H_
+#define FST_DFS_VISIT_H_
 
 #include <stack>
 #include <vector>
@@ -201,4 +201,4 @@ void DfsVisit(const Fst<Arc> &fst, Visitor *visitor) {
 
 }  // namespace fst
 
-#endif  // FST_LIB_DFS_VISIT_H_
+#endif  // FST_DFS_VISIT_H_

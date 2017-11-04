@@ -4,21 +4,21 @@
 #ifndef FST_SCRIPT_REVERSE_H_
 #define FST_SCRIPT_REVERSE_H_
 
+#include <tuple>
+
 #include <fst/reverse.h>
-#include <fst/script/arg-packs.h>
 #include <fst/script/fst-class.h>
 
 namespace fst {
 namespace script {
 
-using ReverseArgs = args::Package<const FstClass &, MutableFstClass *, bool>;
+using ReverseArgs = std::tuple<const FstClass &, MutableFstClass *, bool>;
 
 template <class Arc>
 void Reverse(ReverseArgs *args) {
-  const Fst<Arc> &ifst = *(args->arg1.GetFst<Arc>());
-  MutableFst<Arc> *ofst = args->arg2->GetMutableFst<Arc>();
-  bool require_superinitial = args->arg3;
-  Reverse(ifst, ofst, require_superinitial);
+  const Fst<Arc> &ifst = *(std::get<0>(*args).GetFst<Arc>());
+  MutableFst<Arc> *ofst = std::get<1>(*args)->GetMutableFst<Arc>();
+  Reverse(ifst, ofst, std::get<2>(*args));
 }
 
 void Reverse(const FstClass &ifst, MutableFstClass *ofst,

@@ -4,8 +4,8 @@
 // Simple concrete immutable FST whose states and arcs are each stored in
 // single arrays.
 
-#ifndef FST_LIB_CONST_FST_H_
-#define FST_LIB_CONST_FST_H_
+#ifndef FST_CONST_FST_H_
+#define FST_CONST_FST_H_
 
 #include <climits>
 #include <string>
@@ -485,4 +485,4 @@ using StdConstFst = ConstFst<StdArc>;
 
 }  // namespace fst
 
-#endif  // FST_LIB_CONST_FST_H_
+#endif  // FST_CONST_FST_H_

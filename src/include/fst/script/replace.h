@@ -4,52 +4,55 @@
 #ifndef FST_SCRIPT_REPLACE_H_
 #define FST_SCRIPT_REPLACE_H_
 
+#include <tuple>
 #include <utility>
 #include <vector>
 
 #include <fst/replace.h>
-#include <fst/script/arg-packs.h>
 #include <fst/script/fst-class.h>
 
 namespace fst {
 namespace script {
 
 struct ReplaceOptions {
-  int64 root;                                   // Root rule for expansion.
-  fst::ReplaceLabelType call_label_type;    // How to label call arc.
-  fst::ReplaceLabelType return_label_type;  // How to label return arc.
-  int64 return_label;                           // Specifies return arc label.
+  const int64 root;                          // Root rule for expansion.
+  const ReplaceLabelType call_label_type;    // How to label call arc.
+  const ReplaceLabelType return_label_type;  // How to label return arc.
+  const int64 return_label;                  // Specifies return arc label.
 
-  explicit ReplaceOptions(int64 r,
-      fst::ReplaceLabelType c = fst::REPLACE_LABEL_INPUT,
-      fst::ReplaceLabelType t = fst::REPLACE_LABEL_NEITHER,
-      int64 l = 0)
-      : root(r), call_label_type(c), return_label_type(t), return_label(l) {}
+  explicit ReplaceOptions(int64 root,
+      ReplaceLabelType call_label_type = REPLACE_LABEL_INPUT,
+      ReplaceLabelType return_label_type = REPLACE_LABEL_NEITHER,
+      int64 return_label = 0)
+      : root(root),
+        call_label_type(call_label_type),
+        return_label_type(return_label_type),
+        return_label(return_label) {}
 };
 
 using LabelFstClassPair = std::pair<int64, const FstClass *>;
 
-using ReplaceArgs = args::Package<const std::vector<LabelFstClassPair> &,
-                                  MutableFstClass *, const ReplaceOptions &>;
+using ReplaceArgs = std::tuple<const std::vector<LabelFstClassPair> &,
+                               MutableFstClass *, const ReplaceOptions &>;
 
 template <class Arc>
 void Replace(ReplaceArgs *args) {
   using LabelFstPair = std::pair<typename Arc::Label, const Fst<Arc> *>;
   // Now that we know the arc type, we construct a vector of
   // std::pair<real label, real fst> that the real Replace will use.
-  const std::vector<LabelFstClassPair> &untyped_pairs = args->arg1;
-  auto size = untyped_pairs.size();
-  std::vector<LabelFstPair> typed_pairs(size);
-  for (auto i = 0; i < size; ++i) {
-    typed_pairs[i].first = untyped_pairs[i].first;  // Converts label.
-    typed_pairs[i].second = untyped_pairs[i].second->GetFst<Arc>();
+  const auto &untyped_pairs = std::get<0>(*args);
+  std::vector<LabelFstPair> typed_pairs;
+  typed_pairs.reserve(untyped_pairs.size());
+  for (const auto &untyped_pair : untyped_pairs) {
+    typed_pairs.emplace_back(untyped_pair.first,  // Converts label.
+                             untyped_pair.second->GetFst<Arc>());
   }
-  MutableFst<Arc> *ofst = args->arg2->GetMutableFst<Arc>();
-  const ReplaceOptions &opts = args->arg3;
+  MutableFst<Arc> *ofst = std::get<1>(*args)->GetMutableFst<Arc>();
+  const auto &opts = std::get<2>(*args);
   ReplaceFstOptions<Arc> typed_opts(opts.root, opts.call_label_type,
                                     opts.return_label_type, opts.return_label);
   ReplaceFst<Arc> rfst(typed_pairs, typed_opts);
-  // Checks for cyclic dependencies before attempting expansino.
+  // Checks for cyclic dependencies before attempting expansion.
   if (rfst.CyclicDependencies()) {
     FSTERROR() << "Replace: Cyclic dependencies detected; cannot expand";
     ofst->SetProperties(kError, kError);

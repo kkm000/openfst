@@ -3,8 +3,8 @@
 //
 // Functions and classes to find shortest distance in an FST.
 
-#ifndef FST_LIB_SHORTEST_DISTANCE_H_
-#define FST_LIB_SHORTEST_DISTANCE_H_
+#ifndef FST_SHORTEST_DISTANCE_H_
+#define FST_SHORTEST_DISTANCE_H_
 
 #include <deque>
 #include <vector>
@@ -333,4 +333,4 @@ typename Arc::Weight ShortestDistance(const Fst<Arc> &fst,
 
 }  // namespace fst
 
-#endif  // FST_LIB_SHORTEST_DISTANCE_H_
+#endif  // FST_SHORTEST_DISTANCE_H_

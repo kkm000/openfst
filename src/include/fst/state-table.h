@@ -3,8 +3,8 @@
 //
 // Classes for representing the mapping between state tuples and state IDs.
 
-#ifndef FST_LIB_STATE_TABLE_H_
-#define FST_LIB_STATE_TABLE_H_
+#ifndef FST_STATE_TABLE_H_
+#define FST_STATE_TABLE_H_
 
 #include <deque>
 #include <utility>
@@ -252,7 +252,9 @@ class DefaultComposeStateTuple {
   }
 
   size_t Hash() const {
-    return StateId1() + StateId2() * 7853 + GetFilterState().Hash() * 7867;
+    return static_cast<size_t>(StateId1()) +
+           static_cast<size_t>(StateId2()) * 7853u +
+           GetFilterState().Hash() * 7867u;
   }
 
  private:
@@ -489,4 +491,4 @@ class ErasableComposeStateTable
 
 }  // namespace fst
 
-#endif  // FST_LIB_STATE_TABLE_H_
+#endif  // FST_STATE_TABLE_H_

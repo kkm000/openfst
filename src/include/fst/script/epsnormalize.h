@@ -4,21 +4,22 @@
 #ifndef FST_SCRIPT_EPSNORMALIZE_H_
 #define FST_SCRIPT_EPSNORMALIZE_H_
 
+#include <tuple>
+
 #include <fst/epsnormalize.h>
-#include <fst/script/arg-packs.h>
 #include <fst/script/fst-class.h>
 
 namespace fst {
 namespace script {
 
-using EpsNormalizeArgs =
-    args::Package<const FstClass &, MutableFstClass *, EpsNormalizeType>;
+using EpsNormalizeArgs = std::tuple<const FstClass &, MutableFstClass *,
+                                    EpsNormalizeType>;
 
 template <class Arc>
 void EpsNormalize(EpsNormalizeArgs *args) {
-  const Fst<Arc> &ifst = *(args->arg1.GetFst<Arc>());
-  MutableFst<Arc> *ofst = args->arg2->GetMutableFst<Arc>();
-  EpsNormalize(ifst, ofst, args->arg3);
+  const Fst<Arc> &ifst = *(std::get<0>(*args).GetFst<Arc>());
+  MutableFst<Arc> *ofst = std::get<1>(*args)->GetMutableFst<Arc>();
+  EpsNormalize(ifst, ofst, std::get<2>(*args));
 }
 
 void EpsNormalize(const FstClass &ifst, MutableFstClass *ofst,

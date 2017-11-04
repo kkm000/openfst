@@ -3,8 +3,8 @@
 //
 // FST property bits.
 
-#ifndef FST_LIB_PROPERTIES_H_
-#define FST_LIB_PROPERTIES_H_
+#ifndef FST_PROPERTIES_H_
+#define FST_PROPERTIES_H_
 
 #include <sys/types.h>
 #include <vector>
@@ -464,4 +464,4 @@ extern const char *PropertyNames[];
 
 }  // namespace fst
 
-#endif  // FST_LIB_PROPERTIES_H_
+#endif  // FST_PROPERTIES_H_

@@ -140,8 +140,8 @@ class WeightClass {
 
   const string &Type() const {
     if (impl_) return impl_->Type();
-    static const string no_type = "none";
-    return no_type;
+    static const string *const no_type = new string("none");
+    return *no_type;
   }
 
   bool WeightTypesMatch(const WeightClass &other, const string &op_name) const;

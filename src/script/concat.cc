@@ -10,7 +10,7 @@ namespace script {
 
 // 1
 void Concat(MutableFstClass *ofst, const FstClass &ifst) {
-  if (!ArcTypesMatch(*ofst, ifst, "Concat")) {
+  if (!internal::ArcTypesMatch(*ofst, ifst, "Concat")) {
     ofst->SetProperties(kError, kError);
     return;
   }
@@ -20,7 +20,7 @@ void Concat(MutableFstClass *ofst, const FstClass &ifst) {
 
 // 2
 void Concat(const FstClass &ifst, MutableFstClass *ofst) {
-  if (!ArcTypesMatch(ifst, *ofst, "Concat")) {
+  if (!internal::ArcTypesMatch(ifst, *ofst, "Concat")) {
     ofst->SetProperties(kError, kError);
     return;
   }

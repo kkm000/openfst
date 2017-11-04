@@ -6,12 +6,14 @@
 #include <cstdlib>
 #include <ctime>
 
+#include <fst/flags.h>
 #include <fst/log.h>
 #include <fst/expectation-weight.h>
 #include <fst/float-weight.h>
 #include <fst/lexicographic-weight.h>
 #include <fst/power-weight.h>
 #include <fst/product-weight.h>
+#include <fst/set-weight.h>
 #include <fst/signed-log-weight.h>
 #include <fst/sparse-power-weight.h>
 #include <fst/string-weight.h>
@@ -35,6 +37,10 @@ using fst::MinMaxWeightTpl;
 using fst::NaturalLess;
 using fst::PowerWeight;
 using fst::ProductWeight;
+using fst::SetWeight;
+using fst::SET_INTERSECT_UNION;
+using fst::SET_UNION_INTERSECT;
+using fst::SET_BOOLEAN;
 using fst::SignedLogWeight;
 using fst::SignedLogWeightTpl;
 using fst::SparsePowerWeight;
@@ -44,6 +50,7 @@ using fst::STRING_RIGHT;
 using fst::TropicalWeight;
 using fst::TropicalWeightTpl;
 using fst::UnionWeight;
+using fst::WeightConvert;
 using fst::WeightGenerate;
 using fst::WeightTester;
 
@@ -101,6 +108,110 @@ void TestSignedAdder(int n) {
   CHECK(ApproxEqual(sum, adder.Sum()));
 }
 
+template <typename Weight1, typename Weight2>
+void TestWeightConversion(Weight1 w1) {
+  // Tests round-trp conversion.
+  WeightConvert<Weight2, Weight1> to_w1_;
+  WeightConvert<Weight1, Weight2> to_w2_;
+  Weight2 w2 = to_w2_(w1);
+  Weight1 nw1 = to_w1_(w2);
+  CHECK_EQ(w1, nw1);
+}
+
+template <class Weight>
+void TestImplicitConversion() {
+  // Only test a few of the operations; assumes they are implemented with the
+  // same pattern.
+  CHECK(Weight(2.0f) == 2.0f);
+  CHECK(Weight(2.0) == 2.0);
+  CHECK(2.0f == Weight(2.0f));
+  CHECK(2.0 == Weight(2.0));
+
+  CHECK_EQ(Weight::Zero(), Times(Weight::Zero(), 3.0f));
+  CHECK_EQ(Weight::Zero(), Times(Weight::Zero(), 3.0));
+  CHECK_EQ(Weight::Zero(), Times(3.0, Weight::Zero()));
+
+  CHECK_EQ(Weight(3.0), Plus(Weight::Zero(), 3.0f));
+  CHECK_EQ(Weight(3.0), Plus(Weight::Zero(), 3.0));
+  CHECK_EQ(Weight(3.0), Plus(3.0, Weight::Zero()));
+}
+
+void TestPowerWeightGetSetValue() {
+  PowerWeight<LogWeight, 3> w;
+  // LogWeight has unspecified initial value, so don't check it.
+  w.SetValue(0, LogWeight(2));
+  w.SetValue(1, LogWeight(3));
+  CHECK_EQ(LogWeight(2), w.Value(0));
+  CHECK_EQ(LogWeight(3), w.Value(1));
+}
+
+void TestSparsePowerWeightGetSetValue() {
+  const LogWeight default_value(17);
+  SparsePowerWeight<LogWeight> w;
+  w.SetDefaultValue(default_value);
+
+  // All gets should be the default.
+  CHECK_EQ(default_value, w.Value(0));
+  CHECK_EQ(default_value, w.Value(100));
+
+  // First set should fill first_.
+  w.SetValue(10, LogWeight(10));
+  CHECK_EQ(LogWeight(10), w.Value(10));
+  w.SetValue(10, LogWeight(20));
+  CHECK_EQ(LogWeight(20), w.Value(10));
+
+  // Add a smaller index.
+  w.SetValue(5, LogWeight(5));
+  CHECK_EQ(LogWeight(5), w.Value(5));
+  CHECK_EQ(LogWeight(20), w.Value(10));
+
+  // Add some larger indices.
+  w.SetValue(30, LogWeight(30));
+  CHECK_EQ(LogWeight(5), w.Value(5));
+  CHECK_EQ(LogWeight(20), w.Value(10));
+  CHECK_EQ(LogWeight(30), w.Value(30));
+
+  w.SetValue(29, LogWeight(29));
+  CHECK_EQ(LogWeight(5), w.Value(5));
+  CHECK_EQ(LogWeight(20), w.Value(10));
+  CHECK_EQ(LogWeight(29), w.Value(29));
+  CHECK_EQ(LogWeight(30), w.Value(30));
+
+  w.SetValue(31, LogWeight(31));
+  CHECK_EQ(LogWeight(5), w.Value(5));
+  CHECK_EQ(LogWeight(20), w.Value(10));
+  CHECK_EQ(LogWeight(29), w.Value(29));
+  CHECK_EQ(LogWeight(30), w.Value(30));
+  CHECK_EQ(LogWeight(31), w.Value(31));
+
+  // Replace a value.
+  w.SetValue(30, LogWeight(60));
+  CHECK_EQ(LogWeight(60), w.Value(30));
+
+  // Replace a value with the default.
+  CHECK_EQ(5, w.Size());
+  w.SetValue(30, default_value);
+  CHECK_EQ(default_value, w.Value(30));
+  CHECK_EQ(4, w.Size());
+
+  // Replace lowest index by the default value.
+  w.SetValue(5, default_value);
+  CHECK_EQ(default_value, w.Value(5));
+  CHECK_EQ(3, w.Size());
+
+  // Clear out everything.
+  w.SetValue(31, default_value);
+  w.SetValue(29, default_value);
+  w.SetValue(10, default_value);
+  CHECK_EQ(0, w.Size());
+
+  CHECK_EQ(default_value, w.Value(5));
+  CHECK_EQ(default_value, w.Value(10));
+  CHECK_EQ(default_value, w.Value(29));
+  CHECK_EQ(default_value, w.Value(30));
+  CHECK_EQ(default_value, w.Value(31));
+}
+
 }  // namespace
 
 int main(int argc, char **argv) {
@@ -122,14 +233,18 @@ int main(int argc, char **argv) {
   CHECK(TropicalWeightTpl<double>::Type() != TropicalWeightTpl<float>::Type());
   CHECK(LogWeight::Type() == "log");
   CHECK(LogWeightTpl<double>::Type() != LogWeightTpl<float>::Type());
-  TropicalWeightTpl<double> w(15.0);
-  TropicalWeight tw(15.0);
+  TropicalWeightTpl<double> w(2.0);
+  TropicalWeight tw(2.0);
 
   TestAdder<TropicalWeight>(1000);
   TestAdder<LogWeight>(1000);
   TestSignedAdder<SignedLogWeight>(1000);
 
-  return 0;
+  TestImplicitConversion<LogWeight>();
+  TestImplicitConversion<TropicalWeight>();
+  TestImplicitConversion<MinMaxWeight>();
+
+  TestWeightConversion<TropicalWeight, LogWeight>(2.0);
 
   using LeftStringWeight = StringWeight<int>;
   using LeftStringWeightGenerate = WeightGenerate<LeftStringWeight>;
@@ -144,6 +259,35 @@ int main(int argc, char **argv) {
   WeightTester<RightStringWeight, RightStringWeightGenerate>
       right_string_tester(right_string_generate);
   right_string_tester.Test(FLAGS_repeat);
+
+  // STRING_RESTRICT not tested since it requires equal strings,
+  // so would fail.
+
+  using IUSetWeight = SetWeight<int, SET_INTERSECT_UNION>;
+  using IUSetWeightGenerate = WeightGenerate<IUSetWeight>;
+  IUSetWeightGenerate iu_set_generate;
+  WeightTester<IUSetWeight, IUSetWeightGenerate>
+      iu_set_tester(iu_set_generate);
+  iu_set_tester.Test(FLAGS_repeat);
+
+  using UISetWeight = SetWeight<int, SET_UNION_INTERSECT>;
+  using UISetWeightGenerate = WeightGenerate<UISetWeight>;
+  UISetWeightGenerate ui_set_generate;
+  WeightTester<UISetWeight, UISetWeightGenerate>
+      ui_set_tester(ui_set_generate);
+  ui_set_tester.Test(FLAGS_repeat);
+
+  // SET_INTERSECT_UNION_RESTRICT not tested since it requires equal sets,
+  // so would fail.
+
+  using BoolSetWeight = SetWeight<int, SET_BOOLEAN>;
+  using BoolSetWeightGenerate = WeightGenerate<BoolSetWeight>;
+  BoolSetWeightGenerate bool_set_generate;
+  WeightTester<BoolSetWeight, BoolSetWeightGenerate>
+      bool_set_tester(bool_set_generate);
+  bool_set_tester.Test(FLAGS_repeat);
+
+  TestWeightConversion<IUSetWeight, UISetWeight>(iu_set_generate());
 
   // COMPOSITE WEIGHTS AND TESTERS - DEFINITIONS
 
@@ -291,6 +435,9 @@ int main(int argc, char **argv) {
   // Nested composite.
   second_nested_product_tester.Test(FLAGS_repeat);
   log_log_sparse_expectation_tester.Test(FLAGS_repeat, false);
+
+  TestPowerWeightGetSetValue();
+  TestSparsePowerWeightGetSetValue();
 
   std::cout << "PASS" << std::endl;
 

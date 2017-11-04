@@ -75,7 +75,7 @@ class FstCompiler {
       ++nline_;
       std::vector<char *> col;
       SplitToVector(line, separator.c_str(), &col, true);
-      if (col.size() == 0 || col[0][0] == '\0')  // empty line
+      if (col.empty() || col[0][0] == '\0')
         continue;
       if (col.size() > 5 || (col.size() > 4 && accep) ||
           (col.size() == 3 && !accep)) {

@@ -120,16 +120,16 @@ void FarCreate(const std::vector<string> &in_fnames, const string &out_fname,
                const FarType &far_type, const string &key_prefix,
                const string &key_suffix);
 
-using FarEqualInnerArgs = args::Package<const string &, const string &, float,
-                                        const string &, const string &>;
+using FarEqualInnerArgs = std::tuple<const string &, const string &, float,
+                                     const string &, const string &>;
 
-using FarEqualArgs = args::WithReturnValue<bool, FarEqualInnerArgs>;
+using FarEqualArgs = WithReturnValue<bool, FarEqualInnerArgs>;
 
 template <class Arc>
 void FarEqual(FarEqualArgs *args) {
-  args->retval =
-      fst::FarEqual<Arc>(args->args.arg1, args->args.arg2, args->args.arg3,
-                             args->args.arg4, args->args.arg5);
+  args->retval = fst::FarEqual<Arc>(
+      std::get<0>(args->args), std::get<1>(args->args), std::get<2>(args->args),
+      std::get<3>(args->args), std::get<4>(args->args));
 }
 
 bool FarEqual(const string &filename1, const string &filename2,
@@ -138,14 +138,15 @@ bool FarEqual(const string &filename1, const string &filename2,
               const string &end_key = string());
 
 using FarExtractArgs =
-    args::Package<const std::vector<string> &, int32, const string &,
-                  const string &, const string &, const string &,
-                  const string &>;
+    std::tuple<const std::vector<string> &, int32, const string &,
+               const string &, const string &, const string &, const string &>;
 
 template <class Arc>
 void FarExtract(FarExtractArgs *args) {
-  fst::FarExtract<Arc>(args->arg1, args->arg2, args->arg3, args->arg4,
-                           args->arg5, args->arg6, args->arg7);
+  fst::FarExtract<Arc>(std::get<0>(*args), std::get<1>(*args),
+                           std::get<2>(*args), std::get<3>(*args),
+                           std::get<4>(*args), std::get<5>(*args),
+                           std::get<6>(*args));
 }
 
 void FarExtract(const std::vector<string> &ifilenames, const string &arc_type,
@@ -153,42 +154,43 @@ void FarExtract(const std::vector<string> &ifilenames, const string &arc_type,
                 const string &key_separator, const string &range_delimiter,
                 const string &filename_prefix, const string &filename_suffix);
 
-using FarInfoArgs = args::Package<const std::vector<string> &, const string &,
-                                  const string &, const bool>;
+using FarInfoArgs = std::tuple<const std::vector<string> &, const string &,
+                               const string &, const bool>;
 
 template <class Arc>
 void FarInfo(FarInfoArgs *args) {
-  fst::FarInfo<Arc>(args->arg1, args->arg2, args->arg3, args->arg4);
+  fst::FarInfo<Arc>(std::get<0>(*args), std::get<1>(*args),
+                        std::get<2>(*args), std::get<3>(*args));
 }
 
 void FarInfo(const std::vector<string> &filenames, const string &arc_type,
              const string &begin_key, const string &end_key,
              const bool list_fsts);
 
-using GetFarInfoArgs =
-    args::Package<const std::vector<string> &, const string &, const string &,
-                  const bool, FarInfoData *>;
+using GetFarInfoArgs = std::tuple<const std::vector<string> &, const string &,
+                                  const string &, const bool, FarInfoData *>;
 
 template <class Arc>
 void GetFarInfo(GetFarInfoArgs *args) {
-  fst::GetFarInfo<Arc>(args->arg1, args->arg2, args->arg3, args->arg4,
-                           args->arg5);
+  fst::GetFarInfo<Arc>(std::get<0>(*args), std::get<1>(*args),
+                           std::get<2>(*args), std::get<3>(*args),
+                           std::get<4>(*args));
 }
 
 void GetFarInfo(const std::vector<string> &filenames, const string &arc_type,
                 const string &begin_key, const string &end_key,
                 const bool list_fsts, FarInfoData *);
 
-using FarIsomorphicInnerArgs =
-    args::Package<const string &, const string &, float, const string &,
-                  const string &>;
-using FarIsomorphicArgs = args::WithReturnValue<bool, FarIsomorphicInnerArgs>;
+using FarIsomorphicInnerArgs = std::tuple<const string &, const string &, float,
+                                          const string &, const string &>;
+
+using FarIsomorphicArgs = WithReturnValue<bool, FarIsomorphicInnerArgs>;
 
 template <class Arc>
 void FarIsomorphic(FarIsomorphicArgs *args) {
-  args->retval = fst::FarIsomorphic<Arc>(args->args.arg1, args->args.arg2,
-                                             args->args.arg3, args->args.arg4,
-                                             args->args.arg5);
+  args->retval = fst::FarIsomorphic<Arc>(
+      std::get<0>(args->args), std::get<1>(args->args), std::get<2>(args->args),
+      std::get<3>(args->args), std::get<4>(args->args));
 }
 
 bool FarIsomorphic(const string &filename1, const string &filename2,

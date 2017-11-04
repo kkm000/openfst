@@ -95,31 +95,31 @@ fst/script/synchronize.h fst/script/text-io.h fst/script/topsort.h \
 fst/script/union.h fst/script/weight-class.h fst/script/fstscript-decl.h \
 fst/script/verify.h
 
-nobase_include_HEADERS = fst/arc-arena.h fst/arc.h fst/determinize.h \
-fst/intersect.h fst/queue.h fst/statesort.h fst/arcfilter.h fst/dfs-visit.h \
-fst/invert.h fst/randequivalent.h fst/string-weight.h fst/difference.h \
-fst/lexicographic-weight.h fst/randgen.h fst/symbol-table.h fst/arcsort.h \
-fst/encode.h fst/lock.h fst/synchronize.h fst/epsnormalize.h fst/log.h \
-fst/rational.h fst/test-properties.h fst/cache.h fst/equal.h fst/arc-map.h \
-fst/map.h fst/register.h fst/topsort.h fst/closure.h fst/equivalent.h \
-fst/matcher.h fst/matcher-fst.h fst/relabel.h fst/union-find.h \
-fst/compact-fst.h fst/expanded-fst.h fst/minimize.h fst/replace.h \
-fst/union.h fst/compat.h fst/factor-weight.h fst/state-map.h \
-fst/mutable-fst.h fst/reverse.h fst/util.h fst/complement.h fst/flags.h \
-fst/partition.h fst/reweight.h fst/vector-fst.h fst/filter-state.h \
-fst/compose-filter.h fst/float-weight.h fst/product-weight.h fst/rmepsilon.h \
-fst/verify.h fst/compose.h fst/fst-decl.h fst/project.h fst/rmfinalepsilon.h \
-fst/visit.h fst/concat.h fst/fst.h fst/properties.h fst/shortest-distance.h \
-fst/weight.h fst/connect.h fst/fstlib.h fst/prune.h fst/shortest-path.h \
-fst/const-fst.h fst/heap.h fst/push.h fst/state-table.h fst/pair-weight.h \
-fst/config.h fst/tuple-weight.h fst/power-weight.h fst/lookahead-matcher.h \
-fst/types.h fst/add-on.h fst/label-reachable.h fst/accumulator.h \
-fst/interval-set.h fst/state-reachable.h fst/lookahead-filter.h \
-fst/generic-register.h fst/edit-fst.h fst/replace-util.h fst/icu.h \
-fst/string.h fst/signed-log-weight.h fst/sparse-tuple-weight.h \
-fst/sparse-power-weight.h fst/expectation-weight.h fst/symbol-table-ops.h \
-fst/bi-table.h fst/mapped-file.h fst/memory.h fst/filter-state.h \
-fst/disambiguate.h fst/isomorphic.h fst/union-weight.h \
+nobase_include_HEADERS = fst/accumulator.h fst/add-on.h fst/arc-arena.h \
+fst/arc-map.h fst/arc.h fst/arcfilter.h fst/arcsort.h fst/bi-table.h \
+fst/cache.h fst/closure.h fst/compact-fst.h fst/compat.h fst/complement.h \
+fst/compose-filter.h fst/compose.h fst/concat.h fst/config.h fst/connect.h \
+fst/const-fst.h fst/determinize.h fst/dfs-visit.h fst/difference.h \
+fst/disambiguate.h fst/edit-fst.h fst/encode.h fst/epsnormalize.h fst/equal.h \
+fst/equivalent.h fst/expanded-fst.h fst/expectation-weight.h \
+fst/factor-weight.h fst/filter-state.h fst/flags.h fst/float-weight.h \
+fst/fst-decl.h fst/fst.h fst/fstlib.h fst/generic-register.h fst/heap.h \
+fst/icu.h fst/intersect.h fst/interval-set.h fst/invert.h fst/isomorphic.h \
+fst/label-reachable.h fst/lexicographic-weight.h fst/lock.h fst/log.h \
+fst/lookahead-filter.h fst/lookahead-matcher.h fst/map.h fst/mapped-file.h \
+fst/matcher-fst.h fst/matcher.h fst/memory.h fst/minimize.h fst/mutable-fst.h \
+fst/pair-weight.h fst/partition.h fst/power-weight.h fst/product-weight.h \
+fst/project.h fst/properties.h fst/prune.h fst/push.h fst/queue.h \
+fst/randequivalent.h fst/randgen.h fst/rational.h fst/register.h \
+fst/relabel.h fst/replace-util.h fst/replace.h fst/reverse.h fst/reweight.h \
+fst/rmepsilon.h fst/rmfinalepsilon.h fst/set-weight.h fst/shortest-distance.h \
+fst/shortest-path.h fst/signed-log-weight.h fst/sparse-power-weight.h \
+fst/sparse-tuple-weight.h fst/state-map.h fst/state-reachable.h \
+fst/state-table.h fst/statesort.h fst/string-weight.h fst/string.h \
+fst/symbol-table-ops.h fst/symbol-table.h fst/synchronize.h \
+fst/test-properties.h fst/topsort.h fst/tuple-weight.h fst/types.h \
+fst/union-find.h fst/union-weight.h fst/union.h fst/util.h fst/vector-fst.h \
+fst/verify.h fst/visit.h fst/weight.h \
 $(compress_include_headers) \
 $(far_include_headers) \
 $(linear_include_headers) \

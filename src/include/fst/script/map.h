@@ -5,6 +5,7 @@
 #define FST_SCRIPT_MAP_H_
 
 #include <memory>
+#include <tuple>
 
 #include <fst/arc-map.h>
 #include <fst/state-map.h>
@@ -50,72 +51,97 @@ enum MapType {
   TO_STD_MAPPER
 };
 
-using MapInnerArgs =
-    args::Package<const FstClass &, MapType, float, const WeightClass &>;
+using MapInnerArgs = std::tuple<const FstClass &, MapType, float,
+                                const WeightClass &>;
 
-using MapArgs = args::WithReturnValue<FstClass *, MapInnerArgs>;
+using MapArgs = WithReturnValue<FstClass *, MapInnerArgs>;
 
 template <class Arc>
 void Map(MapArgs *args) {
-  const Fst<Arc> &ifst = *(args->args.arg1.GetFst<Arc>());
-  MapType map_type = args->args.arg2;
-  float delta = args->args.arg3;
-  const auto weight = *(args->args.arg4.GetWeight<typename Arc::Weight>());
-  std::unique_ptr<Fst<Arc>> fst;
-  std::unique_ptr<Fst<LogArc>> lfst;
-  std::unique_ptr<Fst<Log64Arc>> l64fst;
-  std::unique_ptr<Fst<StdArc>> sfst;
-  if (map_type == ARC_SUM_MAPPER) {
-    fst.reset(script::StateMap(ifst, ArcSumMapper<Arc>(ifst)));
-    args->retval = new FstClass(*fst);
-  } else if (map_type == ARC_UNIQUE_MAPPER) {
-    fst.reset(script::StateMap(ifst, ArcUniqueMapper<Arc>(ifst)));
-    args->retval = new FstClass(*fst);
-  } else if (map_type == IDENTITY_MAPPER) {
-    fst.reset(script::ArcMap(ifst, IdentityArcMapper<Arc>()));
-    args->retval = new FstClass(*fst);
-  } else if (map_type == INPUT_EPSILON_MAPPER) {
-    fst.reset(script::ArcMap(ifst, InputEpsilonMapper<Arc>()));
-    args->retval = new FstClass(*fst);
-  } else if (map_type == INVERT_MAPPER) {
-    fst.reset(script::ArcMap(ifst, InvertWeightMapper<Arc>()));
-    args->retval = new FstClass(*fst);
-  } else if (map_type == OUTPUT_EPSILON_MAPPER) {
-    fst.reset(script::ArcMap(ifst, OutputEpsilonMapper<Arc>()));
-    args->retval = new FstClass(*fst);
-  } else if (map_type == PLUS_MAPPER) {
-    fst.reset(script::ArcMap(ifst, PlusMapper<Arc>(weight)));
-    args->retval = new FstClass(*fst);
-  } else if (map_type == QUANTIZE_MAPPER) {
-    fst.reset(script::ArcMap(ifst, QuantizeMapper<Arc>(delta)));
-    args->retval = new FstClass(*fst);
-  } else if (map_type == RMWEIGHT_MAPPER) {
-    fst.reset(script::ArcMap(ifst, RmWeightMapper<Arc>()));
-    args->retval = new FstClass(*fst);
-  } else if (map_type == SUPERFINAL_MAPPER) {
-    fst.reset(script::ArcMap(ifst, SuperFinalMapper<Arc>()));
-    args->retval = new FstClass(*fst);
-  } else if (map_type == TIMES_MAPPER) {
-    fst.reset(script::ArcMap(ifst, TimesMapper<Arc>(weight)));
-    args->retval = new FstClass(*fst);
-  } else if (map_type == TO_LOG_MAPPER) {
-    lfst.reset(script::ArcMap(ifst, WeightConvertMapper<Arc, LogArc>()));
-    args->retval = new FstClass(*lfst);
-  } else if (map_type == TO_LOG64_MAPPER) {
-    l64fst.reset(script::ArcMap(ifst, WeightConvertMapper<Arc, Log64Arc>()));
-    args->retval = new FstClass(*l64fst);
-  } else if (map_type == TO_STD_MAPPER) {
-    sfst.reset(script::ArcMap(ifst, WeightConvertMapper<Arc, StdArc>()));
-    args->retval = new FstClass(*sfst);
-  } else {
-    FSTERROR() << "Unknown mapper type: " << map_type;
-    VectorFst<Arc> *ofst = new VectorFst<Arc>;
-    ofst->SetProperties(kError, kError);
-    args->retval = new FstClass(*ofst);
+  using Weight = typename Arc::Weight;
+  const Fst<Arc> &ifst = *(std::get<0>(args->args).GetFst<Arc>());
+  const auto map_type = std::get<1>(args->args);
+  const auto weight = *(std::get<3>(args->args).GetWeight<Weight>());
+  switch (map_type) {
+    case ARC_SUM_MAPPER: {
+      std::unique_ptr<Fst<Arc>> ofst(StateMap(ifst, ArcSumMapper<Arc>(ifst)));
+      args->retval = new FstClass(*ofst);
+      return;
+    }
+    case ARC_UNIQUE_MAPPER: {
+      std::unique_ptr<Fst<Arc>> ofst(StateMap(ifst,
+                                              ArcUniqueMapper<Arc>(ifst)));
+      args->retval = new FstClass(*ofst);
+      return;
+    }
+    case IDENTITY_MAPPER: {
+      std::unique_ptr<Fst<Arc>> ofst(ArcMap(ifst, IdentityArcMapper<Arc>()));
+      args->retval = new FstClass(*ofst);
+      return;
+    }
+    case INPUT_EPSILON_MAPPER: {
+      std::unique_ptr<Fst<Arc>> ofst(ArcMap(ifst, InputEpsilonMapper<Arc>()));
+      args->retval = new FstClass(*ofst);
+      return;
+    }
+    case INVERT_MAPPER: {
+      std::unique_ptr<Fst<Arc>> ofst(ArcMap(ifst, InvertWeightMapper<Arc>()));
+      args->retval = new FstClass(*ofst);
+      return;
+    }
+    case OUTPUT_EPSILON_MAPPER: {
+      std::unique_ptr<Fst<Arc>> ofst(ArcMap(ifst, OutputEpsilonMapper<Arc>()));
+      args->retval = new FstClass(*ofst);
+      return;
+    }
+    case PLUS_MAPPER: {
+      std::unique_ptr<Fst<Arc>> ofst(ArcMap(ifst, PlusMapper<Arc>(weight)));
+      args->retval = new FstClass(*ofst);
+      return;
+    }
+    case QUANTIZE_MAPPER: {
+      std::unique_ptr<Fst<Arc>> ofst(ArcMap(ifst, QuantizeMapper<Arc>(
+          std::get<2>(args->args))));
+      args->retval = new FstClass(*ofst);
+      return;
+    }
+    case RMWEIGHT_MAPPER: {
+      std::unique_ptr<Fst<Arc>> ofst(ArcMap(ifst, RmWeightMapper<Arc>()));
+      args->retval = new FstClass(*ofst);
+      return;
+    }
+    case SUPERFINAL_MAPPER: {
+      std::unique_ptr<Fst<Arc>> ofst(ArcMap(ifst, SuperFinalMapper<Arc>()));
+      args->retval = new FstClass(*ofst);
+      return;
+    }
+    case TIMES_MAPPER: {
+      std::unique_ptr<Fst<Arc>> ofst(ArcMap(ifst, TimesMapper<Arc>(weight)));
+      args->retval = new FstClass(*ofst);
+      return;
+    }
+    case TO_LOG_MAPPER: {
+      std::unique_ptr<Fst<LogArc>> ofst(ArcMap(ifst,
+          WeightConvertMapper<Arc, LogArc>()));
+      args->retval = new FstClass(*ofst);
+      return;
+    }
+    case TO_LOG64_MAPPER: {
+      std::unique_ptr<Fst<Log64Arc>> ofst(ArcMap(ifst,
+          WeightConvertMapper<Arc, Log64Arc>()));
+      args->retval = new FstClass(*ofst);
+      return;
+    }
+    case TO_STD_MAPPER: {
+      std::unique_ptr<Fst<StdArc>> ofst(ArcMap(ifst,
+          WeightConvertMapper<Arc, StdArc>()));
+      args->retval = new FstClass(*ofst);
+      return;
+    }
   }
 }
 
-FstClass *Map(const FstClass &fst, MapType map_type, float delta,
+FstClass *Map(const FstClass &ifst, MapType map_type, float delta,
               const WeightClass &weight);
 
 }  // namespace script

@@ -81,10 +81,10 @@ class FarReaderClassImpl : public FarReaderImplBase {
 class FarReaderClass;
 
 using OpenFarReaderClassArgs1 =
-    args::WithReturnValue<FarReaderClass *, const string &>;
+    WithReturnValue<FarReaderClass *, const string &>;
 
 using OpenFarReaderClassArgs2 =
-    args::WithReturnValue<FarReaderClass *, const std::vector<string> &>;
+    WithReturnValue<FarReaderClass *, const std::vector<string> &>;
 
 // Untemplated user-facing class holding a templated pimpl.
 class FarReaderClass {
@@ -207,10 +207,10 @@ class FarWriterClassImpl : public FarWriterImplBase {
 
 class FarWriterClass;
 
-using CreateFarWriterClassInnerArgs = args::Package<const string &, FarType>;
+using CreateFarWriterClassInnerArgs = std::pair<const string &, FarType>;
 
 using CreateFarWriterClassArgs =
-    args::WithReturnValue<FarWriterClass *, CreateFarWriterClassInnerArgs>;
+    WithReturnValue<FarWriterClass *, CreateFarWriterClassInnerArgs>;
 
 // Untemplated user-facing class holding a templated pimpl.
 class FarWriterClass {
@@ -260,8 +260,8 @@ class FarWriterClass {
 // static method FarWriterClass::Create instead.
 template <class Arc>
 void CreateFarWriterClass(CreateFarWriterClassArgs *args) {
-  args->retval = new FarWriterClass(
-      new FarWriterClassImpl<Arc>(args->args.arg1, args->args.arg2));
+  args->retval = new FarWriterClass(new FarWriterClassImpl<Arc>(
+      std::get<0>(args->args), std::get<1>(args->args)));
 }
 
 }  // namespace script

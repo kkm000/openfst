@@ -11,12 +11,11 @@
 namespace fst {
 namespace script {
 
-using TopSortArgs = args::WithReturnValue<bool, MutableFstClass *>;
+using TopSortArgs = WithReturnValue<bool, MutableFstClass *>;
 
 template <class Arc>
 void TopSort(TopSortArgs *args) {
-  MutableFst<Arc> *fst = args->args->GetMutableFst<Arc>();
-  args->retval = TopSort(fst);
+  args->retval = TopSort(args->args->GetMutableFst<Arc>());
 }
 
 bool TopSort(MutableFstClass *fst);

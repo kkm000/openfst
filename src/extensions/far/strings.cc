@@ -4,6 +4,7 @@
 #include <cmath>
 #include <string>
 
+#include <fst/flags.h>
 #include <fst/extensions/far/compile-strings.h>
 #include <fstream>
 

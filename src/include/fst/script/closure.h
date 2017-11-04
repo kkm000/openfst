@@ -4,19 +4,20 @@
 #ifndef FST_SCRIPT_CLOSURE_H_
 #define FST_SCRIPT_CLOSURE_H_
 
+#include <utility>
+
 #include <fst/closure.h>
-#include <fst/script/arg-packs.h>
 #include <fst/script/fst-class.h>
 
 namespace fst {
 namespace script {
 
-using ClosureArgs = args::Package<MutableFstClass *, const ClosureType>;
+using ClosureArgs = std::pair<MutableFstClass *, const ClosureType>;
 
 template <class Arc>
 void Closure(ClosureArgs *args) {
-  MutableFst<Arc> *fst = args->arg1->GetMutableFst<Arc>();
-  Closure(fst, args->arg2);
+  MutableFst<Arc> *fst = std::get<0>(*args)->GetMutableFst<Arc>();
+  Closure(fst, std::get<1>(*args));
 }
 
 void Closure(MutableFstClass *ofst, ClosureType closure_type);

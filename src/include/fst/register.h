@@ -3,10 +3,11 @@
 //
 // Classes for registering derived FST for generic reading.
 
-#ifndef FST_LIB_REGISTER_H_
-#define FST_LIB_REGISTER_H_
+#ifndef FST_REGISTER_H_
+#define FST_REGISTER_H_
 
 #include <string>
+#include <type_traits>
 
 
 #include <fst/compat.h>
@@ -78,11 +79,15 @@ class FstRegisterer : public GenericRegisterer<FstRegister<typename FST::Arc>> {
                                                           BuildEntry()) {}
 
  private:
+  static Fst<Arc> *ReadGeneric(
+      std::istream &strm, const FstReadOptions &opts) {
+    static_assert(std::is_base_of<Fst<Arc>, FST>::value,
+                  "FST class does not inherit from Fst<Arc>");
+    return FST::Read(strm, opts);
+  }
+
   static Entry BuildEntry() {
-    FST *(*reader)(std::istream & strm, const FstReadOptions &opts) =
-        &FST::Read;
-    return Entry(reinterpret_cast<Reader>(reader),
-                 &FstRegisterer<FST>::Convert);
+    return Entry(&ReadGeneric, &FstRegisterer<FST>::Convert);
   }
 
   static Fst<Arc> *Convert(const Fst<Arc> &fst) { return new FST(fst); }
@@ -107,4 +112,4 @@ Fst<Arc> *Convert(const Fst<Arc> &fst, const string &fst_type) {
 
 }  // namespace fst
 
-#endif  // FST_LIB_REGISTER_H_
+#endif  // FST_REGISTER_H_

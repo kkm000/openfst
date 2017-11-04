@@ -3,11 +3,12 @@
 //
 // Functions to manipulate and test property bits.
 
-#ifndef FST_LIB_TEST_PROPERTIES_H_
-#define FST_LIB_TEST_PROPERTIES_H_
+#ifndef FST_TEST_PROPERTIES_H_
+#define FST_TEST_PROPERTIES_H_
 
 #include <unordered_set>
 
+#include <fst/flags.h>
 #include <fst/log.h>
 
 #include <fst/connect.h>
@@ -242,4 +243,4 @@ uint64 CheckProperties(const Fst<Arc> &fst, uint64 check_mask,
 //}  // namespace internal
 }  // namespace fst
 
-#endif  // FST_LIB_TEST_PROPERTIES_H_
+#endif  // FST_TEST_PROPERTIES_H_

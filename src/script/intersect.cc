@@ -8,37 +8,20 @@
 namespace fst {
 namespace script {
 
-// 1
 void Intersect(const FstClass &ifst1, const FstClass &ifst2,
-               MutableFstClass *ofst, ComposeFilter compose_filter) {
-  if (!ArcTypesMatch(ifst1, ifst2, "Intersect") ||
-      !ArcTypesMatch(*ofst, ifst1, "Intersect")) {
+               MutableFstClass *ofst, const ComposeOptions &opts) {
+  if (!internal::ArcTypesMatch(ifst1, ifst2, "Intersect") ||
+      !internal::ArcTypesMatch(*ofst, ifst1, "Intersect")) {
     ofst->SetProperties(kError, kError);
     return;
   }
-  IntersectArgs1 args(ifst1, ifst2, ofst, compose_filter);
-  Apply<Operation<IntersectArgs1>>("Intersect", ifst1.ArcType(), &args);
+  IntersectArgs args(ifst1, ifst2, ofst, opts);
+  Apply<Operation<IntersectArgs>>("Intersect", ifst1.ArcType(), &args);
 }
 
-// 2
-void Intersect(const FstClass &ifst1, const FstClass &ifst2,
-               MutableFstClass *ofst, const ComposeOptions &copts) {
-  if (!ArcTypesMatch(ifst1, ifst2, "Intersect") ||
-      !ArcTypesMatch(*ofst, ifst1, "Intersect")) {
-    ofst->SetProperties(kError, kError);
-    return;
-  }
-  IntersectArgs2 args(ifst1, ifst2, ofst, copts);
-  Apply<Operation<IntersectArgs2>>("Intersect", ifst1.ArcType(), &args);
-}
-
-REGISTER_FST_OPERATION(Intersect, StdArc, IntersectArgs1);
-REGISTER_FST_OPERATION(Intersect, LogArc, IntersectArgs1);
-REGISTER_FST_OPERATION(Intersect, Log64Arc, IntersectArgs1);
-
-REGISTER_FST_OPERATION(Intersect, StdArc, IntersectArgs2);
-REGISTER_FST_OPERATION(Intersect, LogArc, IntersectArgs2);
-REGISTER_FST_OPERATION(Intersect, Log64Arc, IntersectArgs2);
+REGISTER_FST_OPERATION(Intersect, StdArc, IntersectArgs);
+REGISTER_FST_OPERATION(Intersect, LogArc, IntersectArgs);
+REGISTER_FST_OPERATION(Intersect, Log64Arc, IntersectArgs);
 
 }  // namespace script
 }  // namespace fst

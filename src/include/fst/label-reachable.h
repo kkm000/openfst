@@ -4,8 +4,8 @@
 // Class to determine if a non-epsilon label can be read as the first
 // non-epsilon symbol along some path from a given state.
 
-#ifndef FST_LIB_LABEL_REACHABLE_H_
-#define FST_LIB_LABEL_REACHABLE_H_
+#ifndef FST_LABEL_REACHABLE_H_
+#define FST_LABEL_REACHABLE_H_
 
 #include <unordered_map>
 #include <utility>
@@ -470,28 +470,14 @@ class LabelReachable {
     ssize_t low = aiter_begin;
     ssize_t high = aiter_end;
     while (low < high) {
-      ssize_t mid = (low + high) / 2;
+      const ssize_t mid = low + (high - low) / 2;
       aiter->Seek(mid);
       auto label =
           reach_fst_input_ ? aiter->Value().ilabel : aiter->Value().olabel;
-      if (label > match_label) {
-        high = mid;
-      } else if (label < match_label) {
+      if (label < match_label) {
         low = mid + 1;
       } else {
-        // Finds first matching label (when non-deterministic).
-        for (ssize_t i = mid; i > low; --i) {
-          aiter->Seek(i - 1);
-          label =
-              reach_fst_input_ ? aiter->Value().ilabel : aiter->Value().olabel;
-          if (label != match_label) {
-            aiter->Seek(i);
-            aiter->SetFlags(kArcValueFlags, kArcValueFlags);
-            return i;
-          }
-        }
-        aiter->SetFlags(kArcValueFlags, kArcValueFlags);
-        return low;
+        high = mid;
       }
     }
     aiter->Seek(low);
@@ -522,4 +508,4 @@ class LabelReachable {
 
 }  // namespace fst
 
-#endif  // FST_LIB_LABEL_REACHABLE_H_
+#endif  // FST_LABEL_REACHABLE_H_

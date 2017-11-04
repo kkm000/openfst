@@ -4,14 +4,15 @@
 // Pair weight templated base class for weight classes that contain two weights
 // (e.g. Product, Lexicographic).
 
-#ifndef FST_LIB_PAIR_WEIGHT_H_
-#define FST_LIB_PAIR_WEIGHT_H_
+#ifndef FST_PAIR_WEIGHT_H_
+#define FST_PAIR_WEIGHT_H_
 
 #include <climits>
 #include <stack>
 #include <string>
 #include <utility>
 
+#include <fst/flags.h>
 #include <fst/log.h>
 
 #include <fst/weight.h>
@@ -160,4 +161,4 @@ class WeightGenerate<PairWeight<W1, W2>> {
 
 }  // namespace fst
 
-#endif  // FST_LIB_PAIR_WEIGHT_H_
+#endif  // FST_PAIR_WEIGHT_H_

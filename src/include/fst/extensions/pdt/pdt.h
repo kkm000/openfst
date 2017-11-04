@@ -100,8 +100,9 @@ class PdtStack {
  private:
   struct ChildHash {
     size_t operator()(const std::pair<StackId, Label> &pair) const {
-      static constexpr auto prime = 7853;
-      return pair.first + pair.second * prime;
+      static constexpr size_t prime = 7853;
+      return static_cast<size_t>(pair.first) +
+             static_cast<size_t>(pair.second) * prime;
     }
   };
 

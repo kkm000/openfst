@@ -3,14 +3,16 @@
 //
 // Tuple weight set operation definitions.
 
-#ifndef FST_LIB_TUPLE_WEIGHT_H_
-#define FST_LIB_TUPLE_WEIGHT_H_
+#ifndef FST_TUPLE_WEIGHT_H_
+#define FST_TUPLE_WEIGHT_H_
 
 #include <algorithm>
 #include <array>
+#include <functional>
 #include <string>
 #include <vector>
 
+#include <fst/flags.h>
 #include <fst/log.h>
 
 #include <fst/weight.h>
@@ -18,13 +20,14 @@
 
 namespace fst {
 
-// n-tuple weight, element of the n-th catersian power of W.
+// n-tuple weight, element of the n-th Cartesian power of W.
 template <class W, size_t n>
 class TupleWeight {
  public:
   using ReverseWeight = TupleWeight<typename W::ReverseWeight, n>;
 
-  TupleWeight() {}
+  using Weight = W;
+  using Index = size_t;
 
   TupleWeight(const TupleWeight &other) { values_ = other.values_; }
 
@@ -35,12 +38,17 @@ class TupleWeight {
 
   template <class Iterator>
   TupleWeight(Iterator begin, Iterator end) {
-    for (auto it = begin; it != end; ++it) {
-      values_[it - begin] = *it;
-    }
+    std::copy(begin, end, values_.begin());
   }
 
-  explicit TupleWeight(const W &weight) { values_.fill(weight); }
+  explicit TupleWeight(const W &weight = W::Zero()) { values_.fill(weight); }
+
+  // Initialize component `index` to `weight`; initialize all other components
+  // to `default_weight`
+  TupleWeight(Index index, const W &weight, const W &default_weight)
+      : TupleWeight(default_weight) {
+    values_[index] = weight;
+  }
 
   static const TupleWeight<W, n> &Zero() {
     static const TupleWeight<W, n> zero(W::Zero());
@@ -70,8 +78,8 @@ class TupleWeight {
   }
 
   bool Member() const {
-    auto member_test = [](const W &weight) { return weight.Member(); };
-    return std::all_of(values_.begin(), values_.end(), member_test);
+    return std::all_of(values_.begin(), values_.end(),
+                       std::mem_fn(&W::Member));
   }
 
   size_t Hash() const {
@@ -145,6 +153,7 @@ inline std::istream &operator>>(std::istream &strm, TupleWeight<W, n> &w) {
   reader.ReadBegin();
   W v;
   // Reads first n-1 elements.
+  static_assert(n > 0, "Size must be positive.");
   for (size_t i = 0; i < n - 1; ++i) {
     reader.ReadElement(&v);
     w.SetValue(i, v);
@@ -158,4 +167,4 @@ inline std::istream &operator>>(std::istream &strm, TupleWeight<W, n> &w) {
 
 }  // namespace fst
 
-#endif  // FST_LIB_TUPLE_WEIGHT_H_
+#endif  // FST_TUPLE_WEIGHT_H_

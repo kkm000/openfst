@@ -390,7 +390,6 @@ class MutableTrie {
   void swap(MutableTrie &that) {
     topology_.swap(that.topology_);
     values_.swap(that.values_);
-    DCHECK_EQ(topology_.NumNodes(), values_.size());
   }
 
   int Root() const { return topology_.Root(); }

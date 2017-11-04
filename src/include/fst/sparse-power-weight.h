@@ -4,8 +4,8 @@
 // Cartesian power weight semiring operation definitions, using
 // SparseTupleWeight as underlying representation.
 
-#ifndef FST_LIB_SPARSE_POWER_WEIGHT_H_
-#define FST_LIB_SPARSE_POWER_WEIGHT_H_
+#ifndef FST_SPARSE_POWER_WEIGHT_H_
+#define FST_SPARSE_POWER_WEIGHT_H_
 
 #include <climits>
 #include <string>
@@ -78,8 +78,11 @@ class SparsePowerWeight : public SparseTupleWeight<W, K> {
   SparsePowerWeight(Iterator begin, Iterator end)
       : SparseTupleWeight<W, K>(begin, end) {}
 
-  SparsePowerWeight(const K &key, const W &weight)
-      : SparseTupleWeight<W, K>(key, weight) {}
+  // Initialize component `key` to `weight`, with `default_weight` for all
+  // other components.
+  SparsePowerWeight(const K &key, const W &weight,
+                    const W &default_weight = W::Zero())
+      : SparseTupleWeight<W, K>(key, weight, default_weight) {}
 
   static const SparsePowerWeight &Zero() {
     static const SparsePowerWeight zero(SparseTupleWeight<W, K>::Zero());
@@ -100,14 +103,14 @@ class SparsePowerWeight : public SparseTupleWeight<W, K> {
   // Overide this: Overwrite the Type method to reflect the key type if using
   // a non-default key type.
   static const string &Type() {
-    static string type;
-    if (type.empty()) {
-      type = W::Type() + "_^n";
+    static const string *const type = [] {
+      string type = W::Type() + "_^n";
       if (sizeof(K) != sizeof(uint32)) {
         type += "_" + std::to_string(CHAR_BIT * sizeof(K));
       }
-    }
-    return type;
+      return new string(type);
+    }();
+    return *type;
   }
 
   static constexpr uint64 Properties() {
@@ -217,7 +220,7 @@ class WeightGenerate<SparsePowerWeight<W, K>> {
   Weight operator()() const {
     Weight weight;
     for (size_t i = 1; i <= sparse_power_rank_; ++i) {
-      weight.Push(i, generate_(), true);
+      weight.PushBack(i, generate_(), true);
     }
     return weight;
   }
@@ -229,4 +232,4 @@ class WeightGenerate<SparsePowerWeight<W, K>> {
 
 }  // namespace fst
 
-#endif  // FST_LIB_SPARSE_POWER_WEIGHT_H_
+#endif  // FST_SPARSE_POWER_WEIGHT_H_

@@ -6,8 +6,8 @@
 // http://en.wikipedia.org/wiki/UTF-8 for a good description of the encoding
 // details.
 
-#ifndef FST_LIB_ICU_H_
-#define FST_LIB_ICU_H_
+#ifndef FST_ICU_H_
+#define FST_ICU_H_
 
 #include <sstream>
 #include <vector>
@@ -105,4 +105,4 @@ bool LabelsToUTF8String(const std::vector<Label> &labels, string *str) {
 
 }  // namespace fst
 
-#endif  // FST_LIB_ICU_H_
+#endif  // FST_ICU_H_

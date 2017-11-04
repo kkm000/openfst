@@ -6,23 +6,22 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 
 #include <fst/encode.h>
-#include <fst/script/arg-packs.h>
 #include <fst/script/encodemapper-class.h>
 #include <fst/script/fst-class.h>
 
 namespace fst {
 namespace script {
 
-// 1: Decode using encoder on disk.
-using DecodeArgs1 = args::Package<MutableFstClass *, const string &>;
+using DecodeArgs1 = std::pair<MutableFstClass *, const string &>;
 
 template <class Arc>
 void Decode(DecodeArgs1 *args) {
-  MutableFst<Arc> *fst = args->arg1->GetMutableFst<Arc>();
-  std::unique_ptr<EncodeMapper<Arc>> decoder(EncodeMapper<Arc>::Read(args->arg2,
-                                                                     DECODE));
+  MutableFst<Arc> *fst = std::get<0>(*args)->GetMutableFst<Arc>();
+  std::unique_ptr<EncodeMapper<Arc>> decoder(
+      EncodeMapper<Arc>::Read(std::get<1>(*args), DECODE));
   if (!decoder) {
     fst->SetProperties(kError, kError);
     return;
@@ -30,17 +29,17 @@ void Decode(DecodeArgs1 *args) {
   Decode(fst, *decoder);
 }
 
-void Decode(MutableFstClass *fst, const string &coder_fname);
-
-// 2: Decode using an EncodeMapperClass.
-using DecodeArgs2 = args::Package<MutableFstClass *, const EncodeMapperClass &>;
+using DecodeArgs2 = std::pair<MutableFstClass *, const EncodeMapperClass &>;
 
 template <class Arc>
 void Decode(DecodeArgs2 *args) {
-  MutableFst<Arc> *fst = args->arg1->GetMutableFst<Arc>();
-  const EncodeMapper<Arc> &encoder = *(args->arg2.GetEncodeMapper<Arc>());
+  MutableFst<Arc> *fst = std::get<0>(*args)->GetMutableFst<Arc>();
+  const EncodeMapper<Arc> &encoder =
+      *(std::get<1>(*args).GetEncodeMapper<Arc>());
   Decode(fst, encoder);
 }
+
+void Decode(MutableFstClass *fst, const string &coder_fname);
 
 void Decode(MutableFstClass *fst, const EncodeMapperClass &encoder);
 

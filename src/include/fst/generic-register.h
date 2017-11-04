@@ -1,8 +1,8 @@
 // See www.openfst.org for extensive documentation on this weighted
 // finite-state transducer library.
 
-#ifndef FST_LIB_GENERIC_REGISTER_H_
-#define FST_LIB_GENERIC_REGISTER_H_
+#ifndef FST_GENERIC_REGISTER_H_
+#define FST_GENERIC_REGISTER_H_
 
 #ifndef FST_NO_DYNAMIC_LINKING
 #include <dlfcn.h>
@@ -123,4 +123,4 @@ class GenericRegisterer {
 
 }  // namespace fst
 
-#endif  // FST_LIB_GENERIC_REGISTER_H_
+#endif  // FST_GENERIC_REGISTER_H_

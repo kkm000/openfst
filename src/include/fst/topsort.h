@@ -3,8 +3,8 @@
 //
 // Topological sort of FSTs.
 
-#ifndef FST_LIB_TOPSORT_H_
-#define FST_LIB_TOPSORT_H_
+#ifndef FST_TOPSORT_H_
+#define FST_TOPSORT_H_
 
 #include <memory>
 #include <vector>
@@ -92,4 +92,4 @@ bool TopSort(MutableFst<Arc> *fst) {
 
 }  // namespace fst
 
-#endif  // FST_LIB_TOPSORT_H_
+#endif  // FST_TOPSORT_H_

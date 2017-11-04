@@ -3,8 +3,8 @@
 //
 // Class to represent and operate on sets of intervals.
 
-#ifndef FST_LIB_INTERVAL_SET_H_
-#define FST_LIB_INTERVAL_SET_H_
+#ifndef FST_INTERVAL_SET_H_
+#define FST_INTERVAL_SET_H_
 
 #include <algorithm>
 #include <iostream>
@@ -395,4 +395,4 @@ std::ostream &operator<<(std::ostream &strm, const IntervalSet<T, Store> &s) {
 
 }  // namespace fst
 
-#endif  // FST_LIB_INTERVAL_SET_H_
+#endif  // FST_INTERVAL_SET_H_

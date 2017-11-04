@@ -3,8 +3,8 @@
 //
 // Product weight set and associated semiring operation definitions.
 
-#ifndef FST_LIB_PRODUCT_WEIGHT_H_
-#define FST_LIB_PRODUCT_WEIGHT_H_
+#ifndef FST_PRODUCT_WEIGHT_H_
+#define FST_PRODUCT_WEIGHT_H_
 
 #include <string>
 #include <utility>
@@ -104,4 +104,4 @@ class WeightGenerate<ProductWeight<W1, W2>> :
 
 }  // namespace fst
 
-#endif  // FST_LIB_PRODUCT_WEIGHT_H_
+#endif  // FST_PRODUCT_WEIGHT_H_

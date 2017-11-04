@@ -8,21 +8,19 @@
 namespace fst {
 namespace script {
 
-// 1
-void Push(MutableFstClass *ofst, ReweightType dir, float delta,
+void Push(MutableFstClass *fst, ReweightType rew_type, float delta,
           bool remove_total_weight) {
-  PushArgs1 args(ofst, dir, delta, remove_total_weight);
-  Apply<Operation<PushArgs1>>("Push", ofst->ArcType(), &args);
+  PushArgs1 args(fst, rew_type, delta, remove_total_weight);
+  Apply<Operation<PushArgs1>>("Push", fst->ArcType(), &args);
 }
 
-// 2
 void Push(const FstClass &ifst, MutableFstClass *ofst, uint32 flags,
-          ReweightType dir, float delta) {
-  if (!ArcTypesMatch(ifst, *ofst, "Push")) {
+          ReweightType rew_type, float delta) {
+  if (!internal::ArcTypesMatch(ifst, *ofst, "Push")) {
     ofst->SetProperties(kError, kError);
     return;
   }
-  PushArgs2 args(ifst, ofst, flags, dir, delta);
+  PushArgs2 args(ifst, ofst, flags, rew_type, delta);
   Apply<Operation<PushArgs2>>("Push", ifst.ArcType(), &args);
 }
 
