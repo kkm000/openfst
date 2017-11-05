@@ -4,6 +4,7 @@ message(STATUS "${HEADER_FILES}")
 if(HAVE_BIN)
   add_executable(fstspecial-bin
     ../../bin/fstconvert.cc 
+    ../../bin/fstconvert-main.cc
     phi-fst.cc
     rho-fst.cc
     sigma-fst.cc
