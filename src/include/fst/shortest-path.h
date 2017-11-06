@@ -414,13 +414,11 @@ void NShortestPath(const Fst<RevArc> &ifst, MutableFst<Arc> *ofst,
 //
 // The algorithm relies on the shortest-distance algorithm. There are some
 // issues with the pseudo-code as written in the paper (viz., line 11).
-template <class Arc, class Queue, class ArcFilter,
-          typename std::enable_if<
-              (Arc::Weight::Properties() & (kPath | kSemiring)) ==
-              (kPath | kSemiring)>::type * = nullptr>
+template <class Arc, class Queue, class ArcFilter>
 void ShortestPath(const Fst<Arc> &ifst, MutableFst<Arc> *ofst,
                   std::vector<typename Arc::Weight> *distance,
                   const ShortestPathOptions<Arc, Queue, ArcFilter> &opts) {
+ if ((Arc::Weight::Properties() & (kPath | kSemiring)) == (kPath | kSemiring)) {
   using StateId = typename Arc::StateId;
   using Weight = typename Arc::Weight;
   using RevArc = ReverseArc<Arc>;
@@ -471,18 +469,11 @@ void ShortestPath(const Fst<Arc> &ifst, MutableFst<Arc> *ofst,
   }
   // TODO(kbg): Avoid this expensive vector operation.
   distance->erase(distance->begin());
-}
-
-template <class Arc, class Queue, class ArcFilter,
-          typename std::enable_if<
-              (Arc::Weight::Properties() & (kPath | kSemiring)) !=
-              (kPath | kSemiring)>::type * = nullptr>
-void ShortestPath(const Fst<Arc> &, MutableFst<Arc> *ofst,
-                  std::vector<typename Arc::Weight> *,
-                  const ShortestPathOptions<Arc, Queue, ArcFilter> &) {
+ } else {  // (Arc::Weight::Properties() & (kPath | kSemiring)) != (kPath | kSemiring)
   FSTERROR() << "ShortestPath: Weight needs to have the "
              << "path property and be distributive: " << Arc::Weight::Type();
   ofst->SetProperties(kError, kError);
+ }
 }
 
 // Shortest-path algorithm: simplified interface. See above for a version that

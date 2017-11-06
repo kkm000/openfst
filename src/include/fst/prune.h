@@ -91,10 +91,9 @@ struct PruneOptions {
 // have the path property. The weight of any cycle needs to be bounded; i.e.,
 //
 //   Plus(weight, Weight::One()) == Weight::One()
-template <class Arc, class ArcFilter,
-          typename std::enable_if<
-              (Arc::Weight::Properties() & kPath) == kPath>::type * = nullptr>
+template <class Arc, class ArcFilter>
 void Prune(MutableFst<Arc> *fst, const PruneOptions<Arc, ArcFilter> &opts) {
+ if ((Arc::Weight::Properties() & kPath) == kPath) {
   using StateId = typename Arc::StateId;
   using Weight = typename Arc::Weight;
   using StateHeap = Heap<StateId, internal::PruneCompare<StateId, Weight>>;
@@ -170,15 +169,11 @@ void Prune(MutableFst<Arc> *fst, const PruneOptions<Arc, ArcFilter> &opts) {
     if (!visited[i]) dead.push_back(i);
   }
   fst->DeleteStates(dead);
-}
-
-template <class Arc, class ArcFilter,
-          typename std::enable_if<
-              (Arc::Weight::Properties() & kPath) != kPath>::type * = nullptr>
-void Prune(MutableFst<Arc> *fst, const PruneOptions<Arc, ArcFilter> &) {
+ } else {  // (Arc::Weight::Properties() & kPath) != kPath
   FSTERROR() << "Prune: Weight needs to have the path property: "
              << Arc::Weight::Type();
   fst->SetProperties(kError, kError);
+ }
 }
 
 // Pruning algorithm: this version modifies its input and takes the
@@ -211,11 +206,10 @@ void Prune(MutableFst<Arc> *fst, typename Arc::Weight weight_threshold,
 // of any cycle needs to be bounded; i.e.,
 //
 //   Plus(weight, Weight::One()) == Weight::One()
-template <class Arc, class ArcFilter,
-          typename std::enable_if<
-              (Arc::Weight::Properties() & kPath) == kPath>::type * = nullptr>
+template <class Arc, class ArcFilter>
 void Prune(const Fst<Arc> &ifst, MutableFst<Arc> *ofst,
            const PruneOptions<Arc, ArcFilter> &opts) {
+ if ((Arc::Weight::Properties() & kPath) == kPath) {
   using StateId = typename Arc::StateId;
   using Weight = typename Arc::Weight;
   using StateHeap = Heap<StateId, internal::PruneCompare<StateId, Weight>>;
@@ -298,16 +292,11 @@ void Prune(const Fst<Arc> &ifst, MutableFst<Arc> *ofst,
       }
     }
   }
-}
-
-template <class Arc, class ArcFilter,
-          typename std::enable_if<
-              (Arc::Weight::Properties() & kPath) != kPath>::type * = nullptr>
-void Prune(const Fst<Arc> &, MutableFst<Arc> *ofst,
-           const PruneOptions<Arc, ArcFilter> &) {
+ } else {  // (Arc::Weight::Properties() & kPath) != kPath
   FSTERROR() << "Prune: Weight needs to have the path property: "
              << Arc::Weight::Type();
   ofst->SetProperties(kError, kError);
+ }
 }
 
 // Pruning algorithm: this version writes the pruned input FST to an
