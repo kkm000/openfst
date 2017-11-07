@@ -51,7 +51,7 @@ add_library(fstscript
   verify.cc
   ${HEADER_FILES}
 )
-target_link_libraries(fstscript fst)
+target_link_libraries(fstscript PRIVATE fst)
 
 set_target_properties(fstscript PROPERTIES
   SOVERSION "6"
