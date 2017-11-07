@@ -147,10 +147,14 @@ bool SingleShortestPath(
     std::vector<std::pair<typename Arc::StateId, size_t>> *parent) {
   using StateId = typename Arc::StateId;
   using Weight = typename Arc::Weight;
-  static_assert((Weight::Properties() & kPath) == kPath,
-                "Weight must have path property.");
-  static_assert((Weight::Properties() & kRightSemiring) == kRightSemiring,
-                "Weight must be right distributive.");
+  
+  if ((Weight::Properties() & (kPath | kRightSemiring)) !=
+    (kPath | kRightSemiring)) {
+    FSTERROR() << "SingleShortestPath: Weight needs to have the path"
+      << " property and be right distributive: " << Weight::Type();
+    return false;
+  }
+
   parent->clear();
   *f_parent = kNoStateId;
   if (ifst.Start() == kNoStateId) return true;
@@ -297,14 +301,19 @@ void NShortestPath(const Fst<RevArc> &ifst, MutableFst<Arc> *ofst,
   using StateId = typename Arc::StateId;
   using Weight = typename Arc::Weight;
   using Pair = std::pair<StateId, Weight>;
-  static_assert((Weight::Properties() & kPath) == kPath,
-                "Weight must have path property.");
-  static_assert((Weight::Properties() & kSemiring) == kSemiring,
-                "Weight must be distributive.");
+
   if (nshortest <= 0) return;
   ofst->DeleteStates();
   ofst->SetInputSymbols(ifst.InputSymbols());
   ofst->SetOutputSymbols(ifst.OutputSymbols());
+
+  if ((Weight::Properties() & (kPath | kRightSemiring)) !=
+    (kPath | kRightSemiring)) {
+    FSTERROR() << "NShortestPath: Weight needs to have the path"
+      << " property and be right distributive: " << Weight::Type();
+    ofst->SetProperties(kError, kError);
+    return;
+  }
   // Each state in ofst corresponds to a path with weight w from the initial
   // state of ifst to a state s in ifst, that can be characterized by a pair
   // (s, w). The vector pairs maps each state in ofst to the corresponding
