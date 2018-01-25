@@ -21,6 +21,9 @@ Win32/
 x64/
 Debug/
 Release/
+obj/
+/bin/
+*.binlog
 *proj.user
 /cmake
 /cmake64

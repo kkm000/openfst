@@ -1,0 +1,81 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+
+  <!-- Guess the solution dir if not set to enable consistent msbuild of individual projects. -->
+  <PropertyGroup Condition=" '$(SolutionDir)' == '' ">
+    <_SolutionDir>$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), openfst.sln))</_SolutionDir>
+    <_SolutionDir Condition=" '$(_SolutionDir)' == '' ">$([System.IO.Path]::GetFullPath("$(MSBuildThisFileDirectory).."))</_SolutionDir>
+    <SolutionDir  Condition=" '$(_SolutionDir)' != '' ">$(_SolutionDir)\</SolutionDir>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <ProjectName>$(MSBuildProjectName)</ProjectName>
+    <Keyword>Win32Proj</Keyword>
+    <WindowsTargetPlatformVersion Condition=" '$(WindowsTargetPlatformVersion)' == '' ">8.1</WindowsTargetPlatformVersion>
+    <PlatformToolset Condition=" '$(PlatformToolset)' == '' ">v141</PlatformToolset>
+  </PropertyGroup>
+
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+
+  <PropertyGroup>
+    <UseDebugLibraries Condition=" '$(Configuration)' == 'Debug' ">true</UseDebugLibraries>
+    <WholeProgramOptimization Condition=" '$(Configuration)' == 'Release' ">true</WholeProgramOptimization>
+  </PropertyGroup>
+
+  <!-- Use $(PlatformTarget) which is x86/ and x64/. Win32/ is historic
+       and weird (x64 is also technically Win32, it's the API name). -->
+  <PropertyGroup>
+    <_TargetSubdir Condition=" '$(ConfigurationType)' == 'StaticLibrary' ">lib</_TargetSubdir>
+    <_TargetSubdir Condition=" '$(ConfigurationType)' != 'StaticLibrary' ">bin</_TargetSubdir>
+    <OutDir>$(SolutionDir)bin\$(PlatformTarget)\$(Configuration)\$(_TargetSubdir)\</OutDir>
+    <IntDir>obj\$(PlatformTarget)\$(Configuration)\</IntDir>
+  </PropertyGroup>
+
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" />
+
+  <ItemDefinitionGroup>
+    <!-- Most debug/release defaults set by UseDebugLibraries and WholeProgramOptimization are good. -->
+    <ClCompile>
+      <PreprocessorDefinitions Condition=" '$(Configuration)' == 'Debug' "  >_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition=" '$(Configuration)' == 'Release' ">NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <DebugInformationFormat>OldStyle</DebugInformationFormat>
+      <DisableSpecificWarnings>4018;4099;4244;4267;4291;4305;4396;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <MinimalRebuild>false</MinimalRebuild>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <WarningLevel>Level3</WarningLevel>
+    </ClCompile>
+    <Link>
+      <EnableCOMDATFolding Condition=" '$(Configuration)' == 'Release' ">true</EnableCOMDATFolding>
+      <OptimizeReferences  Condition=" '$(Configuration)' == 'Release' ">true</OptimizeReferences>
+      <SubSystem>Console</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+
+</Project>
