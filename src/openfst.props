@@ -18,7 +18,7 @@
     </ProjectConfiguration>
   </ItemGroup>
 
-  <!-- Guess the solution dir if not set to enable consistent msbuild of individual projects. -->
+  <!-- Guess the solution dir if not set, to enable consistent command-line msbuild of individual projects. -->
   <PropertyGroup Condition=" '$(SolutionDir)' == '' ">
     <_SolutionDir>$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), openfst.sln))</_SolutionDir>
     <_SolutionDir Condition=" '$(_SolutionDir)' == '' ">$([System.IO.Path]::GetFullPath("$(MSBuildThisFileDirectory).."))</_SolutionDir>
@@ -26,10 +26,9 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <ProjectName>$(MSBuildProjectName)</ProjectName>
     <Keyword>Win32Proj</Keyword>
-    <WindowsTargetPlatformVersion Condition=" '$(WindowsTargetPlatformVersion)' == '' ">8.1</WindowsTargetPlatformVersion>
     <PlatformToolset Condition=" '$(PlatformToolset)' == '' ">v141</PlatformToolset>
+    <VCProjectUpgraderObjectName>NoUpgrade</VCProjectUpgraderObjectName>
   </PropertyGroup>
 
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -44,12 +43,15 @@
   <PropertyGroup>
     <_TargetSubdir Condition=" '$(ConfigurationType)' == 'StaticLibrary' ">lib</_TargetSubdir>
     <_TargetSubdir Condition=" '$(ConfigurationType)' != 'StaticLibrary' ">bin</_TargetSubdir>
-    <OutDir>$(SolutionDir)bin\$(PlatformTarget)\$(Configuration)\$(_TargetSubdir)\</OutDir>
+    <OutDir>$(SolutionDir)build_output\$(PlatformTarget)\$(Configuration)\$(_TargetSubdir)\</OutDir>
     <IntDir>obj\$(PlatformTarget)\$(Configuration)\</IntDir>
   </PropertyGroup>
 
+  <Import Project="openfst.user.props" Condition="Exists('openfst.user.props')" />
+
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
-  <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" />
+  <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props"
+          Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" />
 
   <ItemDefinitionGroup>
     <!-- Most debug/release defaults set by UseDebugLibraries and WholeProgramOptimization are good. -->
@@ -63,11 +65,13 @@
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <DebugInformationFormat>OldStyle</DebugInformationFormat>
       <DisableSpecificWarnings>4018;4099;4244;4267;4291;4305;4396;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <EnableEnhancedInstructionSet>$(EnableEnhancedInstructionSet)</EnableEnhancedInstructionSet>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <MinimalRebuild>false</MinimalRebuild>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ProgramDataBaseFileName>$(IntDir)$(ProjectName).pdb</ProgramDataBaseFileName>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <WarningLevel>Level3</WarningLevel>
     </ClCompile>
