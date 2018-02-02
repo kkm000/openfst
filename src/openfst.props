@@ -76,9 +76,15 @@
       <WarningLevel>Level3</WarningLevel>
     </ClCompile>
     <Link>
-      <EnableCOMDATFolding Condition=" '$(Configuration)' == 'Release' ">true</EnableCOMDATFolding>
-      <OptimizeReferences  Condition=" '$(Configuration)' == 'Release' ">true</OptimizeReferences>
       <SubSystem>Console</SubSystem>
+    </Link>
+    <Link Condition=" '$(Configuration)' == 'Release' ">
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <!-- WholeProgramOptimization = true sets /LTCG:incremental. This is good
+           for development, when rebuild happens often, but not a correct setting
+           when sources are not often modified; use just /LTCG. -->
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
   </ItemDefinitionGroup>
 
