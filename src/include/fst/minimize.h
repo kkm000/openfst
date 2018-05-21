@@ -27,6 +27,7 @@
 #include <fst/push.h>
 #include <fst/queue.h>
 #include <fst/reverse.h>
+#include <fst/shortest-distance.h>
 #include <fst/state-map.h>
 
 
@@ -492,7 +493,7 @@ void AcceptorMinimize(MutableFst<Arc> *fst,
 //
 template <class Arc>
 void Minimize(MutableFst<Arc> *fst, MutableFst<Arc> *sfst = nullptr,
-              float delta = kDelta, bool allow_nondet = false) {
+              float delta = kShortestDelta, bool allow_nondet = false) {
   using Weight = typename Arc::Weight;
   const auto props = fst->Properties(
       kAcceptor | kIDeterministic | kWeighted | kUnweighted, true);

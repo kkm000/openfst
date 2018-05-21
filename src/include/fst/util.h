@@ -265,8 +265,8 @@ void WeightToStr(Weight w, string *s) {
 // Utilities for reading/writing integer pairs (typically labels)
 
 // Modifies line using a vector of pointers to a buffer beginning with line.
-void SplitToVector(char *line, const char *delim, std::vector<char *> *vec,
-                   bool omit_empty_strings);
+void SplitString(char *line, const char *delim, std::vector<char *> *vec,
+                 bool omit_empty_strings);
 
 template <typename I>
 bool ReadIntPairs(const string &filename, std::vector<std::pair<I, I>> *pairs,
@@ -283,7 +283,7 @@ bool ReadIntPairs(const string &filename, std::vector<std::pair<I, I>> *pairs,
   while (strm.getline(line, kLineLen)) {
     ++nline;
     std::vector<char *> col;
-    SplitToVector(line, "\n\t ", &col, true);
+    SplitString(line, "\n\t ", &col, true);
     // empty line or comment?
     if (col.empty() || col[0][0] == '\0' || col[0][0] == '#') continue;
     if (col.size() != 2) {

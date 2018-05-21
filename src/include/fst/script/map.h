@@ -61,7 +61,6 @@ void Map(MapArgs *args) {
   using Weight = typename Arc::Weight;
   const Fst<Arc> &ifst = *(std::get<0>(args->args).GetFst<Arc>());
   const auto map_type = std::get<1>(args->args);
-  const auto weight = *(std::get<3>(args->args).GetWeight<Weight>());
   switch (map_type) {
     case ARC_SUM_MAPPER: {
       std::unique_ptr<Fst<Arc>> ofst(StateMap(ifst, ArcSumMapper<Arc>(ifst)));
@@ -95,13 +94,14 @@ void Map(MapArgs *args) {
       return;
     }
     case PLUS_MAPPER: {
+      const auto weight = *(std::get<3>(args->args).GetWeight<Weight>());
       std::unique_ptr<Fst<Arc>> ofst(ArcMap(ifst, PlusMapper<Arc>(weight)));
       args->retval = new FstClass(*ofst);
       return;
     }
     case QUANTIZE_MAPPER: {
-      std::unique_ptr<Fst<Arc>> ofst(ArcMap(ifst, QuantizeMapper<Arc>(
-          std::get<2>(args->args))));
+      const auto delta = std::get<2>(args->args);
+      std::unique_ptr<Fst<Arc>> ofst(ArcMap(ifst, QuantizeMapper<Arc>(delta)));
       args->retval = new FstClass(*ofst);
       return;
     }
@@ -116,6 +116,7 @@ void Map(MapArgs *args) {
       return;
     }
     case TIMES_MAPPER: {
+      const auto weight = *(std::get<3>(args->args).GetWeight<Weight>());
       std::unique_ptr<Fst<Arc>> ofst(ArcMap(ifst, TimesMapper<Arc>(weight)));
       args->retval = new FstClass(*ofst);
       return;

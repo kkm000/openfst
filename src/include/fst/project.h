@@ -25,12 +25,14 @@ class ProjectMapper {
   explicit ProjectMapper(ProjectType project_type)
       : project_type_(project_type) {}
 
-  ToArc operator()(const FromArc &arc) {
+  ToArc operator()(const FromArc &arc) const {
     const auto label = project_type_ == PROJECT_INPUT ? arc.ilabel : arc.olabel;
     return ToArc(label, label, arc.weight, arc.nextstate);
   }
 
-  MapFinalAction FinalAction() const { return MAP_NO_SUPERFINAL; }
+  constexpr MapFinalAction FinalAction() const {
+    return MAP_NO_SUPERFINAL;
+  }
 
   MapSymbolsAction InputSymbolsAction() const {
     return project_type_ == PROJECT_INPUT ? MAP_COPY_SYMBOLS
@@ -42,16 +44,16 @@ class ProjectMapper {
                                            : MAP_CLEAR_SYMBOLS;
   }
 
-  uint64 Properties(uint64 props) {
+  uint64 Properties(uint64 props) const {
     return ProjectProperties(props, project_type_ == PROJECT_INPUT);
   }
 
  private:
-  ProjectType project_type_;
+  const ProjectType project_type_;
 };
 
 // Projects an FST onto its domain or range by either copying each arcs' input
-// label to the output label or vice versa. This version modifies its input.
+// label to the output label or vice versa.
 //
 // Complexity:
 //
@@ -60,11 +62,30 @@ class ProjectMapper {
 //
 // where V is the number of states and E is the number of arcs.
 template <class Arc>
+inline void Project(const Fst<Arc> &ifst, MutableFst<Arc> *ofst,
+                    ProjectType project_type) {
+  ArcMap(ifst, ofst, ProjectMapper<Arc>(project_type));
+  switch (project_type) {
+    case PROJECT_INPUT:
+      ofst->SetOutputSymbols(ifst.InputSymbols());
+      return;
+    case PROJECT_OUTPUT:
+      ofst->SetInputSymbols(ifst.OutputSymbols());
+      return;
+  }
+}
+
+// Destructive variant of the above.
+template <class Arc>
 inline void Project(MutableFst<Arc> *fst, ProjectType project_type) {
   ArcMap(fst, ProjectMapper<Arc>(project_type));
-  if (project_type == PROJECT_INPUT) fst->SetOutputSymbols(fst->InputSymbols());
-  if (project_type == PROJECT_OUTPUT) {
-    fst->SetInputSymbols(fst->OutputSymbols());
+  switch (project_type) {
+    case PROJECT_INPUT:
+      fst->SetOutputSymbols(fst->InputSymbols());
+      return;
+    case PROJECT_OUTPUT:
+      fst->SetInputSymbols(fst->OutputSymbols());
+      return;
   }
 }
 

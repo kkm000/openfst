@@ -2,9 +2,10 @@
 // finite-state transducer library.
 
 #include <fst/flags.h>
+#include <fst/shortest-distance.h>
 #include <fst/weight.h>
 
-DEFINE_double(delta, fst::kDelta, "Comparison/quantization delta");
+DEFINE_double(delta, fst::kShortestDelta, "Comparison/quantization delta");
 DEFINE_bool(allow_nondet, false, "Minimize non-deterministic FSTs");
 
 int fstminimize_main(int argc, char **argv);

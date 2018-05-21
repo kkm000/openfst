@@ -412,7 +412,7 @@ class NGramFst : public ImplToExpandedFst<internal::NGramFstImpl<A>> {
                               ArcIteratorData<A> *data) const override;
 
   MatcherBase<A> *InitMatcher(MatchType match_type) const override {
-    return new NGramFstMatcher<A>(*this, match_type);
+    return new NGramFstMatcher<A>(this, match_type);
   }
 
   size_t StorageSize() const { return GetImpl()->StorageSize(); }
@@ -798,9 +798,11 @@ class NGramFstMatcher : public MatcherBase<A> {
   typedef typename A::StateId StateId;
   typedef typename A::Weight Weight;
 
+  // This makes a copy of the FST.
   NGramFstMatcher(const NGramFst<A> &fst, MatchType match_type)
-      : fst_(fst),
-        inst_(fst.inst_),
+      : owned_fst_(fst.Copy()),
+        fst_(*owned_fst_),
+        inst_(fst_.inst_),
         match_type_(match_type),
         current_loop_(false),
         loop_(kNoLabel, 0, A::Weight::One(), kNoStateId) {
@@ -809,8 +811,22 @@ class NGramFstMatcher : public MatcherBase<A> {
     }
   }
 
+  // This doesn't copy the FST.
+  NGramFstMatcher(const NGramFst<A> *fst, MatchType match_type)
+      : fst_(*fst),
+        inst_(fst_.inst_),
+        match_type_(match_type),
+        current_loop_(false),
+        loop_(kNoLabel, 0, A::Weight::One(), kNoStateId) {
+    if (match_type_ == MATCH_OUTPUT) {
+      std::swap(loop_.ilabel, loop_.olabel);
+    }
+  }
+
+  // This makes a copy of the FST.
   NGramFstMatcher(const NGramFstMatcher<A> &matcher, bool safe = false)
-      : fst_(matcher.fst_),
+      : owned_fst_(matcher.fst_.Copy(safe)),
+        fst_(*owned_fst_),
         inst_(matcher.inst_),
         match_type_(matcher.match_type_),
         current_loop_(false),
@@ -885,6 +901,7 @@ class NGramFstMatcher : public MatcherBase<A> {
   ssize_t Priority(StateId s) final { return fst_.NumArcs(s); }
 
  private:
+  std::unique_ptr<NGramFst<A>> owned_fst_;
   const NGramFst<A> &fst_;
   NGramFstInst<A> inst_;
   MatchType match_type_;  // Supplied by caller

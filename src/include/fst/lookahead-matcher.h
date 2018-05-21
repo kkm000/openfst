@@ -38,11 +38,18 @@ namespace fst {
 //   using Weight = typename Arc::Weight;
 //
 //  // Required constructors.
+//  // This makes a copy of the FST.
 //  LookAheadMatcher(const FST &fst, MatchType match_type);
-//   // If safe=true, the copy is thread-safe (except the lookahead FST is
-//   // preserved). See Fst<>::Cop() for further doc.
+//  // This doesn't copy the FST.
+//  LookAheadMatcher(const FST *fst, MatchType match_type);
+//  // This makes a copy of the FST.
+//  // See Copy() below.
 //  LookAheadMatcher(const LookAheadMatcher &matcher, bool safe = false);
 //
+//   // If safe = true, the copy is thread-safe (except the lookahead FST is
+//   // preserved). See Fst<>::Copy() for further doc.
+//   LookaheadMatcher<FST> *Copy(bool safe = false) const override;
+
 //  // Below are methods for looking ahead for a match to a label and more
 //  // generally, to a rational set. Each returns false if there is definitely
 //  // not a match and returns true if there possibly is a match.
@@ -164,9 +171,15 @@ class TrivialLookAheadMatcher
   using StateId = typename Arc::StateId;
   using Weight = typename Arc::Weight;
 
+  // This makes a copy of the FST.
   TrivialLookAheadMatcher(const FST &fst, MatchType match_type)
       : matcher_(fst, match_type) {}
 
+  // This doesn't copy the FST.
+  TrivialLookAheadMatcher(const FST *fst, MatchType match_type)
+      : matcher_(fst, match_type) {}
+
+  // This makes a copy of the FST.
   TrivialLookAheadMatcher(const TrivialLookAheadMatcher<M> &lmatcher,
                           bool safe = false)
       : matcher_(lmatcher.matcher_, safe) {}
@@ -240,6 +253,7 @@ class ArcLookAheadMatcher : public LookAheadMatcherBase<typename M::FST::Arc> {
 
   enum : uint32 { kFlags = flags };
 
+  // This makes a copy of the FST.
   ArcLookAheadMatcher(
       const FST &fst, MatchType match_type,
       std::shared_ptr<MatcherData> data = std::shared_ptr<MatcherData>())
@@ -248,6 +262,16 @@ class ArcLookAheadMatcher : public LookAheadMatcherBase<typename M::FST::Arc> {
         lfst_(nullptr),
         state_(kNoStateId) {}
 
+  // This doesn't copy the FST.
+  ArcLookAheadMatcher(
+      const FST *fst, MatchType match_type,
+      std::shared_ptr<MatcherData> data = std::shared_ptr<MatcherData>())
+      : matcher_(fst, match_type),
+        fst_(matcher_.GetFst()),
+        lfst_(nullptr),
+        state_(kNoStateId) {}
+
+  // This makes a copy of the FST.
   ArcLookAheadMatcher(const ArcLookAheadMatcher<M, flags> &lmatcher,
                       bool safe = false)
       : matcher_(lmatcher.matcher_, safe),
@@ -415,6 +439,7 @@ class LabelLookAheadMatcher
 
   enum : uint32 { kFlags = flags };
 
+  // This makes a copy of the FST.
   LabelLookAheadMatcher(
       const FST &fst, MatchType match_type,
       std::shared_ptr<MatcherData> data = std::shared_ptr<MatcherData>(),
@@ -423,22 +448,22 @@ class LabelLookAheadMatcher
         lfst_(nullptr),
         state_(kNoStateId),
         error_(false) {
-    if (!(kFlags & (kInputLookAheadMatcher | kOutputLookAheadMatcher))) {
-      FSTERROR() << "LabelLookaheadMatcher: Bad matcher flags: " << kFlags;
-      error_ = true;
-    }
-    const bool reach_input = match_type == MATCH_INPUT;
-    if (data) {
-      if (reach_input == data->ReachInput()) {
-        label_reachable_.reset(new Reachable(data, accumulator));
-      }
-    } else if ((reach_input && (kFlags & kInputLookAheadMatcher)) ||
-               (!reach_input && (kFlags & kOutputLookAheadMatcher))) {
-      label_reachable_.reset(new Reachable(fst, reach_input, accumulator,
-                                           kFlags & kLookAheadKeepRelabelData));
-    }
+    Init(fst, match_type, data, accumulator);
   }
 
+  // This doesn't copy the FST.
+  LabelLookAheadMatcher(
+      const FST *fst, MatchType match_type,
+      std::shared_ptr<MatcherData> data = std::shared_ptr<MatcherData>(),
+      Accumulator *accumulator = nullptr)
+      : matcher_(fst, match_type),
+        lfst_(nullptr),
+        state_(kNoStateId),
+        error_(false) {
+    Init(*fst, match_type, data, accumulator);
+  }
+
+  // This makes a copy of the FST.
   LabelLookAheadMatcher(
       const LabelLookAheadMatcher<M, flags, Accumulator, Reachable> &lmatcher,
       bool safe = false)
@@ -552,6 +577,25 @@ class LabelLookAheadMatcher
   }
 
  private:
+  void Init(const FST &fst, MatchType match_type,
+            std::shared_ptr<MatcherData> data,
+            Accumulator *accumulator) {
+    if (!(kFlags & (kInputLookAheadMatcher | kOutputLookAheadMatcher))) {
+      FSTERROR() << "LabelLookaheadMatcher: Bad matcher flags: " << kFlags;
+      error_ = true;
+    }
+    const bool reach_input = match_type == MATCH_INPUT;
+    if (data) {
+      if (reach_input == data->ReachInput()) {
+        label_reachable_.reset(new Reachable(data, accumulator));
+      }
+    } else if ((reach_input && (kFlags & kInputLookAheadMatcher)) ||
+               (!reach_input && (kFlags & kOutputLookAheadMatcher))) {
+      label_reachable_.reset(new Reachable(fst, reach_input, accumulator,
+                                           kFlags & kLookAheadKeepRelabelData));
+    }
+  }
+
   mutable M matcher_;
   const Fst<Arc> *lfst_;                        // Look-ahead FST.
   std::unique_ptr<Reachable> label_reachable_;  // Label reachability info.
@@ -682,20 +726,30 @@ class LookAheadMatcher {
   using Weight = typename Arc::Weight;
   using LBase = LookAheadMatcherBase<Arc>;
 
+  // This makes a copy of the FST.
   LookAheadMatcher(const FST &fst, MatchType match_type)
-      : base_(fst.InitMatcher(match_type)) {
-    if (!base_) base_.reset(new SortedMatcher<FST>(fst, match_type));
-    lookahead_ = false;
+      : owned_fst_(fst.Copy()),
+        base_(owned_fst_->InitMatcher(match_type)),
+        lookahead_(false) {
+    if (!base_) base_.reset(new SortedMatcher<FST>(owned_fst_.get(),
+                                                   match_type));
   }
+
+  // This doesn't copy the FST.
+  LookAheadMatcher(const FST *fst, MatchType match_type)
+      : base_(fst->InitMatcher(match_type)),
+        lookahead_(false) {
+    if (!base_) base_.reset(new SortedMatcher<FST>(fst, match_type));
+  }
+
+  // This makes a copy of the FST.
+  LookAheadMatcher(const LookAheadMatcher<FST> &matcher, bool safe = false)
+      : base_(matcher.base_->Copy(safe)),
+        lookahead_(matcher.lookahead_) { }
 
   // Takes ownership of base.
   explicit LookAheadMatcher(MatcherBase<Arc> *base)
       : base_(base), lookahead_(false) {}
-
-  LookAheadMatcher(const LookAheadMatcher<FST> &matcher, bool safe = false)
-      : base_(matcher.base_->Copy(safe)) {
-    lookahead_ = matcher.lookahead_;
-  }
 
   LookAheadMatcher<FST> *Copy(bool safe = false) const {
     return new LookAheadMatcher<FST>(*this, safe);
@@ -775,6 +829,7 @@ class LookAheadMatcher {
     return lookahead_;
   }
 
+  std::unique_ptr<const FST> owned_fst_;
   std::unique_ptr<MatcherBase<Arc>> base_;
   mutable bool lookahead_;
 

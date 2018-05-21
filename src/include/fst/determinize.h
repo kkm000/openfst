@@ -865,18 +865,24 @@ class DeterminizeFst : public ImplToFst<internal::DeterminizeFstImplBase<A>> {
   template <class CommonDivisor, class Filter, class StateTable>
   DeterminizeFst(
       const Fst<Arc> &fst,
-      const DeterminizeFstOptions<Arc, CommonDivisor, Filter, StateTable> &opts)
+      const DeterminizeFstOptions<Arc, CommonDivisor, Filter, StateTable>
+          &opts =
+              DeterminizeFstOptions<Arc, CommonDivisor, Filter, StateTable>())
       : ImplToFst<Impl>(CreateImpl(fst, opts)) {}
 
-  // This acceptor-only version additionally computes the distance to
-  // final states in the output if provided with those distances for the
-  // input. Useful for e.g., computing the k-shortest unique paths.
-  template <class D, class F, class T>
-  DeterminizeFst(const Fst<A> &fst, const std::vector<Weight> *in_dist,
-                 std::vector<Weight> *out_dist,
-                 const DeterminizeFstOptions<A, D, F, T> &opts)
+  // This acceptor-only version additionally computes the distance to final
+  // states in the output if provided with those distances for the input; this
+  // is useful for e.g., computing the k-shortest unique paths.
+  template <class CommonDivisor, class Filter, class StateTable>
+  DeterminizeFst(
+      const Fst<Arc> &fst, const std::vector<Weight> *in_dist,
+      std::vector<Weight> *out_dist,
+      const DeterminizeFstOptions<Arc, CommonDivisor, Filter, StateTable>
+          &opts =
+              DeterminizeFstOptions<Arc, CommonDivisor, Filter, StateTable>())
       : ImplToFst<Impl>(
-            std::make_shared<internal::DeterminizeFsaImpl<A, D, F, T>>(
+            std::make_shared<internal::DeterminizeFsaImpl<Arc, CommonDivisor,
+                                                          Filter, StateTable>>(
                 fst, in_dist, out_dist, opts)) {
     if (!fst.Properties(kAcceptor, true)) {
       FSTERROR() << "DeterminizeFst: "
@@ -955,21 +961,21 @@ namespace internal {
 template <class A, GallicType G, class D, class F, class T>
 void DeterminizeFstImpl<A, G, D, F, T>::Init(const Fst<A> &fst, F *filter) {
   // Mapper to an acceptor.
-  ToFst to_fst(fst, ToMapper());
+  const ToFst to_fst(fst, ToMapper());
   auto *to_filter = filter ? new ToFilter(to_fst, filter) : nullptr;
   // This recursive call terminates since it is to a (non-recursive)
   // different constructor.
-  CacheOptions copts(GetCacheGc(), GetCacheLimit());
-  DeterminizeFstOptions<ToArc, ToCommonDivisor, ToFilter, ToStateTable> dopts(
-      copts, delta_, 0, DETERMINIZE_FUNCTIONAL, false, to_filter);
+  const CacheOptions copts(GetCacheGc(), GetCacheLimit());
+  const DeterminizeFstOptions<ToArc, ToCommonDivisor, ToFilter, ToStateTable>
+      dopts(copts, delta_, 0, DETERMINIZE_FUNCTIONAL, false, to_filter);
   // Uses acceptor-only constructor to avoid template recursion.
-  DeterminizeFst<ToArc> det_fsa(to_fst, nullptr, nullptr, dopts);
+  const DeterminizeFst<ToArc> det_fsa(to_fst, nullptr, nullptr, dopts);
   // Mapper back to transducer.
-  FactorWeightOptions<ToArc> fopts(
+  const FactorWeightOptions<ToArc> fopts(
       CacheOptions(true, 0), delta_, kFactorFinalWeights, subsequential_label_,
       subsequential_label_, increment_subsequential_label_,
       increment_subsequential_label_);
-  FactorWeightFst<ToArc, FactorIterator> factored_fst(det_fsa, fopts);
+  const FactorWeightFst<ToArc, FactorIterator> factored_fst(det_fsa, fopts);
   from_fst_.reset(new FromFst(factored_fst, FromMapper(subsequential_label_)));
 }
 
@@ -1038,7 +1044,7 @@ struct DeterminizeOptions {
 // Determinizes a weighted transducer. This version writes the
 // determinized Fst to an output MutableFst. The result will be an
 // equivalent FST that has the property that no state has two
-// transitions with the same input label.  For this algorithm, epsilon
+// transitions with the same input label. For this algorithm, epsilon
 // transitions are treated as regular symbols (cf. RmEpsilon).
 //
 // The transducer must be functional. The weights must be (weakly)

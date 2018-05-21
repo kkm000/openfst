@@ -101,7 +101,7 @@ class QueueBase {
 // can be used for strongly connected components with only one state and no
 // self-loops.
 template <class S>
-class TrivialQueue final : public QueueBase<S> {
+class TrivialQueue : public QueueBase<S> {
  public:
   using StateId = S;
 
@@ -109,17 +109,17 @@ class TrivialQueue final : public QueueBase<S> {
 
   virtual ~TrivialQueue() = default;
 
-  StateId Head() const override { return front_; }
+  StateId Head() const final { return front_; }
 
-  void Enqueue(StateId s) override { front_ = s; }
+  void Enqueue(StateId s) final { front_ = s; }
 
-  void Dequeue() override { front_ = kNoStateId; }
+  void Dequeue() final { front_ = kNoStateId; }
 
-  void Update(StateId) override {}
+  void Update(StateId) final {}
 
-  bool Empty() const override { return front_ == kNoStateId; }
+  bool Empty() const final { return front_ == kNoStateId; }
 
-  void Clear() override { front_ = kNoStateId; }
+  void Clear() final { front_ = kNoStateId; }
 
  private:
   StateId front_;
@@ -155,7 +155,7 @@ class FifoQueue : public QueueBase<S> {
 
 // Last-in, first-out queue discipline.
 template <class S>
-class LifoQueue final : public QueueBase<S> {
+class LifoQueue : public QueueBase<S> {
  public:
   using StateId = S;
 
@@ -163,17 +163,17 @@ class LifoQueue final : public QueueBase<S> {
 
   virtual ~LifoQueue() = default;
 
-  StateId Head() const override { return queue_.front(); }
+  StateId Head() const final { return queue_.front(); }
 
-  void Enqueue(StateId s) override { queue_.push_front(s); }
+  void Enqueue(StateId s) final { queue_.push_front(s); }
 
-  void Dequeue() override { queue_.pop_front(); }
+  void Dequeue() final { queue_.pop_front(); }
 
-  void Update(StateId) override {}
+  void Update(StateId) final {}
 
-  bool Empty() const override { return queue_.empty(); }
+  bool Empty() const final { return queue_.empty(); }
 
-  void Clear() override { queue_.clear(); }
+  void Clear() final { queue_.clear(); }
 
  private:
   std::deque<StateId> queue_;
@@ -190,16 +190,16 @@ class ShortestFirstQueue : public QueueBase<S> {
  public:
   using StateId = S;
 
-  static constexpr StateId kNoKey = -1;
-
   explicit ShortestFirstQueue(Compare comp)
       : QueueBase<StateId>(SHORTEST_FIRST_QUEUE), heap_(comp) {}
+
+  virtual ~ShortestFirstQueue() = default;
 
   StateId Head() const override { return heap_.Top(); }
 
   void Enqueue(StateId s) override {
     if (update) {
-      for (StateId i = key_.size(); i <= s; ++i) key_.push_back(kNoKey);
+      for (StateId i = key_.size(); i <= s; ++i) key_.push_back(kNoStateId);
       key_[s] = heap_.Insert(s);
     } else {
       heap_.Insert(s);
@@ -208,7 +208,7 @@ class ShortestFirstQueue : public QueueBase<S> {
 
   void Dequeue() override {
     if (update) {
-      key_[heap_.Pop()] = kNoKey;
+      key_[heap_.Pop()] = kNoStateId;
     } else {
       heap_.Pop();
     }
@@ -216,7 +216,7 @@ class ShortestFirstQueue : public QueueBase<S> {
 
   void Update(StateId s) override {
     if (!update) return;
-    if (s >= key_.size() || key_[s] == kNoKey) {
+    if (s >= key_.size() || key_[s] == kNoStateId) {
       Enqueue(s);
     } else {
       heap_.Update(key_[s], s);
@@ -234,9 +234,6 @@ class ShortestFirstQueue : public QueueBase<S> {
   Heap<StateId, Compare> heap_;
   std::vector<ssize_t> key_;
 };
-
-template <typename StateId, typename Compare, bool update>
-constexpr StateId ShortestFirstQueue<StateId, Compare, update>::kNoKey;
 
 namespace internal {
 
@@ -286,7 +283,7 @@ class NaturalShortestFirstQueue final
 // Topological-order queue discipline, templated on the StateId. States are
 // ordered in the queue topologically. The FST must be acyclic.
 template <class S>
-class TopOrderQueue final : public QueueBase<S> {
+class TopOrderQueue : public QueueBase<S> {
  public:
   using StateId = S;
 
@@ -320,9 +317,9 @@ class TopOrderQueue final : public QueueBase<S> {
 
   virtual ~TopOrderQueue() = default;
 
-  StateId Head() const override { return state_[front_]; }
+  StateId Head() const final { return state_[front_]; }
 
-  void Enqueue(StateId s) override {
+  void Enqueue(StateId s) final {
     if (front_ > back_) {
       front_ = back_ = order_[s];
     } else if (order_[s] > back_) {
@@ -333,16 +330,16 @@ class TopOrderQueue final : public QueueBase<S> {
     state_[order_[s]] = s;
   }
 
-  void Dequeue() override {
+  void Dequeue() final {
     state_[front_] = kNoStateId;
     while ((front_ <= back_) && (state_[front_] == kNoStateId)) ++front_;
   }
 
-  void Update(StateId) override {}
+  void Update(StateId) final {}
 
-  bool Empty() const override { return front_ > back_; }
+  bool Empty() const final { return front_ > back_; }
 
-  void Clear() override {
+  void Clear() final {
     for (StateId s = front_; s <= back_; ++s) state_[s] = kNoStateId;
     back_ = kNoStateId;
     front_ = 0;
@@ -358,7 +355,7 @@ class TopOrderQueue final : public QueueBase<S> {
 // State order queue discipline, templated on the StateId. States are ordered in
 // the queue by state ID.
 template <class S>
-class StateOrderQueue final : public QueueBase<S> {
+class StateOrderQueue : public QueueBase<S> {
  public:
   using StateId = S;
 
@@ -367,9 +364,9 @@ class StateOrderQueue final : public QueueBase<S> {
 
   virtual ~StateOrderQueue() = default;
 
-  StateId Head() const override { return front_; }
+  StateId Head() const final { return front_; }
 
-  void Enqueue(StateId s) override {
+  void Enqueue(StateId s) final {
     if (front_ > back_) {
       front_ = back_ = s;
     } else if (s > back_) {
@@ -381,16 +378,16 @@ class StateOrderQueue final : public QueueBase<S> {
     enqueued_[s] = true;
   }
 
-  void Dequeue() override {
+  void Dequeue() final {
     enqueued_[front_] = false;
     while ((front_ <= back_) && (enqueued_[front_] == false)) ++front_;
   }
 
-  void Update(StateId) override {}
+  void Update(StateId) final {}
 
-  bool Empty() const override { return front_ > back_; }
+  bool Empty() const final { return front_ > back_; }
 
-  void Clear() override {
+  void Clear() final {
     for (StateId i = front_; i <= back_; ++i) enqueued_[i] = false;
     front_ = 0;
     back_ = kNoStateId;
@@ -406,7 +403,7 @@ class StateOrderQueue final : public QueueBase<S> {
 // queue used inside each SCC. It visits the SCCs of an FST in topological
 // order. Its constructor is passed the queues to to use within an SCC.
 template <class S, class Queue>
-class SccQueue final : public QueueBase<S> {
+class SccQueue : public QueueBase<S> {
  public:
   using StateId = S;
 
@@ -422,7 +419,7 @@ class SccQueue final : public QueueBase<S> {
 
   virtual ~SccQueue() = default;
 
-  StateId Head() const override {
+  StateId Head() const final {
     while ((front_ <= back_) &&
            (((*queue_)[front_] && (*queue_)[front_]->Empty()) ||
             (((*queue_)[front_] == nullptr) &&
@@ -437,7 +434,7 @@ class SccQueue final : public QueueBase<S> {
     }
   }
 
-  void Enqueue(StateId s) override {
+  void Enqueue(StateId s) final {
     if (front_ > back_) {
       front_ = back_ = scc_[s];
     } else if (scc_[s] > back_) {
@@ -455,7 +452,7 @@ class SccQueue final : public QueueBase<S> {
     }
   }
 
-  void Dequeue() override {
+  void Dequeue() final {
     if ((*queue_)[front_]) {
       (*queue_)[front_]->Dequeue();
     } else if (front_ < trivial_queue_.size()) {
@@ -463,12 +460,12 @@ class SccQueue final : public QueueBase<S> {
     }
   }
 
-  void Update(StateId s) override {
+  void Update(StateId s) final {
     if ((*queue_)[scc_[s]]) (*queue_)[scc_[s]]->Update(s);
   }
 
-  bool Empty() const override {
-    // Queue SCC number back_ is not empty unless back_ == front_.
+  bool Empty() const final {
+    // Queues SCC number back_ is not empty unless back_ == front_.
     if (front_ < back_) {
       return false;
     } else if (front_ > back_) {
@@ -481,7 +478,7 @@ class SccQueue final : public QueueBase<S> {
     }
   }
 
-  void Clear() override {
+  void Clear() final {
     for (StateId i = front_; i <= back_; ++i) {
       if ((*queue_)[i]) {
         (*queue_)[i]->Clear();
@@ -504,7 +501,7 @@ class SccQueue final : public QueueBase<S> {
 // Automatic queue discipline. It selects a queue discipline for a given FST
 // based on its properties.
 template <class S>
-class AutoQueue final : public QueueBase<S> {
+class AutoQueue : public QueueBase<S> {
  public:
   using StateId = S;
 
@@ -601,17 +598,17 @@ class AutoQueue final : public QueueBase<S> {
 
   virtual ~AutoQueue() = default;
 
-  StateId Head() const override { return queue_->Head(); }
+  StateId Head() const final { return queue_->Head(); }
 
-  void Enqueue(StateId s) override { queue_->Enqueue(s); }
+  void Enqueue(StateId s) final { queue_->Enqueue(s); }
 
-  void Dequeue() override { queue_->Dequeue(); }
+  void Dequeue() final { queue_->Dequeue(); }
 
-  void Update(StateId s) override { queue_->Update(s); }
+  void Update(StateId s) final { queue_->Update(s); }
 
-  bool Empty() const override { return queue_->Empty(); }
+  bool Empty() const final { return queue_->Empty(); }
 
-  void Clear() override { queue_->Clear(); }
+  void Clear() final { queue_->Clear(); }
 
  private:
   template <class Arc, class ArcFilter, class Less>
@@ -676,10 +673,24 @@ void AutoQueue<StateId>::SccQueueType(const Fst<Arc> &fst,
 // An A* estimate is a function object that maps from a state ID to a an
 // estimate of the shortest distance to the final states.
 
-// The trivial A* estimate is always One().
+// A trivial A* estimate, yielding a queue which behaves the same in Dijkstra's
+// algorithm.
 template <typename StateId, typename Weight>
 struct TrivialAStarEstimate {
-  Weight operator()(StateId) const { return Weight::One(); }
+  const Weight &operator()(StateId) const { return Weight::One(); }
+};
+
+// A non-trivial A* estimate using a vector of the estimated future costs.
+template <typename StateId, typename Weight>
+class NaturalAStarEstimate {
+ public:
+  NaturalAStarEstimate(const std::vector<Weight> &beta) :
+          beta_(beta) {}
+
+  const Weight &operator()(StateId s) const { return beta_[s]; }
+
+ private:
+  const std::vector<Weight> &beta_;
 };
 
 // Given a vector that maps from states to weights representing the shortest
@@ -696,14 +707,13 @@ class AStarWeightCompare {
                      const Estimate &estimate)
       : weights_(weights), less_(less), estimate_(estimate) {}
 
-  bool operator()(const StateId s1, const StateId s2) const {
+  bool operator()(StateId s1, StateId s2) const {
     const auto w1 = Times(weights_[s1], estimate_(s1));
     const auto w2 = Times(weights_[s2], estimate_(s2));
     return less_(w1, w2);
   }
 
  private:
-  // Borrowed references.
   const std::vector<Weight> &weights_;
   const Less &less_;
   const Estimate &estimate_;
@@ -711,8 +721,7 @@ class AStarWeightCompare {
 
 // A* queue discipline templated on StateId, Weight, and Estimate.
 template <typename S, typename Weight, typename Estimate>
-class NaturalAStarQueue final
-    : public ShortestFirstQueue<
+class NaturalAStarQueue : public ShortestFirstQueue<
           S, AStarWeightCompare<S, NaturalLess<Weight>, Estimate>> {
  public:
   using StateId = S;
@@ -723,7 +732,7 @@ class NaturalAStarQueue final
       : ShortestFirstQueue<StateId, Compare>(
             Compare(distance, less_, estimate)) {}
 
-  virtual ~NaturalAStarQueue() = default;
+  ~NaturalAStarQueue() = default;
 
  private:
   // This is non-static because the constructor for non-idempotent weights will
@@ -824,7 +833,7 @@ class NaturalPruneQueue final
 // queue discipline is specified by the queue argument. The ownership of the
 // queue is given to this class.
 template <typename Queue, typename Filter>
-class FilterQueue final : public QueueBase<typename Queue::StateId> {
+class FilterQueue : public QueueBase<typename Queue::StateId> {
  public:
   using StateId = typename Queue::StateId;
 
@@ -833,20 +842,20 @@ class FilterQueue final : public QueueBase<typename Queue::StateId> {
 
   virtual ~FilterQueue() = default;
 
-  StateId Head() const override { return queue_->Head(); }
+  StateId Head() const final { return queue_->Head(); }
 
   // Enqueues only if allowed by state filter.
-  void Enqueue(StateId s) override {
+  void Enqueue(StateId s) final {
     if (filter_(s)) queue_->Enqueue(s);
   }
 
-  void Dequeue() override { queue_->Dequeue(); }
+  void Dequeue() final { queue_->Dequeue(); }
 
-  void Update(StateId s) override {}
+  void Update(StateId s) final {}
 
-  bool Empty() const override { return queue_->Empty(); }
+  bool Empty() const final { return queue_->Empty(); }
 
-  void Clear() override { queue_->Clear(); }
+  void Clear() final { queue_->Clear(); }
 
  private:
   std::unique_ptr<Queue> queue_;

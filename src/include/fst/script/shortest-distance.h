@@ -60,16 +60,15 @@ struct QueueConstructor<Arc, AutoQueue<typename Arc::StateId>, ArcFilter> {
 
   //  template<class Arc, class ArcFilter>
   static AutoQueue<StateId> *Construct(const Fst<Arc> &fst,
-                                      const std::vector<Weight> *distance) {
+                                       const std::vector<Weight> *distance) {
     return new AutoQueue<StateId>(fst, distance, ArcFilter());
   }
 };
 
 template <class Arc, class ArcFilter>
-struct QueueConstructor<Arc,
-                        NaturalShortestFirstQueue<typename Arc::StateId,
-                                                  typename Arc::Weight>,
-                        ArcFilter> {
+struct QueueConstructor<
+    Arc, NaturalShortestFirstQueue<typename Arc::StateId, typename Arc::Weight>,
+    ArcFilter> {
   using StateId = typename Arc::StateId;
   using Weight = typename Arc::Weight;
 
@@ -115,13 +114,13 @@ void ShortestDistance(const Fst<Arc> &fst,
       return;
     }
     case INPUT_EPSILON_ARC_FILTER: {
-      ShortestDistance<Arc, Queue, InputEpsilonArcFilter<Arc>>(fst,
-          distance, opts);
+      ShortestDistance<Arc, Queue, InputEpsilonArcFilter<Arc>>(fst, distance,
+                                                               opts);
       return;
     }
     case OUTPUT_EPSILON_ARC_FILTER: {
-      ShortestDistance<Arc, Queue, OutputEpsilonArcFilter<Arc>>(fst,
-          distance, opts);
+      ShortestDistance<Arc, Queue, OutputEpsilonArcFilter<Arc>>(fst, distance,
+                                                                opts);
       return;
     }
     default: {
@@ -136,9 +135,9 @@ void ShortestDistance(const Fst<Arc> &fst,
 
 }  // namespace internal
 
-using ShortestDistanceArgs1 = std::tuple<const FstClass &,
-                                        std::vector<WeightClass> *,
-                                        const ShortestDistanceOptions &>;
+using ShortestDistanceArgs1 =
+    std::tuple<const FstClass &, std::vector<WeightClass> *,
+               const ShortestDistanceOptions &>;
 
 template <class Arc>
 void ShortestDistance(ShortestDistanceArgs1 *args) {
@@ -165,25 +164,22 @@ void ShortestDistance(ShortestDistanceArgs1 *args) {
     }
     case SHORTEST_FIRST_QUEUE: {
       internal::ShortestDistance<Arc,
-          NaturalShortestFirstQueue<StateId, Weight>>(fst, &typed_distance,
-                                                      opts);
+                                 NaturalShortestFirstQueue<StateId, Weight>>(
+          fst, &typed_distance, opts);
       break;
     }
     case STATE_ORDER_QUEUE: {
-      internal::ShortestDistance<Arc, StateOrderQueue<StateId>>(fst,
-                                                                &typed_distance,
-                                                                opts);
+      internal::ShortestDistance<Arc, StateOrderQueue<StateId>>(
+          fst, &typed_distance, opts);
       break;
     }
     case TOP_ORDER_QUEUE: {
-      internal::ShortestDistance<Arc, TopOrderQueue<StateId>>(fst,
-                                                              &typed_distance,
-                                                              opts);
+      internal::ShortestDistance<Arc, TopOrderQueue<StateId>>(
+          fst, &typed_distance, opts);
       break;
     }
     default: {
-      FSTERROR() << "ShortestDistance: Unknown queue type: "
-                 << opts.queue_type;
+      FSTERROR() << "ShortestDistance: Unknown queue type: " << opts.queue_type;
       typed_distance.clear();
       typed_distance.resize(1, Arc::Weight::NoWeight());
       break;
@@ -209,7 +205,8 @@ void ShortestDistance(const FstClass &fst, std::vector<WeightClass> *distance,
                       const ShortestDistanceOptions &opts);
 
 void ShortestDistance(const FstClass &ifst, std::vector<WeightClass> *distance,
-                      bool reverse = false, double delta = fst::kDelta);
+                      bool reverse = false,
+                      double delta = fst::kShortestDelta);
 
 }  // namespace script
 }  // namespace fst

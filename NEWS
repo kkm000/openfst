@@ -1,4 +1,11 @@
 OpenFst: Release 1.6
+    * Fixes error handling in HashMatcher (1.6.6)
+    * Adds kShortestDelta for operations dependent on shortest-distance (1.6.6)
+    * Adds Python methods for (un)pickling and (de)serializing FSTs (1.6.6)
+    * Adds constructive variants of Invert and Project (1.6.6)
+    * Increases code sharing in MemoryPool/MemoryArena (1.6.6)
+    * Improves consistency of matcher FST ownership (1.6.6)
+    * Adds non-trivial A* estimator class (1.6.6)
     * Prevents unreachable code generation in libfstscript (1.6.5)
     * Adds move constructors for non-trivial weight types (1.6.5)
     * Standardizes method names for tuple weight types (1.6.5)

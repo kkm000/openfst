@@ -3,9 +3,10 @@
 
 #include <fst/flags.h>
 #include <fst/fst.h>
+#include <fst/shortest-distance.h>
 #include <fst/weight.h>
 
-DEFINE_double(delta, fst::kDelta, "Comparison/quantization delta");
+DEFINE_double(delta, fst::kShortestDelta, "Comparison/quantization delta");
 DEFINE_int32(nshortest, 1, "Return N-shortest paths");
 DEFINE_int64(nstate, fst::kNoStateId, "State number threshold");
 DEFINE_string(queue_type, "auto",

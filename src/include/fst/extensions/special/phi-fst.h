@@ -90,6 +90,7 @@ class PhiFstMatcher : public PhiMatcher<M> {
 
   enum : uint8 { kFlags = flags };
 
+  // This makes a copy of the FST.
   PhiFstMatcher(const FST &fst, MatchType match_type,
       std::shared_ptr<MatcherData> data = std::make_shared<MatcherData>())
       : PhiMatcher<M>(fst, match_type,
@@ -99,8 +100,19 @@ class PhiFstMatcher : public PhiMatcher<M> {
                       data ? data->RewriteMode() : MatcherData().RewriteMode()),
         data_(data) {}
 
+  // This doesn't copy the FST.
+  PhiFstMatcher(const FST *fst, MatchType match_type,
+      std::shared_ptr<MatcherData> data = std::make_shared<MatcherData>())
+      : PhiMatcher<M>(fst, match_type,
+                      PhiLabel(match_type, data ? data->PhiLabel()
+                                                : MatcherData().PhiLabel()),
+                      data ? data->PhiLoop() : MatcherData().PhiLoop(),
+                      data ? data->RewriteMode() : MatcherData().RewriteMode()),
+        data_(data) {}
+
+  // This makes a copy of the FST.
   PhiFstMatcher(const PhiFstMatcher<M, flags> &matcher, bool safe = false)
-      : PhiMatcher<M>(matcher, false), data_(matcher.data_) {}
+      : PhiMatcher<M>(matcher, safe), data_(matcher.data_) {}
 
   PhiFstMatcher<M, flags> *Copy(bool safe = false) const override {
     return new PhiFstMatcher<M, flags>(*this, safe);

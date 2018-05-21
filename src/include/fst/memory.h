@@ -31,19 +31,24 @@ class MemoryArenaBase {
   virtual size_t Size() const = 0;
 };
 
-// Allocates 'size' unintialized memory chunks of size sizeof(T) from underlying
-// blocks of (at least) size 'block_size * sizeof(T)'. All blocks are freed when
-// this class is deleted. Result of allocate() will be aligned to sizeof(T).
-template <typename T>
-class MemoryArena : public MemoryArenaBase {
+namespace internal {
+
+// Allocates 'size' unintialized memory chunks of size object_size from
+// underlying blocks of (at least) size 'block_size * object_size'.
+// All blocks are freed when this class is deleted. Result of allocate() will
+// be aligned to object_size.
+template <size_t object_size>
+class MemoryArenaImpl : public MemoryArenaBase {
  public:
-  explicit MemoryArena(size_t block_size = kAllocSize)
-      : block_size_(block_size * sizeof(T)), block_pos_(0) {
+  enum { kObjectSize = object_size };
+
+  explicit MemoryArenaImpl(size_t block_size = kAllocSize)
+      : block_size_(block_size * kObjectSize), block_pos_(0) {
     blocks_.emplace_front(new char[block_size_]);
   }
 
   void *Allocate(size_t size) {
-    const auto byte_size = size * sizeof(T);
+    const auto byte_size = size * kObjectSize;
     if (byte_size * kAllocFit > block_size_) {
       // Large block; adds new large block.
       auto *ptr = new char[byte_size];
@@ -62,13 +67,18 @@ class MemoryArena : public MemoryArenaBase {
     return ptr;
   }
 
-  size_t Size() const override { return sizeof(T); }
+  size_t Size() const override { return kObjectSize; }
 
  private:
-  size_t block_size_;  // Default block size in bytes.
+  const size_t block_size_;  // Default block size in bytes.
   size_t block_pos_;   // Current position in block in bytes.
   std::list<std::unique_ptr<char[]>> blocks_;  // List of allocated blocks.
 };
+
+}  // namespace internal
+
+template <typename T>
+using MemoryArena = internal::MemoryArenaImpl<sizeof(T)>;
 
 // Base class for MemoryPool that allows (e.g.) MemoryPoolCollection to easily
 // manipulate collections of variously sized pools.
@@ -78,25 +88,23 @@ class MemoryPoolBase {
   virtual size_t Size() const = 0;
 };
 
-// Allocates and frees initially uninitialized memory chunks of size sizeof(T).
-// Keeps an internal list of freed chunks that are reused (as is) on the next
-// allocation if available. Chunks are constructed in blocks of size
-// 'pool_size'. All memory is freed when the class is deleted. The result of
-// Allocate() will be suitably memory-aligned.
-//
-// Combined with placement operator new and destroy fucntions for the T class,
-// this can be used to improve allocation efficiency. See nlp/fst/lib/visit.h
-// (global new) and nlp/fst/lib/dfs-visit.h (class new) for examples.
-template <typename T>
-class MemoryPool : public MemoryPoolBase {
+namespace internal {
+
+// Allocates and frees initially uninitialized memory chunks of size
+// object_size. Keeps an internal list of freed chunks that are reused (as is)
+// on the next allocation if available. Chunks are constructed in blocks of size
+// 'pool_size'.
+template <size_t object_size>
+class MemoryPoolImpl : public MemoryPoolBase {
  public:
+  enum { kObjectSize = object_size };
+
   struct Link {
-    char buf[sizeof(T)];
+    char buf[kObjectSize];
     Link *next;
   };
 
-  // 'pool_size' specifies the size of the initial pool and how it is extended.
-  explicit MemoryPool(size_t pool_size = kAllocSize)
+  explicit MemoryPoolImpl(size_t pool_size)
       : mem_arena_(pool_size), free_list_(nullptr) {}
 
   void *Allocate() {
@@ -119,14 +127,30 @@ class MemoryPool : public MemoryPoolBase {
     }
   }
 
-  size_t Size() const override { return sizeof(T); }
+  size_t Size() const override { return kObjectSize; }
 
  private:
   MemoryArena<Link> mem_arena_;
   Link *free_list_;
 
-  MemoryPool(const MemoryPool &) = delete;
-  MemoryPool &operator=(const MemoryPool &) = delete;
+  MemoryPoolImpl(const MemoryPoolImpl &) = delete;
+  MemoryPoolImpl &operator=(const MemoryPoolImpl &) = delete;
+};
+
+}  // namespace internal
+
+// Allocates and frees initially uninitialized memory chunks of size sizeof(T).
+// All memory is freed when the class is deleted. The result of Allocate() will
+// be suitably memory-aligned. Combined with placement operator new and destroy
+// functions for the T class, this can be used to improve allocation efficiency.
+// See nlp/fst/lib/visit.h (global new) and nlp/fst/lib/dfs-visit.h (class new)
+// for examples.
+template <typename T>
+class MemoryPool : public internal::MemoryPoolImpl<sizeof(T)> {
+ public:
+  // 'pool_size' specifies the size of the initial pool and how it is extended.
+  MemoryPool(size_t pool_size = kAllocSize)
+      : internal::MemoryPoolImpl<sizeof(T)>(pool_size) {}
 };
 
 // Stores a collection of memory arenas.

@@ -40,7 +40,7 @@ SymbolTableImpl *SymbolTableImpl::ReadText(std::istream &strm,
     ++nline;
     std::vector<char *> col;
     auto separator = opts.fst_field_separator + "\n";
-    SplitToVector(line, separator.c_str(), &col, true);
+    SplitString(line, separator.c_str(), &col, true);
     if (col.empty()) continue;  // Empty line.
     if (col.size() != 2) {
       LOG(ERROR) << "SymbolTable::ReadText: Bad number of columns ("

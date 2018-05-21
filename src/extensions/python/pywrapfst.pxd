@@ -11,7 +11,7 @@ from libcpp.memory cimport unique_ptr
 from libcpp.utility cimport pair
 from libcpp.vector cimport vector
 
-from google3 cimport string
+from libcpp.string cimport string
 from basictypes cimport int32
 from basictypes cimport int64
 from basictypes cimport uint32
@@ -32,7 +32,7 @@ cdef int64 kNoSymbol
 
 cdef string tostring(data, encoding=?) except *
 
-cdef string weighttostring(data, encoding=?) except *
+cdef string weight_tostring(data, encoding=?) except *
 
 cdef fst.ComposeFilter _get_compose_filter(
     const string &compose_filter) except *
@@ -71,11 +71,11 @@ cdef class Weight(object):
   cpdef string type(self)
 
 
-cdef Weight _Weight_Zero(weight_type)
+cdef Weight _Zero(weight_type)
 
-cdef Weight _Weight_One(weight_type)
+cdef Weight _One(weight_type)
 
-cdef Weight _Weight_NoWeight(weight_type)
+cdef Weight _NoWeight(weight_type)
 
 cdef Weight _plus(Weight lhs, Weight rhs)
 
@@ -344,9 +344,9 @@ cdef _Fst _init_XFst(FstClass_ptr tfst)
 
 cdef _MutableFst _create_Fst(arc_type=?)
 
-cdef _Fst _read_Fst(filename, fst_type=?)
+cpdef _Fst _read(filename)
 
-cdef _Fst _deserialize_Fst(fst_string, fst_type=?)
+cpdef _Fst _read_from_string(State)
 
 
 # Iterators.
@@ -527,7 +527,7 @@ cdef class FarReader(object):
 
   cpdef string far_type(self)
 
-  cpdef bool find(self, key)
+  cpdef bool find(self, key) except *
 
   cpdef _Fst get_fst(self)
 
@@ -546,7 +546,7 @@ cdef class FarWriter(object):
 
   cpdef string arc_type(self)
 
-  cdef void _close(self)
+  cdef void close(self)
 
   cpdef void add(self, key, _Fst ifst) except *
 

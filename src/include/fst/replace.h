@@ -372,6 +372,7 @@ struct ReplaceFstOptions : CacheImplOptions<CacheStore> {
         call_output_label(epsilon_replace_arc ? 0 : kNoLabel) {}
 };
 
+
 // Forward declaration.
 template <class Arc, class StateTable, class CacheStore>
 class ReplaceFstMatcher;
@@ -994,8 +995,8 @@ class ReplaceFst
     if ((GetImpl()->ArcIteratorFlags() & kArcNoCache) &&
         ((match_type == MATCH_INPUT && Properties(kILabelSorted, false)) ||
          (match_type == MATCH_OUTPUT && Properties(kOLabelSorted, false)))) {
-      return new ReplaceFstMatcher<Arc, StateTable, CacheStore>(*this,
-                                                                match_type);
+      return new ReplaceFstMatcher<Arc, StateTable, CacheStore>
+          (this, match_type);
     } else {
       VLOG(2) << "Not using replace matcher";
       return nullptr;
@@ -1246,9 +1247,11 @@ class ReplaceFstMatcher : public MatcherBase<Arc> {
 
   using StateTuple = typename StateTable::StateTuple;
 
+  // This makes a copy of the FST.
   ReplaceFstMatcher(const ReplaceFst<Arc, StateTable, CacheStore> &fst,
                     MatchType match_type)
-      : fst_(fst),
+      : owned_fst_(fst.Copy()),
+        fst_(*owned_fst_),
         impl_(fst_.GetMutableImpl()),
         s_(fst::kNoStateId),
         match_type_(match_type),
@@ -1261,10 +1264,28 @@ class ReplaceFstMatcher : public MatcherBase<Arc> {
     InitMatchers();
   }
 
+  // This doesn't copy the FST.
+  ReplaceFstMatcher(const ReplaceFst<Arc, StateTable, CacheStore> *fst,
+                    MatchType match_type)
+      : fst_(*fst),
+        impl_(fst_.GetMutableImpl()),
+        s_(fst::kNoStateId),
+        match_type_(match_type),
+        current_loop_(false),
+        final_arc_(false),
+        loop_(kNoLabel, 0, Weight::One(), kNoStateId) {
+    if (match_type_ == fst::MATCH_OUTPUT) {
+      std::swap(loop_.ilabel, loop_.olabel);
+    }
+    InitMatchers();
+  }
+
+  // This makes a copy of the FST.
   ReplaceFstMatcher(
       const ReplaceFstMatcher<Arc, StateTable, CacheStore> &matcher,
       bool safe = false)
-      : fst_(matcher.fst_),
+      : owned_fst_(matcher.fst_.Copy(safe)),
+        fst_(*owned_fst_),
         impl_(fst_.GetMutableImpl()),
         s_(fst::kNoStateId),
         match_type_(matcher.match_type_),
@@ -1393,6 +1414,7 @@ class ReplaceFstMatcher : public MatcherBase<Arc> {
   ssize_t Priority(StateId s) final { return fst_.NumArcs(s); }
 
  private:
+  std::unique_ptr<const ReplaceFst<Arc, StateTable, CacheStore>> owned_fst_;
   const ReplaceFst<Arc, StateTable, CacheStore> &fst_;
   internal::ReplaceFstImpl<Arc, StateTable, CacheStore> *impl_;
   LocalMatcher *current_matcher_;

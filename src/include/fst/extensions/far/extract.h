@@ -59,14 +59,14 @@ void FarExtract(const std::vector<string> &ifilenames, int32 generate_filenames,
   if (!keys.empty()) {
     auto *keys_cstr = new char[keys.size() + 1];
     strcpy(keys_cstr, keys.c_str());
-    SplitToVector(keys_cstr, key_separator.c_str(), &key_vector, true);
+    SplitString(keys_cstr, key_separator.c_str(), &key_vector, true);
     int i = 0;
     for (size_t k = 0; k < key_vector.size(); ++k, ++i) {
       string key = key_vector[k];
       auto *key_cstr = new char[key.size() + 1];
       strcpy(key_cstr, key.c_str());
       std::vector<char *> range_vector;
-      SplitToVector(key_cstr, range_delimiter.c_str(), &range_vector, false);
+      SplitString(key_cstr, range_delimiter.c_str(), &range_vector, false);
       if (range_vector.size() == 1) {  // Not a range
         if (!far_reader->Find(key)) {
           LOG(ERROR) << "FarExtract: Cannot find key " << key;

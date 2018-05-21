@@ -72,7 +72,7 @@ bool ConvertStringToLabels(const string &str, StringTokenType token_type,
     c_str[str.size()] = 0;
     std::vector<char *> vec;
     const string separator = "\n" + FLAGS_fst_field_separator;
-    SplitToVector(c_str.get(), separator.c_str(), &vec, true);
+    SplitString(c_str.get(), separator.c_str(), &vec, true);
     for (const char *c : vec) {
       Label label;
       if (!ConvertSymbolToLabel(c, syms, unknown_label, allow_negative,

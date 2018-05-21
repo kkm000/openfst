@@ -19,8 +19,8 @@ DEFINE_bool(fst_error_fatal, true,
 
 namespace fst {
 
-void SplitToVector(char *full, const char *delim, std::vector<char *> *vec,
-                   bool omit_empty_strings) {
+void SplitString(char *full, const char *delim, std::vector<char *> *vec,
+                 bool omit_empty_strings) {
   char *p = full;
   while (p) {
     if ((p = strpbrk(full, delim))) {
@@ -55,8 +55,8 @@ void ConvertToLegalCSymbol(string *s) {
   }
 }
 
-// Skips over input characters to align to 'align' bytes. Returns
-// false if can't align.
+// Skips over input characters to align to 'align' bytes. Returns false if can't
+// align.
 bool AlignInput(std::istream &strm) {
   char c;
   for (int i = 0; i < MappedFile::kArchAlignment; ++i) {
@@ -71,8 +71,8 @@ bool AlignInput(std::istream &strm) {
   return true;
 }
 
-// Write null output characters to align to 'align' bytes. Returns
-// false if can't align.
+// Write null output characters to align to 'align' bytes. Returns false if
+// can't align.
 bool AlignOutput(std::ostream &strm) {
   for (int i = 0; i < MappedFile::kArchAlignment; ++i) {
     int64 pos = strm.tellp();

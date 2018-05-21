@@ -39,7 +39,7 @@ class RmEpsilonOptions
   Weight weight_threshold;  // Pruning weight threshold.
   StateId state_threshold;  // Pruning state threshold.
 
-  explicit RmEpsilonOptions(Queue *queue, float delta = kDelta,
+  explicit RmEpsilonOptions(Queue *queue, float delta = kShortestDelta,
                             bool connect = true,
                             Weight weight_threshold = Weight::Zero(),
                             StateId state_threshold = kNoStateId)
@@ -311,7 +311,7 @@ template <class Arc>
 void RmEpsilon(MutableFst<Arc> *fst, bool connect = true,
                typename Arc::Weight weight_threshold = Arc::Weight::Zero(),
                typename Arc::StateId state_threshold = kNoStateId,
-               float delta = kDelta) {
+               float delta = kShortestDelta) {
   using StateId = typename Arc::StateId;
   using Weight = typename Arc::Weight;
   std::vector<Weight> distance;
@@ -324,10 +324,11 @@ void RmEpsilon(MutableFst<Arc> *fst, bool connect = true,
 struct RmEpsilonFstOptions : CacheOptions {
   float delta;
 
-  explicit RmEpsilonFstOptions(const CacheOptions &opts, float delta = kDelta)
+  explicit RmEpsilonFstOptions(const CacheOptions &opts,
+                               float delta = kShortestDelta)
       : CacheOptions(opts), delta(delta) {}
 
-  explicit RmEpsilonFstOptions(float delta = kDelta) : delta(delta) {}
+  explicit RmEpsilonFstOptions(float delta = kShortestDelta) : delta(delta) {}
 };
 
 namespace internal {

@@ -5,6 +5,8 @@
 
 DEFINE_string(arc_filter, "any",
               "Arc filter: one of:"
+              " \"any\", \"epsilon\", \"iepsilon\", \"oepsilon\"; "
+              "this only affects the counts of (co)accessible states, "
               "connected states, and (strongly) connected components");
 DEFINE_string(info_type, "auto",
               "Info format: one of: \"auto\", \"long\", \"short\"");

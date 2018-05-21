@@ -194,7 +194,7 @@ void Prune(MutableFst<Arc> *fst, const PruneOptions<Arc, ArcFilter> &) {
 template <class Arc>
 void Prune(MutableFst<Arc> *fst, typename Arc::Weight weight_threshold,
            typename Arc::StateId state_threshold = kNoStateId,
-           double delta = kDelta) {
+           float delta = kDelta) {
   const PruneOptions<Arc, AnyArcFilter<Arc>> opts(
       weight_threshold, state_threshold, AnyArcFilter<Arc>(), nullptr, delta);
   Prune(fst, opts);

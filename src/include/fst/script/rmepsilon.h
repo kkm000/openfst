@@ -16,7 +16,6 @@
 namespace fst {
 namespace script {
 
-
 struct RmEpsilonOptions : public ShortestDistanceOptions {
   const bool connect;
   const WeightClass &weight_threshold;
@@ -24,8 +23,7 @@ struct RmEpsilonOptions : public ShortestDistanceOptions {
 
   RmEpsilonOptions(QueueType queue_type, bool connect,
                    const WeightClass &weight_threshold,
-                   int64 state_threshold = kNoStateId,
-                   float delta = kDelta)
+                   int64 state_threshold = kNoStateId, float delta = kDelta)
       : ShortestDistanceOptions(queue_type, EPSILON_ARC_FILTER, kNoStateId,
                                 delta),
         connect(connect),
@@ -40,18 +38,16 @@ namespace internal {
 template <class Arc, class Queue>
 void RmEpsilon(MutableFst<Arc> *fst,
                std::vector<typename Arc::Weight> *distance,
-               const RmEpsilonOptions &opts,
-               Queue *queue) {
+               const RmEpsilonOptions &opts, Queue *queue) {
   using Weight = typename Arc::Weight;
-  const fst::RmEpsilonOptions<Arc, Queue> ropts(queue, opts.delta,
-      opts.connect, *opts.weight_threshold.GetWeight<Weight>(),
-      opts.state_threshold);
+  const fst::RmEpsilonOptions<Arc, Queue> ropts(
+      queue, opts.delta, opts.connect,
+      *opts.weight_threshold.GetWeight<Weight>(), opts.state_threshold);
   RmEpsilon(fst, distance, ropts);
 }
 
 template <class Arc>
-void RmEpsilon(MutableFst<Arc> *fst,
-               const RmEpsilonOptions &opts) {
+void RmEpsilon(MutableFst<Arc> *fst, const RmEpsilonOptions &opts) {
   using StateId = typename Arc::StateId;
   using Weight = typename Arc::Weight;
   std::vector<Weight> distance;
@@ -87,8 +83,7 @@ void RmEpsilon(MutableFst<Arc> *fst,
       return;
     }
     default: {
-      FSTERROR() << "RmEpsilon: Unknown queue type: "
-                 << opts.queue_type;
+      FSTERROR() << "RmEpsilon: Unknown queue type: " << opts.queue_type;
       fst->SetProperties(kError, kError);
       return;
     }

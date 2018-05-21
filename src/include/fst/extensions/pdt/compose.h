@@ -32,6 +32,7 @@ class ParenMatcher {
   using StateId = typename Arc::StateId;
   using Weight = typename Arc::Weight;
 
+  // This makes a copy of the FST.
   ParenMatcher(const FST &fst, MatchType match_type,
                uint32 flags = (kParenLoop | kParenList))
       : matcher_(fst, match_type), match_type_(match_type), flags_(flags) {
@@ -46,6 +47,22 @@ class ParenMatcher {
     loop_.nextstate = kNoStateId;
   }
 
+  // This doesn't copy the FST.
+  ParenMatcher(const FST *fst, MatchType match_type,
+               uint32 flags = (kParenLoop | kParenList))
+      : matcher_(fst, match_type), match_type_(match_type), flags_(flags) {
+    if (match_type == MATCH_INPUT) {
+      loop_.ilabel = kNoLabel;
+      loop_.olabel = 0;
+    } else {
+      loop_.ilabel = 0;
+      loop_.olabel = kNoLabel;
+    }
+    loop_.weight = Weight::One();
+    loop_.nextstate = kNoStateId;
+  }
+
+  // This makes a copy of the FST.
   ParenMatcher(const ParenMatcher<FST> &matcher, bool safe = false)
       : matcher_(matcher.matcher_, safe),
         match_type_(matcher.match_type_),

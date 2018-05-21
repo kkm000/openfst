@@ -42,7 +42,7 @@ struct ShortestPathOptions
 
   ShortestPathOptions(Queue *queue, ArcFilter filter, int32 nshortest = 1,
                       bool unique = false, bool has_distance = false,
-                      float delta = kDelta, bool first_path = false,
+                      float delta = kShortestDelta, bool first_path = false,
                       Weight weight_threshold = Weight::Zero(),
                       StateId state_threshold = kNoStateId)
       : ShortestDistanceOptions<Arc, Queue, ArcFilter>(queue, filter,
@@ -291,7 +291,7 @@ class ShortestPathCompare {
 template <class Arc, class RevArc>
 void NShortestPath(const Fst<RevArc> &ifst, MutableFst<Arc> *ofst,
                    const std::vector<typename Arc::Weight> &distance,
-                   int32 nshortest, float delta = kDelta,
+                   int32 nshortest, float delta = kShortestDelta,
                    typename Arc::Weight weight_threshold = Arc::Weight::Zero(),
                    typename Arc::StateId state_threshold = kNoStateId) {
   using StateId = typename Arc::StateId;
@@ -499,13 +499,14 @@ void ShortestPath(const Fst<Arc> &ifst, MutableFst<Arc> *ofst,
                   int32 nshortest = 1, bool unique = false,
                   bool first_path = false,
                   typename Arc::Weight weight_threshold = Arc::Weight::Zero(),
-                  typename Arc::StateId state_threshold = kNoStateId) {
+                  typename Arc::StateId state_threshold = kNoStateId,
+                  float delta = kShortestDelta) {
   using StateId = typename Arc::StateId;
   std::vector<typename Arc::Weight> distance;
   AnyArcFilter<Arc> arc_filter;
   AutoQueue<StateId> state_queue(ifst, &distance, arc_filter);
   const ShortestPathOptions<Arc, AutoQueue<StateId>, AnyArcFilter<Arc>> opts(
-      &state_queue, arc_filter, nshortest, unique, false, kDelta, first_path,
+      &state_queue, arc_filter, nshortest, unique, false, delta, first_path,
       weight_threshold, state_threshold);
   ShortestPath(ifst, ofst, &distance, opts);
 }
