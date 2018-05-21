@@ -24,8 +24,6 @@ DECLARE_string(fst_field_separator);
 
 namespace fst {
 
-// This will eventually replace StringCompiler<Arc>::TokenType and
-// StringPrinter<Arc>::TokenType.
 enum StringTokenType { SYMBOL = 1, BYTE = 2, UTF8 = 3 };
 
 namespace internal {

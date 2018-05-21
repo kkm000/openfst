@@ -87,6 +87,9 @@ class LogAccumulator {
 
  private:
   Weight LogPlus(Weight w, Weight v) {
+    if (w == Weight::Zero()) {
+      return v;
+    }
     const auto f1 = to_log_weight_(w).Value();
     const auto f2 = to_log_weight_(v).Value();
     if (f1 > f2) {
@@ -335,6 +338,9 @@ class FastLogAccumulator {
   }
 
   Weight LogPlus(Weight w, Weight v) const {
+    if (w == Weight::Zero()) {
+      return v;
+    }
     const auto f1 = to_log_weight_(w).Value();
     const auto f2 = to_log_weight_(v).Value();
     if (f1 > f2) {
@@ -575,6 +581,9 @@ class CacheLogAccumulator {
   }
 
   Weight LogPlus(Weight w, Weight v) {
+    if (w == Weight::Zero()) {
+      return v;
+    }
     const auto f1 = to_log_weight_(w).Value();
     const auto f2 = to_log_weight_(v).Value();
     if (f1 > f2) {

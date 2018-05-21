@@ -61,6 +61,8 @@ bool GetMapType(const string &str, MapType *map_type) {
     *map_type = OUTPUT_EPSILON_MAPPER;
   } else if (str == "plus") {
     *map_type = PLUS_MAPPER;
+  } else if (str == "power") {
+    *map_type = POWER_MAPPER;
   } else if (str == "quantize") {
     *map_type = QUANTIZE_MAPPER;
   } else if (str == "rmweight") {

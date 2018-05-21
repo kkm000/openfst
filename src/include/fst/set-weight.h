@@ -50,6 +50,9 @@ class SetWeight {
   using ReverseWeight = SetWeight<Label, S>;
   using Iterator = SetWeightIterator<SetWeight>;
   friend class SetWeightIterator<SetWeight>;
+  // Allow type-converting copy and move constructors private access.
+  template <typename L2, SetType S2>
+  friend class SetWeight;
 
   SetWeight() {}
 
@@ -62,6 +65,29 @@ class SetWeight {
   // Input should be positive. (Non-positive value has
   // special internal meaning w.r.t. integral constants above.)
   explicit SetWeight(Label label) { PushBack(label); }
+
+  template <SetType S2>
+  explicit SetWeight(const SetWeight<Label, S2> &w)
+    : first_(w.first_), rest_(w.rest_) {}
+
+  template <SetType S2>
+  explicit SetWeight(SetWeight<Label, S2> &&w)
+    : first_(w.first_), rest_(std::move(w.rest_)) { w.Clear(); }
+
+  template <SetType S2>
+  SetWeight &operator=(const SetWeight<Label, S2> &w) {
+    first_ = w.first_;
+    rest_ = w.rest_;
+    return *this;
+  }
+
+  template <SetType S2>
+  SetWeight &operator=(SetWeight<Label, S2> &&w) {
+    first_ = w.first_;
+    rest_ = std::move(w.rest_);
+    w.Clear();
+    return *this;
+  }
 
   static const SetWeight &Zero() {
     return S == SET_UNION_INTERSECT ? EmptySet() : UnivSet();

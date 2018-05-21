@@ -103,14 +103,14 @@ inline bool operator==(const FloatWeightTpl<T> &w1,
 // comparisons like FloatWeightTpl<float> == float compile.  If only the
 // templated version exists, the FloatWeightTpl<float>(float) conversion
 // won't be found.
-inline bool operator==(const FloatWeightTpl<double> &w1,
-                       const FloatWeightTpl<double> &w2) {
-  return operator==<double>(w1, w2);
-}
-
 inline bool operator==(const FloatWeightTpl<float> &w1,
                        const FloatWeightTpl<float> &w2) {
   return operator==<float>(w1, w2);
+}
+
+inline bool operator==(const FloatWeightTpl<double> &w1,
+                       const FloatWeightTpl<double> &w2) {
+  return operator==<double>(w1, w2);
 }
 
 template <class T>
@@ -119,14 +119,14 @@ inline bool operator!=(const FloatWeightTpl<T> &w1,
   return !(w1 == w2);
 }
 
-inline bool operator!=(const FloatWeightTpl<double> &w1,
-                       const FloatWeightTpl<double> &w2) {
-  return operator!=<double>(w1, w2);
-}
-
 inline bool operator!=(const FloatWeightTpl<float> &w1,
                        const FloatWeightTpl<float> &w2) {
   return operator!=<float>(w1, w2);
+}
+
+inline bool operator!=(const FloatWeightTpl<double> &w1,
+                       const FloatWeightTpl<double> &w2) {
+  return operator!=<double>(w1, w2);
 }
 
 template <class T>
@@ -304,11 +304,31 @@ inline TropicalWeightTpl<double> Divide(const TropicalWeightTpl<double> &w1,
   return Divide<double>(w1, w2, typ);
 }
 
-template <class T>
-inline TropicalWeightTpl<T> Power(const TropicalWeightTpl<T> &weight,
-                                  T scalar) {
-  return TropicalWeightTpl<T>(weight.Value() * scalar);
+template <class T, class V>
+inline TropicalWeightTpl<T> Power(const TropicalWeightTpl<T> &weight, V n) {
+  if (n == 0) {
+    return TropicalWeightTpl<T>::One();
+  } else if (weight == TropicalWeightTpl<T>::Zero()) {
+    return TropicalWeightTpl<T>::Zero();
+  }
+  return TropicalWeightTpl<T>(weight.Value() * n);
 }
+
+// Specializes the library-wide template to use the above implementation; rules
+// of function template instantiation require this be a full instantiation.
+
+template <>
+inline TropicalWeightTpl<float> Power<TropicalWeightTpl<float>>(
+    const TropicalWeightTpl<float> &weight, size_t n) {
+  return Power<float, size_t>(weight, n);
+}
+
+template <>
+inline TropicalWeightTpl<double> Power<TropicalWeightTpl<double>>(
+    const TropicalWeightTpl<double> &weight, size_t n) {
+  return Power<double, size_t>(weight, n);
+}
+
 
 // Log semiring: (log(e^-x + e^-y), +, inf, 0).
 template <class T>
@@ -495,9 +515,29 @@ inline LogWeightTpl<double> Divide(const LogWeightTpl<double> &w1,
   return Divide<double>(w1, w2, typ);
 }
 
-template <class T>
-inline LogWeightTpl<T> Power(const LogWeightTpl<T> &weight, T scalar) {
-  return LogWeightTpl<T>(weight.Value() * scalar);
+template <class T, class V>
+inline LogWeightTpl<T> Power(const LogWeightTpl<T> &weight, V n) {
+  if (n == 0) {
+    return LogWeightTpl<T>::One();
+  } else if (weight == LogWeightTpl<T>::Zero()) {
+    return LogWeightTpl<T>::Zero();
+  }
+  return LogWeightTpl<T>(weight.Value() * n);
+}
+
+// Specializes the library-wide template to use the above implementation; rules
+// of function template instantiation require this be a full instantiation.
+
+template <>
+inline LogWeightTpl<float> Power<LogWeightTpl<float>>(
+    const LogWeightTpl<float> &weight, size_t n) {
+  return Power<float, size_t>(weight, n);
+}
+
+template <>
+inline LogWeightTpl<double> Power<LogWeightTpl<double>>(
+    const LogWeightTpl<double> &weight, size_t n) {
+  return Power<double, size_t>(weight, n);
 }
 
 // Specialization using the Kahan compensated summation.

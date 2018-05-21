@@ -21,18 +21,6 @@ check_PROGRAMS += algo_test_minmax
 algo_test_minmax_SOURCES = $(algo_test_SOURCES)
 algo_test_minmax_CPPFLAGS = -DTEST_MINMAX $(AM_CPPFLAGS)
 
-# check_PROGRAMS += algo_test_left_string
-# algo_test_left_string_SOURCES = $(algo_test_SOURCES)
-# algo_test_left_string_CPPFLAGS = -DTEST_LEFT_STRING $(AM_CPPFLAGS)
-
-# check_PROGRAMS += algo_test_right_string
-# algo_test_right_string_SOURCES = $(algo_test_SOURCES)
-# algo_test_right_string_CPPFLAGS = -DTEST_RIGHT_STRING $(AM_CPPFLAGS)
-
-# check_PROGRAMS += algo_test_gallic
-# algo_test_gallic_SOURCES = $(algo_test_SOURCES)
-# algo_test_gallic_CPPFLAGS = -DTEST_GALLIC $(AM_CPPFLAGS)
-
 check_PROGRAMS += algo_test_lexicographic
 algo_test_lexicographic_SOURCES = $(algo_test_SOURCES)
 algo_test_lexicographic_CPPFLAGS = -DTEST_LEXICOGRAPHIC $(AM_CPPFLAGS)

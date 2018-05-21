@@ -118,6 +118,40 @@ void TestWeightConversion(Weight1 w1) {
   CHECK_EQ(w1, nw1);
 }
 
+template <typename FromWeight, typename ToWeight>
+void TestWeightCopy(FromWeight w) {
+  // Test copy constructor.
+  const ToWeight to_copied(w);
+  const FromWeight roundtrip_copied(to_copied);
+  CHECK_EQ(w, roundtrip_copied);
+
+  // Test copy assign.
+  ToWeight to_copy_assigned;
+  to_copy_assigned = w;
+  CHECK_EQ(to_copied, to_copy_assigned);
+
+  FromWeight roundtrip_copy_assigned;
+  roundtrip_copy_assigned = to_copy_assigned;
+  CHECK_EQ(w, roundtrip_copy_assigned);
+}
+
+template <typename FromWeight, typename ToWeight>
+void TestWeightMove(FromWeight w) {
+  // Assume FromWeight -> FromWeight copy works.
+  const FromWeight orig(w);
+  ToWeight to_moved(std::move(w));
+  const FromWeight roundtrip_moved(std::move(to_moved));
+  CHECK_EQ(orig, roundtrip_moved);
+
+  // Test move assign.
+  w = orig;
+  ToWeight to_move_assigned;
+  to_move_assigned = std::move(w);
+  FromWeight roundtrip_move_assigned;
+  roundtrip_move_assigned = std::move(to_move_assigned);
+  CHECK_EQ(orig, roundtrip_move_assigned);
+}
+
 template <class Weight>
 void TestImplicitConversion() {
   // Only test a few of the operations; assumes they are implemented with the
@@ -288,6 +322,20 @@ int main(int argc, char **argv) {
   bool_set_tester.Test(FLAGS_repeat);
 
   TestWeightConversion<IUSetWeight, UISetWeight>(iu_set_generate());
+
+  TestWeightCopy<IUSetWeight, UISetWeight>(iu_set_generate());
+  TestWeightCopy<IUSetWeight, BoolSetWeight>(iu_set_generate());
+  TestWeightCopy<UISetWeight, IUSetWeight>(ui_set_generate());
+  TestWeightCopy<UISetWeight, BoolSetWeight>(ui_set_generate());
+  TestWeightCopy<BoolSetWeight, IUSetWeight>(bool_set_generate());
+  TestWeightCopy<BoolSetWeight, UISetWeight>(bool_set_generate());
+
+  TestWeightMove<IUSetWeight, UISetWeight>(iu_set_generate());
+  TestWeightMove<IUSetWeight, BoolSetWeight>(iu_set_generate());
+  TestWeightMove<UISetWeight, IUSetWeight>(ui_set_generate());
+  TestWeightMove<UISetWeight, BoolSetWeight>(ui_set_generate());
+  TestWeightMove<BoolSetWeight, IUSetWeight>(bool_set_generate());
+  TestWeightMove<BoolSetWeight, UISetWeight>(bool_set_generate());
 
   // COMPOSITE WEIGHTS AND TESTERS - DEFINITIONS
 

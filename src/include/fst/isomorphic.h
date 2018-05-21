@@ -22,20 +22,18 @@ namespace fst {
 namespace internal {
 
 // Orders weights for equality checking.
-template <class Weight,
-          typename std::enable_if<
-              (Weight::Properties() & kIdempotent) == kIdempotent>::type * =
-              nullptr>
-bool WeightCompare(Weight w1, Weight w2, float delta, bool *error) {
+template <class Weight, typename std::enable_if<
+                            IsIdempotent<Weight>::value>::type * = nullptr>
+bool WeightCompare(const Weight &w1, const Weight &w2, float delta,
+                   bool *error) {
   return NaturalLess<Weight>()(w1, w2);
 }
 
-template <class Weight,
-          typename std::enable_if<
-              (Weight::Properties() & kIdempotent) != kIdempotent>::type * =
-              nullptr>
-bool WeightCompare(Weight w1, Weight w2, float delta, bool *error) {
-  // No natural order; use hash
+template <class Weight, typename std::enable_if<
+                            !IsIdempotent<Weight>::value>::type * = nullptr>
+bool WeightCompare(const Weight &w1, const Weight &w2, float delta,
+                   bool *error) {
+  // No natural order; use hash.
   const auto q1 = w1.Quantize(delta);
   const auto q2 = w2.Quantize(delta);
   auto n1 = q1.Hash();

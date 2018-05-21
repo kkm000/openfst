@@ -19,7 +19,6 @@
 #include <utility>
 
 #include <fst/compat.h>
-#include <fst/types.h>
 #include <fst/flags.h>
 #include <fst/log.h>
 #include <fstream>
@@ -177,8 +176,8 @@ enum MatchType {
   MATCH_UNKNOWN = 5
 };  // Otherwise, match type unknown.
 
-constexpr int kNoStateId = -1;  // Not a valid state ID.
 constexpr int kNoLabel = -1;    // Not a valid label.
+constexpr int kNoStateId = -1;  // Not a valid state ID.
 
 // A generic FST, templated on the arc definition, with common-demoninator
 // methods (use StateIterator and ArcIterator to iterate over its states and

@@ -20,12 +20,6 @@ cimport fst as fst
 from ios cimport stringstream
 
 
-# Constants not imported from elsewhere.
-# TODO(kbg): Figure out how to access static class variables so I don't have
-# to do it this way.
-
-cdef int64 kNoSymbol
-
 
 # Exportable helper functions.
 
@@ -425,9 +419,9 @@ cdef class StateIterator(object):
 # Constructive operations on Fst.
 
 
-cdef _Fst _map(_Fst ifst, float delta=?, map_type=?, weight=?)
+cdef _Fst _map(_Fst ifst, float delta=?, map_type=?, double power=?, weight=?)
 
-cpdef _Fst arcmap(_Fst ifst, float delta=?, map_type=?, weight=?)
+cpdef _Fst arcmap(_Fst ifst, float delta=?, map_type=?, double power=?, weight=?)
 
 cpdef _MutableFst compose(_Fst ifst1, _Fst ifst2, compose_filter=?,
                           bool connect=?)

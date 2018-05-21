@@ -230,6 +230,8 @@ class ShortestFirstQueue : public QueueBase<S> {
     if (update) key_.clear();
   }
 
+  const Compare &GetCompare() const { return heap_.GetCompare(); }
+
  private:
   Heap<StateId, Compare> heap_;
   std::vector<ssize_t> key_;
@@ -513,16 +515,7 @@ class AutoQueue : public QueueBase<S> {
             const std::vector<typename Arc::Weight> *distance, ArcFilter filter)
       : QueueBase<StateId>(AUTO_QUEUE) {
     using Weight = typename Arc::Weight;
-    // TrivialLess is never instantiated since the construction of Less is
-    // guarded by Properties() & kPath.  It is only here to avoid instantiating
-    // NaturalLess for non-path weights.
-    struct TrivialLess {
-      using Weight = typename Arc::Weight;
-      bool operator()(const Weight &, const Weight &) const { return false; }
-    };
-    using Less =
-        typename std::conditional<(Weight::Properties() & kPath) == kPath,
-                                  NaturalLess<Weight>, TrivialLess>::type;
+    using Less = NaturalLess<Weight>;
     using Compare = internal::StateWeightCompare<StateId, Less>;
     // First checks if the FST is known to have these properties.
     const auto props =
@@ -545,7 +538,7 @@ class AutoQueue : public QueueBase<S> {
       std::vector<QueueType> queue_types(nscc);
       std::unique_ptr<Less> less;
       std::unique_ptr<Compare> comp;
-      if (distance && (Weight::Properties() & kPath)) {
+      if (distance && (Weight::Properties() & kPath) == kPath) {
         less.reset(new Less);
         comp.reset(new Compare(*distance, *less));
       }
@@ -712,6 +705,8 @@ class AStarWeightCompare {
     const auto w2 = Times(weights_[s2], estimate_(s2));
     return less_(w1, w2);
   }
+
+  const Estimate &GetEstimate() const { return estimate_; }
 
  private:
   const std::vector<Weight> &weights_;

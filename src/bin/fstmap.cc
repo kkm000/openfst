@@ -7,10 +7,12 @@
 DEFINE_double(delta, fst::kDelta, "Comparison/quantization delta");
 DEFINE_string(map_type, "identity",
               "Map operation, one of: \"arc_sum\", \"arc_unique\", "
-              "\"identity\", \"input_epsilon\", \"invert\", "
-              "\"output_epsilon\", \"plus (--weight)\", "
+              "\"float_power\" (--power)\", \"identity\", \"input_epsilon\", "
+              "\"invert\", \"output_epsilon\", \"plus (--weight)\", "
               "\"quantize (--delta)\", \"rmweight\", \"superfinal\", "
-              "\"times (--weight)\", \"to_log\", \"to_log64\", \"to_std\"");
+              "\"power (--power)\", \"times (--weight)\", \"to_log\", "
+              "\"to_log64\", \"to_std\"");
+DEFINE_double(power, 1.0, "Power parameter");
 DEFINE_string(weight, "", "Weight parameter");
 
 int fstmap_main(int argc, char **argv);

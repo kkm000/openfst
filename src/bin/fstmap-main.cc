@@ -15,6 +15,7 @@
 
 DECLARE_double(delta);
 DECLARE_string(map_type);
+DECLARE_double(power);
 DECLARE_string(weight);
 
 int fstmap_main(int argc, char **argv) {
@@ -52,8 +53,8 @@ int fstmap_main(int argc, char **argv) {
           : (FLAGS_map_type == "times" ? WeightClass::One(ifst->WeightType())
                                        : WeightClass::Zero(ifst->WeightType()));
 
-  std::unique_ptr<FstClass> ofst(s::Map(*ifst, map_type, FLAGS_delta,
-                                        weight_param));
+  std::unique_ptr<FstClass> ofst(
+      s::Map(*ifst, map_type, FLAGS_delta, FLAGS_power, weight_param));
 
   return !ofst->Write(out_name);
 }

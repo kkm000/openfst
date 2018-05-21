@@ -1,4 +1,8 @@
 OpenFst: Release 1.6
+    * The `first_path` option to ShortestPath is now optimal for A* (1.6.7)
+    * Renames SymbolTable::kNoSymbol to kNoSymbol (1.6.7)
+    * Exposes PowerMapper to the scripting API (1.6.7)
+    * Fixes linking of the special SOs (1.6.7)
     * Fixes error handling in HashMatcher (1.6.6)
     * Adds kShortestDelta for operations dependent on shortest-distance (1.6.6)
     * Adds Python methods for (un)pickling and (de)serializing FSTs (1.6.6)

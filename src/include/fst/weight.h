@@ -10,6 +10,7 @@
 #include <cmath>
 #include <iostream>
 #include <sstream>
+#include <type_traits>
 #include <utility>
 
 #include <fst/compat.h>
@@ -117,6 +118,15 @@ constexpr uint64 kPath = 0x0000000000000010ULL;
 // This is also used for a few other weight generation defaults.
 constexpr size_t kNumRandomWeights = 5;
 
+// Weight property boolean constants needed for SFINAE.
+
+template <class W>
+using IsIdempotent = std::integral_constant<bool,
+    (W::Properties() & kIdempotent) != 0>;
+
+template <class W>
+using IsPath = std::integral_constant<bool, (W::Properties() & kPath) != 0>;
+
 // Determines direction of division.
 enum DivideType {
   DIVIDE_LEFT,   // left division
@@ -144,33 +154,45 @@ enum DivideType {
 //
 // We define the strict version of this order below.
 
+// Declares the template with a second parameter determining whether or not it
+// can actually be constructed.
+template <class W, class IdempotentType = void>
+class NaturalLess;
+
+// Variant for idempotent weights.
 template <class W>
-class NaturalLess {
+class NaturalLess<W, typename std::enable_if<IsIdempotent<W>::value>::type> {
  public:
   using Weight = W;
 
-  NaturalLess() {
-    // TODO(kbg): Make this a compile-time static_assert once we have a pleasant
-    // way to "deregister" this operation for non-path semirings so an
-    // informative error message is produced.
-    if (!(W::Properties() & kIdempotent)) {
-      FSTERROR() << "NaturalLess: Weight type is not idempotent: " << W::Type();
-    }
-  }
+  NaturalLess() {}
 
-  bool operator()(const W &w1, const W &w2) const {
-    return (Plus(w1, w2) == w1) && w1 != w2;
+  bool operator()(const Weight &w1, const Weight &w2) const {
+    return w1 != w2 && Plus(w1, w2) == w1;
   }
 };
 
-// Power is the iterated product for arbitrary semirings such that
-// Power(w, 0) is One() for the semiring, and Power(w, n) =
-// Times(Power(w, n-1), w).
+// Non-constructible variant for non-idempotent weights.
+template <class W>
+class NaturalLess<W, typename std::enable_if<!IsIdempotent<W>::value>::type> {
+ public:
+  using Weight = W;
 
+  // TODO(kbg): Trace down anywhere this is being instantiated, then add a
+  // static_assert to prevent this from being instantiated.
+  NaturalLess() {
+    FSTERROR() << "NaturalLess: Weight type is not idempotent: " << W::Type();
+  }
+
+  bool operator()(const Weight &, const Weight &) const { return false; }
+};
+
+// Power is the iterated product for arbitrary semirings such that Power(w, 0)
+// is One() for the semiring, and Power(w, n) = Times(Power(w, n - 1), w).
 template <class Weight>
-Weight Power(Weight w, size_t n) {
+Weight Power(const Weight &weight, size_t n) {
   auto result = Weight::One();
-  for (size_t i = 0; i < n; ++i) result = Times(result, w);
+  for (size_t i = 0; i < n; ++i) result = Times(result, weight);
   return result;
 }
 

@@ -3243,6 +3243,7 @@ cdef class StateIterator(object):
 cdef _Fst _map(_Fst ifst,
                float delta=fst.kDelta,
                map_type=b"identity",
+               double power=1.,
                weight=None):
   cdef fst.MapType map_type_enum
   if not fst.GetMapType(tostring(map_type), addr(map_type_enum)):
@@ -3250,12 +3251,13 @@ cdef _Fst _map(_Fst ifst,
   cdef fst.WeightClass wc = (_get_WeightClass_or_One(ifst.weight_type(),
       weight) if map_type_enum == fst.TIMES_MAPPER else
       _get_WeightClass_or_Zero(ifst.weight_type(), weight))
-  return _init_XFst(fst.Map(deref(ifst._fst), map_type_enum, delta, wc))
+  return _init_XFst(fst.Map(deref(ifst._fst), map_type_enum, delta, power, wc))
 
 
 cpdef _Fst arcmap(_Fst ifst,
                   float delta=fst.kDelta,
                   map_type=b"identity",
+                  double power=1.,
                   weight=None):
   """
   arcmap(ifst, delta=0.0009765625, map_type="identity", weight=None)
@@ -3268,9 +3270,11 @@ cpdef _Fst arcmap(_Fst ifst,
     * identity: maps to self.
     * input_epsilon: replaces all input labels with epsilon.
     * invert: reciprocates all non-Zero weights.
+    * float_power: raises all weights to a floating-point power.
     * output_epsilon: replaces all output labels with epsilon.
-    * plus: adds a constant to all weights.
     * quantize: quantizes weights.
+    * plus: adds a constant to all weights.
+    * power: raises all weights to an integral power.
     * rmweight: replaces all non-Zero weights with 1.
     * superfinal: redirects final states to a new superfinal state.
     * times: right-multiplies a constant to all weights.
@@ -3283,6 +3287,8 @@ cpdef _Fst arcmap(_Fst ifst,
     delta: Comparison/quantization delta (ignored unless `map_type` is
         `quantize`).
     map_type: A string matching a known mapping operation (see above).
+    power: A positive scalar or integer power; ignored unless `map_type` is
+        `float_power` or `power` (in which case it defaults to 1).
     weight: A Weight or weight string passed to the arc-mapper; ignored unless
         `map_type` is `plus` (in which case it defaults to semiring Zero) or
         `times` (in which case it defaults to semiring One).
@@ -3295,7 +3301,7 @@ cpdef _Fst arcmap(_Fst ifst,
 
   See also: `statemap`.
   """
-  return _map(ifst, delta, map_type, weight)
+  return _map(ifst, delta, map_type, power, weight)
 
 
 cpdef _MutableFst compose(_Fst ifst1,
@@ -4034,7 +4040,7 @@ cpdef _Fst statemap(_Fst ifst, map_type):
 
   See also: `arcmap`.
   """
-  return _map(ifst, fst.kDelta, map_type, None)
+  return _map(ifst, fst.kDelta, map_type, 1., None)
 
 
 cpdef _MutableFst synchronize(_Fst ifst):

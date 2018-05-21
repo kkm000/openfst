@@ -394,7 +394,7 @@ class ProductComposeStateTable
 };
 
 // A vector-backed table over composition tuples which can be used when the
-// first FST is a string (i.e., satisfies kStringProperties) and the second is
+// first FST is a string (i.e., satisfies kString property) and the second is
 // deterministic and epsilon-free. It should be used with a composition filter
 // that creates at most one filter state per tuple under these conditions (e.g.,
 // SequenceComposeFilter or MatchComposeFilter).

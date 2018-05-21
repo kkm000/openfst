@@ -81,7 +81,7 @@ class WeightClassImpl : public WeightImplBase {
   }
 
   WeightClassImpl<W> &PowerEq(size_t n) final {
-    weight_ = Power(weight_, n);
+    weight_ = Power<W>(weight_, n);
     return *this;
   }
 
@@ -220,7 +220,7 @@ using WeightClassRegisterer = GenericRegisterer<WeightClassRegister>;
 #define REGISTER_FST_WEIGHT_EXPANDER(Weight, line) \
   REGISTER_FST_WEIGHT__(Weight, line)
 
-// Macro for registering new weight types. Clients call this.
+// Macro for registering new weight types; clients call this.
 #define REGISTER_FST_WEIGHT(Weight) \
   REGISTER_FST_WEIGHT_EXPANDER(Weight, __LINE__)
 

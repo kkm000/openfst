@@ -104,8 +104,9 @@ cdef extern from "<fst/fstlib.h>" namespace "fst" nogil:
   # Default argument constants.
   const float kDelta
   const float kShortestDelta
-  const int64 kNoLabel
-  const int64 kNoStateId
+  const int kNoLabel
+  const int kNoStateId
+  const int64 kNoSymbol
 
   enum ClosureType:
     CLOSURE_STAR
@@ -182,7 +183,6 @@ cdef extern from "<fst/fstlib.h>" namespace "fst" nogil:
 
     SymbolTableTextOptions(bool)
 
-
   # Symbol tables.
   cdef cppclass SymbolTable:
 
@@ -222,9 +222,9 @@ cdef extern from "<fst/fstlib.h>" namespace "fst" nogil:
 
     void SetName(const string &)
 
-    string CheckSum()
+    const string &CheckSum()
 
-    string LabeledCheckSum()
+    const string &LabeledCheckSum()
 
     bool Write(const string &)
 
@@ -574,7 +574,8 @@ cdef extern from "<fst/script/fstscript.h>" namespace "fst::script" nogil:
     TO_LOG64_MAPPER
     TO_STD_MAPPER
 
-  cdef FstClass *Map(const FstClass &, MapType, float, const WeightClass &)
+  cdef FstClass *Map(const FstClass &, MapType, float, double,
+                     const WeightClass &)
 
   cdef void Minimize(MutableFstClass *, MutableFstClass *, float, bool)
 
