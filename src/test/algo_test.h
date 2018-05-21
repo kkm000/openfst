@@ -699,7 +699,7 @@ class WeightedTester {
                 << " and  min(det(A)) equiv det(A)";
         VectorFst<Arc> M(D);
         n = M.NumStates();
-        Minimize(&M);
+        Minimize(&M, static_cast<MutableFst<Arc> *>(nullptr), kDelta);
         CHECK(Equiv(D, M));
         CHECK(M.NumStates() <= n);
         n = M.NumStates();
@@ -855,13 +855,15 @@ class WeightedTester {
     if ((wprops & (kPath | kSemiring)) == (kPath | kSemiring)) {
       VLOG(1) << "Check n-best weights";
       VectorFst<Arc> R(A);
-      RmEpsilon(&R);
+      RmEpsilon(&R, /*connect=*/ true, Arc::Weight::Zero(), kNoStateId,
+                kDelta);
       int nshortest = rand() % kNumRandomShortestPaths + 2;
       VectorFst<Arc> paths;
-      ShortestPath(R, &paths, nshortest, true, false, Weight::Zero(),
-                   kNumShortestStates);
+      ShortestPath(R, &paths, nshortest, /*unique=*/ true,
+                   /*first_path=*/ false, Weight::Zero(), kNumShortestStates,
+                   kDelta);
       std::vector<Weight> distance;
-      ShortestDistance(paths, &distance, true);
+      ShortestDistance(paths, &distance, true, kDelta);
       StateId pstart = paths.Start();
       if (pstart != kNoStateId) {
         ArcIterator<Fst<Arc>> piter(paths, pstart);
@@ -871,8 +873,9 @@ class WeightedTester {
                             ? Times(piter.Value().weight, distance[s])
                             : Weight::Zero();
           VectorFst<Arc> path;
-          ShortestPath(R, &path);
-          Weight dsum = ShortestDistance(path);
+          ShortestPath(R, &path, 1, false, false, Weight::Zero(), kNoStateId,
+                       kDelta);
+          Weight dsum = ShortestDistance(path, kDelta);
           CHECK(ApproxEqual(nsum, dsum, kTestDelta));
           ArcMap(&path, RmWeightMapper<Arc>());
           VectorFst<Arc> S;
@@ -1178,7 +1181,7 @@ class UnweightedTester<StdArc> {
         RmEpsilonFst<Arc> R(A);
         DeterminizeFst<Arc> D(R);
         VectorFst<Arc> M(D);
-        Minimize(&M);
+        Minimize(&M, static_cast<MutableFst<Arc> *>(nullptr), kDelta);
         CHECK(Equiv(A, M));
         n = M.NumStates();
       }

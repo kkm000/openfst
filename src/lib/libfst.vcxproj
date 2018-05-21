@@ -13,6 +13,7 @@
   <ItemGroup>
     <ClCompile Include="compat.cc" />
     <ClCompile Include="flags.cc" />
+    <ClCompile Include="fst-types.cc" />
     <ClCompile Include="fst.cc" />
     <ClCompile Include="mapped-file.cc" />
     <ClCompile Include="properties.cc" />

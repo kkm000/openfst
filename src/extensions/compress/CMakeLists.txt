@@ -12,7 +12,7 @@ target_link_libraries(fstcompressscript
   ${ZLIBS}
 )
 set_target_properties(fstcompressscript PROPERTIES
-  SOVERSION "7"
+  SOVERSION "10"
 )
 install(TARGETS fstcompressscript 
   LIBRARY DESTINATION lib

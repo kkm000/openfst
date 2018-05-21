@@ -2,7 +2,7 @@
 # finite-state transducer library.
 
 
-from google3 cimport string
+from libcpp.string cimport string
 from basictypes cimport int8
 from basictypes cimport int16
 from basictypes cimport int32

@@ -8,10 +8,10 @@
 namespace fst {
 namespace script {
 
-FstClass *Map(const FstClass &ifst, MapType map_type, float delta,
+FstClass *Map(const FstClass &ifst, MapType map_type, float delta, double power,
               const WeightClass &weight) {
   if (!ifst.WeightTypesMatch(weight, "Map")) return nullptr;
-  MapInnerArgs iargs(ifst, map_type, delta, weight);
+  MapInnerArgs iargs(ifst, map_type, delta, power, weight);
   MapArgs args(iargs);
   Apply<Operation<MapArgs>>("Map", ifst.ArcType(), &args);
   return args.retval;

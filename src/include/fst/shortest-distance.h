@@ -20,6 +20,9 @@
 
 namespace fst {
 
+// A representable float for shortest distance and shortest path algorithms.
+constexpr float kShortestDelta = 1e-6;
+
 template <class Arc, class Queue, class ArcFilter>
 struct ShortestDistanceOptions {
   using StateId = typename Arc::StateId;
@@ -39,7 +42,8 @@ struct ShortestDistanceOptions {
                          // according to NaturalLess.
 
   ShortestDistanceOptions(Queue *state_queue, ArcFilter arc_filter,
-                          StateId source = kNoStateId, float delta = kDelta)
+                          StateId source = kNoStateId,
+                          float delta = kShortestDelta)
       : state_queue(state_queue),
         arc_filter(arc_filter),
         source(source),
@@ -92,10 +96,10 @@ class ShortestDistanceState {
 
   std::vector<Adder<Weight>> adder_;   // Sums distance_ accurately.
   std::vector<Adder<Weight>> radder_;  // Relaxation distance.
-  std::vector<bool> enqueued_;     // Is state enqueued?
-  std::vector<StateId> sources_;   // Source ID for ith state in distance_,
-                                   // (r)adder_, and enqueued_ if retained.
-  StateId source_id_;              // Unique ID characterizing each call.
+  std::vector<bool> enqueued_;         // Is state enqueued?
+  std::vector<StateId> sources_;       // Source ID for ith state in distance_,
+                                       // (r)adder_, and enqueued_ if retained.
+  StateId source_id_;                  // Unique ID characterizing each call.
   bool error_;
 };
 
@@ -269,7 +273,7 @@ void ShortestDistance(
 template <class Arc>
 void ShortestDistance(const Fst<Arc> &fst,
                       std::vector<typename Arc::Weight> *distance,
-                      bool reverse = false, float delta = kDelta) {
+                      bool reverse = false, float delta = kShortestDelta) {
   using StateId = typename Arc::StateId;
   using Weight = typename Arc::Weight;
   if (!reverse) {
@@ -306,7 +310,7 @@ void ShortestDistance(const Fst<Arc> &fst,
 // weight such that Member() is false if an error was encountered.
 template <class Arc>
 typename Arc::Weight ShortestDistance(const Fst<Arc> &fst,
-                                      float delta = kDelta) {
+                                      float delta = kShortestDelta) {
   using StateId = typename Arc::StateId;
   using Weight = typename Arc::Weight;
   std::vector<Weight> distance;

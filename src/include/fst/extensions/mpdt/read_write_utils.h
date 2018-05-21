@@ -34,7 +34,7 @@ bool ReadLabelTriples(const string &filename,
   while (fstrm.getline(line, kLineLen)) {
     ++nline;
     std::vector<char *> col;
-    SplitToVector(line, "\n\t ", &col, true);
+    SplitString(line, "\n\t ", &col, true);
     // Empty line or comment?
     if (col.empty() || col[0][0] == '\0' || col[0][0] == '#') continue;
     if (col.size() != 3) {

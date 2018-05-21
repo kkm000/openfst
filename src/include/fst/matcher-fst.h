@@ -138,7 +138,7 @@ class MatcherFst : public ImplToExpandedFst<internal::AddOnImpl<F, Data>> {
   }
 
   FstMatcher *InitMatcher(MatchType match_type) const override {
-    return new FstMatcher(GetFst(), match_type, GetSharedData(match_type));
+    return new FstMatcher(&GetFst(), match_type, GetSharedData(match_type));
   }
 
   const FST &GetFst() const { return GetImpl()->GetFst(); }

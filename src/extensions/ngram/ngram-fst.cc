@@ -5,7 +5,8 @@
 
 #include <sys/types.h>
 
-#include <fst/fstlib.h>
+#include <fst/arc.h>
+#include <fst/register.h>
 
 using fst::NGramFst;
 using fst::StdArc;

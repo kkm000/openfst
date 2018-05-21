@@ -79,6 +79,7 @@ class RhoFstMatcher : public RhoMatcher<M> {
 
   enum : uint8 { kFlags = flags };
 
+  // This makes a copy of the FST.
   RhoFstMatcher(
       const FST &fst, MatchType match_type,
       std::shared_ptr<MatcherData> data = std::make_shared<MatcherData>())
@@ -88,8 +89,19 @@ class RhoFstMatcher : public RhoMatcher<M> {
                       data ? data->RewriteMode() : MatcherData().RewriteMode()),
         data_(data) {}
 
+  // This doesn't copy the FST.
+  RhoFstMatcher(
+      const FST *fst, MatchType match_type,
+      std::shared_ptr<MatcherData> data = std::make_shared<MatcherData>())
+      : RhoMatcher<M>(fst, match_type,
+                      RhoLabel(match_type, data ? data->RhoLabel()
+                                                : MatcherData().RhoLabel()),
+                      data ? data->RewriteMode() : MatcherData().RewriteMode()),
+        data_(data) {}
+
+  // This makes a copy of the FST.
   RhoFstMatcher(const RhoFstMatcher<M, flags> &matcher, bool safe = false)
-      : RhoMatcher<M>(matcher, false), data_(matcher.data_) {}
+      : RhoMatcher<M>(matcher, safe), data_(matcher.data_) {}
 
   RhoFstMatcher<M, flags> *Copy(bool safe = false) const override {
     return new RhoFstMatcher<M, flags>(*this, safe);

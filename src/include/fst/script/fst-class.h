@@ -45,8 +45,8 @@ class FstClassBase {
   virtual int64 Start() const = 0;
   virtual const string &WeightType() const = 0;
   virtual bool ValidStateId(int64) const = 0;
-  virtual bool Write(const string &fname) const = 0;
-  virtual bool Write(std::ostream &, const FstWriteOptions &) const = 0;
+  virtual bool Write(const string &) const = 0;
+  virtual bool Write(std::ostream &, const string &) const = 0;
   virtual ~FstClassBase() {}
 };
 
@@ -253,7 +253,8 @@ class FstClassImpl : public FstClassImplBase {
 
   bool Write(const string &fname) const final { return impl_->Write(fname); }
 
-  bool Write(std::ostream &ostr, const FstWriteOptions &opts) const final {
+  bool Write(std::ostream &ostr, const string &fname) const final {
+    const FstWriteOptions opts(fname);
     return impl_->Write(ostr, opts);
   }
 
@@ -316,9 +317,7 @@ class FstClass : public FstClassBase {
 
   static FstClass *Read(const string &fname);
 
-  static FstClass *Read(std::istream &istr, const string &source);
-
-  static FstClass *ReadFromString(const string &fst_string);
+  static FstClass *Read(std::istream &istrm, const string &source);
 
   int64 Start() const final { return impl_->Start(); }
 
@@ -333,11 +332,9 @@ class FstClass : public FstClassBase {
 
   bool Write(const string &fname) const final { return impl_->Write(fname); }
 
-  bool Write(std::ostream &ostr, const FstWriteOptions &opts) const final {
-    return impl_->Write(ostr, opts);
+  bool Write(std::ostream &ostr, const string &fname) const final {
+    return impl_->Write(ostr, fname);
   }
-
-  const string WriteToString() const;
 
   ~FstClass() override {}
 

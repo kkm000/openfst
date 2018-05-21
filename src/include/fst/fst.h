@@ -19,7 +19,6 @@
 #include <utility>
 
 #include <fst/compat.h>
-#include <fst/types.h>
 #include <fst/flags.h>
 #include <fst/log.h>
 #include <fstream>
@@ -39,11 +38,11 @@ namespace fst {
 bool IsFstHeader(std::istream &, const string &);
 
 class FstHeader;
-template <class Arc>
 
+template <class Arc>
 struct StateIteratorData;
-template <class Arc>
 
+template <class Arc>
 struct ArcIteratorData;
 
 template <class Arc>
@@ -177,8 +176,8 @@ enum MatchType {
   MATCH_UNKNOWN = 5
 };  // Otherwise, match type unknown.
 
-constexpr int kNoStateId = -1;  // Not a valid state ID.
 constexpr int kNoLabel = -1;    // Not a valid label.
+constexpr int kNoStateId = -1;  // Not a valid state ID.
 
 // A generic FST, templated on the arc definition, with common-demoninator
 // methods (use StateIterator and ArcIterator to iterate over its states and
@@ -289,14 +288,15 @@ class Fst {
   virtual const SymbolTable *OutputSymbols() const = 0;
 
   // For generic state iterator construction (not normally called directly by
-  // users).
+  // users). Does not copy the FST.
   virtual void InitStateIterator(StateIteratorData<Arc> *data) const = 0;
 
   // For generic arc iterator construction (not normally called directly by
-  // users).
+  // users). Does not copy the FST.
   virtual void InitArcIterator(StateId s, ArcIteratorData<Arc> *data) const = 0;
 
   // For generic matcher construction (not normally called directly by users).
+  // Does not copy the FST.
   virtual MatcherBase<Arc> *InitMatcher(MatchType match_type) const;
 
  protected:
@@ -367,6 +367,7 @@ struct StateIteratorData {
 //     StateId s = siter.Value();
 //     ...
 //   }
+// There is no copying of the FST.
 template <class FST>
 class StateIterator {
  public:
@@ -472,6 +473,7 @@ struct ArcIteratorData {
 //     StdArc &arc = aiter.Value();
 //     ...
 //   }
+// There is no copying of the FST.
 template <class FST>
 class ArcIterator {
  public:
@@ -935,18 +937,23 @@ void Cast(const IFST &ifst, OFST *ofst) {
 // FST serialization.
 
 template <class Arc>
-void FstToString(const Fst<Arc> &fst, string *result) {
+string FstToString(const Fst<Arc> &fst,
+                   const FstWriteOptions &options =
+                       FstWriteOptions("FstToString")) {
   std::ostringstream ostrm;
-  fst.Write(ostrm, FstWriteOptions("FstToString"));
-  *result = ostrm.str();
+  fst.Write(ostrm, options);
+  return ostrm.str();
+}
+
+template <class Arc>
+void FstToString(const Fst<Arc> &fst, string *result) {
+  *result = FstToString(fst);
 }
 
 template <class Arc>
 void FstToString(const Fst<Arc> &fst, string *result,
                  const FstWriteOptions &options) {
-  std::ostringstream ostrm;
-  fst.Write(ostrm, options);
-  *result = ostrm.str();
+  *result = FstToString(fst, options);
 }
 
 template <class Arc>

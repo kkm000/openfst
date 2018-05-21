@@ -34,15 +34,18 @@ struct ShortestPathOptions
                       // shortest distance from the initial state.
   bool first_path;    // Single shortest path stops after finding the first
                       // path to a final state; that path is the shortest path
-                      // only when using the ShortestFirstQueue and
-                      // only when all the weights in the FST are between
-                      // One() and Zero() according to NaturalLess.
+                      // only when:
+                      // (1) using the ShortestFirstQueue with all the weights
+                      // in the FST being between One() and Zero() according to
+                      // NaturalLess or when
+                      // (2) using the NaturalAStarQueue with an admissible
+                      // and consistent estimate.
   Weight weight_threshold;  // Pruning weight threshold.
   StateId state_threshold;  // Pruning state threshold.
 
   ShortestPathOptions(Queue *queue, ArcFilter filter, int32 nshortest = 1,
                       bool unique = false, bool has_distance = false,
-                      float delta = kDelta, bool first_path = false,
+                      float delta = kShortestDelta, bool first_path = false,
                       Weight weight_threshold = Weight::Zero(),
                       StateId state_threshold = kNoStateId)
       : ShortestDistanceOptions<Arc, Queue, ArcFilter>(queue, filter,
@@ -126,6 +129,37 @@ void SingleShortestTree(
       kFstProperties);
 }
 
+// Implements the stopping criterion when ShortestPathOptions::first_path
+// is set to true:
+//   operator()(s, d, f) == true
+//   iff every successful path through state 's' has a cost greater or equal
+//   to 'f' under the assumption that 'd' is the shortest distance to state 's'.
+// Correct when using the ShortestFirstQueue with all the weights in the FST
+// being between One() and Zero() according to NaturalLess
+template <typename S, typename W, typename Queue>
+struct FirstPathSelect {
+  FirstPathSelect(const Queue &) {}
+  bool operator()(S s, W d, W f) const { return f == Plus(d, f); }
+};
+
+// Specialisation for A*.
+// Correct when the estimate is admissible and consistent.
+template <typename S, typename W, typename Estimate>
+class FirstPathSelect<S, W, NaturalAStarQueue<S, W, Estimate>> {
+ public:
+  using Queue = NaturalAStarQueue<S, W, Estimate>;
+
+  FirstPathSelect(const Queue &state_queue)
+    : estimate_(state_queue.GetCompare().GetEstimate()) {}
+
+  bool operator()(S s, W d, W f) const {
+    return f == Plus(Times(d, estimate_(s)), f);
+  }
+
+ private:
+  const Estimate &estimate_;
+};
+
 // Shortest-path algorithm. It builds the output mutable FST so that it contains
 // the shortest path in the input FST; distance returns the shortest distances
 // from the source state to each state in the input FST, and the options struct
@@ -147,14 +181,9 @@ bool SingleShortestPath(
     std::vector<std::pair<typename Arc::StateId, size_t>> *parent) {
   using StateId = typename Arc::StateId;
   using Weight = typename Arc::Weight;
-  
-  if ((Weight::Properties() & (kPath | kRightSemiring)) !=
-    (kPath | kRightSemiring)) {
-    FSTERROR() << "SingleShortestPath: Weight needs to have the path"
-      << " property and be right distributive: " << Weight::Type();
-    return false;
-  }
-
+  static_assert(IsPath<Weight>::value, "Weight must have path property.");
+  static_assert((Weight::Properties() & kRightSemiring) == kRightSemiring,
+                "Weight must be right distributive.");
   parent->clear();
   *f_parent = kNoStateId;
   if (ifst.Start() == kNoStateId) return true;
@@ -181,7 +210,9 @@ bool SingleShortestPath(
     const auto sd = (*distance)[s];
     // If we are using a shortest queue, no other path is going to be shorter
     // than f_distance at this point.
-    if (opts.first_path && final_seen && f_distance == Plus(f_distance, sd)) {
+    using FirstPath = FirstPathSelect<StateId, Weight, Queue>;
+    if (opts.first_path && final_seen &&
+        FirstPath(*state_queue)(s, sd, f_distance)) {
       break;
     }
     if (ifst.Final(s) != Weight::Zero()) {
@@ -270,8 +301,8 @@ class ShortestPathCompare {
 //
 // The n-shortest paths are the n-lowest weight paths w.r.t. the natural
 // semiring order. The single path that can be read from the ith of at most n
-// transitions leaving the initial state of the the input FST is the ith
-// shortest path. Disregarding the initial state and initial transitions, the
+// transitions leaving the initial state of the input FST is the ith shortest
+// path. Disregarding the initial state and initial transitions, the
 // n-shortest paths, in fact, form a tree rooted at the single final state.
 //
 // The weights need to be left and right distributive (kSemiring) and have the
@@ -289,31 +320,26 @@ class ShortestPathCompare {
 // The algorithm relies on the shortest-distance algorithm. There are some
 // issues with the pseudo-code as written in the paper (viz., line 11).
 //
-// IMPLEMENTATION NOTE: The input FST can be a delayed FST and and at any state
-// in its expansion the values of distance vector need only be defined at that
-// time for the states that are known to exist.
+// IMPLEMENTATION NOTE: The input FST can be a delayed FST and at any state in
+// its expansion the values of distance vector need only be defined at that time
+// for the states that are known to exist.
 template <class Arc, class RevArc>
 void NShortestPath(const Fst<RevArc> &ifst, MutableFst<Arc> *ofst,
                    const std::vector<typename Arc::Weight> &distance,
-                   int32 nshortest, float delta = kDelta,
+                   int32 nshortest, float delta = kShortestDelta,
                    typename Arc::Weight weight_threshold = Arc::Weight::Zero(),
                    typename Arc::StateId state_threshold = kNoStateId) {
   using StateId = typename Arc::StateId;
   using Weight = typename Arc::Weight;
   using Pair = std::pair<StateId, Weight>;
-
+  static_assert((Weight::Properties() & kPath) == kPath,
+                "Weight must have path property.");
+  static_assert((Weight::Properties() & kSemiring) == kSemiring,
+                "Weight must be distributive.");
   if (nshortest <= 0) return;
   ofst->DeleteStates();
   ofst->SetInputSymbols(ifst.InputSymbols());
   ofst->SetOutputSymbols(ifst.OutputSymbols());
-
-  if ((Weight::Properties() & (kPath | kRightSemiring)) !=
-    (kPath | kRightSemiring)) {
-    FSTERROR() << "NShortestPath: Weight needs to have the path"
-      << " property and be right distributive: " << Weight::Type();
-    ofst->SetProperties(kError, kError);
-    return;
-  }
   // Each state in ofst corresponds to a path with weight w from the initial
   // state of ifst to a state s in ifst, that can be characterized by a pair
   // (s, w). The vector pairs maps each state in ofst to the corresponding
@@ -423,11 +449,12 @@ void NShortestPath(const Fst<RevArc> &ifst, MutableFst<Arc> *ofst,
 //
 // The algorithm relies on the shortest-distance algorithm. There are some
 // issues with the pseudo-code as written in the paper (viz., line 11).
-template <class Arc, class Queue, class ArcFilter>
+template <class Arc, class Queue, class ArcFilter,
+          typename std::enable_if<IsPath<typename Arc::Weight>::value>::type * =
+              nullptr>
 void ShortestPath(const Fst<Arc> &ifst, MutableFst<Arc> *ofst,
                   std::vector<typename Arc::Weight> *distance,
                   const ShortestPathOptions<Arc, Queue, ArcFilter> &opts) {
- if ((Arc::Weight::Properties() & (kPath | kSemiring)) == (kPath | kSemiring)) {
   using StateId = typename Arc::StateId;
   using Weight = typename Arc::Weight;
   using RevArc = ReverseArc<Arc>;
@@ -478,11 +505,17 @@ void ShortestPath(const Fst<Arc> &ifst, MutableFst<Arc> *ofst,
   }
   // TODO(kbg): Avoid this expensive vector operation.
   distance->erase(distance->begin());
- } else {  // (Arc::Weight::Properties() & (kPath | kSemiring)) != (kPath | kSemiring)
+}
+
+template <class Arc, class Queue, class ArcFilter,
+          typename std::enable_if<!IsPath<typename Arc::Weight>::value>::type
+              * = nullptr>
+void ShortestPath(const Fst<Arc> &, MutableFst<Arc> *ofst,
+                  std::vector<typename Arc::Weight> *,
+                  const ShortestPathOptions<Arc, Queue, ArcFilter> &) {
   FSTERROR() << "ShortestPath: Weight needs to have the "
              << "path property and be distributive: " << Arc::Weight::Type();
   ofst->SetProperties(kError, kError);
- }
 }
 
 // Shortest-path algorithm: simplified interface. See above for a version that
@@ -492,20 +525,21 @@ void ShortestPath(const Fst<Arc> &ifst, MutableFst<Arc> *ofst,
 //
 // The n-shortest paths are the n-lowest weight paths w.r.t. the natural
 // semiring order. The single path that can be read from the ith of at most n
-// transitions leaving the initial state of the ouput FST is the ith best path.
+// transitions leaving the initial state of the output FST is the ith best path.
 // The weights need to be right distributive and have the path (kPath) property.
 template <class Arc>
 void ShortestPath(const Fst<Arc> &ifst, MutableFst<Arc> *ofst,
                   int32 nshortest = 1, bool unique = false,
                   bool first_path = false,
                   typename Arc::Weight weight_threshold = Arc::Weight::Zero(),
-                  typename Arc::StateId state_threshold = kNoStateId) {
+                  typename Arc::StateId state_threshold = kNoStateId,
+                  float delta = kShortestDelta) {
   using StateId = typename Arc::StateId;
   std::vector<typename Arc::Weight> distance;
   AnyArcFilter<Arc> arc_filter;
   AutoQueue<StateId> state_queue(ifst, &distance, arc_filter);
   const ShortestPathOptions<Arc, AutoQueue<StateId>, AnyArcFilter<Arc>> opts(
-      &state_queue, arc_filter, nshortest, unique, false, kDelta, first_path,
+      &state_queue, arc_filter, nshortest, unique, false, delta, first_path,
       weight_threshold, state_threshold);
   ShortestPath(ifst, ofst, &distance, opts);
 }

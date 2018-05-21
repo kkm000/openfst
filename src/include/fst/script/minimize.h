@@ -25,7 +25,7 @@ void Minimize(MinimizeArgs *args) {
 }
 
 void Minimize(MutableFstClass *ofst1, MutableFstClass *ofst2 = nullptr,
-              float delta = kDelta, bool allow_nondet = false);
+              float delta = kShortestDelta, bool allow_nondet = false);
 
 }  // namespace script
 }  // namespace fst

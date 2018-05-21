@@ -112,7 +112,7 @@ constexpr
 //        by 4 by all practical purposes.
 template <class Arc>
 bool Equivalent(const Fst<Arc> &fst1, const Fst<Arc> &fst2,
-                double delta = kDelta, bool *error = nullptr) {
+                float delta = kDelta, bool *error = nullptr) {
   using Weight = typename Arc::Weight;
   if (error) *error = false;
   // Check that the symbol table are compatible.

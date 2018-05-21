@@ -74,7 +74,7 @@ class FstCompiler {
     while (istrm.getline(line, kLineLen)) {
       ++nline_;
       std::vector<char *> col;
-      SplitToVector(line, separator.c_str(), &col, true);
+      SplitString(line, separator.c_str(), &col, true);
       if (col.empty() || col[0][0] == '\0')
         continue;
       if (col.size() > 5 || (col.size() > 4 && accep) ||

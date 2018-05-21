@@ -24,7 +24,7 @@ add_library(fstconst
   const64-fst.cc)
 target_link_libraries(fstconst fst)
 set_target_properties(fstconst
-  PROPERTIES SOVERSION "7"
+  PROPERTIES SOVERSION "10"
   FOLDER constant
 )
 

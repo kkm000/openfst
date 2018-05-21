@@ -8,7 +8,7 @@ add_library(fstfar
 )
 target_link_libraries(fstfar fst)
 set_target_properties(fstfar PROPERTIES 
-    SOVERSION "7"
+    SOVERSION "10"
     FOLDER far
 )
 
@@ -28,7 +28,7 @@ if(HAVE_SCRIPT)
   )
   target_link_libraries(fstfarscript fstfar fstscript fst)
   set_target_properties(fstfarscript PROPERTIES 
-    SOVERSION "7"
+    SOVERSION "10"
     FOLDER far
   )
 

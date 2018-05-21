@@ -54,7 +54,7 @@ add_library(fstscript
 target_link_libraries(fstscript PRIVATE fst)
 
 set_target_properties(fstscript PROPERTIES
-  SOVERSION "6"
+  SOVERSION "10"
 )
 install(TARGETS fstscript
   LIBRARY DESTINATION lib

@@ -94,6 +94,8 @@ class Heap {
     key_.reserve(size);
   }
 
+  const Compare &GetCompare() const { return comp_; }
+
  private:
   // The following private routines are used in a supportive role
   // for managing the heap and keeping the heap properties.

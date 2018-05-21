@@ -303,8 +303,10 @@ class VectorFstImpl : public VectorFstBaseImpl<S> {
 
   void SetFinal(StateId state, Weight weight) {
     const auto old_weight = BaseImpl::Final(state);
+    const auto properties =
+        SetFinalProperties(Properties(), old_weight, weight);
     BaseImpl::SetFinal(state, std::move(weight));
-    SetProperties(SetFinalProperties(Properties(), old_weight, weight));
+    SetProperties(properties);
   }
 
   StateId AddState() {

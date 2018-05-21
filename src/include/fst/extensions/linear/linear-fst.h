@@ -490,7 +490,7 @@ class LinearTaggerFst : public ImplToFst<internal::LinearTaggerFstImpl<A>> {
   }
 
   MatcherBase<A> *InitMatcher(MatchType match_type) const override {
-    return new LinearFstMatcherTpl<LinearTaggerFst<A>>(*this, match_type);
+    return new LinearFstMatcherTpl<LinearTaggerFst<A>>(this, match_type);
   }
 
   static LinearTaggerFst<A> *Read(const string &filename) {
@@ -947,7 +947,7 @@ class LinearClassifierFst
   }
 
   MatcherBase<A> *InitMatcher(MatchType match_type) const override {
-    return new LinearFstMatcherTpl<LinearClassifierFst<A>>(*this, match_type);
+    return new LinearFstMatcherTpl<LinearClassifierFst<A>>(this, match_type);
   }
 
   static LinearClassifierFst<A> *Read(const string &filename) {
@@ -1042,8 +1042,10 @@ class LinearFstMatcherTpl : public MatcherBase<typename F::Arc> {
   typedef typename Arc::StateId StateId;
   typedef F FST;
 
+  // This makes a copy of the FST.
   LinearFstMatcherTpl(const FST &fst, MatchType match_type)
-      : fst_(fst.Copy()),
+      : owned_fst_(fst.Copy()),
+        fst_(*owned_fst_),
         match_type_(match_type),
         s_(kNoStateId),
         current_loop_(false),
@@ -1062,8 +1064,31 @@ class LinearFstMatcherTpl : public MatcherBase<typename F::Arc> {
     }
   }
 
+  // This doesn't copy the FST.
+  LinearFstMatcherTpl(const FST *fst, MatchType match_type)
+      : fst_(*fst),
+        match_type_(match_type),
+        s_(kNoStateId),
+        current_loop_(false),
+        loop_(kNoLabel, 0, Weight::One(), kNoStateId),
+        cur_arc_(0),
+        error_(false) {
+    switch (match_type_) {
+      case MATCH_INPUT:
+      case MATCH_OUTPUT:
+      case MATCH_NONE:
+        break;
+      default:
+        FSTERROR() << "LinearFstMatcherTpl: Bad match type";
+        match_type_ = MATCH_NONE;
+        error_ = true;
+    }
+  }
+
+  // This makes a copy of the FST.
   LinearFstMatcherTpl(const LinearFstMatcherTpl<F> &matcher, bool safe = false)
-      : fst_(matcher.fst_->Copy(safe)),
+      : owned_fst_(matcher.fst_.Copy(safe)),
+        fst_(*owned_fst_),
         match_type_(matcher.match_type_),
         s_(kNoStateId),
         current_loop_(false),
@@ -1100,7 +1125,7 @@ class LinearFstMatcherTpl : public MatcherBase<typename F::Arc> {
     if (label == kNoLabel) label = 0;
     arcs_.clear();
     cur_arc_ = 0;
-    fst_->GetMutableImpl()->MatchInput(s_, label, &arcs_);
+    fst_.GetMutableImpl()->MatchInput(s_, label, &arcs_);
     return current_loop_ || !arcs_.empty();
   }
 
@@ -1121,7 +1146,7 @@ class LinearFstMatcherTpl : public MatcherBase<typename F::Arc> {
 
   ssize_t Priority(StateId s) final { return kRequirePriority; }
 
-  const FST &GetFst() const override { return *fst_; }
+  const FST &GetFst() const override { return fst_; }
 
   uint64 Properties(uint64 props) const override {
     if (error_) props |= kError;
@@ -1131,7 +1156,8 @@ class LinearFstMatcherTpl : public MatcherBase<typename F::Arc> {
   uint32 Flags() const override { return kRequireMatch; }
 
  private:
-  std::unique_ptr<const FST> fst_;
+  std::unique_ptr<const FST> owned_fst_;
+  const FST &fst_;
   MatchType match_type_;  // Type of match to perform.
   StateId s_;             // Current state.
   bool current_loop_;     // Current arc is the implicit loop.

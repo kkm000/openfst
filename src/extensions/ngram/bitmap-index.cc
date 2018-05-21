@@ -20,20 +20,23 @@ const size_t kPrimaryBlockBits =
 // bitmap, size will be returned.  The idea is that the number of zerocounts
 // (i.e. the popcount of logical NOT of values) is offset * kStorageBitSize
 // minus the value for each element of the running sum.
-template <size_t BlockSize, typename Iter, typename T>
-Iter InvertedSearch(Iter first, Iter last, T value) {
-  const Iter begin = first;
-  while (first != last) {
-    // Invariant: [first, last) is the search range.
-    Iter mid = first + ((last - first) / 2);
-    size_t mid_value = BlockSize * (1 + (mid - begin)) - *mid;
+template <size_t BlockSize, typename Container>
+size_t InvertedSearch(const Container& c,
+                      size_t first_idx,
+                      size_t last_idx,
+                      size_t value) {
+  const size_t begin_idx = first_idx;
+  while (first_idx != last_idx) {
+    // Invariant: [first_idx, last_idx) is the search range.
+    size_t mid_idx = first_idx + ((last_idx - first_idx) / 2);
+    size_t mid_value = BlockSize * (1 + (mid_idx - begin_idx)) - c[mid_idx];
     if (mid_value < value) {
-      first = ++mid;
+      first_idx = mid_idx + 1;
     } else {
-      last = mid;
+      last_idx = mid_idx;
     }
   }
-  return first;
+  return first_idx;
 }
 }  // namespace
 
@@ -201,11 +204,10 @@ size_t BitmapIndex::find_inverted_secondary_block(size_t block_begin,
                                                   size_t rem_bit_index) const {
   size_t block_end = block_begin + kSecondaryBlockSize;
   if (block_end > ArraySize()) block_end = ArraySize();
-  return std::distance(
-      secondary_index_.begin() + block_begin,
-      InvertedSearch<BitmapIndex::kStorageBitSize>(
-          secondary_index_.begin() + block_begin,
-          secondary_index_.begin() + block_end, rem_bit_index));
+  return InvertedSearch<BitmapIndex::kStorageBitSize>(secondary_index_,
+                                                      block_begin, block_end,
+                                                      rem_bit_index)
+      - block_begin;
 }
 
 inline size_t BitmapIndex::find_primary_block(size_t bit_index) const {
@@ -217,9 +219,7 @@ inline size_t BitmapIndex::find_primary_block(size_t bit_index) const {
 }
 
 size_t BitmapIndex::find_inverted_primary_block(size_t bit_index) const {
-  return std::distance(
-      primary_index_.begin(),
-      InvertedSearch<kPrimaryBlockBits>(primary_index_.begin(),
-                                        primary_index_.end(), bit_index));
+  return InvertedSearch<kPrimaryBlockBits>(
+      primary_index_, 0, primary_index_.size(), bit_index);
 }
 }  // end namespace fst

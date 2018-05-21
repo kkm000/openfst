@@ -13,7 +13,7 @@ target_link_libraries(fstngram
 )
 
 set_target_properties(fstngram PROPERTIES
-    SOVERSION "7"
+    SOVERSION "10"
     FOLDER ngram
 )
 

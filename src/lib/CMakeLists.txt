@@ -4,17 +4,18 @@ FILE(GLOB HEADER_FILES ../include/fst/*.h)
 add_library(fst
   compat.cc
   flags.cc
+  fst-types.cc
   fst.cc
+  mapped-file.cc
   properties.cc
   symbol-table.cc
-  util.cc
   symbol-table-ops.cc
-  mapped-file.cc
+  util.cc
   weight.cc
   ${HEADER_FILES}
 )
 set_target_properties(fst PROPERTIES
-  SOVERSION "6"
+  SOVERSION "10"
 )
 install(TARGETS fst
   LIBRARY DESTINATION lib

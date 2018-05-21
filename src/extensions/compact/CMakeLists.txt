@@ -18,7 +18,7 @@ add_library(fstcompact
 
 target_link_libraries(fstcompact fst)
 set_target_properties(fstcompact PROPERTIES 
-  SOVERSION "7"
+  SOVERSION "10"
   FOLDER compact
 )
 

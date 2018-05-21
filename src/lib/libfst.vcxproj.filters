@@ -38,6 +38,9 @@
     <ClCompile Include="mapped-file.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="fst-types.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\fst\accumulator.h">

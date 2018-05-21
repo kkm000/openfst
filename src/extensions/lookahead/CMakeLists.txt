@@ -6,7 +6,7 @@ add_library(fstlookahead
 )
 target_link_libraries(fstlookahead fst)
 set_target_properties(fstlookahead PROPERTIES 
-  SOVERSION "7"
+  SOVERSION "10"
   FOLDER lookahead  
 )
 

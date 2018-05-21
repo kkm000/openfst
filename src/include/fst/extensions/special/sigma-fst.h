@@ -79,6 +79,7 @@ class SigmaFstMatcher : public SigmaMatcher<M> {
 
   enum : uint8 { kFlags = flags };
 
+  // This makes a copy of the FST.
   SigmaFstMatcher(
       const FST &fst, MatchType match_type,
       std::shared_ptr<MatcherData> data = std::make_shared<MatcherData>())
@@ -89,8 +90,20 @@ class SigmaFstMatcher : public SigmaMatcher<M> {
             data ? data->RewriteMode() : MatcherData().RewriteMode()),
         data_(data) {}
 
+  // This doesn't copy the FST.
+  SigmaFstMatcher(
+      const FST *fst, MatchType match_type,
+      std::shared_ptr<MatcherData> data = std::make_shared<MatcherData>())
+      : SigmaMatcher<M>(
+            fst, match_type,
+            SigmaLabel(match_type,
+                       data ? data->SigmaLabel() : MatcherData().SigmaLabel()),
+            data ? data->RewriteMode() : MatcherData().RewriteMode()),
+        data_(data) {}
+
+  // This makes a copy of the FST.
   SigmaFstMatcher(const SigmaFstMatcher<M, flags> &matcher, bool safe = false)
-      : SigmaMatcher<M>(matcher, false), data_(matcher.data_) {}
+      : SigmaMatcher<M>(matcher, safe), data_(matcher.data_) {}
 
   SigmaFstMatcher<M, flags> *Copy(bool safe = false) const override {
     return new SigmaFstMatcher<M, flags>(*this, safe);

@@ -76,7 +76,7 @@ class SparseTupleWeight {
       rest_(std::move(weight.rest_)) {
     // move leaves the source in a valid but unspecified state.
     // Make sure the source weight is empty.
-    weight.first_.first = kNoKey;
+    weight.first_ = Pair(kNoKey, W::NoWeight());
     weight.rest_.clear();
   }
 
@@ -160,7 +160,7 @@ class SparseTupleWeight {
   }
 
   void Init(const W &default_value = W::Zero()) {
-    first_.first = kNoKey;
+    first_ = Pair(kNoKey, W::NoWeight());
     // Initialized to the reserved key value.
     default_ = default_value;
     rest_.clear();
@@ -310,6 +310,8 @@ class SparseTupleWeightIterator {
   const_iterator iter_;
 };
 
+// M must be callable as a function W(K, W, W).
+// K will be kNoKey when mapping the default value.
 template <class W, class K, class M>
 inline void SparseTupleWeightMap(SparseTupleWeight<W, K> *result,
                                  const SparseTupleWeight<W, K> &w1,
@@ -319,21 +321,22 @@ inline void SparseTupleWeightMap(SparseTupleWeight<W, K> *result,
   SparseTupleWeightIterator<W, K> w2_it(w2);
   const auto &v1_def = w1.DefaultValue();
   const auto &v2_def = w2.DefaultValue();
-  result->SetDefaultValue(operator_mapper.Map(0, v1_def, v2_def));
+  result->SetDefaultValue(
+      operator_mapper(SparseTupleWeight<W, K>::kNoKey, v1_def, v2_def));
   while (!w1_it.Done() || !w2_it.Done()) {
     const auto &k1 = (w1_it.Done()) ? w2_it.Value().first : w1_it.Value().first;
     const auto &k2 = (w2_it.Done()) ? w1_it.Value().first : w2_it.Value().first;
     const auto &v1 = (w1_it.Done()) ? v1_def : w1_it.Value().second;
     const auto &v2 = (w2_it.Done()) ? v2_def : w2_it.Value().second;
     if (k1 == k2) {
-      result->PushBack(k1, operator_mapper.Map(k1, v1, v2));
+      result->PushBack(k1, operator_mapper(k1, v1, v2));
       if (!w1_it.Done()) w1_it.Next();
       if (!w2_it.Done()) w2_it.Next();
     } else if (k1 < k2) {
-      result->PushBack(k1, operator_mapper.Map(k1, v1, v2_def));
+      result->PushBack(k1, operator_mapper(k1, v1, v2_def));
       w1_it.Next();
     } else {
-      result->PushBack(k2, operator_mapper.Map(k2, v1_def, v2));
+      result->PushBack(k2, operator_mapper(k2, v1_def, v2));
       w2_it.Next();
     }
   }

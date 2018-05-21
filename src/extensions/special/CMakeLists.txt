@@ -31,7 +31,7 @@ add_library(fstspecial
 )
 
 set_target_properties(fstspecial
-  PROPERTIES SOVERSION "7"
+  PROPERTIES SOVERSION "10"
   FOLDER special
 )
 target_link_libraries(fstspecial

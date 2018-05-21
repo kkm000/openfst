@@ -27,24 +27,28 @@ REGISTER_FST_CLASSES(Log64Arc);
 
 // FstClass methods.
 
-template <class FstT>
-FstT *ReadFst(std::istream &istrm, const string &fname) {
+namespace {
+
+template <class F>
+F *ReadFst(std::istream &istrm, const string &fname) {
   if (!istrm) {
     LOG(ERROR) << "ReadFst: Can't open file: " << fname;
     return nullptr;
   }
   FstHeader hdr;
   if (!hdr.Read(istrm, fname)) return nullptr;
-  FstReadOptions read_options(fname, &hdr);
-  const auto arc_type = hdr.ArcType();
-  const auto reader =
-      IORegistration<FstT>::Register::GetRegister()->GetReader(arc_type);
+  const FstReadOptions read_options(fname, &hdr);
+  const auto &arc_type = hdr.ArcType();
+  static const auto *io_register = IORegistration<F>::Register::GetRegister();
+  const auto reader = io_register->GetReader(arc_type);
   if (!reader) {
     LOG(ERROR) << "ReadFst: Unknown arc type: " << arc_type;
     return nullptr;
   }
   return reader(istrm, read_options);
 }
+
+}  // namespace
 
 FstClass *FstClass::Read(const string &fname) {
   if (!fname.empty()) {
@@ -57,17 +61,6 @@ FstClass *FstClass::Read(const string &fname) {
 
 FstClass *FstClass::Read(std::istream &istrm, const string &source) {
   return ReadFst<FstClass>(istrm, source);
-}
-
-FstClass *FstClass::ReadFromString(const string &fst_string) {
-  std::istringstream istrm(fst_string);
-  return ReadFst<FstClass>(istrm, "StringToFst");
-}
-
-const string FstClass::WriteToString() const {
-  std::ostringstream ostrm;
-  Write(ostrm, FstWriteOptions("StringToFst"));
-  return ostrm.str();
 }
 
 bool FstClass::WeightTypesMatch(const WeightClass &weight,
@@ -91,14 +84,12 @@ MutableFstClass *MutableFstClass::Read(const string &fname, bool convert) {
       return ReadFst<MutableFstClass>(std::cin, "standard input");
     }
   } else {  // Converts to VectorFstClass if not mutable.
-    FstClass *ifst = FstClass::Read(fname);
+    std::unique_ptr<FstClass> ifst(FstClass::Read(fname));
     if (!ifst) return nullptr;
-    if (ifst->Properties(fst::kMutable, false)) {
-      return static_cast<MutableFstClass *>(ifst);
+    if (ifst->Properties(kMutable, false) == kMutable) {
+      return static_cast<MutableFstClass *>(ifst.release());
     } else {
-      MutableFstClass *ofst = new VectorFstClass(*ifst);
-      delete ifst;
-      return ofst;
+      return new VectorFstClass(*ifst.release());
     }
   }
 }
@@ -116,8 +107,9 @@ VectorFstClass *VectorFstClass::Read(const string &fname) {
 
 IORegistration<VectorFstClass>::Entry GetVFSTRegisterEntry(
     const string &arc_type) {
-  return IORegistration<VectorFstClass>::Register::GetRegister()->GetEntry(
-      arc_type);
+  static const auto *io_register =
+      IORegistration<VectorFstClass>::Register::GetRegister();
+  return io_register->GetEntry(arc_type);
 }
 
 VectorFstClass::VectorFstClass(const string &arc_type)
