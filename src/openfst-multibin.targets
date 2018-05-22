@@ -3,10 +3,12 @@
 
   <Target Name="_SelectSources">
     <ItemGroup>
-      <!-- Force batching on %(Identity) -->
+      <!-- Force batching on %(Identity) in this implicit task. -->
       <ClCompile Condition=" '%(Identity)' != '' ">
-        <!-- Temporarily add '/' (just a character never found in %(Filename)) to the end to
-             strip off only the trailing "-main", not in the middle, and then trim it off. -->
+        <!-- Temporarily add '/' (just a character never found in %(Filename)) to the end to strip
+             off only the trailing "-main", not in the middle of the filename. Then trim the added '/'.
+             _ProjectName is the target binary name, set to the same value e.g 'fstinfo' for both
+             sources 'fstinfo.cc' and 'fstinfo-main.cc' -->
         <_ProjectName>@(ClCompile->'%(Filename)/'->Replace('-main/','')->TrimEnd('/'))</_ProjectName>
       </ClCompile>
       <!-- This implicitly batches on %(ClCompile._ProjectName), i.e. per target binary. -->
@@ -17,7 +19,7 @@
   </Target>
 
   <!-- ResolveReferences may decide to build referenced lib projects if these are
-       not up to date, and we want it done before building binaries in parallel. -->
+       not up to date, and we want it done only once, before building binaries in parallel. -->
   <Target Name="Build" DependsOnTargets="_SelectSources;ResolveReferences">
     <MSBuild Projects="@(Subprojects)" Targets="Build" BuildInParallel="$(BuildInParallel)"
              Properties='Platform=$(Platform);Configuration=$(Configuration)' />

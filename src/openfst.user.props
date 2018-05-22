@@ -7,7 +7,7 @@
     All settings are disabled by default. Enable any of them by removing the
     'Condition="false"' part.
 
-    You can instead specify these values in MsBuild command line. For example,
+    You can instead specify these values in MSBuild command line. For example,
     you can put the following command into a build.cmd file:
 
     msbuild openfst.sln -v:m -m -t:Build ^
@@ -28,9 +28,9 @@
 
   <!-- SDK version (default: toolset's default, likely 8.1). Note that v141 has
        8.1 as the default SDK, but that SDK may not be installed with VS 2017
-       default C++ workload. If you get an message "MSB8036: The Windows SDK
+       default C++ workload. If you get a message "MSB8036: The Windows SDK
        version 8.1 was not found", check if you have any of Window 10 SDK
-       versions.
+       versions. Then change 'false' to 'true' for the version you have installed.
 
        Run "x{86,64} Native Tools Command Prompt for VS 201{5,7}" from the
        Start Menu, and type "set WindowsSDKVersion". The value of the
@@ -38,11 +38,14 @@
 
        You can also look for the versions in subdirectories of the folder
        %ProgramFiles(x86)%\Windows Kits\10\DesignTime\CommonConfiguration\Neutral\UAP
-       (assuming the default install location for Windows SDK).
+       (assuming the default install location for Windows SDK). Every subdirectory
+       name is the Windows SDK version that you can use.
 
        I am including a (possibly incomplete) list of released Windows 10 SDK
        versions (any one would work, as long as you have it installed). -->
   <PropertyGroup>
+    <!-- Windows 10 Update 1803 (April 2018) -->
+    <WindowsTargetPlatformVersion Condition="false" >10.0.17134.0</WindowsTargetPlatformVersion>
     <!-- Windows 10 Fall Creators Update  -->
     <WindowsTargetPlatformVersion Condition="false" >10.0.16299.0</WindowsTargetPlatformVersion>
     <!-- Windows 10 Creators Update -->
@@ -58,7 +61,8 @@
 
   <!-- Enhanced instruction set (default SSE2, I believe).
        NOTE: In kkm's experience, AVX helps the performance a little
-       (few % at most), AVX2 does not improve performance. YMMV.
+       (few % at most), AVX2 does not improve performance further. YMMV:
+       Maybe it's our FST structure that does not yield to optimization.
 
        Currently, there is no MS c2 codegen for AVX512 instructions.
 

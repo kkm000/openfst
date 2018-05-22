@@ -49,6 +49,35 @@
 
   <Import Project="openfst.user.props" Condition="Exists('openfst.user.props')" />
 
+  <!-- Attempt to use Windows 10 SDK which is called by a specific version, unless selected
+       by the user in the openfst.user.props. The problem is the default version hardcoded
+       into the scripts is 8.1, and this SDK is no longer set up with VS 2017. To save the
+       user from the hassle of finding out the correct version (and since we are not using
+       any specific Windows 10 API, we do not care about the version, as long as any one is
+       available. The fallback is still 8.1 for the latest as of tis writing toolset v141.
+
+       First, we try the environment variable supplying the version, but it's not defined
+       in a build inside VS. In this case, we perform a registry lookup for the installed
+       version. This is not bulletproof, as the version must be installed with desktop
+       development workload (as opposed to the UWP), but this is  likely in any scenario,
+       and if not the case, will require the user to install the SDK anyway. -->
+  <PropertyGroup Condition=" '$(WindowsTargetPlatformVersion)' == '' ">
+    <!-- First try the environment. This is set in command-line build, but not inside VS. -->
+    <_Win10SDKVer>$(WindowsSDKVersion)</_Win10SDKVer>
+    <_Win10SDKVer>$(_Win10SDKVer.TrimEnd('\'))</_Win10SDKVer>
+    <WindowsTargetPlatformVersion Condition=" '$(_Win10SDKVer)' != ''">$(_Win10SDKVer)</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(WindowsTargetPlatformVersion)' == '' ">
+    <!-- Next look at the registry. This is what toolset scripts do, for other variables.
+         Note the registry version is 3-component, therefore the need to add a ".0" the
+         end. So far this has always been 3-component, but that may change, thus the call
+         to Split() to count the components in the retrieved version.  -->
+    <_Win10SDKVer Condition=" '$(_Win10SDKVer)' == '' ">$(Registry:HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Microsoft SDKs\Windows\v10.0@ProductVersion)</_Win10SDKVer>
+    <_Win10SDKVer Condition=" '$(_Win10SDKVer)' == '' ">$(Registry:HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\Microsoft SDKs\Windows\v10.0@ProductVersion)</_Win10SDKVer>
+    <_Win10SDKVer Condition=" $(_Win10SDKVer.Split('.').Length) == 3">$(_Win10SDKVer).0</_Win10SDKVer>
+    <WindowsTargetPlatformVersion Condition=" '$(_Win10SDKVer)' != ''">$(_Win10SDKVer)</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props"
           Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" />
