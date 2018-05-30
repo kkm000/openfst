@@ -914,10 +914,10 @@ class FromGallicMapper {
   template <GallicType GT>
   static bool Extract(const GallicWeight<Label, AW, GT> &gallic_weight,
                       typename A::Weight *weight, typename A::Label *label) {
-    using GW = StringWeight<Label, GallicStringType(GT)>;
-    const GW &w1 = gallic_weight.Value1();
+    using GWT = StringWeight<Label, GallicStringType(GT)>;
+    const GWT &w1 = gallic_weight.Value1();
     const AW &w2 = gallic_weight.Value2();
-    typename GW::Iterator iter1(w1);
+    typename GWT::Iterator iter1(w1);
     const Label l = w1.Size() == 1 ? iter1.Value() : 0;
     if (l == kStringInfinity || l == kStringBad || w1.Size() > 1) return false;
     *label = l;
