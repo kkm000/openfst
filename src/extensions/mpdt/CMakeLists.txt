@@ -5,7 +5,7 @@ if(HAVE_SCRIPT)
   add_library(fstmpdtscript mpdtscript.cc ${HEADER_FILES})
   target_link_libraries(fstmpdtscript fstscript fst)
   set_target_properties(fstmpdtscript PROPERTIES 
-    SOVERSION "10"
+    SOVERSION "${SOVERSION}"
     FOLDER mpdt
   )
   install(TARGETS fstmpdtscript 

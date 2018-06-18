@@ -30,8 +30,8 @@ add_library(fstspecial
   ${HEADER_FILES}
 )
 
-set_target_properties(fstspecial
-  PROPERTIES SOVERSION "10"
+set_target_properties(fstspecial PROPERTIES
+  SOVERSION "${SOVERSION}"
   FOLDER special
 )
 target_link_libraries(fstspecial

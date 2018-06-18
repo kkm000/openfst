@@ -15,8 +15,11 @@ add_library(fst
   ${HEADER_FILES}
 )
 set_target_properties(fst PROPERTIES
-  SOVERSION "10"
+  SOVERSION "${SOVERSION}"
 )
+
+
+
 install(TARGETS fst
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib

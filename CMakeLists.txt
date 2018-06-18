@@ -18,6 +18,8 @@ set(CMAKE_CXX_STANDARD 11)
 
 if (WIN32)
   add_definitions(/bigobj)
+  set(WHOLEFST "/WHOLEARCHIVE:fst")
+  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${WHOLEFST}")
   #set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS 1)
   #this must be disabled unless the previous option (CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS) is enabled
   option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
@@ -25,7 +27,7 @@ else()
   option(BUILD_SHARED_LIBS "Build shared libraries" ON)
 endif (WIN32)
 
-
+set(SOVERSION "10")
 OPTION(BUILD_USE_SOLUTION_FOLDERS "Enable grouping of projects in VS" ON) 
 SET_PROPERTY(GLOBAL PROPERTY USE_FOLDERS ${BUILD_USE_SOLUTION_FOLDERS}) 
 

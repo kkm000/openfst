@@ -27,3 +27,4 @@ obj/
 *proj.user
 /cmake
 /cmake64
+/CMakeSettings.json

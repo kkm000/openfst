@@ -5,7 +5,7 @@ if(HAVE_SCRIPT)
   add_library(fstpdtscript getters.cc pdtscript.cc ${HEADER_FILES})
   target_link_libraries(fstpdtscript fstscript fst)
   set_target_properties(fstpdtscript PROPERTIES 
-    SOVERSION "10"
+    SOVERSION "${SOVERSION}"
     FOLDER pdt
   )
 

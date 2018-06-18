@@ -8,8 +8,8 @@ add_library(fstfar
 )
 target_link_libraries(fstfar fst)
 set_target_properties(fstfar PROPERTIES 
-    SOVERSION "10"
-    FOLDER far
+  SOVERSION "${SOVERSION}"
+  FOLDER far
 )
 
 install(TARGETS fstfar
@@ -28,7 +28,7 @@ if(HAVE_SCRIPT)
   )
   target_link_libraries(fstfarscript fstfar fstscript fst)
   set_target_properties(fstfarscript PROPERTIES 
-    SOVERSION "10"
+    SOVERSION "${SOVERSION}"
     FOLDER far
   )
 

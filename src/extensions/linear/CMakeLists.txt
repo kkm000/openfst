@@ -12,7 +12,7 @@ if(HAVE_SCRIPT)
     fst
   )
   set_target_properties(fstlinearscript PROPERTIES 
-    SOVERSION "10"
+    SOVERSION "${SOVERSION}"
     FOLDER linear
   )
   

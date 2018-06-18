@@ -13,8 +13,8 @@ target_link_libraries(fstngram
 )
 
 set_target_properties(fstngram PROPERTIES
-    SOVERSION "10"
-    FOLDER ngram
+  SOVERSION "${SOVERSION}"
+  FOLDER ngram
 )
 
 install(TARGETS fstngram 
