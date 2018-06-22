@@ -4,18 +4,16 @@ find_package(ICU COMPONENTS data i18n io  test tu uc)
 if (ICU_FOUND)
   include_directories(${ICU_INCLUDE_DIRS})
   set(LIBS ${LIBS} ${ICU_LIBRARIES})
+  message(STATUS "Found ICU version ${ICU_VERSION}")
 endif (ICU_FOUND)
 
 find_package(ZLIB)
 if (ZLIB_FOUND) 
-  include_directories(${ZLIB_INCLUDE_DIRECTORIES})
-  set(ZLIBS ${ZLIB_LIBRARIES})
+  message(STATUS "zlib found, version: ${ZLIB_VERSION_STRING}")
 endif (ZLIB_FOUND)
 
 find_package(PYTHONLIBS)
 if (PYTHONLIBS_FOUND)
-#   PYTHON_LIBRARIES           - path to the python library
-#   PYTHON_INCLUDE_DIRS        - path to where Python.h is found
   message(STATUS "Found Python version ${PYTHONLIBS_VERSION_STRING}")
 endif (PYTHONLIBS_FOUND)
 
