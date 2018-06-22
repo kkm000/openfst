@@ -12,6 +12,13 @@ if (ZLIB_FOUND)
   set(ZLIBS ${ZLIB_LIBRARIES})
 endif (ZLIB_FOUND)
 
+find_package(PYTHONLIBS)
+if (PYTHONLIBS_FOUND)
+#   PYTHON_LIBRARIES           - path to the python library
+#   PYTHON_INCLUDE_DIRS        - path to where Python.h is found
+  message(STATUS "Found Python version ${PYTHONLIBS_VERSION_STRING}")
+endif (PYTHONLIBS_FOUND)
+
 cmake_minimum_required(VERSION 3.1)
 set(CMAKE_MACOSX_RPATH 1)
 set(CMAKE_CXX_STANDARD 11)
@@ -30,12 +37,17 @@ endif (WIN32)
 set(SOVERSION "10")
 OPTION(BUILD_USE_SOLUTION_FOLDERS "Enable grouping of projects in VS" ON) 
 SET_PROPERTY(GLOBAL PROPERTY USE_FOLDERS ${BUILD_USE_SOLUTION_FOLDERS}) 
-
+ 
 
 option(HAVE_BIN          "Build the fst binaries" ON)
 option(HAVE_SCRIPT       "Build the fstscript" ON)
+if (PYTHONLIBS_FOUND)
+option(HAVE_PYTHON "Build python" OFF)
+endif (PYTHONLIBS_FOUND)
 option(HAVE_COMPACT      "Build compact" ON)
-option(HAVE_COMPRESS "Build compress" OFF)
+if (ZLIB_FOUND)
+option(HAVE_COMPRESS "Build compress" ON)
+endif (ZLIB_FOUND)
 option(HAVE_CONST   "Build const" ON)
 option(HAVE_FAR  "Build far" ON)
 option(HAVE_GRM "Build grm" ON)
@@ -44,8 +56,7 @@ option(HAVE_MPDT "Build mpdt" ON)
 option(HAVE_LINEAR "Build linear" ON)
 option(HAVE_LOOKAHEAD "Build lookahead" ON)
 option(HAVE_NGRAM "Build ngram" ON)
-option(HAVE_PYTHON "Build python" OFF)
-option(HAVE_SPECIAL "Build special" ON)
+option(HAVE_SPECIAL "Build special" ON) 
 
 add_subdirectory(src)
 

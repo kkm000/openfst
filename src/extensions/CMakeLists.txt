@@ -31,11 +31,10 @@ if(HAVE_NGRAM)
   add_subdirectory(ngram)
 endif(HAVE_NGRAM)
 
-#if(HAVE_PYTHON)
-#  add_subdirectory(far)
-#  add_subdirectory(python)
-#endif(HAVE_PDT)
-#
+if(HAVE_PYTHON)
+  add_subdirectory(python)
+endif(HAVE_PYTHON)
+
 if(HAVE_PDT OR HAVE_MPDT OR HAVE_GRM)
   add_subdirectory(pdt)
 endif(HAVE_PDT OR HAVE_MPDT OR HAVE_GRM)
