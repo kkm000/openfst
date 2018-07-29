@@ -12,6 +12,8 @@
 //
 // Google-style flag handling definitions.
 
+#include <cstring>
+
 #include <fst/compat.h>
 #include <fst/flags.h>
 
@@ -28,10 +30,24 @@ using namespace std;
 static string flag_usage;
 static string prog_src;
 
+// Sets prog_src to src.
+static void SetProgSrc(const char *src) {
+  prog_src = src;
+  // Remove "-main" in src filename. Flags are defined in fstx.cc but SetFlags()
+  // is called in fstx-main.cc, which results in a filename mismatch in
+  // ShowUsageRestrict() below.
+  static constexpr char kMainSuffix[] = "-main.cc";
+  const int prefix_length = prog_src.size() - strlen(kMainSuffix);
+  if (prefix_length > 0 && prog_src.substr(prefix_length) == kMainSuffix) {
+    prog_src.erase(prefix_length, strlen("-main"));
+  }
+}
+
 void SetFlags(const char *usage, int *argc, char ***argv,
               bool remove_flags, const char *src) {
   flag_usage = usage;
-  prog_src = src;
+  SetProgSrc(src);
+
   int index = 1;
   for (; index < *argc; ++index) {
     string argval = (*argv)[index];

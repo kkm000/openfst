@@ -4,16 +4,15 @@
 // Generates a random FST according to a class-specific transition model.
 
 #include <cstdlib>
+#include <cstring>
 #include <ctime>
 #include <memory>
 #include <string>
 
-#include <fst/extensions/compress/randmod.h>
-
 #include <fst/flags.h>
 #include <fst/log.h>
+#include <fst/extensions/compress/randmod.h>
 #include <fst/fstlib.h>
-#include <fst/util.h>
 
 DEFINE_int32(seed, time(0), "Random seed");
 DEFINE_int32(states, 10, "# of states");

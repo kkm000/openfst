@@ -72,9 +72,9 @@ class DenseSymbolMap {
 
   int64 Find(const string &key) const;
 
-  const size_t size() const { return symbols_.size(); }
+  size_t Size() const { return symbols_.size(); }
 
-  const string GetSymbol(size_t idx) const {
+  string GetSymbol(size_t idx) const {
     return string(symbols_[idx], strlen(symbols_[idx]));
   }
 
@@ -139,7 +139,7 @@ class SymbolTableImpl {
       if (it == key_map_.end()) return "";
       idx = it->second;
     }
-    if (idx < 0 || idx >= symbols_.size()) return "";
+    if (idx < 0 || idx >= symbols_.Size()) return "";
     return symbols_.GetSymbol(idx);
   }
 
@@ -156,7 +156,7 @@ class SymbolTableImpl {
   bool Member(const string &symbol) const { return Find(symbol) != kNoSymbol; }
 
   int64 GetNthKey(ssize_t pos) const {
-    if (pos < 0 || pos >= symbols_.size()) return kNoSymbol;
+    if (pos < 0 || pos >= symbols_.Size()) return kNoSymbol;
     if (pos < dense_key_limit_) return pos;
     return Find(symbols_.GetSymbol(pos));
   }
@@ -177,7 +177,7 @@ class SymbolTableImpl {
 
   int64 AvailableKey() const { return available_key_; }
 
-  size_t NumSymbols() const { return symbols_.size(); }
+  size_t NumSymbols() const { return symbols_.Size(); }
 
  private:
   // Recomputes the checksums (both of them) if we've had changes since the last

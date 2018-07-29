@@ -6,19 +6,21 @@
 #ifndef FST_EXTENSIONS_COMPRESS_COMPRESS_H_
 #define FST_EXTENSIONS_COMPRESS_COMPRESS_H_
 
+#include <algorithm>
 #include <cstdio>
-
 #include <iostream>
+#include <map>
+#include <memory>
 #include <queue>
+#include <string>
+#include <utility>
 #include <vector>
 
 #include <fst/compat.h>
+#include <fst/log.h>
 #include <fst/extensions/compress/elias.h>
 #include <fst/extensions/compress/gzfile.h>
-#include <fstream>
-
 #include <fst/encode.h>
-#include <fst/expanded-fst.h>
 #include <fst/fst.h>
 #include <fst/mutable-fst.h>
 #include <fst/statesort.h>

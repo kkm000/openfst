@@ -1,4 +1,8 @@
 OpenFst: Release 1.6
+    * Fixed PROGRAM_FLAGS documentation string in binaries (1.6.8)
+    * Fixed handling of symbol tables in EpsNormalize (1.6.8)
+    * Fixed HashMatcher issues with SetState() and Find() consistency (1.6.8)
+    * Fixed error reporting when FST arc type unknown (1.6.8)
     * The `first_path` option to ShortestPath is now optimal for A* (1.6.7)
     * Renames SymbolTable::kNoSymbol to kNoSymbol (1.6.7)
     * Exposes PowerMapper to the scripting API (1.6.7)

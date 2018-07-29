@@ -39,7 +39,7 @@ SymbolTableImpl *SymbolTableImpl::ReadText(std::istream &strm,
   while (!strm.getline(line, kLineLen).fail()) {
     ++nline;
     std::vector<char *> col;
-    auto separator = opts.fst_field_separator + "\n";
+    const auto separator = opts.fst_field_separator + "\n";
     SplitString(line, separator.c_str(), &col, true);
     if (col.empty()) continue;  // Empty line.
     if (col.size() != 2) {
@@ -77,7 +77,7 @@ void SymbolTableImpl::MaybeRecomputeCheckSum() const {
   }
   // Calculates the original label-agnostic checksum.
   CheckSummer check_sum;
-  for (size_t i = 0; i < symbols_.size(); ++i) {
+  for (size_t i = 0; i < symbols_.Size(); ++i) {
     const auto &symbol = symbols_.GetSymbol(i);
     check_sum.Update(symbol.data(), symbol.size());
     check_sum.Update("", 1);
@@ -114,11 +114,11 @@ int64 SymbolTableImpl::AddSymbol(const string &symbol, int64 key) {
             << " but supplied new key = " << key << " (ignoring new key)";
     return key_already;
   }
-  if (key == (symbols_.size() - 1) && key == dense_key_limit_) {
+  if (key == (symbols_.Size() - 1) && key == dense_key_limit_) {
     ++dense_key_limit_;
   } else {
     idx_key_.push_back(key);
-    key_map_[key] = symbols_.size() - 1;
+    key_map_[key] = symbols_.Size() - 1;
   }
   if (key >= available_key_) available_key_ = key + 1;
   check_sum_finalized_ = false;
@@ -135,7 +135,7 @@ void SymbolTableImpl::RemoveSymbol(const int64 key) {
     idx = iter->second;
     key_map_.erase(iter);
   }
-  if (idx < 0 || idx >= symbols_.size()) return;
+  if (idx < 0 || idx >= symbols_.Size()) return;
   symbols_.RemoveSymbol(idx);
   // Removed one symbol, all indexes > idx are shifted by -1.
   for (auto &k : key_map_) {
@@ -148,8 +148,8 @@ void SymbolTableImpl::RemoveSymbol(const int64 key) {
       key_map_[i] = i - 1;
     }
     // Moves existing values in idx_key to new place.
-    idx_key_.resize(symbols_.size() - new_dense_key_limit);
-    for (int64 i = symbols_.size(); i >= dense_key_limit_; --i) {
+    idx_key_.resize(symbols_.Size() - new_dense_key_limit);
+    for (int64 i = symbols_.Size(); i >= dense_key_limit_; --i) {
       idx_key_[i - new_dense_key_limit - 1] = idx_key_[i - dense_key_limit_];
     }
     // Adds indexes for previously dense keys.
@@ -204,7 +204,7 @@ bool SymbolTableImpl::Write(std::ostream &strm) const {
   WriteType(strm, kSymbolTableMagicNumber);
   WriteType(strm, name_);
   WriteType(strm, available_key_);
-  int64 size = symbols_.size();
+  const int64 size = symbols_.Size();
   WriteType(strm, size);
   for (int64 i = 0; i < size; ++i) {
     auto key = (i < dense_key_limit_) ? i : idx_key_[i - dense_key_limit_];
@@ -257,10 +257,10 @@ DenseSymbolMap::DenseSymbolMap()
 
 DenseSymbolMap::DenseSymbolMap(const DenseSymbolMap &x)
     : empty_(-1),
-      symbols_(x.symbols_.size()),
+      symbols_(x.Size()),
       buckets_(x.buckets_),
       hash_mask_(x.hash_mask_) {
-  for (size_t i = 0; i < symbols_.size(); ++i) {
+  for (size_t i = 0; i < Size(); ++i) {
     const auto sz = strlen(x.symbols_[i]) + 1;
     auto *cpy = new char[sz];
     memcpy(cpy, x.symbols_[i], sz);
@@ -269,14 +269,14 @@ DenseSymbolMap::DenseSymbolMap(const DenseSymbolMap &x)
 }
 
 DenseSymbolMap::~DenseSymbolMap() {
-  for (size_t i = 0; i < symbols_.size(); ++i) {
+  for (size_t i = 0; i < Size(); ++i) {
     delete[] symbols_[i];
   }
 }
 
 std::pair<int64, bool> DenseSymbolMap::InsertOrFind(const string &key) {
   static constexpr float kMaxOccupancyRatio = 0.75;  // Grows when 75% full.
-  if (symbols_.size() >= kMaxOccupancyRatio * buckets_.size()) {
+  if (Size() >= kMaxOccupancyRatio * buckets_.size()) {
     Rehash(buckets_.size() * 2);
   }
   size_t idx = str_hash_(key) & hash_mask_;
@@ -287,7 +287,7 @@ std::pair<int64, bool> DenseSymbolMap::InsertOrFind(const string &key) {
     }
     idx = (idx + 1) & hash_mask_;
   }
-  auto next = symbols_.size();
+  const auto next = Size();
   buckets_[idx] = next;
   symbols_.push_back(NewSymbol(key));
   return {next, true};
@@ -309,7 +309,7 @@ void DenseSymbolMap::Rehash(size_t num_buckets) {
   buckets_.resize(num_buckets);
   hash_mask_ = buckets_.size() - 1;
   std::uninitialized_fill(buckets_.begin(), buckets_.end(), empty_);
-  for (size_t i = 0; i < symbols_.size(); ++i) {
+  for (size_t i = 0; i < Size(); ++i) {
     size_t idx = str_hash_(string(symbols_[i])) & hash_mask_;
     while (buckets_[idx] != empty_) {
       idx = (idx + 1) & hash_mask_;
@@ -360,4 +360,5 @@ SymbolTable *StringToSymbolTable(const string &str) {
   std::istringstream istrm(str);
   return SymbolTable::Read(istrm, SymbolTableReadOptions());
 }
+
 }  // namespace fst

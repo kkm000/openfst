@@ -11,6 +11,7 @@
 #include <vector>
 
 #include <fst/extensions/far/far.h>
+#include <fst/util.h>
 
 namespace fst {
 

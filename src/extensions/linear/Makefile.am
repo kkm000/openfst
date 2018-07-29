@@ -13,7 +13,7 @@ endif
 
 if HAVE_SCRIPT
 libfstlinearscript_la_SOURCES = linearscript.cc
-libfstlinearscript_la_LDFLAGS = -version-info 10:0:0 -lm $(DL_LIBS)
+libfstlinearscript_la_LDFLAGS = -version-info 11:0:0 -lm $(DL_LIBS)
 libfstlinearscript_la_LIBADD = ../../script/libfstscript.la \
 							../../lib/libfst.la -lm $(DL_LIBS)
 endif

@@ -86,4 +86,16 @@ bool AlignOutput(std::ostream &strm) {
   return true;
 }
 
+int AlignBufferWithOutputStream(std::ostream &strm,
+                                std::ostringstream &buffer) {
+  const auto strm_pos = strm.tellp();
+  if (strm_pos == -1) {
+    LOG(ERROR) << "Cannot determine stream position";
+    return -1;
+  }
+  const int stream_offset = strm_pos % MappedFile::kArchAlignment;
+  for (int i = 0; i < stream_offset; ++i) buffer.write("", 1);
+  return stream_offset;
+}
+
 }  // namespace fst

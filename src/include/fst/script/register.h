@@ -32,22 +32,7 @@ struct FstClassRegEntry {
       : reader(r), creator(cr), converter(co) {}
 
   FstClassRegEntry()
-      : reader(NullReader), creator(NullCreator), converter(NullConverter) {}
-
-  // Null-returning reader, creator, and converter, used when registry lookup
-  // fails.
-
-  template <class FstClassType>
-  static FstClassType *NullReader(std::istream &strm,
-                                  const FstReadOptions &opts) {
-    return nullptr;
-  }
-
-  static FstClassImplBase *NullCreator() { return nullptr; }
-
-  static FstClassImplBase *NullConverter(const FstClass &other) {
-    return nullptr;
-  }
+      : reader(nullptr), creator(nullptr), converter(nullptr) {}
 };
 
 template <class Reader, class Creator, class Converter>

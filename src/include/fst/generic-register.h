@@ -4,9 +4,9 @@
 #ifndef FST_GENERIC_REGISTER_H_
 #define FST_GENERIC_REGISTER_H_
 
+#include <fst/compat.h>
 #ifndef FST_NO_DYNAMIC_LINKING
 #include <dlfcn.h>
-#include <fst/compat.h>
 #endif
 #include <map>
 #include <string>

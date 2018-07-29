@@ -9,12 +9,13 @@
 #ifndef FST_EXTENSIONS_COMPRESS_GZFILE_H_
 #define FST_EXTENSIONS_COMPRESS_GZFILE_H_
 
-#include <iostream>
+#include <cstddef>
 #include <memory>
 #include <sstream>
 #include <string>
 
 #include <fst/compat.h>
+#include <fst/log.h>
 #include <fst/fst.h>
 #include <zlib.h>
 
@@ -78,7 +79,7 @@ class OGzFile {
 
   inline bool operator!() const { return !gz_; }
 
-  void write(const stringstream &ssbuf) {
+  void write(const std::stringstream &ssbuf) {
     string sbuf = ssbuf.str();
     gz_.write(sbuf.data(), sbuf.size());
   }
@@ -101,9 +102,9 @@ class IGzFile {
 
   // This is a great case for "move", but GCC 4 is missing the C+11 standard
   // move constructor for stringstream, so a unique_ptr is the next best thing.
-  unique_ptr<stringstream> read() {
+  std::unique_ptr<std::stringstream> read() {
     char buf[bufsize_];
-    unique_ptr<stringstream> sstrm(new stringstream);
+    std::unique_ptr<std::stringstream> sstrm(new std::stringstream);
     // We always read at least once, and the result of the last read is always
     // pushed onto the stringstream. We use the "write" member because << onto
     // a stringstream stops at the null byte, which might be data!

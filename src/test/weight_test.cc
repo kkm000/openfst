@@ -18,7 +18,7 @@
 #include <fst/sparse-power-weight.h>
 #include <fst/string-weight.h>
 #include <fst/union-weight.h>
-#include "./weight-tester.h"
+#include <fst/test/weight-tester.h>
 
 DEFINE_int32(seed, -1, "random seed");
 DEFINE_int32(repeat, 10000, "number of test repetitions");

@@ -10,10 +10,9 @@
 #include <string>
 #include <vector>
 
+#include <fst/extensions/far/far.h>
 #include <fst/script/arg-packs.h>
 #include <fst/script/fstscript.h>
-#include <fst/extensions/far/far.h>
-
 
 namespace fst {
 namespace script {

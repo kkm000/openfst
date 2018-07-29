@@ -25,14 +25,14 @@ REGISTER_FST_CLASSES(StdArc);
 REGISTER_FST_CLASSES(LogArc);
 REGISTER_FST_CLASSES(Log64Arc);
 
-// FstClass methods.
+// Helper functions.
 
 namespace {
 
 template <class F>
-F *ReadFst(std::istream &istrm, const string &fname) {
+F *ReadFstClass(std::istream &istrm, const string &fname) {
   if (!istrm) {
-    LOG(ERROR) << "ReadFst: Can't open file: " << fname;
+    LOG(ERROR) << "ReadFstClass: Can't open file: " << fname;
     return nullptr;
   }
   FstHeader hdr;
@@ -42,25 +42,52 @@ F *ReadFst(std::istream &istrm, const string &fname) {
   static const auto *io_register = IORegistration<F>::Register::GetRegister();
   const auto reader = io_register->GetReader(arc_type);
   if (!reader) {
-    LOG(ERROR) << "ReadFst: Unknown arc type: " << arc_type;
+    LOG(ERROR) << "ReadFstClass: Unknown arc type: " << arc_type;
     return nullptr;
   }
   return reader(istrm, read_options);
 }
 
+template <class F>
+FstClassImplBase *CreateFstClass(const string &arc_type) {
+  static const auto *io_register =
+      IORegistration<F>::Register::GetRegister();
+  auto creator = io_register->GetCreator(arc_type);
+  if (!creator) {
+    FSTERROR() << "CreateFstClass: Unknown arc type: " << arc_type;
+    return nullptr;
+  }
+  return creator();
+}
+
+template <class F>
+FstClassImplBase *ConvertFstClass(const FstClass &other) {
+  static const auto *io_register =
+      IORegistration<F>::Register::GetRegister();
+  auto converter = io_register->GetConverter(other.ArcType());
+  if (!converter) {
+    FSTERROR() << "ConvertFstClass: Unknown arc type: " << other.ArcType();
+    return nullptr;
+  }
+  return converter(other);
+}
+
 }  // namespace
+
+
+// FstClass methods.
 
 FstClass *FstClass::Read(const string &fname) {
   if (!fname.empty()) {
     std::ifstream istrm(fname, std::ios_base::in | std::ios_base::binary);
-    return ReadFst<FstClass>(istrm, fname);
+    return ReadFstClass<FstClass>(istrm, fname);
   } else {
-    return ReadFst<FstClass>(std::cin, "standard input");
+    return ReadFstClass<FstClass>(std::cin, "standard input");
   }
 }
 
 FstClass *FstClass::Read(std::istream &istrm, const string &source) {
-  return ReadFst<FstClass>(istrm, source);
+  return ReadFstClass<FstClass>(istrm, source);
 }
 
 bool FstClass::WeightTypesMatch(const WeightClass &weight,
@@ -79,9 +106,9 @@ MutableFstClass *MutableFstClass::Read(const string &fname, bool convert) {
   if (convert == false) {
     if (!fname.empty()) {
       std::ifstream in(fname, std::ios_base::in | std::ios_base::binary);
-      return ReadFst<MutableFstClass>(in, fname);
+      return ReadFstClass<MutableFstClass>(in, fname);
     } else {
-      return ReadFst<MutableFstClass>(std::cin, "standard input");
+      return ReadFstClass<MutableFstClass>(std::cin, "standard input");
     }
   } else {  // Converts to VectorFstClass if not mutable.
     std::unique_ptr<FstClass> ifst(FstClass::Read(fname));
@@ -99,28 +126,18 @@ MutableFstClass *MutableFstClass::Read(const string &fname, bool convert) {
 VectorFstClass *VectorFstClass::Read(const string &fname) {
   if (!fname.empty()) {
     std::ifstream in(fname, std::ios_base::in | std::ios_base::binary);
-    return ReadFst<VectorFstClass>(in, fname);
+    return ReadFstClass<VectorFstClass>(in, fname);
   } else {
-    return ReadFst<VectorFstClass>(std::cin, "standard input");
+    return ReadFstClass<VectorFstClass>(std::cin, "standard input");
   }
-}
-
-IORegistration<VectorFstClass>::Entry GetVFSTRegisterEntry(
-    const string &arc_type) {
-  static const auto *io_register =
-      IORegistration<VectorFstClass>::Register::GetRegister();
-  return io_register->GetEntry(arc_type);
 }
 
 VectorFstClass::VectorFstClass(const string &arc_type)
-    : MutableFstClass(GetVFSTRegisterEntry(arc_type).creator()) {
-  if (Properties(kError, true) == kError) {
-    FSTERROR() << "VectorFstClass: Unknown arc type: " << arc_type;
-  }
-}
+    : MutableFstClass(CreateFstClass<VectorFstClass>(arc_type)) {}
+
 
 VectorFstClass::VectorFstClass(const FstClass &other)
-    : MutableFstClass(GetVFSTRegisterEntry(other.ArcType()).converter(other)) {}
+    : MutableFstClass(ConvertFstClass<VectorFstClass>(other)) {}
 
 }  // namespace script
 }  // namespace fst
