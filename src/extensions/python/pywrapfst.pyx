@@ -4335,8 +4335,7 @@ cdef class FarReader(object):
     self._reader.get().Reset()
 
   def __getitem__(self, key):
-    cdef string ckey = tostring(key)
-    if self.get_key() == ckey or self._reader.get().Find(ckey):
+    if self._reader.get().Find(tostring(key)):
       return self.get_fst()
     else:
       raise KeyError(key)

@@ -1,4 +1,5 @@
 OpenFst: Release 1.6
+    * Optimized label lookup in SymbolTable (1.6.9)
     * Fixed PROGRAM_FLAGS documentation string in binaries (1.6.8)
     * Fixed handling of symbol tables in EpsNormalize (1.6.8)
     * Fixed HashMatcher issues with SetState() and Find() consistency (1.6.8)

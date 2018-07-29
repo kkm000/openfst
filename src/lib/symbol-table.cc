@@ -18,17 +18,73 @@ DEFINE_string(fst_field_separator, "\t ",
 
 namespace fst {
 
+SymbolTableTextOptions::SymbolTableTextOptions(bool allow_negative_labels)
+    : allow_negative_labels(allow_negative_labels),
+      fst_field_separator(FLAGS_fst_field_separator) {}
+
+namespace internal {
+
 // Maximum line length in textual symbols file.
 static constexpr int kLineLen = 8096;
 
 // Identifies stream data as a symbol table (and its endianity).
 static constexpr int32 kSymbolTableMagicNumber = 2125658996;
 
-SymbolTableTextOptions::SymbolTableTextOptions(bool allow_negative_labels)
-    : allow_negative_labels(allow_negative_labels),
-      fst_field_separator(FLAGS_fst_field_separator) {}
+DenseSymbolMap::DenseSymbolMap()
+    : empty_(-1), buckets_(1 << 4), hash_mask_(buckets_.size() - 1) {
+  std::uninitialized_fill(buckets_.begin(), buckets_.end(), empty_);
+}
 
-namespace internal {
+DenseSymbolMap::DenseSymbolMap(const DenseSymbolMap &other)
+    : empty_(-1),
+      symbols_(other.symbols_),
+      buckets_(other.buckets_),
+      hash_mask_(other.hash_mask_) {}
+
+std::pair<int64, bool> DenseSymbolMap::InsertOrFind(const string &key) {
+  static constexpr float kMaxOccupancyRatio = 0.75;  // Grows when 75% full.
+  if (Size() >= kMaxOccupancyRatio * buckets_.size()) {
+    Rehash(buckets_.size() * 2);
+  }
+  size_t idx = str_hash_(key) & hash_mask_;
+  while (buckets_[idx] != empty_) {
+    const auto stored_value = buckets_[idx];
+    if (symbols_[stored_value] == key) return {stored_value, false};
+    idx = (idx + 1) & hash_mask_;
+  }
+  const auto next = Size();
+  buckets_[idx] = next;
+  symbols_.emplace_back(key);
+  return {next, true};
+}
+
+int64 DenseSymbolMap::Find(const string &key) const {
+  size_t idx = str_hash_(key) & hash_mask_;
+  while (buckets_[idx] != empty_) {
+    const auto stored_value = buckets_[idx];
+    if (symbols_[stored_value] == key) return stored_value;
+    idx = (idx + 1) & hash_mask_;
+  }
+  return buckets_[idx];
+}
+
+void DenseSymbolMap::Rehash(size_t num_buckets) {
+  buckets_.resize(num_buckets);
+  hash_mask_ = buckets_.size() - 1;
+  std::uninitialized_fill(buckets_.begin(), buckets_.end(), empty_);
+  for (size_t i = 0; i < Size(); ++i) {
+    size_t idx = str_hash_(string(symbols_[i])) & hash_mask_;
+    while (buckets_[idx] != empty_) {
+      idx = (idx + 1) & hash_mask_;
+    }
+    buckets_[idx] = i;
+  }
+}
+
+void DenseSymbolMap::RemoveSymbol(size_t idx) {
+  symbols_.erase(symbols_.begin() + idx);
+  Rehash(buckets_.size());
+}
 
 SymbolTableImpl *SymbolTableImpl::ReadText(std::istream &strm,
                                            const string &filename,
@@ -105,9 +161,9 @@ void SymbolTableImpl::MaybeRecomputeCheckSum() const {
 
 int64 SymbolTableImpl::AddSymbol(const string &symbol, int64 key) {
   if (key == kNoSymbol) return key;
-  const std::pair<int64, bool> &insert_key = symbols_.InsertOrFind(symbol);
+  const auto insert_key = symbols_.InsertOrFind(symbol);
   if (!insert_key.second) {
-    auto key_already = GetNthKey(insert_key.first);
+    const auto key_already = GetNthKey(insert_key.first);
     if (key_already == key) return key;
     VLOG(1) << "SymbolTable::AddSymbol: symbol = " << symbol
             << " already in symbol_map_ with key = " << key_already
@@ -247,91 +303,6 @@ bool SymbolTable::WriteText(std::ostream &strm,
   }
   return true;
 }
-
-namespace internal {
-
-DenseSymbolMap::DenseSymbolMap()
-    : empty_(-1), buckets_(1 << 4), hash_mask_(buckets_.size() - 1) {
-  std::uninitialized_fill(buckets_.begin(), buckets_.end(), empty_);
-}
-
-DenseSymbolMap::DenseSymbolMap(const DenseSymbolMap &x)
-    : empty_(-1),
-      symbols_(x.Size()),
-      buckets_(x.buckets_),
-      hash_mask_(x.hash_mask_) {
-  for (size_t i = 0; i < Size(); ++i) {
-    const auto sz = strlen(x.symbols_[i]) + 1;
-    auto *cpy = new char[sz];
-    memcpy(cpy, x.symbols_[i], sz);
-    symbols_[i] = cpy;
-  }
-}
-
-DenseSymbolMap::~DenseSymbolMap() {
-  for (size_t i = 0; i < Size(); ++i) {
-    delete[] symbols_[i];
-  }
-}
-
-std::pair<int64, bool> DenseSymbolMap::InsertOrFind(const string &key) {
-  static constexpr float kMaxOccupancyRatio = 0.75;  // Grows when 75% full.
-  if (Size() >= kMaxOccupancyRatio * buckets_.size()) {
-    Rehash(buckets_.size() * 2);
-  }
-  size_t idx = str_hash_(key) & hash_mask_;
-  while (buckets_[idx] != empty_) {
-    const auto stored_value = buckets_[idx];
-    if (!strcmp(symbols_[stored_value], key.c_str())) {
-      return {stored_value, false};
-    }
-    idx = (idx + 1) & hash_mask_;
-  }
-  const auto next = Size();
-  buckets_[idx] = next;
-  symbols_.push_back(NewSymbol(key));
-  return {next, true};
-}
-
-int64 DenseSymbolMap::Find(const string &key) const {
-  size_t idx = str_hash_(key) & hash_mask_;
-  while (buckets_[idx] != empty_) {
-    const auto stored_value = buckets_[idx];
-    if (!strcmp(symbols_[stored_value], key.c_str())) {
-      return stored_value;
-    }
-    idx = (idx + 1) & hash_mask_;
-  }
-  return buckets_[idx];
-}
-
-void DenseSymbolMap::Rehash(size_t num_buckets) {
-  buckets_.resize(num_buckets);
-  hash_mask_ = buckets_.size() - 1;
-  std::uninitialized_fill(buckets_.begin(), buckets_.end(), empty_);
-  for (size_t i = 0; i < Size(); ++i) {
-    size_t idx = str_hash_(string(symbols_[i])) & hash_mask_;
-    while (buckets_[idx] != empty_) {
-      idx = (idx + 1) & hash_mask_;
-    }
-    buckets_[idx] = i;
-  }
-}
-
-const char *DenseSymbolMap::NewSymbol(const string &sym) {
-  auto num = sym.size() + 1;
-  auto newstr = new char[num];
-  memcpy(newstr, sym.c_str(), num);
-  return newstr;
-}
-
-void DenseSymbolMap::RemoveSymbol(size_t idx) {
-  delete[] symbols_[idx];
-  symbols_.erase(symbols_.begin() + idx);
-  Rehash(buckets_.size());
-}
-
-}  // namespace internal
 
 bool CompatSymbols(const SymbolTable *syms1, const SymbolTable *syms2,
                    bool warning) {
