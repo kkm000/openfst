@@ -7,11 +7,9 @@
 // See comments in nlp/fst/script/script-impl.h for how the registration
 // mechanism allows these to work with various arc types.
 
-#include <utility>
-#include <vector>
-
 #include <fst/extensions/compress/compress-script.h>
 
+#include <fst/arc-map.h>
 #include <fst/script/script-impl.h>
 
 namespace fst {

@@ -362,7 +362,6 @@ class FstFarReader : public FarReader<A> {
       if (keys_[i].empty()) {
         if (!has_stdin_) {
           streams_[i] = &std::cin;
-          // sources_[i] = "stdin";
           has_stdin_ = true;
         } else {
           FSTERROR() << "FstFarReader::FstFarReader: standard input should "

@@ -95,6 +95,9 @@ fst/script/synchronize.h fst/script/text-io.h fst/script/topsort.h \
 fst/script/union.h fst/script/weight-class.h fst/script/fstscript-decl.h \
 fst/script/verify.h
 
+test_include_headers = fst/test/algo_test.h fst/test/fst_test.h \
+fst/test/rand-fst.h fst/test/weight-tester.h
+
 nobase_include_HEADERS = fst/accumulator.h fst/add-on.h fst/arc-arena.h \
 fst/arc-map.h fst/arc.h fst/arcfilter.h fst/arcsort.h fst/bi-table.h \
 fst/cache.h fst/closure.h fst/compact-fst.h fst/compat.h fst/complement.h \
@@ -127,4 +130,5 @@ $(mpdt_include_headers) \
 $(ngram_include_headers) \
 $(pdt_include_headers) \
 $(script_include_headers) \
-$(special_include_headers)
+$(special_include_headers) \
+$(test_include_headers)

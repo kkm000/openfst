@@ -179,8 +179,12 @@ class StringPrinter {
                          const SymbolTable *syms = nullptr)
       : token_type_(token_type), syms_(syms) {}
 
-  // Converts the FST into a string.
-  bool operator()(const Fst<Arc> &fst, string *result) {
+  // Converts the FST into a string.  If a SYMBOL-based fst, then use the sep as
+  // the separator between symbols.  If sep is nullptr, then use the last char
+  // in the FLAGS_fst_field_separator.  This is to maintain backwards
+  // compatibility with the code before the sep argument was added.
+  bool operator()(const Fst<Arc> &fst, string *result,
+                  const string* sep = nullptr) {
     if (!FstToLabels(fst)) {
       VLOG(1) << "StringPrinter::operator(): FST is not a string";
       return false;
@@ -189,13 +193,18 @@ class StringPrinter {
     if (token_type_ == StringTokenType::SYMBOL) {
       std::stringstream sstrm;
       for (size_t i = 0; i < labels_.size(); ++i) {
-        if (i) sstrm << *(FLAGS_fst_field_separator.rbegin());
+        if (i) {
+          if (sep == nullptr) {
+            sstrm << *(FLAGS_fst_field_separator.rbegin());
+          } else {
+            sstrm << *sep;
+          }
+        }
         if (!PrintLabel(labels_[i], sstrm)) return false;
       }
       *result = sstrm.str();
     } else if (token_type_ == StringTokenType::BYTE) {
-      result->reserve(labels_.size());
-      for (size_t i = 0; i < labels_.size(); ++i) result->push_back(labels_[i]);
+      return LabelsToByteString(labels_, result);
     } else if (token_type_ == StringTokenType::UTF8) {
       return LabelsToUTF8String(labels_, result);
     } else {

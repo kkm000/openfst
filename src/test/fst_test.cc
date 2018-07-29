@@ -3,7 +3,7 @@
 //
 // Regression test for FST classes.
 
-#include "./fst_test.h"
+#include <fst/test/fst_test.h>
 
 #include <utility>
 

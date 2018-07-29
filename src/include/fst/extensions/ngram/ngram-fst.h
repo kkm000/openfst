@@ -418,7 +418,7 @@ class NGramFst : public ImplToExpandedFst<internal::NGramFstImpl<A>> {
   size_t StorageSize() const { return GetImpl()->StorageSize(); }
 
   static bool HasRequiredProps(const Fst<A> &fst) {
-    int64 props =
+    static const auto props =
         kAcceptor | kIDeterministic | kILabelSorted | kIEpsilons | kAccessible;
     return fst.Properties(props, true) == props;
   }

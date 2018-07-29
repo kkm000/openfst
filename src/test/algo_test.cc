@@ -3,7 +3,7 @@
 //
 // Regression test for various FST algorithms.
 
-#include "./algo_test.h"
+#include <fst/test/algo_test.h>
 
 #include <cstdlib>
 

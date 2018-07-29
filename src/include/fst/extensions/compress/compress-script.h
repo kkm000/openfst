@@ -7,14 +7,13 @@
 #ifndef FST_EXTENSIONS_COMPRESS_COMPRESS_SCRIPT_H_
 #define FST_EXTENSIONS_COMPRESS_COMPRESS_SCRIPT_H_
 
-#include <utility>
-#include <vector>
-
-#include <fst/extensions/compress/compress.h>
+#include <string>
+#include <tuple>
 
 #include <fst/log.h>
+#include <fst/extensions/compress/compress.h>
+#include <fst/mutable-fst.h>
 #include <fst/util.h>
-#include <fst/script/arg-packs.h>
 #include <fst/script/fst-class.h>
 
 namespace fst {

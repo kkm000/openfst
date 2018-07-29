@@ -9,7 +9,7 @@
 #include <fst/log.h>
 
 #include <fst/fstlib.h>
-#include "./rand-fst.h"
+#include <fst/test/rand-fst.h>
 
 DECLARE_int32(repeat);  // defined in ./algo_test.cc
 

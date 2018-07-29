@@ -3,14 +3,14 @@
 //
 // Compresses/decompresses an FST.
 
+#include <cstring>
 #include <memory>
 #include <string>
 
-#include <fst/extensions/compress/compress-script.h>
-
 #include <fst/flags.h>
 #include <fst/log.h>
-#include <fst/util.h>
+#include <fst/extensions/compress/compress-script.h>
+#include <fst/script/arg-packs.h>
 #include <fst/script/fst-class.h>
 
 DEFINE_string(arc_type, "standard", "Output arc type");

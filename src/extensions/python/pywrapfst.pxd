@@ -20,7 +20,6 @@ cimport fst as fst
 from ios cimport stringstream
 
 
-
 # Exportable helper functions.
 
 
@@ -91,13 +90,13 @@ cdef class _SymbolTable(object):
 
   cpdef int64 available_key(self)
 
-  cpdef string checksum(self)
+  cpdef bytes checksum(self)
 
   cpdef SymbolTable copy(self)
 
   cpdef int64 get_nth_key(self, ssize_t pos) except *
 
-  cpdef string labeled_checksum(self)
+  cpdef bytes labeled_checksum(self)
 
   cpdef bool member(self, key)
 
@@ -251,7 +250,7 @@ cdef class _Fst(object):
 
   cpdef void write(self, filename) except *
 
-  cpdef string write_to_string(self)
+  cpdef bytes write_to_string(self)
 
 
 cdef class _MutableFst(_Fst):
@@ -340,7 +339,7 @@ cdef _MutableFst _create_Fst(arc_type=?)
 
 cpdef _Fst _read(filename)
 
-cpdef _Fst _read_from_string(State)
+cpdef _Fst _read_from_string(state)
 
 
 # Iterators.
@@ -421,7 +420,8 @@ cdef class StateIterator(object):
 
 cdef _Fst _map(_Fst ifst, float delta=?, map_type=?, double power=?, weight=?)
 
-cpdef _Fst arcmap(_Fst ifst, float delta=?, map_type=?, double power=?, weight=?)
+cpdef _Fst arcmap(_Fst ifst, float delta=?, map_type=?, double power=?,
+                  weight=?)
 
 cpdef _MutableFst compose(_Fst ifst1, _Fst ifst2, compose_filter=?,
                           bool connect=?)

@@ -26,22 +26,8 @@ FarReaderClass *FarReaderClass::Open(const std::vector<string> &filenames) {
     LOG(ERROR) << "FarReaderClass::Open: No files specified";
     return nullptr;
   }
-  auto it = filenames.cbegin();
-  const auto arc_type = LoadArcTypeFromFar(*it);
+  const auto arc_type = LoadArcTypeFromFar(filenames.front());
   if (arc_type.empty()) return nullptr;
-  // FIXME(kbg): Is any of this really necessary? I am doing this purely
-  // to conform to what I did with fst::script::Replace.
-  ++it;
-  for (; it != filenames.cend(); ++it) {
-    const string other_arc_type = LoadArcTypeFromFar(*it);
-    if (other_arc_type.empty()) return nullptr;
-    if (arc_type != other_arc_type) {
-      LOG(ERROR) << "FarReaderClass::Open: Trying to open FARs with "
-                 << "non-matching arc types:\n\t" << arc_type << " and "
-                 << other_arc_type;
-      return nullptr;
-    }
-  }
   OpenFarReaderClassArgs2 args(filenames);
   args.retval = nullptr;
   Apply<Operation<OpenFarReaderClassArgs2>>("OpenFarReaderClass", arc_type,

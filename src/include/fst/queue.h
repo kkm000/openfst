@@ -278,7 +278,7 @@ class NaturalShortestFirstQueue final
 
  private:
   // This is non-static because the constructor for non-idempotent weights will
-  // result in a an error.
+  // result in an error.
   const NaturalLess<Weight> less_{};
 };
 
@@ -663,7 +663,7 @@ void AutoQueue<StateId>::SccQueueType(const Fst<Arc> &fst,
   }
 }
 
-// An A* estimate is a function object that maps from a state ID to a an
+// An A* estimate is a function object that maps from a state ID to an
 // estimate of the shortest distance to the final states.
 
 // A trivial A* estimate, yielding a queue which behaves the same in Dijkstra's
@@ -731,7 +731,7 @@ class NaturalAStarQueue : public ShortestFirstQueue<
 
  private:
   // This is non-static because the constructor for non-idempotent weights will
-  // result in a an error.
+  // result in an error.
   const NaturalLess<Weight> less_{};
 };
 

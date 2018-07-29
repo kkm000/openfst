@@ -43,12 +43,13 @@ struct ShortestDistanceOptions {
 
   ShortestDistanceOptions(Queue *state_queue, ArcFilter arc_filter,
                           StateId source = kNoStateId,
-                          float delta = kShortestDelta)
+                          float delta = kShortestDelta,
+                          bool first_path = false)
       : state_queue(state_queue),
         arc_filter(arc_filter),
         source(source),
         delta(delta),
-        first_path(false) {}
+        first_path(first_path) {}
 };
 
 namespace internal {
@@ -211,7 +212,7 @@ void ShortestDistanceState<Arc, Queue, ArcFilter>::ShortestDistance(
 //
 // This computes the shortest distance from the opts.source state to each
 // visited state S and stores the value in the distance vector. An
-// nvisited state S has distance Zero(), which will be stored in the
+// unvisited state S has distance Zero(), which will be stored in the
 // distance vector if S is less than the maximum visited state. The state
 // queue discipline, arc filter, and convergence delta are taken in the
 // options argument. The distance vector will contain a unique element for

@@ -6,5 +6,6 @@ root = true
 
 [*]
 charset = utf-8  ; Remove the pesky BOM from files.
-trim_trailing_whitespace = true
 indent_style = space
+insert_final_newline = true
+trim_trailing_whitespace = true

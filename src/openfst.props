@@ -105,11 +105,11 @@
       <WarningLevel>Level3</WarningLevel>
     </ClCompile>
     <Link>
-      <SubSystem>Console</SubSystem>
       <!-- Since 1.6.6, static FST registration was moved to its own file fst-types.cc.
            Need to include all objects into the build, otherwise the static registration
            will be unavailable. -->
       <AdditionalOptions>/WHOLEARCHIVE:libfst %(AdditionalOptions)</AdditionalOptions>
+      <SubSystem>Console</SubSystem>
     </Link>
     <Link Condition=" '$(Configuration)' == 'Release' ">
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
