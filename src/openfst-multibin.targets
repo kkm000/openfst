@@ -3,7 +3,10 @@
 
   <Target Name="_SelectSources">
     <ItemGroup>
-      <!-- Force batching on %(Identity) in this implicit task. -->
+      <!-- The Condition forces batching on %(Identity) in this implicit task.
+           Cannot use just %(Filename) inside, which otherwise also batch per-item,
+           because the %() syntax does not support string functions, only the
+           collection transform inside @(x->) does. -->
       <ClCompile Condition=" '%(Identity)' != '' ">
         <!-- Temporarily add '/' (just a character never found in %(Filename)) to the end to strip
              off only the trailing "-main", not in the middle of the filename. Then trim the added '/'.

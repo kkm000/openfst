@@ -1,0 +1,45 @@
+<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!--
+        Must set ConfigurationType before importing openfst.props!
+   -->
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{84657A19-CAF2-49E8-8DB3-A428C19F460D}</ProjectGuid>
+    <ConfigurationType>Application</ConfigurationType>
+    <MultiBin>true</MultiBin>
+  </PropertyGroup>
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+  <Import Project="openfst.props" />
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+  
+  <ItemGroup Label="Base required files">
+  
+    <ClCompile Include="bin/*.cc" />
+  </ItemGroup>
+  
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+  
+  <ItemGroup Label="Extension: far">
+  
+    <ClCompile Include="extensions/far/farcompilestrings.cc"> <Feature>far</Feature> </ClCompile>
+    <ClCompile Include="extensions/far/farcreate.cc">         <Feature>far</Feature> </ClCompile>
+    <ClCompile Include="extensions/far/farequal.cc">          <Feature>far</Feature> </ClCompile>
+    <ClCompile Include="extensions/far/farextract.cc">        <Feature>far</Feature> </ClCompile>
+    <ClCompile Include="extensions/far/farinfo.cc">           <Feature>far</Feature> </ClCompile>
+    <ClCompile Include="extensions/far/farisomorphic.cc">     <Feature>far</Feature> </ClCompile>
+    <ClCompile Include="extensions/far/farprintstrings.cc">   <Feature>far</Feature> </ClCompile>
+  </ItemGroup>
+  
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+  <ItemGroup>
+    <ProjectReference Include="libfst.vcxproj">
+      <Project>{de80efec-9ed9-4631-bd96-8568c31ed26d}</Project>
+    </ProjectReference>
+    <ProjectReference Include="libfstscript.vcxproj">
+      <Project>{111f46ed-da1f-469b-b912-ba2acc2ff8e6}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+  <Import Project="openfst.targets" />
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+</Project>

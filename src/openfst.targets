@@ -1,11 +1,13 @@
-<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" InitialTargets="_SelectOnlySources">
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003"
+         InitialTargets="_SelectOnlySources;_SelectFeatures">
 
   <PropertyGroup>
     <!-- Keep separate tlog in each multi-bin subproject
         (all projects, in fact, it does not hurt). Needs a trailing '\'. -->
     <TLogLocation>$(IntDir)$(ProjectName).tlog\</TLogLocation>
     <!-- Intentionally sharing, handled carefully. Quench the warning. -->
-    <IgnoreWarnIntDirSharingDetected Condition=" '$(MultiBin)' == 'true' ">true</IgnoreWarnIntDirSharingDetected>
+    <IgnoreWarnIntDirSharingDetected
+      Condition=" '$(MultiBin)' == 'true' ">true</IgnoreWarnIntDirSharingDetected>
   </PropertyGroup>
 
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
@@ -16,12 +18,38 @@
            we set on recursive invocation. -->
       <GlobalPropertiesToRemove>ProjectName;OnlySources</GlobalPropertiesToRemove>
     </ProjectReference>
+    <!-- Feature enablement collection. -->
+    <_Enabled>
+      <Feature>%(Identity)</Feature>
+    </_Enabled>
+    <ClCompile>
+       <!-- Default to 'openfst' if Feature is not specified explicitly. -->
+      <Feature>openfst</Feature>
+    </ClCompile>
   </ItemDefinitionGroup>
+
+  <!-- Remove from ClCompile the features that are not selected.
+       This is an InitialTarget run early in the build. -->
+  <Target Name="_SelectFeatures" Condition=" '$(DesignTimeBuild)' != 'true' ">
+    <ItemGroup>
+      <!-- Always build the default 'openfst' feature. -->
+      <_Enabled Include="$(EnableFeatures);openfst" />
+      <!-- Remove ClCompile items with Feature not found in the _Enabled list.
+           The condition as written tolerates duplicates in the list. -->
+      <ClCompile Remove="@(ClCompile)" Condition=" '%(Feature)' != '' and '@(_Enabled)' == '' " />
+      <!-- Since there are duplicate filenames in optional features (e. g.
+           {script,far}/getters.cc), place objects into per-feature directories. -->
+      <ClCompile>
+        <ObjectFileName>%(ObjectFileName)%(Feature)\</ObjectFileName>
+      </ClCompile>
+    </ItemGroup>
+  </Target>
 
   <!-- In an inner build only, shrink down the ClCompile collection to those
        passed in the OnlySources property. No harm doing this as early as
        possible, so register this as InitialTarget. -->
-  <Target Name="_SelectOnlySources" Condition=" '$(MultiBin)' == 'true' and '$(DesignTimeBuild)' != 'true' ">
+  <Target Name="_SelectOnlySources"
+          Condition=" '$(DesignTimeBuild)' != 'true' and '$(MultiBin)' == 'true' ">
     <ItemGroup Condition=" '$(OnlySources)' != '' ">
       <_OnlySources Include="$(OnlySources)" />
       <ClCompile Remove="@(ClCompile)" Condition="'%(Identity)' != '@(_OnlySources)'" />
@@ -30,6 +58,6 @@
 
   <!-- Override Build, Clean, Rebuild and certain IDE targets in a multi-bin outer build. -->
   <Import Project="openfst-multibin.targets"
-          Condition=" '$(MultiBin)' == 'true' and '$(DesignTimeBuild)' != 'true' and '$(OnlySources)' == '' "/>
+          Condition=" '$(DesignTimeBuild)' != 'true' and '$(MultiBin)' == 'true' and '$(OnlySources)' == '' "/>
 
 </Project>

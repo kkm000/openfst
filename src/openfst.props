@@ -44,7 +44,7 @@
     <_TargetSubdir Condition=" '$(ConfigurationType)' == 'StaticLibrary' ">lib</_TargetSubdir>
     <_TargetSubdir Condition=" '$(ConfigurationType)' != 'StaticLibrary' ">bin</_TargetSubdir>
     <OutDir>$(SolutionDir)build_output\$(PlatformTarget)\$(Configuration)\$(_TargetSubdir)\</OutDir>
-    <IntDir>obj\$(PlatformTarget)\$(Configuration)\</IntDir>
+    <IntDir>$(SolutionDir)obj\$(PlatformTarget)\$(Configuration)\$(MSBuildProjectName)\</IntDir>
   </PropertyGroup>
 
   <Import Project="openfst.user.props" Condition="Exists('openfst.user.props')" />
@@ -69,7 +69,7 @@
   </PropertyGroup>
   <PropertyGroup Condition=" '$(WindowsTargetPlatformVersion)' == '' ">
     <!-- Next look at the registry. This is what toolset scripts do, for other variables.
-         Note the registry version is 3-component, therefore the need to add a ".0" the
+         Note the registry version is 3-component, therefore the need to add a ".0" at the
          end. So far this has always been 3-component, but that may change, thus the call
          to Split() to count the components in the retrieved version.  -->
     <_Win10SDKVer Condition=" '$(_Win10SDKVer)' == '' ">$(Registry:HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Microsoft SDKs\Windows\v10.0@ProductVersion)</_Win10SDKVer>

@@ -1,0 +1,45 @@
+<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!--
+        Must set ConfigurationType before importing openfst.props!
+   -->
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{111F46ED-DA1F-469B-B912-BA2ACC2FF8E6}</ProjectGuid>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+  </PropertyGroup>
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+  <Import Project="openfst.props" />
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+  
+  <ItemGroup Label="Base required files">
+  
+    <ClCompile Include="script/*.cc" />
+    <ClInclude Include="include/fst/script/*.h" />
+  </ItemGroup>
+  
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->  
+  
+  <ItemGroup Label="Extension: far">
+  
+    <ClCompile Include="extensions/far/far-class.cc">   <Feature>far</Feature> </ClCompile>
+    <ClCompile Include="extensions/far/farscript.cc">   <Feature>far</Feature> </ClCompile>
+    <ClCompile Include="extensions/far/getters.cc">     <Feature>far</Feature> </ClCompile>
+    <ClCompile Include="extensions/far/script-impl.cc"> <Feature>far</Feature> </ClCompile>
+    <ClCompile Include="extensions/far/strings.cc">     <Feature>far</Feature> </ClCompile>
+
+    <ClInclude Include="include/fst/extensions/far/compile-strings.h" />
+    <ClInclude Include="include/fst/extensions/far/create.h" />
+    <ClInclude Include="include/fst/extensions/far/equal.h" />
+    <ClInclude Include="include/fst/extensions/far/extract.h" />
+    <ClInclude Include="include/fst/extensions/far/far-class.h" />
+    <ClInclude Include="include/fst/extensions/far/farscript.h" />
+    <ClInclude Include="include/fst/extensions/far/getters.h" />
+    <ClInclude Include="include/fst/extensions/far/info.h" />
+    <ClInclude Include="include/fst/extensions/far/isomorphic.h" />
+    <ClInclude Include="include/fst/extensions/far/print-strings.h" />
+    <ClInclude Include="include/fst/extensions/far/script-impl.h" />
+  </ItemGroup>
+  
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+  <Import Project="openfst.targets" />
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+</Project>

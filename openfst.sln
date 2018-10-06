@@ -3,7 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27130.2026
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libfst", "src\lib\libfst.vcxproj", "{DE80EFEC-9ED9-4631-BD96-8568C31ED26D}"
+
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "!! READ ME BEFORE BUILD !!", "!! READ ME BEFORE BUILD !!", "{3BAF0BB0-34BF-4E28-BC17-A80D7CF4130F}"
+	ProjectSection(SolutionItems) = preProject
+		src\openfst.user.props = src\openfst.user.props
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Control and build files", "Control and build files", "{F14A9AF0-0D79-4553-AA8E-B3905A9B6431}"
 	ProjectSection(SolutionItems) = preProject
@@ -14,16 +18,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Control and build files", "
 		src\openfst.targets = src\openfst.targets
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libfstscript", "src\script\libfstscript.vcxproj", "{111F46ED-DA1F-469B-B912-BA2ACC2FF8E6}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libfst", "src\libfst.vcxproj", "{DE80EFEC-9ED9-4631-BD96-8568C31ED26D}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bin", "src\bin\bin.vcxproj", "{84657A19-CAF2-49E8-8DB3-A428C19F460D}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libfstscript", "src\libfstscript.vcxproj", "{111F46ED-DA1F-469B-B912-BA2ACC2FF8E6}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bin", "src\bin.vcxproj", "{84657A19-CAF2-49E8-8DB3-A428C19F460D}"
 	ProjectSection(ProjectDependencies) = postProject
 		{111F46ED-DA1F-469B-B912-BA2ACC2FF8E6} = {111F46ED-DA1F-469B-B912-BA2ACC2FF8E6}
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "!! READ ME BEFORE BUILD !!", "!! READ ME BEFORE BUILD !!", "{3BAF0BB0-34BF-4E28-BC17-A80D7CF4130F}"
-	ProjectSection(SolutionItems) = preProject
-		src\openfst.user.props = src\openfst.user.props
 	EndProjectSection
 EndProject
 Global
