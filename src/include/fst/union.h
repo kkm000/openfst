@@ -7,6 +7,7 @@
 #define FST_UNION_H_
 
 #include <algorithm>
+#include <utility>
 #include <vector>
 
 #include <fst/mutable-fst.h>
@@ -61,7 +62,7 @@ void Union(MutableFst<Arc> *fst1, const Fst<Arc> &fst2) {
     for (ArcIterator<Fst<Arc>> aiter(fst2, s2); !aiter.Done(); aiter.Next()) {
       auto arc = aiter.Value();  // Copy intended.
       arc.nextstate += numstates1;
-      fst1->AddArc(s1, arc);
+      fst1->AddArc(s1, std::move(arc));
     }
   }
   const auto start1 = fst1->Start();

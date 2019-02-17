@@ -8,14 +8,16 @@
 #define FST_BI_TABLE_H_
 
 #include <deque>
-#include <memory>
 #include <functional>
+#include <memory>
+#include <type_traits>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
 #include <fst/log.h>
 #include <fst/memory.h>
+#include <unordered_set>
 
 namespace fst {
 
@@ -110,6 +112,7 @@ struct HashSet : public std::unordered_set<K, H, E, PoolAllocator<K>> {
 // current_entry_. The hash and key equality functions map to entries first. H
 // is the hash function and E is the equality function. If passed to the
 // constructor, ownership is given to this class.
+// TODO(rybach): remove support for (deprecated and unused) HS_DENSE, HS_SPARSE.
 template <class I, class T, class H, class E = std::equal_to<T>,
           HSType HS = HS_FLAT>
 class CompactHashBiTable {
@@ -177,6 +180,10 @@ class CompactHashBiTable {
   }
 
  private:
+  static_assert(std::is_signed<I>::value, "I must be a signed type");
+  // ... otherwise >= kCurrentKey comparisons as used below don't work.
+  // TODO(rybach): (1) remove kEmptyKey, kDeletedKey, (2) don't use >= for key
+  // comparison, (3) allow unsigned key types.
   static constexpr I kCurrentKey = -1;
   static constexpr I kEmptyKey = -2;
   static constexpr I kDeletedKey = -3;

@@ -79,10 +79,7 @@ class FarReaderClassImpl : public FarReaderImplBase {
 
 class FarReaderClass;
 
-using OpenFarReaderClassArgs1 =
-    WithReturnValue<FarReaderClass *, const string &>;
-
-using OpenFarReaderClassArgs2 =
+using OpenFarReaderClassArgs =
     WithReturnValue<FarReaderClass *, const std::vector<string> &>;
 
 // Untemplated user-facing class holding a templated pimpl.
@@ -125,10 +122,7 @@ class FarReaderClass {
   }
 
   template <class Arc>
-  friend void OpenFarReaderClass(OpenFarReaderClassArgs1 *args);
-
-  template <class Arc>
-  friend void OpenFarReaderClass(OpenFarReaderClassArgs2 *args);
+  friend void OpenFarReaderClass(OpenFarReaderClassArgs *args);
 
   // Defined in the CC.
 
@@ -147,12 +141,7 @@ class FarReaderClass {
 // static method FarReaderClass::Open instead.
 
 template <class Arc>
-void OpenFarReaderClass(OpenFarReaderClassArgs1 *args) {
-  args->retval = new FarReaderClass(new FarReaderClassImpl<Arc>(args->args));
-}
-
-template <class Arc>
-void OpenFarReaderClass(OpenFarReaderClassArgs2 *args) {
+void OpenFarReaderClass(OpenFarReaderClassArgs *args) {
   args->retval = new FarReaderClass(new FarReaderClassImpl<Arc>(args->args));
 }
 

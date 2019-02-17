@@ -344,22 +344,33 @@ class SortedMatcher : public MatcherBase<typename F::Arc> {
 // Returns true iff match to match_label_. The arc iterator is positioned at the
 // lower bound, that is, the first element greater than or equal to
 // match_label_, or the end if all elements are less than match_label_.
+// If multiple elements are equal to the `match_label_`, returns the rightmost
+// one.
 template <class FST>
 inline bool SortedMatcher<FST>::BinarySearch() {
-  size_t low = 0;
-  size_t high = narcs_;
-  while (low < high) {
-    const size_t mid = low + (high - low) / 2;
+  size_t size = narcs_;
+  if (size == 0) {
+    return false;
+  }
+  size_t high = size - 1;
+  while (size > 1) {
+    const size_t half = size / 2;
+    const size_t mid = high - half;
     aiter_->Seek(mid);
-    if (GetLabel() < match_label_) {
-      low = mid + 1;
-    } else {
+    if (GetLabel() >= match_label_) {
       high = mid;
     }
+    size -= half;
   }
-
-  aiter_->Seek(low);
-  return low < narcs_ && GetLabel() == match_label_;
+  aiter_->Seek(high);
+  const auto label = GetLabel();
+  if (label == match_label_) {
+    return true;
+  }
+  if (label < match_label_) {
+    aiter_->Next();
+  }
+  return false;
 }
 
 // Returns true iff match to match_label_, positioning arc iterator at lower

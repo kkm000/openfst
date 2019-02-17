@@ -10,8 +10,8 @@
 
 #include <fst/flags.h>
 #include <fst/log.h>
-#include <fst/script/getters.h>
 #include <fst/script/difference.h>
+#include <fst/script/getters.h>
 
 DECLARE_string(compose_filter);
 DECLARE_bool(connect);

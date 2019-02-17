@@ -645,7 +645,19 @@ class FstImpl {
         isymbols_(impl.isymbols_ ? impl.isymbols_->Copy() : nullptr),
         osymbols_(impl.osymbols_ ? impl.osymbols_->Copy() : nullptr) {}
 
+  FstImpl(FstImpl<Arc> &&impl) noexcept;
+
   virtual ~FstImpl() {}
+
+  FstImpl &operator=(const FstImpl<Arc> &impl) {
+    properties_ = impl.properties_;
+    type_ = impl.type_;
+    isymbols_ = impl.isymbols_ ? impl.isymbols_->Copy() : nullptr;
+    osymbols_ = impl.osymbols_ ? impl.osymbols_->Copy() : nullptr;
+    return *this;
+  }
+
+  FstImpl &operator=(FstImpl<Arc> &&impl) noexcept;
 
   const string &Type() const { return type_; }
 
@@ -790,6 +802,13 @@ class FstImpl {
 };
 
 template <class Arc>
+inline FstImpl<Arc>::FstImpl(FstImpl<Arc> &&) noexcept = default;
+
+template <class Arc>
+inline FstImpl<Arc> &FstImpl<Arc>::operator=(
+    FstImpl<Arc> &&) noexcept = default;
+
+template <class Arc>
 bool FstImpl<Arc>::ReadHeader(std::istream &strm, const FstReadOptions &opts,
                               int min_version, FstHeader *hdr) {
   if (opts.header) {
@@ -852,7 +871,6 @@ class ImplToFst : public FST {
   using Arc = typename Impl::Arc;
   using StateId = typename Arc::StateId;
   using Weight = typename Arc::Weight;
-  using FST::operator=;
 
   StateId Start() const override { return impl_->Start(); }
 
@@ -901,6 +919,28 @@ class ImplToFst : public FST {
     }
   }
 
+  ImplToFst() = delete;
+
+  ImplToFst(const ImplToFst<Impl, FST> &fst) : impl_(fst.impl_) {}
+
+  ImplToFst(ImplToFst<Impl, FST> &&fst) noexcept
+      : impl_(std::move(fst.impl_)) {
+    fst.impl_ = std::make_shared<Impl>();
+  }
+
+  ImplToFst<Impl, FST> &operator=(const ImplToFst<Impl, FST> &fst) {
+    impl_ = fst.impl_;
+    return *this;
+  }
+
+  ImplToFst<Impl, FST> &operator=(ImplToFst<Impl, FST> &&fst) noexcept {
+    if (this != &fst) {
+      impl_ = std::move(fst.impl_);
+      fst.impl_ = std::make_shared<Impl>();
+    }
+    return *this;
+  }
+
   // Returns raw pointers to the shared object.
   const Impl *GetImpl() const { return impl_.get(); }
 
@@ -911,7 +951,7 @@ class ImplToFst : public FST {
 
   bool Unique() const { return impl_.unique(); }
 
-  void SetImpl(std::shared_ptr<Impl> impl) { impl_ = impl; }
+  void SetImpl(std::shared_ptr<Impl> impl) { impl_ = std::move(impl); }
 
  private:
   template <class IFST, class OFST>

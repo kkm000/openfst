@@ -56,6 +56,10 @@ class MutableFst : public ExpandedFst<A> {
   // Adds an arc to state.
   virtual void AddArc(StateId, const Arc &arc) = 0;
 
+  // Adds an arc (passed by rvalue reference) to state. Allows subclasses
+  // to optionally implement move semantics. Defaults to lvalue overload.
+  virtual void AddArc(StateId state, Arc &&arc) { AddArc(state, arc); }
+
   // Deletes some states, preserving original StateId ordering.
   virtual void DeleteStates(const std::vector<StateId> &) = 0;
 
@@ -299,6 +303,11 @@ class ImplToMutableFst : public ImplToExpandedFst<Impl, FST> {
   void AddArc(StateId s, const Arc &arc) override {
     MutateCheck();
     GetMutableImpl()->AddArc(s, arc);
+  }
+
+  void AddArc(StateId s, Arc &&arc) override {
+    MutateCheck();
+    GetMutableImpl()->AddArc(s, std::move(arc));
   }
 
   void DeleteStates(const std::vector<StateId> &dstates) override {

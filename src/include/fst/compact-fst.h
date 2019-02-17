@@ -252,9 +252,7 @@ DefaultCompactStore<Element, Unsigned>::DefaultCompactStore(
   for (StateIterator<Fst<Arc>> siter(fst); !siter.Done(); siter.Next()) {
     ++nstates_;
     const auto s = siter.Value();
-    for (ArcIterator<Fst<Arc>> aiter(fst, s); !aiter.Done(); aiter.Next()) {
-      ++narcs_;
-    }
+    narcs_ += fst.NumArcs(s);
     if (fst.Final(s) != Weight::Zero()) ++nfinals;
   }
   if (compactor.Size() == -1) {

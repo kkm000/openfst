@@ -7,6 +7,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <sys/mman.h>
+#include <sys/types.h>
 #include <unistd.h>
 
 #include <algorithm>
@@ -42,25 +43,14 @@ MappedFile *MappedFile::Map(std::istream *istrm, bool memorymap,
           << " size: " << size << " offset: " << spos;
   if (memorymap && spos >= 0 && spos % kArchAlignment == 0) {
     const size_t pos = spos;
-    int fd = open(source.c_str(), O_RDONLY);
+    const int fd = open(source.c_str(), O_RDONLY);
     if (fd != -1) {
-      const int pagesize = sysconf(_SC_PAGESIZE);
-      const off_t offset = pos % pagesize;
-      const off_t upsize = size + offset;
-      void *map =
-          mmap(nullptr, upsize, PROT_READ, MAP_SHARED, fd, pos - offset);
-      auto *data = reinterpret_cast<char *>(map);
-      if (close(fd) == 0 && map != MAP_FAILED) {
-        MemoryRegion region;
-        region.mmap = map;
-        region.size = upsize;
-        region.data = reinterpret_cast<void *>(data + offset);
-        region.offset = offset;
-        std::unique_ptr<MappedFile> mmf(new MappedFile(region));
+      std::unique_ptr<MappedFile> mmf(MapFromFileDescriptor(fd, pos, size));
+      if (close(fd) == 0 && mmf != nullptr) {
         istrm->seekg(pos + size, std::ios::beg);
         if (istrm) {
           VLOG(1) << "mmap'ed region of " << size << " at offset " << pos
-                  << " from " << source << " to addr " << map;
+                  << " from " << source << " to addr " << mmf->region_.mmap;
           return mmf.release();
         }
       } else {
@@ -68,6 +58,7 @@ MappedFile *MappedFile::Map(std::istream *istrm, bool memorymap,
       }
     }
   }
+
   // If all else fails, reads from the file into the allocated buffer.
   if (memorymap) {
     LOG(WARNING) << "File mapping at offset " << spos << " of file " << source
@@ -89,6 +80,26 @@ MappedFile *MappedFile::Map(std::istream *istrm, bool memorymap,
     VLOG(2) << "Read " << next_size << " bytes. " << size << " remaining";
   }
   return mf.release();
+}
+
+MappedFile *MappedFile::MapFromFileDescriptor(int fd, int pos, size_t size) {
+  const int pagesize = sysconf(_SC_PAGESIZE);
+  const off_t offset = pos % pagesize;
+  const off_t upsize = size + offset;
+  void *map = mmap(nullptr, upsize, PROT_READ, MAP_SHARED, fd, pos - offset);
+  if (map == MAP_FAILED) {
+    LOG(ERROR) << "mmap failed for fd=" << fd << " size=" << upsize
+               << " offset=" << (pos - offset);
+    return nullptr;
+  }
+
+  MemoryRegion region;
+  region.mmap = map;
+  region.size = upsize;
+  region.data =
+      reinterpret_cast<void *>(reinterpret_cast<char *>(map) + offset);
+  region.offset = offset;
+  return new MappedFile(region);
 }
 
 MappedFile *MappedFile::Allocate(size_t size, int align) {

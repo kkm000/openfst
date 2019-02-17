@@ -7,6 +7,8 @@
 #define FST_COMPOSE_H_
 
 #include <algorithm>
+#include <memory>
+#include <utility>
 
 #include <fst/log.h>
 
@@ -368,9 +370,9 @@ class ComposeFstImpl
   void AddArc(StateId s, const Arc &arc1, const Arc &arc2,
               const FilterState &f) {
     const StateTuple tuple(arc1.nextstate, arc2.nextstate, f);
-    const Arc oarc(arc1.ilabel, arc2.olabel, Times(arc1.weight, arc2.weight),
-                   state_table_->FindState(tuple));
-    CacheImpl::PushArc(s, oarc);
+    CacheImpl::EmplaceArc(
+        s, arc1.ilabel, arc2.olabel, Times(arc1.weight, arc2.weight),
+        state_table_->FindState(tuple));
   }
 
   StateId ComputeStart() override {

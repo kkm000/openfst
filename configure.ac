@@ -1,4 +1,4 @@
-AC_INIT([OpenFst], [1.6.9], [help@www.openfst.org])
+AC_INIT([OpenFst], [1.7.0], [help@www.openfst.org])
 AM_INIT_AUTOMAKE([foreign nostdinc -Wall -Werror subdir-objects])
 AM_PROG_AR
 
@@ -140,6 +140,39 @@ AC_ARG_WITH([libfstdir],
 [], [with_libfstdir=[${libdir}/fst]])
 
 AC_SUBST([libfstdir], $with_libfstdir)
+
+# Flags may be changed after configuring, so this is checked again by
+# weight_test.cc.  The check here is to save time in the common case,
+# or when someone does not run `make check`.
+AC_RUN_IFELSE([AC_LANG_PROGRAM([
+                 #include <cstdio>
+
+                 template <typename T>
+                 bool FloatEqIsReflexive(T m) {
+                   volatile T x = 1.111;
+                   x *= m;
+
+                   T y = 1.111;
+                   y *= m;
+
+                   return x == y;
+                 }
+               ], [
+                 volatile double test_value = 1.1;
+                 if (!FloatEqIsReflexive(static_cast<float>(test_value))) {
+                   printf("float FAIL\n");
+                   return 1;
+                 }
+                 if (!FloatEqIsReflexive(test_value)) {
+                   printf("double FAIL\n");
+                   return 1;
+                 }
+               ])],
+              [echo "Float equality is good"],
+              [AC_MSG_FAILURE(m4_normalize([
+                   Test float equality failed!
+                   Compile with -msse -mfpmath=sse if using g++.
+              ]))])
 
 AC_CHECK_LIB([dl], dlopen, [DL_LIBS=-ldl])
 AC_SUBST([DL_LIBS])

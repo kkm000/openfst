@@ -156,7 +156,7 @@ void RmEpsilonState<Arc, Queue>::Expand(typename Arc::StateId source) {
         auto insert_result = element_map_.insert(
             std::make_pair(element, std::make_pair(expand_id_, arcs_.size())));
         if (insert_result.second) {
-          arcs_.push_back(arc);
+          arcs_.push_back(std::move(arc));
         } else {
           if (insert_result.first->second.first == expand_id_) {
             auto &weight = arcs_[insert_result.first->second.second].weight;
@@ -164,7 +164,7 @@ void RmEpsilonState<Arc, Queue>::Expand(typename Arc::StateId source) {
           } else {
             insert_result.first->second.first = expand_id_;
             insert_result.first->second.second = arcs_.size();
-            arcs_.push_back(arc);
+            arcs_.push_back(std::move(arc));
           }
         }
       }
@@ -431,7 +431,7 @@ class RmEpsilonFstImpl : public CacheImpl<Arc> {
     SetFinal(s, rmeps_state_.Final());
     auto &arcs = rmeps_state_.Arcs();
     while (!arcs.empty()) {
-      PushArc(s, arcs.back());
+      PushArc(s, std::move(arcs.back()));
       arcs.pop_back();
     }
     SetArcs(s);

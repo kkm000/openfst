@@ -25,6 +25,7 @@
 #include <fstream>
 
 #include <fst/flags.h>
+#include <unordered_map>
 
 
 // Utility for error handling.

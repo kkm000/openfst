@@ -394,7 +394,7 @@ class RandGenFstImpl : public CacheImpl<ToArc> {
   using FstImpl<ToArc>::SetInputSymbols;
   using FstImpl<ToArc>::SetOutputSymbols;
 
-  using CacheBaseImpl<CacheState<ToArc>>::PushArc;
+  using CacheBaseImpl<CacheState<ToArc>>::EmplaceArc;
   using CacheBaseImpl<CacheState<ToArc>>::HasArcs;
   using CacheBaseImpl<CacheState<ToArc>>::HasFinal;
   using CacheBaseImpl<CacheState<ToArc>>::HasStart;
@@ -506,10 +506,10 @@ class RandGenFstImpl : public CacheImpl<ToArc> {
       if (pos < narcs) {  // Regular transition.
         aiter.Seek(sample_pair.first);
         const auto &aarc = aiter.Value();
-        const auto weight =
+        auto weight =
             weighted_ ? to_weight_(Log64Weight(-log(prob))) : ToWeight::One();
-        const ToArc barc(aarc.ilabel, aarc.olabel, weight, state_table_.size());
-        PushArc(s, barc);
+        EmplaceArc(s, aarc.ilabel, aarc.olabel, std::move(weight),
+                   state_table_.size());
         auto *nrstate = new RandState<FromArc>(aarc.nextstate, count,
                                                rstate.length + 1, pos, &rstate);
         state_table_.emplace_back(nrstate);
@@ -527,8 +527,7 @@ class RandGenFstImpl : public CacheImpl<ToArc> {
                 new RandState<FromArc>(kNoStateId, 0, 0, 0, nullptr));
           }
           for (size_t n = 0; n < count; ++n) {
-            const ToArc barc(0, 0, ToWeight::One(), superfinal_);
-            PushArc(s, barc);
+            EmplaceArc(s, 0, 0, ToWeight::One(), superfinal_);
           }
         }
       }
