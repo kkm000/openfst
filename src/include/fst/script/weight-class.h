@@ -25,6 +25,7 @@ class WeightImplBase {
   virtual void Print(std::ostream *o) const = 0;
   virtual const string &Type() const = 0;
   virtual string ToString() const = 0;
+  virtual bool Member() const = 0;
   virtual bool operator==(const WeightImplBase &other) const = 0;
   virtual bool operator!=(const WeightImplBase &other) const = 0;
   virtual WeightImplBase &PlusEq(const WeightImplBase &other) = 0;
@@ -52,6 +53,8 @@ class WeightClassImpl : public WeightImplBase {
     WeightToStr(weight_, &str);
     return str;
   }
+
+  bool Member() const final { return weight_.Member(); }
 
   bool operator==(const WeightImplBase &other) const final {
     const auto *typed_other = static_cast<const WeightClassImpl<W> *>(&other);
@@ -143,6 +146,8 @@ class WeightClass {
     static const string *const no_type = new string("none");
     return *no_type;
   }
+
+  bool Member() const { return impl_ && impl_->Member(); }
 
   bool WeightTypesMatch(const WeightClass &other, const string &op_name) const;
 

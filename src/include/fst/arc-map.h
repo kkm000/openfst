@@ -48,7 +48,7 @@ enum MapSymbolsAction {
 
 // The ArcMapper interfaces defines how arcs and final weights are mapped.
 // This is useful for implementing operations that do not change the number of
-// arcs (expect possibly superfinal arcs).
+// arcs (except possibly superfinal arcs).
 //
 // template <class A, class B>
 // class ArcMapper {
@@ -682,7 +682,7 @@ class InputEpsilonMapper {
   }
 
   constexpr uint64 Properties(uint64 props) const {
-    return (props & kSetArcProperties) | kIEpsilons;
+    return (props & kSetArcProperties) | kIEpsilons | kILabelSorted;
   }
 };
 
@@ -708,7 +708,7 @@ class OutputEpsilonMapper {
   }
 
   constexpr uint64 Properties(uint64 props) const {
-    return (props & kSetArcProperties) | kOEpsilons;
+    return (props & kSetArcProperties) | kOEpsilons | kOLabelSorted;
   }
 };
 

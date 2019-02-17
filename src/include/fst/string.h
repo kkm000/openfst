@@ -62,7 +62,7 @@ bool ConvertStringToLabels(const string &str, StringTokenType token_type,
   labels->clear();
   if (token_type == StringTokenType::BYTE) {
     labels->reserve(str.size());
-    for (const char c : str) labels->push_back(static_cast<unsigned char>(c));
+    return ByteStringToLabels(str, labels);
   } else if (token_type == StringTokenType::UTF8) {
     return UTF8StringToLabels(str, labels);
   } else {

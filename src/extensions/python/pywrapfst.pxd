@@ -23,9 +23,9 @@ from ios cimport stringstream
 # Exportable helper functions.
 
 
-cdef string tostring(data, encoding=?) except *
+cdef string tostring(data) except *
 
-cdef string weight_tostring(data, encoding=?) except *
+cdef string weight_tostring(data) except *
 
 cdef fst.ComposeFilter _get_compose_filter(
     const string &compose_filter) except *
@@ -62,6 +62,8 @@ cdef class Weight(object):
   cpdef string to_string(self)
 
   cpdef string type(self)
+
+  cpdef bool member(self)
 
 
 cdef Weight _Zero(weight_type)

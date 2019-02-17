@@ -83,6 +83,7 @@ from cython.operator cimport preincrement as inc   # ++foo
 # Python imports.
 import numbers
 import subprocess
+
 import logging
 
 # Google-only...
@@ -137,7 +138,7 @@ class FstOpError(FstError, RuntimeError):
 ## General helpers.
 
 
-cdef string tostring(data, encoding="utf8") except *:
+cdef string tostring(data) except *:
   """Converts strings to bytestrings.
 
   This function converts Python bytestrings and Unicode strings to bytestrings
@@ -146,7 +147,6 @@ cdef string tostring(data, encoding="utf8") except *:
 
   Args:
     data: A Unicode string or bytestring.
-    encoding: The desired encoding, defaulting to UTF-8.
 
   Returns:
     A bytestring.
@@ -161,11 +161,11 @@ cdef string tostring(data, encoding="utf8") except *:
   if isinstance(data, bytes):
     return data
   elif isinstance(data, unicode):
-    return data.encode(encoding)
+    return data.encode("utf8")
   raise FstArgError("Cannot encode as string: {!r}".format(data))
 
 
-cdef string weight_tostring(data, encoding="utf8") except *:
+cdef string weight_tostring(data) except *:
   """Converts strings or numerics to bytestrings.
 
   This function converts Python bytestrings, Unicode strings, and numerics
@@ -192,9 +192,9 @@ cdef string weight_tostring(data, encoding="utf8") except *:
   if isinstance(data, bytes):
     return data
   elif isinstance(data, unicode):
-    return data.encode(encoding)
+    return data.encode("utf8")
   elif isinstance(data, numbers.Number):
-    return str(data).encode(encoding)
+    return str(data).encode("utf8")
   raise FstArgError("Cannot encode as string: {!r}".format(data))
 
 
@@ -367,7 +367,7 @@ cdef class Weight(object):
   cdef void _check_weight(self) except *:
     if self.type() == b"none":
       raise FstArgError("Weight type not found")
-    if self.to_string() == b"BadNumber":
+    if not self.member():
       raise FstBadWeightError("Invalid weight")
 
   cpdef Weight copy(self):
@@ -425,6 +425,9 @@ cdef class Weight(object):
     Returns a string indicating the weight type.
     """
     return self._weight.get().Type()
+
+  cpdef bool member(self):
+    return self._weight.get().Member()
 
 
 cdef Weight _plus(Weight lhs, Weight rhs):
@@ -577,7 +580,7 @@ cdef fst.WeightClass _get_WeightClass_or_Zero(const string &weight_type,
     result = deref(<fst.WeightClass *> (<Weight> weight)._weight.get())
   else:
     result = fst.WeightClass(weight_type, weight_tostring(weight))
-    if result.ToString() == b"BadNumber":
+    if not result.Member():
       raise FstBadWeightError(weight_tostring(weight))
   return result
 
@@ -606,7 +609,7 @@ cdef fst.WeightClass _get_WeightClass_or_One(const string &weight_type,
     result = deref(<fst.WeightClass *> (<Weight> weight)._weight.get())
   else:
     result = fst.WeightClass(weight_type, weight_tostring(weight))
-    if result.ToString() == b"BadNumber":
+    if not result.Member():
       raise FstBadWeightError(weight_tostring(weight))
   return result
 
@@ -1431,11 +1434,12 @@ cdef class _Fst(object):
       return _Fst._server_render_svg(sstrm.str())
     except Exception as e:
       frontend.DisplayToast("GraphViz server request failed: " + str(e))
+      logging.error("Graphviz server requested failed: %s", e)
     # ...Google-only.
     try:
       return _Fst._local_render_svg(sstrm.str())
     except Exception as e:
-      logging.warning("Dot rendering failed: " + str(e))
+      logging.error("Dot rendering failed: %s", e)
 
   def __init__(self):
     raise FstDeletedConstructorError(
@@ -1568,7 +1572,7 @@ cdef class _Fst(object):
     """
     cdef Weight weight = Weight.__new__(Weight)
     weight._weight.reset(new fst.WeightClass(self._fst.get().Final(state)))
-    if weight.to_string() == b"BadNumber":
+    if not weight.member():
       raise FstIndexError("State index out of range")
     return weight
 
@@ -2659,7 +2663,7 @@ cdef class _MutableFst(_Fst):
   cdef void _topsort(self) except *:
     # TopSort returns False if the FST is cyclic, and thus can't be TopSorted.
     if not fst.TopSort(self._mfst.get()):
-      logging.warning("Cannot topsort cyclic FST.")
+      logging.warning("Cannot topsort cyclic FST")
     self._check_mutating_imethod()
 
   def topsort(self):
@@ -3125,6 +3129,12 @@ cdef class MutableArcIterator(object):
     # Makes copy of the shared_ptr, potentially extending the FST's lifetime.
     self._mfst = ifst._mfst
     self._aiter.reset(new fst.MutableArcIteratorClass(ifst._mfst.get(), state))
+
+  # Magic method used to get a Pythonic Iterator API out of the C++ API
+  def __iter__(self):
+    while not self.done():
+      yield self.value()
+      self.next()
 
   cpdef bool done(self):
     """

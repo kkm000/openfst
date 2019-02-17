@@ -8,9 +8,6 @@
 
 #include <algorithm>
 #include <functional>
-#include <unordered_map>
-using std::unordered_map;
-using std::unordered_multimap;
 #include <list>
 #include <vector>
 
@@ -19,6 +16,7 @@ using std::unordered_multimap;
 
 #include <fst/vector-fst.h>
 
+#include <unordered_map>
 
 DECLARE_bool(fst_default_cache_gc);
 DECLARE_int64(fst_default_cache_gc_limit);
@@ -410,8 +408,8 @@ class HashCacheStore {
 
   using StateMap =
       std::unordered_map<StateId, State *, std::hash<StateId>,
-                         std::equal_to<StateId>,
-                         PoolAllocator<std::pair<const StateId, State *>>>;
+                          std::equal_to<StateId>,
+                          PoolAllocator<std::pair<const StateId, State *>>>;
 
   // Required constructors/assignment operators.
   explicit HashCacheStore(const CacheOptions &opts) {

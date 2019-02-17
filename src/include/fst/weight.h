@@ -61,15 +61,26 @@ namespace fst {
 //
 //   Quantize: quantizes w.r.t delta (for inexact weights)
 //
-//   Divide: for all a, b, c s.t. Times(a, b) == c
-//
-//     --> b' = Divide(c, a, DIVIDE_LEFT) if a left semiring, b'.Member()
-//      and Times(a, b') == c
-//     --> a' = Divide(c, b, DIVIDE_RIGHT) if a right semiring, a'.Member()
-//      and Times(a', b) == c
-//     --> b' = Divide(c, a) = Divide(c, a, DIVIDE_ANY) =
-//      Divide(c, a, DIVIDE_LEFT) = Divide(c, a, DIVIDE_RIGHT) if a
-//      commutative semiring, b'.Member() and Times(a, b') = Times(b', a) = c
+//   Divide:
+//     - In a left semiring, for all a, b, b', c:
+//       if Times(a, b) = c, Divide(c, a, DIVIDE_LEFT) = b' and b'.Member(),
+//       then Times(a, b') = c.
+//     - In a right semiring, for all a, a', b, c:
+//       if Times(a, b) = c, Divide(c, b, DIVIDE_RIGHT) = a' and a'.Member(),
+//       then Times(a', b) = c.
+//     - In a commutative semiring,
+//        * for all a, c:
+//          Divide(c, a, DIVIDE_ANY) = Divide(c, a, DIVIDE_LEFT)
+//           = Divide(c, a, DIVIDE_RIGHT)
+//        * for all a, b, b', c:
+//          if Times(a, b), Divide(c, a, DIVIDE_ANY) = b' and b'.Member(),
+//          then Times(a, b') = c
+//     - In the case where there exist no b such that c = Times(a, b), the
+//       return value of Divide(c, a, DIVIDE_LEFT) is unspecified. Returning
+//       Weight::NoWeight() is recommemded but not required in order to
+//       allow the most efficient implementation.
+//     - All algorithms in this library only call Divide(c, a) when it is
+//       guaranteed that there exists a b such that c = Times(a, b).
 //
 //   ReverseWeight: the type of the corresponding reverse weight.
 //
