@@ -28,9 +28,9 @@ set tag=%tag:win/=%
 set cmtfile=%TEMP%\openfst-package-comment.txt
 del /q %cmtfile% 2>nul
 echo OpenFST binaries for Windows x64, optimized build.  >>%cmtfile%
-echo Copyright 2005-2018 Google, Inc. (Original source). >>%cmtfile%
-echo Copyright 2016-2018 SmartAction LLC (Windows port). >>%cmtfile%
-echo Copyright 2016-2018 Johns Hopkins Uni (Windows port). >>%cmtfile%
+echo Copyright 2005-2019 Google, Inc. (Original source). >>%cmtfile%
+echo Copyright 2016-2019 SmartAction LLC (Windows port). >>%cmtfile%
+echo Copyright 2016-2019 Johns Hopkins Uni (Windows port). >>%cmtfile%
 echo.>>%cmtfile%
 echo OpenFST home page: http://www.openfst.org/         >>%cmtfile%
 echo Git Repository: https://github.com/kkm000/openfst/ >>%cmtfile%
