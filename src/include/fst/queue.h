@@ -670,7 +670,7 @@ void AutoQueue<StateId>::SccQueueType(const Fst<Arc> &fst,
 // algorithm.
 template <typename StateId, typename Weight>
 struct TrivialAStarEstimate {
-  const Weight &operator()(StateId) const { return Weight::One(); }
+  constexpr Weight operator()(StateId) const { return Weight::One(); }
 };
 
 // A non-trivial A* estimate using a vector of the estimated future costs.

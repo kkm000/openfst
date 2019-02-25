@@ -29,13 +29,6 @@ class TupleWeight {
   using Weight = W;
   using Index = size_t;
 
-  TupleWeight(const TupleWeight &other) { values_ = other.values_; }
-
-  TupleWeight<W, n> &operator=(const TupleWeight<W, n> &other) {
-    values_ = other.values_;
-    return *this;
-  }
-
   template <class Iterator>
   TupleWeight(Iterator begin, Iterator end) {
     std::copy(begin, end, values_.begin());

@@ -8,7 +8,11 @@ namespace fst {
 
 static FstRegisterer<CompactStringFst<StdArc, uint64>>
     CompactStringFst_StdArc_uint64_registerer;
+
 static FstRegisterer<CompactStringFst<LogArc, uint64>>
     CompactStringFst_LogArc_uint64_registerer;
+
+static FstRegisterer<CompactStringFst<Log64Arc, uint64>>
+    CompactStringFst_Log64Arc_uint64_registerer;
 
 }  // namespace fst

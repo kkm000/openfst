@@ -146,7 +146,7 @@ void SymbolTableImpl::MaybeRecomputeCheckSum() const {
     line << symbols_.GetSymbol(i) << '\t' << i;
     labeled_check_sum.Update(line.str().data(), line.str().size());
   }
-  using citer = map<int64, int64>::const_iterator;
+  using citer = std::map<int64, int64>::const_iterator;
   for (citer it = key_map_.begin(); it != key_map_.end(); ++it) {
     // TODO(tombagby, 2013-11-22) This line maintains a bug that ignores
     // negative labels in the checksum that too many tests rely on.

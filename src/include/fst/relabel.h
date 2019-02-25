@@ -35,10 +35,10 @@ void Relabel(
   using Label = typename Arc::Label;
   const auto props = fst->Properties(kFstProperties, false);
   // Constructs label-to-label maps.
-  const std::unordered_map<Label, Label>
-      input_map(ipairs.begin(), ipairs.end());
-  const std::unordered_map<Label, Label>
-      output_map(opairs.begin(), opairs.end());
+  const std::unordered_map<Label, Label> input_map(
+      ipairs.begin(), ipairs.end());
+  const std::unordered_map<Label, Label> output_map(
+      opairs.begin(), opairs.end());
   for (StateIterator<MutableFst<Arc>> siter(*fst); !siter.Done();
        siter.Next()) {
     for (MutableArcIterator<MutableFst<Arc>> aiter(fst, siter.Value());
@@ -336,7 +336,7 @@ class RelabelFstImpl : public CacheImpl<Arc> {
           arc.olabel = it->second;
         }
       }
-      PushArc(s, arc);
+      PushArc(s, std::move(arc));
     }
     SetArcs(s);
   }

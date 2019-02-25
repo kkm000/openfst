@@ -398,16 +398,17 @@ class LabelReachable {
         ++indeg[arc.nextstate];  // Finds in-degrees for next step.
       }
       // Redirects final weights to new final state.
-      const auto final_weight = fst_->Final(s);
+      auto final_weight = fst_->Final(s);
       if (final_weight != Weight::Zero()) {
         auto insert_result = label2state_.insert(std::make_pair(kNoLabel, ons));
         if (insert_result.second) {
           indeg.push_back(0);
           ++ons;
         }
-        Arc arc(kNoLabel, kNoLabel, final_weight, label2state_[kNoLabel]);
-        fst_->AddArc(s, arc);
-        ++indeg[arc.nextstate];  // Finds in-degrees for next step.
+        const auto nextstate = label2state_[kNoLabel];
+        fst_->EmplaceArc(s, kNoLabel, kNoLabel, std::move(final_weight),
+                         nextstate);
+        ++indeg[nextstate];  // Finds in-degrees for next step.
         fst_->SetFinal(s, Weight::Zero());
       }
     }
@@ -421,8 +422,7 @@ class LabelReachable {
     fst_->SetStart(start);
     for (StateId s = 0; s < start; ++s) {
       if (indeg[s] == 0) {
-        Arc arc(0, 0, Weight::One(), s);
-        fst_->AddArc(start, arc);
+        fst_->EmplaceArc(start, 0, 0, Weight::One(), s);
       }
     }
   }

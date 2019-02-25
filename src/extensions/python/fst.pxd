@@ -108,6 +108,7 @@ cdef extern from "<fst/fstlib.h>" namespace "fst" nogil:
   const int kNoStateId
   const int64 kNoSymbol
 
+
   enum ClosureType:
     CLOSURE_STAR
     CLOSURE_PLUS
@@ -186,12 +187,19 @@ cdef extern from "<fst/fstlib.h>" namespace "fst" nogil:
   # Symbol tables.
   cdef cppclass SymbolTable:
 
+    @staticmethod
+    int64 kNoSymbol
+
     SymbolTable()
 
     SymbolTable(const string &)
 
     @staticmethod
     SymbolTable *Read(const string &)
+
+    # Aliased for overload.
+    @staticmethod
+    SymbolTable *ReadStream "Read"(istream &, const string &)
 
     @staticmethod
     SymbolTable *ReadText(const string &, const SymbolTableTextOptions &)
@@ -226,7 +234,15 @@ cdef extern from "<fst/fstlib.h>" namespace "fst" nogil:
 
     const string &LabeledCheckSum()
 
+    bool Write(ostream &)
+
     bool Write(const string &)
+
+    bool WriteToString(ostream &)
+
+    bool WriteToString(const string &)
+
+    bool WriteText(ostream &)
 
     bool WriteText(const string &)
 
@@ -322,7 +338,7 @@ cdef extern from "<fst/script/fstscript.h>" namespace "fst::script" nogil:
 
     # Aliased for overload.
     @staticmethod
-    FstClass *ReadFromStream "Read"(istream &, const string &)
+    FstClass *ReadStream "Read"(istream &, const string &)
 
     int64 Start()
 

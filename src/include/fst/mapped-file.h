@@ -43,6 +43,12 @@ class MappedFile {
   static MappedFile *Map(std::istream *istrm, bool memorymap,
                          const string &source, size_t size);
 
+  // Returns a MappedFile object that contains the contents of the file referred
+  // to by the file descriptor starting from pos with size bytes. If the
+  // memory mapping fails, nullptr is returned. In contrast to Map(), this
+  // factory function does not backoff to allocating and reading.
+  static MappedFile *MapFromFileDescriptor(int fd, int pos, size_t size);
+
   // Creates a MappedFile object with a new[]'ed block of memory of size. The
   // align argument can be used to specify a desired block alignment.
   // This is RECOMMENDED FOR INTERNAL USE ONLY as it may change in future

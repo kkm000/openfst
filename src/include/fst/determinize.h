@@ -11,6 +11,7 @@
 #include <forward_list>
 #include <map>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include <fst/log.h>
@@ -230,14 +231,14 @@ class DefaultDeterminizeFilter {
   // Filters transition, possibly modifying label map. Returns true if arc is
   // added to the label map.
   bool FilterArc(const Arc &arc, const Element &src_element,
-                 const Element &dest_element, LabelMap *label_map) const {
+                 Element &&dest_element, LabelMap *label_map) const {
     // Adds element to unique state tuple for arc label.
     auto &det_arc = (*label_map)[arc.ilabel];
     if (det_arc.label == kNoLabel) {
       det_arc = internal::DeterminizeArc<StateTuple>(arc);
       det_arc.dest_tuple->filter_state = FilterState(0);
     }
-    det_arc.dest_tuple->subset.push_front(dest_element);
+    det_arc.dest_tuple->subset.push_front(std::move(dest_element));
     return true;
   }
 
@@ -588,9 +589,8 @@ class DeterminizeFsaImpl : public DeterminizeFstImplBase<Arc> {
   StateId ComputeStart() override {
     const auto s = GetFst().Start();
     if (s == kNoStateId) return kNoStateId;
-    const Element element(s, Weight::One());
     auto *tuple = new StateTuple;
-    tuple->subset.push_front(element);
+    tuple->subset.emplace_front(s, Weight::One());
     tuple->filter_state = filter_->Start();
     return FindState(tuple);
   }
@@ -638,7 +638,7 @@ class DeterminizeFsaImpl : public DeterminizeFstImplBase<Arc> {
     LabelMap label_map;
     GetLabelMap(s, &label_map);
     for (auto it = label_map.begin(); it != label_map.end(); ++it) {
-      AddArc(s, it->second);
+      AddArc(s, std::move(it->second));
     }
     SetArcs(s);
   }
@@ -657,9 +657,10 @@ class DeterminizeFsaImpl : public DeterminizeFstImplBase<Arc> {
       for (ArcIterator<Fst<Arc>> aiter(GetFst(), src_element.state_id);
            !aiter.Done(); aiter.Next()) {
         const auto &arc = aiter.Value();
-        const Element dest_element(arc.nextstate,
-                                   Times(src_element.weight, arc.weight));
-        filter_->FilterArc(arc, src_element, dest_element, label_map);
+        Element dest_element(arc.nextstate,
+                             Times(src_element.weight, arc.weight));
+        filter_->FilterArc(arc, src_element, std::move(dest_element),
+                           label_map);
       }
     }
     for (auto it = label_map->begin(); it != label_map->end(); ++it) {
@@ -703,10 +704,10 @@ class DeterminizeFsaImpl : public DeterminizeFstImplBase<Arc> {
 
   // Adds an arc from state S to the destination state associated with state
   // tuple in det_arc as created by GetLabelMap.
-  void AddArc(StateId s, const DetArc &det_arc) {
-    const Arc arc(det_arc.label, det_arc.label, det_arc.weight,
-                  FindState(det_arc.dest_tuple));
-    CacheImpl<Arc>::PushArc(s, arc);
+  void AddArc(StateId s, DetArc &&det_arc) {
+    CacheImpl<Arc>::EmplaceArc(
+        s, det_arc.label, det_arc.label, std::move(det_arc.weight),
+        FindState(det_arc.dest_tuple));
   }
 
   float delta_;                         // Quantization delta for weights.

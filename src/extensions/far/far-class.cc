@@ -13,12 +13,8 @@ namespace script {
 // FarReaderClass.
 
 FarReaderClass *FarReaderClass::Open(const string &filename) {
-  OpenFarReaderClassArgs1 args(filename);
-  args.retval = nullptr;
-  Apply<Operation<OpenFarReaderClassArgs1>>("OpenFarReaderClass",
-                                            LoadArcTypeFromFar(filename),
-                                            &args);
-  return args.retval;
+  const std::vector<string> filenames{filename};
+  return FarReaderClass::Open(filenames);
 }
 
 FarReaderClass *FarReaderClass::Open(const std::vector<string> &filenames) {
@@ -28,20 +24,16 @@ FarReaderClass *FarReaderClass::Open(const std::vector<string> &filenames) {
   }
   const auto arc_type = LoadArcTypeFromFar(filenames.front());
   if (arc_type.empty()) return nullptr;
-  OpenFarReaderClassArgs2 args(filenames);
+  OpenFarReaderClassArgs args(filenames);
   args.retval = nullptr;
-  Apply<Operation<OpenFarReaderClassArgs2>>("OpenFarReaderClass", arc_type,
+  Apply<Operation<OpenFarReaderClassArgs>>("OpenFarReaderClass", arc_type,
                                             &args);
   return args.retval;
 }
 
-REGISTER_FST_OPERATION(OpenFarReaderClass, StdArc, OpenFarReaderClassArgs1);
-REGISTER_FST_OPERATION(OpenFarReaderClass, LogArc, OpenFarReaderClassArgs1);
-REGISTER_FST_OPERATION(OpenFarReaderClass, Log64Arc, OpenFarReaderClassArgs1);
-
-REGISTER_FST_OPERATION(OpenFarReaderClass, StdArc, OpenFarReaderClassArgs2);
-REGISTER_FST_OPERATION(OpenFarReaderClass, LogArc, OpenFarReaderClassArgs2);
-REGISTER_FST_OPERATION(OpenFarReaderClass, Log64Arc, OpenFarReaderClassArgs2);
+REGISTER_FST_OPERATION(OpenFarReaderClass, StdArc, OpenFarReaderClassArgs);
+REGISTER_FST_OPERATION(OpenFarReaderClass, LogArc, OpenFarReaderClassArgs);
+REGISTER_FST_OPERATION(OpenFarReaderClass, Log64Arc, OpenFarReaderClassArgs);
 
 // FarWriterClass.
 

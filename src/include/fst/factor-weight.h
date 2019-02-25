@@ -196,10 +196,10 @@ class FactorWeightFstImpl : public CacheImpl<Arc> {
   using FstImpl<Arc>::SetInputSymbols;
   using FstImpl<Arc>::SetOutputSymbols;
 
-  using CacheBaseImpl<CacheState<Arc>>::PushArc;
-  using CacheBaseImpl<CacheState<Arc>>::HasStart;
-  using CacheBaseImpl<CacheState<Arc>>::HasFinal;
+  using CacheBaseImpl<CacheState<Arc>>::EmplaceArc;
   using CacheBaseImpl<CacheState<Arc>>::HasArcs;
+  using CacheBaseImpl<CacheState<Arc>>::HasFinal;
+  using CacheBaseImpl<CacheState<Arc>>::HasStart;
   using CacheBaseImpl<CacheState<Arc>>::SetArcs;
   using CacheBaseImpl<CacheState<Arc>>::SetFinal;
   using CacheBaseImpl<CacheState<Arc>>::SetStart;
@@ -335,17 +335,17 @@ class FactorWeightFstImpl : public CacheImpl<Arc> {
       for (ArcIterator<Fst<Arc>> ait(*fst_, element.state); !ait.Done();
            ait.Next()) {
         const auto &arc = ait.Value();
-        const auto weight = Times(element.weight, arc.weight);
+        auto weight = Times(element.weight, arc.weight);
         FactorIterator fiter(weight);
         if (!(mode_ & kFactorArcWeights) || fiter.Done()) {
           const auto dest = FindState(Element(arc.nextstate, Weight::One()));
-          PushArc(s, Arc(arc.ilabel, arc.olabel, weight, dest));
+          EmplaceArc(s, arc.ilabel, arc.olabel, std::move(weight), dest);
         } else {
           for (; !fiter.Done(); fiter.Next()) {
-            const auto &pair = fiter.Value();
+            auto pair = fiter.Value();
             const auto dest =
                 FindState(Element(arc.nextstate, pair.second.Quantize(delta_)));
-            PushArc(s, Arc(arc.ilabel, arc.olabel, pair.first, dest));
+            EmplaceArc(s, arc.ilabel, arc.olabel, std::move(pair.first), dest);
           }
         }
       }
@@ -360,10 +360,10 @@ class FactorWeightFstImpl : public CacheImpl<Arc> {
       auto ilabel = final_ilabel_;
       auto olabel = final_olabel_;
       for (FactorIterator fiter(weight); !fiter.Done(); fiter.Next()) {
-        const auto &pair = fiter.Value();
+        auto pair = fiter.Value();
         const auto dest =
             FindState(Element(kNoStateId, pair.second.Quantize(delta_)));
-        PushArc(s, Arc(ilabel, olabel, pair.first, dest));
+        EmplaceArc(s, ilabel, olabel, std::move(pair.first), dest);
         if (increment_final_ilabel_) ++ilabel;
         if (increment_final_olabel_) ++olabel;
       }

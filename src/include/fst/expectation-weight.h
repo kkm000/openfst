@@ -49,9 +49,6 @@ class ExpectationWeight : public PairWeight<X1, X2> {
 
   ExpectationWeight() : PairWeight<X1, X2>(Zero()) {}
 
-  ExpectationWeight(const ExpectationWeight &weight)
-      : PairWeight<X1, X2>(weight) {}
-
   explicit ExpectationWeight(const PairWeight<X1, X2> &weight)
       : PairWeight<X1, X2>(weight) {}
 

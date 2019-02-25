@@ -12,4 +12,7 @@ static FstRegisterer<CompactAcceptorFst<StdArc, uint64>>
 static FstRegisterer<CompactAcceptorFst<LogArc, uint64>>
     CompactAcceptorFst_LogArc_uint64_registerer;
 
+static FstRegisterer<CompactAcceptorFst<Log64Arc, uint64>>
+    CompactAcceptorFst_Log64Arc_uint64_registerer;
+
 }  // namespace fst

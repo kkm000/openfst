@@ -437,7 +437,7 @@ void MergeStates(const Partition<typename Arc::StateId> &partition,
         if (s == state_map[c]) {  // For the first state, just sets destination.
           aiter.SetValue(arc);
         } else {
-          fst->AddArc(state_map[c], arc);
+          fst->AddArc(state_map[c], std::move(arc));
         }
       }
     }

@@ -89,7 +89,7 @@ void SingleShortestPathBacktrace(
       aiter.Seek(parent[d].second);
       auto arc = aiter.Value();
       arc.nextstate = d_p;
-      ofst->AddArc(s_p, arc);
+      ofst->AddArc(s_p, std::move(arc));
     }
   }
   ofst->SetStart(s_p);
@@ -197,10 +197,10 @@ bool SingleShortestPath(
   while (distance->size() < source) {
     distance->push_back(Weight::Zero());
     enqueued.push_back(false);
-    parent->push_back(std::make_pair(kNoStateId, kNoArc));
+    parent->emplace_back(kNoStateId, kNoArc);
   }
   distance->push_back(Weight::One());
-  parent->push_back(std::make_pair(kNoStateId, kNoArc));
+  parent->emplace_back(kNoStateId, kNoArc);
   state_queue->Enqueue(source);
   enqueued.push_back(true);
   while (!state_queue->Empty()) {
@@ -229,7 +229,7 @@ bool SingleShortestPath(
       while (distance->size() <= arc.nextstate) {
         distance->push_back(Weight::Zero());
         enqueued.push_back(false);
-        parent->push_back(std::make_pair(kNoStateId, kNoArc));
+        parent->emplace_back(kNoStateId, kNoArc);
       }
       auto &nd = (*distance)[arc.nextstate];
       const auto weight = Times(sd, arc.weight);
@@ -401,7 +401,7 @@ void NShortestPath(const Fst<RevArc> &ifst, MutableFst<Arc> *ofst,
       const auto next = ofst->AddState();
       pairs.push_back(std::make_pair(arc.nextstate, weight));
       arc.nextstate = state;
-      ofst->AddArc(next, arc);
+      ofst->AddArc(next, std::move(arc));
       heap.push_back(next);
       std::push_heap(heap.begin(), heap.end(), compare);
     }

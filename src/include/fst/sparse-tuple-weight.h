@@ -47,6 +47,8 @@ class SparseTupleWeight {
 
   SparseTupleWeight() { Init(); }
 
+  ~SparseTupleWeight() noexcept = default;
+
   template <class Iterator>
   SparseTupleWeight(Iterator begin, Iterator end) {
     Init();
@@ -70,10 +72,11 @@ class SparseTupleWeight {
     }
   }
 
-  SparseTupleWeight(SparseTupleWeight &&weight)
-    // Don't move the default, so weight.default_ is still valid.
-    : default_(weight.default_), first_(std::move(weight.first_)),
-      rest_(std::move(weight.rest_)) {
+  SparseTupleWeight(SparseTupleWeight &&weight) noexcept
+      // Don't move the default, so weight.default_ is still valid.
+      : default_(weight.default_),  // NOLINT
+        first_(std::move(weight.first_)),
+        rest_(std::move(weight.rest_)) {
     // move leaves the source in a valid but unspecified state.
     // Make sure the source weight is empty.
     weight.first_ = Pair(kNoKey, W::NoWeight());
@@ -116,11 +119,16 @@ class SparseTupleWeight {
     return *this;
   }
 
-  SparseTupleWeight &operator=(SparseTupleWeight &&weight) {
+  SparseTupleWeight &operator=(SparseTupleWeight &&weight) noexcept {
     if (this == &weight) return *this;  // Checks for identity.
+    // Don't move the default, so weight.default_ is still valid.
     default_ = weight.default_;
-    std::swap(first_, weight.first_);
-    std::swap(rest_, weight.rest_);
+    first_ = std::move(weight.first_);
+    rest_ = std::move(weight.rest_);
+    // move leaves the source in a valid but unspecified state.
+    // Make sure the source weight is empty.
+    weight.first_ = Pair(kNoKey, W::NoWeight());
+    weight.rest_.clear();
     return *this;
   }
 
@@ -152,11 +160,11 @@ class SparseTupleWeight {
   }
 
   ReverseWeight Reverse() const {
-    SparseTupleWeight weight;
+    ReverseWeight weight(DefaultValue().Reverse());
     for (Iterator it(*this); !it.Done(); it.Next()) {
       weight.PushBack(it.Value().first, it.Value().second.Reverse());
     }
-    return ReverseWeight(weight);
+    return weight;
   }
 
   void Init(const W &default_value = W::Zero()) {

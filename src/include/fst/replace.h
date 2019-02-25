@@ -736,10 +736,10 @@ class ReplaceFstImpl
     ArcIterator<Fst<Arc>> aiter(*fst_array_[tuple.fst_id], tuple.fst_state);
     Arc arc;
     // Creates a final arc when needed.
-    if (ComputeFinalArc(tuple, &arc)) PushArc(s, arc);
+    if (ComputeFinalArc(tuple, &arc)) PushArc(s, std::move(arc));
     // Expands all arcs leaving the state.
     for (; !aiter.Done(); aiter.Next()) {
-      if (ComputeArc(tuple, aiter.Value(), &arc)) PushArc(s, arc);
+      if (ComputeArc(tuple, aiter.Value(), &arc)) PushArc(s, std::move(arc));
     }
     SetArcs(s);
   }

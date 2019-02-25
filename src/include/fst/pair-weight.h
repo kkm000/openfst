@@ -28,9 +28,6 @@ class PairWeight {
 
   PairWeight() {}
 
-  PairWeight(const PairWeight &weight)
-      : value1_(weight.value1_), value2_(weight.value2_) {}
-
   PairWeight(W1 w1, W2 w2) : value1_(std::move(w1)), value2_(std::move(w2)) {}
 
   static const PairWeight<W1, W2> &Zero() {
@@ -56,12 +53,6 @@ class PairWeight {
   std::ostream &Write(std::ostream &strm) const {
     value1_.Write(strm);
     return value2_.Write(strm);
-  }
-
-  PairWeight<W1, W2> &operator=(const PairWeight<W1, W2> &weight) {
-    value1_ = weight.Value1();
-    value2_ = weight.Value2();
-    return *this;
   }
 
   bool Member() const { return value1_.Member() && value2_.Member(); }

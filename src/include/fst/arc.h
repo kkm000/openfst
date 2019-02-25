@@ -8,6 +8,7 @@
 
 #include <climits>
 #include <string>
+#include <type_traits>
 #include <utility>
 
 
@@ -35,12 +36,13 @@ struct ArcTpl {
   Weight weight;
   StateId nextstate;
 
-  ArcTpl() {}
+  ArcTpl() noexcept(std::is_nothrow_default_constructible<Weight>::value) {}
 
-  ArcTpl(Label ilabel, Label olabel, Weight weight, StateId nextstate)
+  template <class T>
+  ArcTpl(Label ilabel, Label olabel, T &&weight, StateId nextstate)
       : ilabel(ilabel),
         olabel(olabel),
-        weight(std::move(weight)),
+        weight(std::forward<T>(weight)),
         nextstate(nextstate) {}
 
   static const string &Type() {
@@ -72,10 +74,11 @@ struct StringArc {
 
   StringArc() = default;
 
-  StringArc(Label ilabel, Label olabel, Weight weight, StateId nextstate)
+  template <class W>
+  StringArc(Label ilabel, Label olabel, W &&weight, StateId nextstate)
       : ilabel(ilabel),
         olabel(olabel),
-        weight(std::move(weight)),
+        weight(std::forward<W>(weight)),
         nextstate(nextstate) {}
 
   static const string &Type() {
@@ -104,10 +107,11 @@ struct GallicArc {
 
   GallicArc() = default;
 
-  GallicArc(Label ilabel, Label olabel, Weight weight, StateId nextstate)
+  template <class W>
+  GallicArc(Label ilabel, Label olabel, W &&weight, StateId nextstate)
       : ilabel(ilabel),
         olabel(olabel),
-        weight(std::move(weight)),
+        weight(std::forward<W>(weight)),
         nextstate(nextstate) {}
 
   explicit GallicArc(const Arc &arc)
@@ -146,10 +150,11 @@ struct ReverseArc {
 
   ReverseArc() = default;
 
-  ReverseArc(Label ilabel, Label olabel, Weight weight, StateId nextstate)
+  template <class W>
+  ReverseArc(Label ilabel, Label olabel, W &&weight, StateId nextstate)
       : ilabel(ilabel),
         olabel(olabel),
-        weight(std::move(weight)),
+        weight(std::forward<W>(weight)),
         nextstate(nextstate) {}
 
   static const string &Type() {
@@ -172,10 +177,11 @@ struct LexicographicArc {
 
   LexicographicArc() = default;
 
-  LexicographicArc(Label ilabel, Label olabel, Weight weight, StateId nextstate)
+  template <class W>
+  LexicographicArc(Label ilabel, Label olabel, W &&weight, StateId nextstate)
       : ilabel(ilabel),
         olabel(olabel),
-        weight(std::move(weight)),
+        weight(std::forward<W>(weight)),
         nextstate(nextstate) {}
 
   static const string &Type() {
@@ -198,10 +204,11 @@ struct ProductArc {
 
   ProductArc() = default;
 
-  ProductArc(Label ilabel, Label olabel, Weight weight, StateId nextstate)
+  template <class W>
+  ProductArc(Label ilabel, Label olabel, W &&weight, StateId nextstate)
       : ilabel(ilabel),
         olabel(olabel),
-        weight(std::move(weight)),
+        weight(std::forward<W>(weight)),
         nextstate(nextstate) {}
 
   static const string &Type() {
@@ -227,10 +234,11 @@ struct PowerArc {
 
   PowerArc() = default;
 
-  PowerArc(Label ilabel, Label olabel, Weight weight, StateId nextstate)
+  template <class W>
+  PowerArc(Label ilabel, Label olabel, W &&weight, StateId nextstate)
       : ilabel(ilabel),
         olabel(olabel),
-        weight(std::move(weight)),
+        weight(std::forward<W>(weight)),
         nextstate(nextstate) {}
 
   static const string &Type() {
@@ -256,10 +264,11 @@ struct SparsePowerArc {
 
   SparsePowerArc() = default;
 
-  SparsePowerArc(Label ilabel, Label olabel, Weight weight, StateId nextstate)
+  template <class W>
+  SparsePowerArc(Label ilabel, Label olabel, W &&weight, StateId nextstate)
       : ilabel(ilabel),
         olabel(olabel),
-        weight(std::move(weight)),
+        weight(std::forward<W>(weight)),
         nextstate(nextstate) {}
 
   static const string &Type() {
@@ -292,10 +301,11 @@ struct ExpectationArc {
 
   ExpectationArc() = default;
 
-  ExpectationArc(Label ilabel, Label olabel, Weight weight, StateId nextstate)
+  template <class W>
+  ExpectationArc(Label ilabel, Label olabel, W &&weight, StateId nextstate)
       : ilabel(ilabel),
         olabel(olabel),
-        weight(std::move(weight)),
+        weight(std::forward<W>(weight)),
         nextstate(nextstate) {}
 
   static const string &Type() {

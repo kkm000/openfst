@@ -6,7 +6,7 @@
 #ifndef FST_SHORTEST_DISTANCE_H_
 #define FST_SHORTEST_DISTANCE_H_
 
-#include <deque>
+#include <cstddef>
 #include <vector>
 
 #include <fst/log.h>
@@ -80,6 +80,13 @@ class ShortestDistanceState {
         source_id_(0),
         error_(false) {
     distance_->clear();
+    if (fst.Properties(kExpanded, false) == kExpanded) {
+      const auto num_states = CountStates(fst);
+      distance_->reserve(num_states);
+      adder_.reserve(num_states);
+      radder_.reserve(num_states);
+      enqueued_.reserve(num_states);
+    }
   }
 
   void ShortestDistance(StateId source);
@@ -87,6 +94,23 @@ class ShortestDistanceState {
   bool Error() const { return error_; }
 
  private:
+  void EnsureDistanceIndexIsValid(std::size_t index) {
+    while (distance_->size() <= index) {
+      distance_->push_back(Weight::Zero());
+      adder_.push_back(Adder<Weight>());
+      radder_.push_back(Adder<Weight>());
+      enqueued_.push_back(false);
+    }
+    DCHECK_LT(index, distance_->size());
+  }
+
+  void EnsureSourcesIndexIsValid(std::size_t index) {
+    while (sources_.size() <= index) {
+      sources_.push_back(kNoStateId);
+    }
+    DCHECK_LT(index, sources_.size());
+  }
+
   const Fst<Arc> &fst_;
   std::vector<Weight> *distance_;
   Queue *state_queue_;
@@ -133,14 +157,9 @@ void ShortestDistanceState<Arc, Queue, ArcFilter>::ShortestDistance(
     enqueued_.clear();
   }
   if (source == kNoStateId) source = fst_.Start();
-  while (distance_->size() <= source) {
-    distance_->push_back(Weight::Zero());
-    adder_.push_back(Adder<Weight>());
-    radder_.push_back(Adder<Weight>());
-    enqueued_.push_back(false);
-  }
+  EnsureDistanceIndexIsValid(source);
   if (retain_) {
-    while (sources_.size() <= source) sources_.push_back(kNoStateId);
+    EnsureSourcesIndexIsValid(source);
     sources_[source] = source_id_;
   }
   (*distance_)[source] = Weight::One();
@@ -151,12 +170,7 @@ void ShortestDistanceState<Arc, Queue, ArcFilter>::ShortestDistance(
   while (!state_queue_->Empty()) {
     const auto state = state_queue_->Head();
     state_queue_->Dequeue();
-    while (distance_->size() <= state) {
-      distance_->push_back(Weight::Zero());
-      adder_.push_back(Adder<Weight>());
-      radder_.push_back(Adder<Weight>());
-      enqueued_.push_back(false);
-    }
+    EnsureDistanceIndexIsValid(state);
     if (first_path_ && (fst_.Final(state) != Weight::Zero())) break;
     enqueued_[state] = false;
     const auto r = radder_[state].Sum();
@@ -164,26 +178,22 @@ void ShortestDistanceState<Arc, Queue, ArcFilter>::ShortestDistance(
     for (ArcIterator<Fst<Arc>> aiter(fst_, state); !aiter.Done();
          aiter.Next()) {
       const auto &arc = aiter.Value();
+      const auto nextstate = arc.nextstate;
       if (!arc_filter_(arc)) continue;
-      while (distance_->size() <= arc.nextstate) {
-        distance_->push_back(Weight::Zero());
-        adder_.push_back(Adder<Weight>());
-        radder_.push_back(Adder<Weight>());
-        enqueued_.push_back(false);
-      }
+      EnsureDistanceIndexIsValid(nextstate);
       if (retain_) {
-        while (sources_.size() <= arc.nextstate) sources_.push_back(kNoStateId);
-        if (sources_[arc.nextstate] != source_id_) {
-          (*distance_)[arc.nextstate] = Weight::Zero();
-          adder_[arc.nextstate].Reset();
-          radder_[arc.nextstate].Reset();
-          enqueued_[arc.nextstate] = false;
-          sources_[arc.nextstate] = source_id_;
+        EnsureSourcesIndexIsValid(nextstate);
+        if (sources_[nextstate] != source_id_) {
+          (*distance_)[nextstate] = Weight::Zero();
+          adder_[nextstate].Reset();
+          radder_[nextstate].Reset();
+          enqueued_[nextstate] = false;
+          sources_[nextstate] = source_id_;
         }
       }
-      auto &nd = (*distance_)[arc.nextstate];
-      auto &na = adder_[arc.nextstate];
-      auto &nr = radder_[arc.nextstate];
+      auto &nd = (*distance_)[nextstate];
+      auto &na = adder_[nextstate];
+      auto &nr = radder_[nextstate];
       auto weight = Times(r, arc.weight);
       if (!ApproxEqual(nd, Plus(nd, weight), delta_)) {
         nd = na.Add(weight);
@@ -192,11 +202,11 @@ void ShortestDistanceState<Arc, Queue, ArcFilter>::ShortestDistance(
           error_ = true;
           return;
         }
-        if (!enqueued_[arc.nextstate]) {
-          state_queue_->Enqueue(arc.nextstate);
-          enqueued_[arc.nextstate] = true;
+        if (!enqueued_[nextstate]) {
+          state_queue_->Enqueue(nextstate);
+          enqueued_[nextstate] = true;
         } else {
-          state_queue_->Update(arc.nextstate);
+          state_queue_->Update(nextstate);
         }
       }
     }
@@ -238,8 +248,7 @@ void ShortestDistance(
                                                                   opts, false);
   sd_state.ShortestDistance(opts.source);
   if (sd_state.Error()) {
-    distance->clear();
-    distance->resize(1, Arc::Weight::NoWeight());
+    distance->assign(1, Arc::Weight::NoWeight());
   }
 }
 
@@ -297,9 +306,11 @@ void ShortestDistance(const Fst<Arc> &fst,
     ShortestDistance(rfst, &rdistance, ropts);
     distance->clear();
     if (rdistance.size() == 1 && !rdistance[0].Member()) {
-      distance->resize(1, Arc::Weight::NoWeight());
+      distance->assign(1, Arc::Weight::NoWeight());
       return;
     }
+    DCHECK_GE(rdistance.size(), 1);  // reversing added one state
+    distance->reserve(rdistance.size() - 1);
     while (distance->size() < rdistance.size() - 1) {
       distance->push_back(rdistance[distance->size() + 1].Reverse());
     }
