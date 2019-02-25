@@ -1,4 +1,5 @@
 OpenFst: Release 1.7
+   * Evaluates many weight operations at compile-time (1.7.1)
    * Adds configure-time test for float equality reflexivity (1.7.0)
    * Adds additional overloads to Equals (1.7.0)
    * Removes volatile qualifiers from float weights (1.7.0)

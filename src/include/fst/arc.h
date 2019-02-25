@@ -46,7 +46,7 @@ struct ArcTpl {
         nextstate(nextstate) {}
 
   static const string &Type() {
-    static const string *const type =
+    static const auto *const type =
         new string(Weight::Type() == "tropical" ? "standard" : Weight::Type());
     return *type;
   }
@@ -82,11 +82,10 @@ struct StringArc {
         nextstate(nextstate) {}
 
   static const string &Type() {
-    static const string *const type =
-        new string(S == STRING_LEFT
-                       ? "left_standard_string"
-                       : (S == STRING_RIGHT ? "right_standard_string"
-                                            : "restricted_standard_string"));
+    static const auto *const type = new string(
+        S == STRING_LEFT ? "left_standard_string"
+                         : (S == STRING_RIGHT ? "right_standard_string"
+                                              : "restricted_standard_string"));
     return *type;
   }
 };
@@ -119,17 +118,15 @@ struct GallicArc {
         nextstate(arc.nextstate) {}
 
   static const string &Type() {
-    static const string *const type =
-        new string(
-            (G == GALLIC_LEFT
-                 ? "left_gallic_"
-                 : (G == GALLIC_RIGHT
-                        ? "right_gallic_"
-                        : (G == GALLIC_RESTRICT
-                               ? "restricted_gallic_"
-                               : (G == GALLIC_MIN
-                                      ? "min_gallic_" : "gallic_")))) +
-            Arc::Type());
+    static const auto *const type = new string(
+        (G == GALLIC_LEFT
+             ? "left_gallic_"
+             : (G == GALLIC_RIGHT
+                    ? "right_gallic_"
+                    : (G == GALLIC_RESTRICT
+                           ? "restricted_gallic_"
+                           : (G == GALLIC_MIN ? "min_gallic_" : "gallic_")))) +
+        Arc::Type());
     return *type;
   }
 };
@@ -158,7 +155,7 @@ struct ReverseArc {
         nextstate(nextstate) {}
 
   static const string &Type() {
-    static const string *const type = new string("reverse_" + Arc::Type());
+    static const auto *const type = new string("reverse_" + Arc::Type());
     return *type;
   }
 };
@@ -212,7 +209,7 @@ struct ProductArc {
         nextstate(nextstate) {}
 
   static const string &Type() {
-    static const string *const type = new string(Weight::Type());
+    static const auto *const type = new string(Weight::Type());
     return *type;
   }
 };
@@ -220,12 +217,12 @@ struct ProductArc {
 // Arc with label and state ID type the same as first template argument and with
 // weights over the n-th Cartesian power of the weight type of the template
 // argument.
-template <class A, unsigned int N>
+template <class A, size_t n>
 struct PowerArc {
   using Arc = A;
   using Label = typename Arc::Label;
   using StateId = typename Arc::StateId;
-  using Weight = PowerWeight<typename Arc::Weight, N>;
+  using Weight = PowerWeight<typename Arc::Weight, n>;
 
   Label ilabel;
   Label olabel;
@@ -242,8 +239,8 @@ struct PowerArc {
         nextstate(nextstate) {}
 
   static const string &Type() {
-    static const string *const type =
-        new string(Arc::Type() + "_^" + std::to_string(N));
+    static const auto *const type =
+        new string(Arc::Type() + "_^" + std::to_string(n));
     return *type;
   }
 };
@@ -309,7 +306,7 @@ struct ExpectationArc {
         nextstate(nextstate) {}
 
   static const string &Type() {
-    static const string *const type =
+    static const auto *const type =
         new string("expectation_" + Arc::Type() + "_" + X2::Type());
     return *type;
   }

@@ -17,6 +17,15 @@
 
 namespace fst {
 
+// Trivial function to copy bytestrings into vectors of labels, truncating
+// if necessary. It is possible to use this sensibly with as little as 8 bits
+// of Label precision. This returns `true` deterministically for compatibility.
+template <class Label>
+bool ByteStringToLabels(const string &str, std::vector<Label> *labels) {
+  for (const unsigned char ch : str) labels->push_back(ch);
+  return true;
+}
+
 // This function writes UTF-8 strings into a vector of Labels, truncating if
 // necessary. It is possible to use this sensibly with as little as 16 bits of
 // Label precision (i.e., when all characters are within the Basic Multilingual
@@ -29,7 +38,7 @@ bool UTF8StringToLabels(const string &str, std::vector<Label> *labels) {
     int c = *it & 0xff;
     ++it;
     if ((c & 0x80) == 0) {
-      labels->emplace_back(c);
+      labels->push_back(c);
     } else {
       if ((c & 0xc0) == 0x80) {
         LOG(ERROR) << "UTF8StringToLabels: Continuation byte as lead byte";
