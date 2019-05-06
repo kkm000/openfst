@@ -528,13 +528,16 @@ class WeightedTester {
         ComposeFst<Arc> C4(
             S1, S2, ComposeFstOptions<Arc, M, TrivialComposeFilter<M>>());
         CHECK(Equiv(C1, C4));
+        ComposeFst<Arc> C5(
+            S1, S2, ComposeFstOptions<Arc, M, NoMatchComposeFilter<M>>());
+        CHECK(Equiv(C1, C5));
       }
 
       if (S1.Properties(kNoOEpsilons, false) &&
           S2.Properties(kNoIEpsilons, false)) {
-        ComposeFst<Arc> C5(S1, S2,
+        ComposeFst<Arc> C6(S1, S2,
                            ComposeFstOptions<Arc, M, NullComposeFilter<M>>());
-        CHECK(Equiv(C1, C5));
+        CHECK(Equiv(C1, C6));
       }
     }
 

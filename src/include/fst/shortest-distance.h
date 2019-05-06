@@ -285,7 +285,6 @@ void ShortestDistance(const Fst<Arc> &fst,
                       std::vector<typename Arc::Weight> *distance,
                       bool reverse = false, float delta = kShortestDelta) {
   using StateId = typename Arc::StateId;
-  using Weight = typename Arc::Weight;
   if (!reverse) {
     AnyArcFilter<Arc> arc_filter;
     AutoQueue<StateId> state_queue(fst, distance, arc_filter);

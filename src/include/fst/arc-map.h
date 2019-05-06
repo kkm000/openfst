@@ -94,7 +94,6 @@ template <class A, class C>
 void ArcMap(MutableFst<A> *fst, C *mapper) {
   using FromArc = A;
   using ToArc = A;
-  using StateId = typename FromArc::StateId;
   using Weight = typename FromArc::Weight;
   if (mapper->InputSymbolsAction() == MAP_CLEAR_SYMBOLS) {
     fst->SetInputSymbols(nullptr);
@@ -181,7 +180,6 @@ template <class A, class B, class C>
 void ArcMap(const Fst<A> &ifst, MutableFst<B> *ofst, C *mapper) {
   using FromArc = A;
   using StateId = typename FromArc::StateId;
-  using Weight = typename FromArc::Weight;
   ofst->DeleteStates();
   if (mapper->InputSymbolsAction() == MAP_COPY_SYMBOLS) {
     ofst->SetInputSymbols(ifst.InputSymbols());

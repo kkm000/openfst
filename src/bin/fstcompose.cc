@@ -5,7 +5,7 @@
 
 DEFINE_string(compose_filter, "auto",
               "Composition filter, one of: \"alt_sequence\", \"auto\", "
-              "\"match\", \"null\", \"sequence\", \"trivial\"");
+              "\"match\", \"no_match\", \"null\", \"sequence\", \"trivial\"");
 DEFINE_bool(connect, true, "Trim output");
 
 int fstcompose_main(int argc, char **argv);

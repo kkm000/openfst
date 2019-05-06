@@ -51,6 +51,8 @@ struct SymbolTableTextOptions {
 
 namespace internal {
 
+extern const int kLineLen;
+
 // List of symbols with a dense hash for looking up symbol index, rehashing at
 // 75% occupancy.
 class DenseSymbolMap {

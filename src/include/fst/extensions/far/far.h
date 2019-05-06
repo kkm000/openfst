@@ -372,6 +372,12 @@ class FstFarReader : public FarReader<A> {
       } else {
         streams_[i] = new std::ifstream(
             keys_[i], std::ios_base::in | std::ios_base::binary);
+        if (streams_[i]->fail()) {
+          FSTERROR() << "FstFarReader::FstFarReader: Error reading file: "
+                     << filenames[i];
+          error_ = true;
+          return;
+        }
       }
     }
     if (pos_ >= keys_.size()) return;

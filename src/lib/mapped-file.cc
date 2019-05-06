@@ -23,7 +23,7 @@ MappedFile::MappedFile(const MemoryRegion &region) : region_(region) {}
 MappedFile::~MappedFile() {
   if (region_.size != 0) {
     if (region_.mmap) {
-      VLOG(1) << "munmap'ed " << region_.size << " bytes at " << region_.mmap;
+      VLOG(2) << "munmap'ed " << region_.size << " bytes at " << region_.mmap;
       if (munmap(region_.mmap, region_.size) != 0) {
         LOG(ERROR) << "Failed to unmap region: " << strerror(errno);
       }
@@ -38,7 +38,7 @@ MappedFile::~MappedFile() {
 MappedFile *MappedFile::Map(std::istream *istrm, bool memorymap,
                             const string &source, size_t size) {
   const auto spos = istrm->tellg();
-  VLOG(1) << "memorymap: " << (memorymap ? "true" : "false") << " source: \""
+  VLOG(2) << "memorymap: " << (memorymap ? "true" : "false") << " source: \""
           << source << "\""
           << " size: " << size << " offset: " << spos;
   if (memorymap && spos >= 0 && spos % kArchAlignment == 0) {
@@ -49,7 +49,7 @@ MappedFile *MappedFile::Map(std::istream *istrm, bool memorymap,
       if (close(fd) == 0 && mmf != nullptr) {
         istrm->seekg(pos + size, std::ios::beg);
         if (istrm) {
-          VLOG(1) << "mmap'ed region of " << size << " at offset " << pos
+          VLOG(2) << "mmap'ed region of " << size << " at offset " << pos
                   << " from " << source << " to addr " << mmf->region_.mmap;
           return mmf.release();
         }
@@ -92,7 +92,6 @@ MappedFile *MappedFile::MapFromFileDescriptor(int fd, int pos, size_t size) {
                << " offset=" << (pos - offset);
     return nullptr;
   }
-
   MemoryRegion region;
   region.mmap = map;
   region.size = upsize;

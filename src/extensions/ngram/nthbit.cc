@@ -3,6 +3,7 @@
 
 #include <fst/extensions/ngram/nthbit.h>
 
+#ifndef __BMI2__
 // This table is generated using:
 //
 //  unsigned int nth_bit_scan(uint64 v, unsigned int r) {
@@ -25,7 +26,7 @@
 //    if (i % 4 == 3) printf("\n");
 //  }
 //
-uint32 nth_bit_bit_offset[] = {
+const uint32 nth_bit_bit_offset[] = {
     0x88888888, 0x88888880, 0x88888881, 0x88888810, 0x88888882, 0x88888820,
     0x88888821, 0x88888210, 0x88888883, 0x88888830, 0x88888831, 0x88888310,
     0x88888832, 0x88888320, 0x88888321, 0x88883210, 0x88888884, 0x88888840,
@@ -70,3 +71,4 @@ uint32 nth_bit_bit_offset[] = {
     0x88765421, 0x87654210, 0x88876543, 0x88765430, 0x88765431, 0x87654310,
     0x88765432, 0x87654320, 0x87654321, 0x76543210,
 };
+#endif  // !defined(__BMI2__)

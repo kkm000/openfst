@@ -111,8 +111,8 @@ void TestSignedAdder(int n) {
 template <typename Weight1, typename Weight2>
 void TestWeightConversion(Weight1 w1) {
   // Tests round-trp conversion.
-  WeightConvert<Weight2, Weight1> to_w1_;
-  WeightConvert<Weight1, Weight2> to_w2_;
+  const WeightConvert<Weight2, Weight1> to_w1_;
+  const WeightConvert<Weight1, Weight2> to_w2_;
   Weight2 w2 = to_w2_(w1);
   Weight1 nw1 = to_w1_(w2);
   CHECK_EQ(w1, nw1);

@@ -1,10 +1,10 @@
-OpenFst: Release 1.7.1.
+OpenFst: Release 1.7.2.
 
 OpenFst is a library for constructing, combining, optimizing, and searching
 weighted finite-state transducers (FSTs).
 
 REQUIREMENTS:
-  This version is known to work under Linux using g++ (>= 4.7) and OS X using
+  This version is known to work under Linux using g++ (>= 4.9) and OS X using
   XCode (>= 5). It is expected to work wherever adequate POSIX (dlopen,
   ssize_t, basename), C99 (snprintf, strtoll, <stdint.h>), and C++11
   (<unordered_set>, <unordered_map>, <forward_list>) support is available.
@@ -60,6 +60,19 @@ USAGE:
   by default, dynamic so that the Fst and Arc type DSO extensions can be used
   correctly if desired. Any extensions will be found under /usr/local/lib/fst
   or /usr/local/include/fst/extensions.
+
+BUILDING WITH BAZEL:
+  As of release 1.7.2 it is possible to build the core library and binaries as
+  well as several extensions with Bazel and to depend on OpenFst as an
+  external dependency in other projects compiled with Bazel. Please refer to
+  https://bazel.build for information on using Bazel. OpenFst can be compiled
+  from anywhere in the source tree, as follows:
+
+  $ bazel build //:all
+
+  Tests can be run in a similar fashion:
+
+  $ bazel test //:all
 
 DOCUMENTATION:
   See www.openfst.org for general documentation.

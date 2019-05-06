@@ -332,7 +332,7 @@ bool ConstFst<Arc, Unsigned>::WriteFst(const FST &fst, std::ostream &strm,
                  : internal::ConstFstImpl<Arc, Unsigned>::kFileVersion;
   size_t num_arcs = 0;    // To silence -Wsometimes-uninitialized warnings.
   size_t num_states = 0;  // Ditto.
-  size_t start_offset = 0;
+  std::streamoff start_offset = 0;
   bool update_header = true;
   if (const auto *impl = GetImplIfConstFst(fst)) {
     num_arcs = impl->narcs_;

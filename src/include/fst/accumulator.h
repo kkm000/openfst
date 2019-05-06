@@ -99,8 +99,8 @@ class LogAccumulator {
     }
   }
 
-  WeightConvert<Weight, Log64Weight> to_log_weight_;
-  WeightConvert<Log64Weight, Weight> to_weight_;
+  const WeightConvert<Weight, Log64Weight> to_log_weight_{};
+  const WeightConvert<Log64Weight, Weight> to_weight_{};
 
   LogAccumulator &operator=(const LogAccumulator &) = delete;
 };
@@ -370,8 +370,8 @@ class FastLogAccumulator {
     }
   }
 
-  const WeightConvert<Weight, Log64Weight> to_log_weight_;
-  const WeightConvert<Log64Weight, Weight> to_weight_;
+  const WeightConvert<Weight, Log64Weight> to_log_weight_{};
+  const WeightConvert<Log64Weight, Weight> to_weight_{};
   const ssize_t arc_limit_;   // Minimum number of arcs to pre-compute state.
   const ssize_t arc_period_;  // Saves cumulative weights per arc_period_.
   std::shared_ptr<FastLogAccumulatorData> data_;
@@ -625,8 +625,8 @@ class CacheLogAccumulator {
   }
 
 
-  WeightConvert<Weight, Log64Weight> to_log_weight_;
-  WeightConvert<Log64Weight, Weight> to_weight_;
+  const WeightConvert<Weight, Log64Weight> to_log_weight_{};
+  const WeightConvert<Log64Weight, Weight> to_weight_{};
   ssize_t arc_limit_;                    // Minimum # of arcs to cache a state.
   std::vector<double> *weights_;         // Accumulated weights for cur. state.
   std::unique_ptr<const Fst<Arc>> fst_;  // Input FST.

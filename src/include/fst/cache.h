@@ -310,18 +310,22 @@ class VectorCacheStore {
     return *this;
   }
 
+  bool InBounds(StateId s) const {
+    return s < static_cast<StateId>(state_vec_.size());
+  }
+
   // Returns nullptr if state is not stored.
   const State *GetState(StateId s) const {
-    return s < state_vec_.size() ? state_vec_[s] : nullptr;
+    return InBounds(s) ? state_vec_[s] : nullptr;
   }
 
   // Creates state if state is not stored.
   State *GetMutableState(StateId s) {
     State *state = nullptr;
-    if (s >= state_vec_.size()) {
-      state_vec_.resize(s + 1, nullptr);
-    } else {
+    if (InBounds(s)) {
       state = state_vec_[s];
+    } else {
+      state_vec_.resize(s + 1, nullptr);
     }
     if (!state) {
       state = new (&state_alloc_) State(arc_alloc_);
@@ -346,8 +350,8 @@ class VectorCacheStore {
 
   // Deletes all cached states.
   void Clear() {
-    for (StateId s = 0; s < state_vec_.size(); ++s) {
-      State::Destroy(state_vec_[s], &state_alloc_);
+    for (State *s : state_vec_) {
+      State::Destroy(s, &state_alloc_);
     }
     state_vec_.clear();
     state_list_.clear();
@@ -379,7 +383,7 @@ class VectorCacheStore {
   void CopyStates(const VectorCacheStore<State> &store) {
     Clear();
     state_vec_.reserve(store.state_vec_.size());
-    for (StateId s = 0; s < store.state_vec_.size(); ++s) {
+    for (size_t s = 0; s < store.state_vec_.size(); ++s) {
       State *state = nullptr;
       const auto *store_state = store.state_vec_[s];
       if (store_state) {
@@ -1068,7 +1072,8 @@ class CacheBaseImpl : public FstImpl<typename State::Arc> {
     if (s < min_unexpanded_state_id_) return;
     if (s == min_unexpanded_state_id_) ++min_unexpanded_state_id_;
     if (cache_gc_ || cache_limit_ == 0) {
-      if (expanded_states_.size() <= s) expanded_states_.resize(s + 1, false);
+      if (expanded_states_.size() <= static_cast<size_t>(s))
+        expanded_states_.resize(s + 1, false);
       expanded_states_[s] = true;
     }
   }
