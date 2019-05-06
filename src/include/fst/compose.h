@@ -932,7 +932,8 @@ enum ComposeFilter {
   TRIVIAL_FILTER,
   SEQUENCE_FILTER,
   ALT_SEQUENCE_FILTER,
-  MATCH_FILTER
+  MATCH_FILTER,
+  NO_MATCH_FILTER
 };
 
 struct ComposeOptions {
@@ -1009,6 +1010,12 @@ void Compose(const Fst<Arc> &ifst1, const Fst<Arc> &ifst2,
     }
     case MATCH_FILTER: {
       ComposeFstOptions<Arc, M, MatchComposeFilter<M>> copts;
+      copts.gc_limit = 0;
+      *ofst = ComposeFst<Arc>(ifst1, ifst2, copts);
+      break;
+    }
+    case NO_MATCH_FILTER: {
+      ComposeFstOptions<Arc, M, NoMatchComposeFilter<M>> copts;
       copts.gc_limit = 0;
       *ofst = ComposeFst<Arc>(ifst1, ifst2, copts);
       break;

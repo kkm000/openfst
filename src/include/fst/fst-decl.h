@@ -246,6 +246,9 @@ class AltSequenceComposeFilter;
 template <class M1, class M2 = M1>
 class MatchComposeFilter;
 
+template <class M1, class M2 = M1>
+class NoMatchComposeFilter;
+
 }  // namespace fst
 
 #endif  // FST_FST_DECL_H_

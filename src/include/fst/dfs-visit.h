@@ -93,8 +93,6 @@ struct DfsState {
 template <class FST, class Visitor, class ArcFilter>
 void DfsVisit(const FST &fst, Visitor *visitor, ArcFilter filter,
               bool access_only = false) {
-  using Arc = typename FST::Arc;
-  using StateId = typename Arc::StateId;
   visitor->InitVisit(fst);
   const auto start = fst.Start();
   if (start == kNoStateId) {
@@ -126,7 +124,7 @@ void DfsVisit(const FST &fst, Visitor *visitor, ArcFilter filter,
     while (!state_stack.empty()) {
       auto *dfs_state = state_stack.top();
       const auto s = dfs_state->state_id;
-      if (s >= state_color.size()) {
+      if (s >= static_cast<typename FST::Arc::StateId>(state_color.size())) {
         nstates = s + 1;
         state_color.resize(nstates, kDfsWhite);
       }

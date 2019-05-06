@@ -25,10 +25,11 @@ SymbolTableTextOptions::SymbolTableTextOptions(bool allow_negative_labels)
 namespace internal {
 
 // Maximum line length in textual symbols file.
-static constexpr int kLineLen = 8096;
+const int kLineLen = 8096;
 
 // Identifies stream data as a symbol table (and its endianity).
 static constexpr int32 kSymbolTableMagicNumber = 2125658996;
+
 
 DenseSymbolMap::DenseSymbolMap()
     : empty_(-1), buckets_(1 << 4), hash_mask_(buckets_.size() - 1) {
@@ -170,7 +171,8 @@ int64 SymbolTableImpl::AddSymbol(const string &symbol, int64 key) {
             << " but supplied new key = " << key << " (ignoring new key)";
     return key_already;
   }
-  if (key == (symbols_.Size() - 1) && key == dense_key_limit_) {
+  if (key + 1 == static_cast<int64>(symbols_.Size()) &&
+      key == dense_key_limit_) {
     ++dense_key_limit_;
   } else {
     idx_key_.push_back(key);
@@ -191,7 +193,7 @@ void SymbolTableImpl::RemoveSymbol(const int64 key) {
     idx = iter->second;
     key_map_.erase(iter);
   }
-  if (idx < 0 || idx >= symbols_.Size()) return;
+  if (idx < 0 || idx >= static_cast<int64>(symbols_.Size())) return;
   symbols_.RemoveSymbol(idx);
   // Removed one symbol, all indexes > idx are shifted by -1.
   for (auto &k : key_map_) {
@@ -215,7 +217,7 @@ void SymbolTableImpl::RemoveSymbol(const int64 key) {
     dense_key_limit_ = new_dense_key_limit;
   } else {
     // Remove entry for removed index in idx_key.
-    for (int64 i = idx - dense_key_limit_; i < idx_key_.size() - 1; ++i) {
+    for (size_t i = idx - dense_key_limit_; i + 1 < idx_key_.size(); ++i) {
       idx_key_[i] = idx_key_[i + 1];
     }
     idx_key_.pop_back();
@@ -223,8 +225,8 @@ void SymbolTableImpl::RemoveSymbol(const int64 key) {
   if (key == available_key_ - 1) available_key_ = key;
 }
 
-SymbolTableImpl *SymbolTableImpl::Read(std::istream &strm,
-                                       const SymbolTableReadOptions &opts) {
+SymbolTableImpl *SymbolTableImpl::Read(
+    std::istream &strm, const SymbolTableReadOptions &) {
   int32 magic_number = 0;
   ReadType(strm, &magic_number);
   if (strm.fail()) {

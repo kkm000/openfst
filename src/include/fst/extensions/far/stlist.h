@@ -113,6 +113,12 @@ class STListReader {
       } else {
         streams_[i] = new std::ifstream(
             filenames[i], std::ios_base::in | std::ios_base::binary);
+        if (streams_[i]->fail()) {
+          FSTERROR() << "STListReader::STListReader: Error reading file: "
+                     << filenames[i];
+          error_ = true;
+          return;
+        }
       }
       int32 magic_number = 0;
       ReadType(*streams_[i], &magic_number);

@@ -343,7 +343,7 @@ uint64 RandGenProperties(uint64 inprops, bool weighted);
 
 uint64 RelabelProperties(uint64 inprops);
 
-uint64 ReplaceProperties(const std::vector<uint64> &inprops, ssize_t root,
+uint64 ReplaceProperties(const std::vector<uint64> &inprops, size_t root,
                          bool epsilon_on_call, bool epsilon_on_return,
                          bool out_epsilon_on_call, bool out_epsilon_on_return,
                          bool replace_transducer, bool no_empty_fst,

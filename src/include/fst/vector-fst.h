@@ -154,7 +154,7 @@ class VectorFstBaseImpl : public FstImpl<typename S::Arc> {
   VectorFstBaseImpl() : start_(kNoStateId) {}
 
   ~VectorFstBaseImpl() override {
-    for (StateId s = 0; s < states_.size(); ++s) {
+    for (size_t s = 0; s < states_.size(); ++s) {
       State::Destroy(states_[s], &state_alloc_);
     }
   }
@@ -225,7 +225,7 @@ class VectorFstBaseImpl : public FstImpl<typename S::Arc> {
 
   void DeleteStates(const std::vector<StateId> &dstates) {
     std::vector<StateId> newid(states_.size(), 0);
-    for (StateId i = 0; i < dstates.size(); ++i) newid[dstates[i]] = kNoStateId;
+    for (size_t i = 0; i < dstates.size(); ++i) newid[dstates[i]] = kNoStateId;
     StateId nstates = 0;
     for (StateId state = 0; state < states_.size(); ++state) {
       if (newid[state] != kNoStateId) {
@@ -261,7 +261,7 @@ class VectorFstBaseImpl : public FstImpl<typename S::Arc> {
   }
 
   void DeleteStates() {
-    for (StateId state = 0; state < states_.size(); ++state) {
+    for (size_t state = 0; state < states_.size(); ++state) {
       State::Destroy(states_[state], &state_alloc_);
     }
     states_.clear();
@@ -606,7 +606,7 @@ bool VectorFst<Arc, State>::WriteFst(const FST &fst, std::ostream &strm,
   FstHeader hdr;
   hdr.SetStart(fst.Start());
   hdr.SetNumStates(kNoStateId);
-  size_t start_offset = 0;
+  std::streampos start_offset = 0;
   if (fst.Properties(kExpanded, false) || opts.stream_write ||
       (start_offset = strm.tellp()) != -1) {
     hdr.SetNumStates(CountStates(fst));

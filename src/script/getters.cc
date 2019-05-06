@@ -21,6 +21,8 @@ bool GetComposeFilter(const string &str, ComposeFilter *compose_filter) {
     *compose_filter = AUTO_FILTER;
   } else if (str == "match") {
     *compose_filter = MATCH_FILTER;
+  } else if (str == "no_match") {
+    *compose_filter = NO_MATCH_FILTER;
   } else if (str == "null") {
     *compose_filter = NULL_FILTER;
   } else if (str == "sequence") {

@@ -41,7 +41,7 @@ constexpr int32 kFstMagicNumber = 2125659606;
 
 // Checks for FST magic number in stream, to indicate caller function that the
 // stream content is an FST header.
-bool IsFstHeader(std::istream &strm, const string &source) {
+bool IsFstHeader(std::istream &strm, const string &) {
   int64 pos = strm.tellg();
   bool match = true;
   int32 magic_number = 0;
@@ -82,7 +82,7 @@ bool FstHeader::Read(std::istream &strm, const string &source, bool rewind) {
 }
 
 // Writes FST magic number and FST header.
-bool FstHeader::Write(std::ostream &strm, const string &source) const {
+bool FstHeader::Write(std::ostream &strm, const string &) const {
   WriteType(strm, kFstMagicNumber);
   WriteType(strm, fsttype_);
   WriteType(strm, arctype_);

@@ -77,9 +77,9 @@ class LogProbArcSelector {
   using Weight = typename Arc::Weight;
 
   // Constructs a selector with a non-deterministic seed.
-  LogProbArcSelector() : rand_(std::random_device()()) {}
+  LogProbArcSelector() : seed_(std::random_device()()), rand_(seed_) {}
   // Constructs a selector with a given seed.
-  explicit LogProbArcSelector(uint64 seed) : rand_(seed) {}
+  explicit LogProbArcSelector(uint64 seed) : seed_(seed), rand_(seed) {}
 
   size_t operator()(const Fst<Arc> &fst, StateId s) const {
     // Finds total weight leaving state.
@@ -101,9 +101,19 @@ class LogProbArcSelector {
     return n;
   }
 
+  uint64 Seed() const { return seed_; }
+
+ protected:
+  Log64Weight ToLogWeight(const Weight &weight) const {
+    return to_log_weight_(weight);
+  }
+
+  std::mt19937_64 &MutableRand() const { return rand_; }
+
  private:
+  const uint64 seed_;
   mutable std::mt19937_64 rand_;
-  WeightConvert<Weight, Log64Weight> to_log_weight_;
+  const WeightConvert<Weight, Log64Weight> to_log_weight_{};
 };
 
 // Useful alias when using StdArc.
@@ -117,34 +127,33 @@ class FastLogProbArcSelector : public LogProbArcSelector<Arc> {
   using StateId = typename Arc::StateId;
   using Weight = typename Arc::Weight;
 
+  using LogProbArcSelector<Arc>::MutableRand;
+  using LogProbArcSelector<Arc>::ToLogWeight;
   using LogProbArcSelector<Arc>::operator();
 
   // Constructs a selector with a non-deterministic seed.
-  FastLogProbArcSelector() : seed_(std::random_device()()), rand_(seed_) {}
+  FastLogProbArcSelector() : LogProbArcSelector<Arc>() {}
   // Constructs a selector with a given seed.
-  explicit FastLogProbArcSelector(uint64 seed) : seed_(seed), rand_(seed_) {}
+  explicit FastLogProbArcSelector(uint64 seed) : LogProbArcSelector<Arc>(
+      seed) {}
 
   size_t operator()(const Fst<Arc> &fst, StateId s,
                     CacheLogAccumulator<Arc> *accumulator) const {
     accumulator->SetState(s);
     ArcIterator<Fst<Arc>> aiter(fst, s);
     // Finds total weight leaving state.
-    const double sum = to_log_weight_(accumulator->Sum(fst.Final(s), &aiter, 0,
-                                                       fst.NumArcs(s)))
-                           .Value();
-    const double r = -log(std::uniform_real_distribution<>(0, 1)(rand_));
+    const double sum =
+        ToLogWeight(accumulator->Sum(fst.Final(s), &aiter, 0, fst.NumArcs(s)))
+            .Value();
+    const double r = -log(std::uniform_real_distribution<>(0, 1)(
+        MutableRand()));
     Weight w = from_log_weight_(r + sum);
     aiter.Reset();
     return accumulator->LowerBound(w, &aiter);
   }
 
-  uint64 Seed() const { return seed_; }
-
  private:
-  const uint64 seed_;
-  mutable std::mt19937_64 rand_;
-  WeightConvert<Weight, Log64Weight> to_log_weight_;
-  WeightConvert<Log64Weight, Weight> from_log_weight_;
+  const WeightConvert<Log64Weight, Weight> from_log_weight_{};
 };
 
 // Random path state info maintained by RandGenFst and passed to samplers.
@@ -360,7 +369,7 @@ class ArcSampler<Arc, FastLogProbArcSelector<Arc>> {
   std::unique_ptr<Accumulator> accumulator_;
   RNG rng_;                // Random number generator.
   std::vector<double> p_;  // Multinomial parameters.
-  WeightConvert<Weight, Log64Weight> to_log_weight_;
+  const WeightConvert<Weight, Log64Weight> to_log_weight_{};
 };
 
 // Options for random path generation with RandGenFst. The template argument is
@@ -543,7 +552,7 @@ class RandGenFstImpl : public CacheImpl<ToArc> {
   const bool weighted_;
   bool remove_total_weight_;
   StateId superfinal_;
-  WeightConvert<Log64Weight, ToWeight> to_weight_;
+  const WeightConvert<Log64Weight, ToWeight> to_weight_{};
 };
 
 }  // namespace internal
@@ -720,8 +729,6 @@ class RandGenVisitor {
 template <class FromArc, class ToArc, class Selector>
 void RandGen(const Fst<FromArc> &ifst, MutableFst<ToArc> *ofst,
              const RandGenOptions<Selector> &opts) {
-  using State = typename ToArc::StateId;
-  using Weight = typename ToArc::Weight;
   using Sampler = ArcSampler<FromArc, Selector>;
   auto *sampler = new Sampler(ifst, opts.selector, opts.max_length);
   RandGenFstOptions<Sampler> fopts(CacheOptions(true, 0), sampler, opts.npath,

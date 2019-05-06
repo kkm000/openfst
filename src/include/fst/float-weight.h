@@ -229,7 +229,7 @@ class TropicalWeightTpl : public FloatWeightTpl<T> {
     if (!Member() || Value() == Limits::PosInfinity()) {
       return *this;
     } else {
-      return TropicalWeightTpl<T>(floor(Value() / delta + 0.5F) * delta);
+      return TropicalWeightTpl<T>(std::floor(Value() / delta + 0.5F) * delta);
     }
   }
 
@@ -431,7 +431,7 @@ class LogWeightTpl : public FloatWeightTpl<T> {
     if (!Member() || Value() == Limits::PosInfinity()) {
       return *this;
     } else {
-      return LogWeightTpl<T>(floor(Value() / delta + 0.5F) * delta);
+      return LogWeightTpl<T>(std::floor(Value() / delta + 0.5F) * delta);
     }
   }
 
@@ -652,7 +652,7 @@ class MinMaxWeightTpl : public FloatWeightTpl<T> {
         Value() == Limits::NegInfinity() || Value() == Limits::PosInfinity()) {
       return *this;
     } else {
-      return MinMaxWeightTpl<T>(floor(Value() / delta + 0.5F) * delta);
+      return MinMaxWeightTpl<T>(std::floor(Value() / delta + 0.5F) * delta);
     }
   }
 

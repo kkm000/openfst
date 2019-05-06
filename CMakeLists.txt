@@ -7,7 +7,7 @@ if (ICU_FOUND)
 endif (ICU_FOUND)
 
 find_package(ZLIB)
-if (ZLIB_FOUND) 
+if (ZLIB_FOUND)
   include_directories(${ZLIB_INCLUDE_DIRECTORIES})
   set(ZLIBS ${ZLIB_LIBRARIES})
 endif (ZLIB_FOUND)
@@ -27,9 +27,9 @@ else()
   option(BUILD_SHARED_LIBS "Build shared libraries" ON)
 endif (WIN32)
 
-set(SOVERSION "10")
-OPTION(BUILD_USE_SOLUTION_FOLDERS "Enable grouping of projects in VS" ON) 
-SET_PROPERTY(GLOBAL PROPERTY USE_FOLDERS ${BUILD_USE_SOLUTION_FOLDERS}) 
+set(SOVERSION "16")
+OPTION(BUILD_USE_SOLUTION_FOLDERS "Enable grouping of projects in VS" ON)
+SET_PROPERTY(GLOBAL PROPERTY USE_FOLDERS ${BUILD_USE_SOLUTION_FOLDERS})
 
 
 option(HAVE_BIN          "Build the fst binaries" ON)

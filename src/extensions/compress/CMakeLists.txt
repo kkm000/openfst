@@ -6,27 +6,27 @@ add_library(fstcompressscript
   ${HEADER_FILES}
  )
 
-target_link_libraries(fstcompressscript 
+target_link_libraries(fstcompressscript
   fstscript
   fst
   ${ZLIBS}
 )
 set_target_properties(fstcompressscript PROPERTIES
-  SOVERSION "10"
+  SOVERSION "${SOVERSION}"
 )
-install(TARGETS fstcompressscript 
+install(TARGETS fstcompressscript
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib
   RUNTIME DESTINATION lib
  )
 
 if(HAVE_BIN)
-  add_executable(fstcompress 
+  add_executable(fstcompress
     fstcompress.cc)
 
-  target_link_libraries(fstcompress 
-    fstcompressscript 
-    fstscript 
+  target_link_libraries(fstcompress
+    fstcompressscript
+    fstscript
     fst
     ${ZLIBS}
     ${CMAKE_DL_LIBS}
@@ -37,14 +37,14 @@ if(HAVE_BIN)
   )
 
   target_link_libraries(fstrandmod
-    fstcompressscript 
-    fstscript 
+    fstcompressscript
+    fstscript
     fst
     ${ZLIBS}
     ${CMAKE_DL_LIBS}
   )
 
-  install(TARGETS fstcompress fstrandmod 
+  install(TARGETS fstcompress fstrandmod
 	        LIBRARY DESTINATION bin
 			ARCHIVE DESTINATION bin
             RUNTIME DESTINATION bin

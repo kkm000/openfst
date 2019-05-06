@@ -1,4 +1,10 @@
 OpenFst: Release 1.7
+   * Fixes bug with coinaccessible states in NaturalAStarEstimate (1.7.2)
+   * Optionally allows building with Bazel (1.7.2)
+   * Simplifies string printing interface (1.7.2)
+   * Marks weight converters const (1.7.2)
+   * Adds NoMatchComposeFilter (1.7.2)
+   * Removed static assertions that trigger bugs in GCC (1.7.1)
    * Evaluates many weight operations at compile-time (1.7.1)
    * Adds configure-time test for float equality reflexivity (1.7.0)
    * Adds additional overloads to Equals (1.7.0)
