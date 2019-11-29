@@ -19,6 +19,11 @@
 #include <utility>
 #include <vector>
 
+#ifdef _WIN32
+  #include <io.h>
+  #include <fcntl.h>
+#endif
+
 #include <fst/compat.h>
 #include <fst/types.h>
 #include <fst/log.h>
@@ -394,6 +399,36 @@ class CompactSet {
 
   void operator=(const CompactSet &) = delete;
 };
+
+// Utilities for handling Windows newline conversion.
+
+inline void PrepareBinaryStdout() {
+  #ifdef _WIN32
+    _setmode(_fileno(stdout), O_BINARY);
+  #endif
+}
+
+inline void CheckBinaryStdout(std::ostream &strm) {
+  #ifdef _WIN32
+    if (strm.rdbuf() == std::cout.rdbuf()) {
+      _setmode(_fileno(stdout), O_BINARY);
+    }
+  #endif
+}
+
+inline void PrepareBinaryStdin() {
+  #ifdef _WIN32
+    _setmode(_fileno(stdin), O_BINARY);
+  #endif
+}
+
+inline void CheckBinaryStdin(std::istream &strm) {
+  #ifdef _WIN32
+    if (strm.rdbuf() == std::cin.rdbuf()) {
+      _setmode(_fileno(stdin), O_BINARY);
+    }
+  #endif
+}
 
 }  // namespace fst
 

@@ -232,6 +232,7 @@ class Fst {
 
   // Reads an FST from an input stream; returns nullptr on error.
   static Fst<Arc> *Read(std::istream &strm, const FstReadOptions &opts) {
+    CheckBinaryStdin(strm);
     FstReadOptions ropts(opts);
     FstHeader hdr;
     if (ropts.header) {
@@ -262,6 +263,7 @@ class Fst {
       }
       return Read(strm, FstReadOptions(filename));
     } else {
+      PrepareBinaryStdin();
       return Read(std::cin, FstReadOptions("standard input"));
     }
   }

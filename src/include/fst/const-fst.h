@@ -191,6 +191,7 @@ ConstFstImpl<Arc, Unsigned>::ConstFstImpl(const Fst<Arc> &fst)
 template <class Arc, class Unsigned>
 ConstFstImpl<Arc, Unsigned> *ConstFstImpl<Arc, Unsigned>::Read(
     std::istream &strm, const FstReadOptions &opts) {
+  CheckBinaryStdin(strm);
   using ConstState = typename ConstFstImpl<Arc, Unsigned>::ConstState;
   std::unique_ptr<ConstFstImpl<Arc, Unsigned>> impl(
       new ConstFstImpl<Arc, Unsigned>());
@@ -327,6 +328,7 @@ template <class Arc, class Unsigned>
 template <class FST>
 bool ConstFst<Arc, Unsigned>::WriteFst(const FST &fst, std::ostream &strm,
                                        const FstWriteOptions &opts) {
+  CheckBinaryStdout(strm);
   const auto file_version =
       opts.align ? internal::ConstFstImpl<Arc, Unsigned>::kAlignedFileVersion
                  : internal::ConstFstImpl<Arc, Unsigned>::kFileVersion;

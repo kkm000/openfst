@@ -82,6 +82,7 @@ FstClass *FstClass::Read(const string &fname) {
     std::ifstream istrm(fname, std::ios_base::in | std::ios_base::binary);
     return ReadFstClass<FstClass>(istrm, fname);
   } else {
+    PrepareBinaryStdin();
     return ReadFstClass<FstClass>(std::cin, "standard input");
   }
 }
