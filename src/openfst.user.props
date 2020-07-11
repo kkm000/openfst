@@ -24,6 +24,8 @@
     <PlatformToolset Condition="false" >v140</PlatformToolset>
     <!-- v141 = 14.1, comes with VS15 aka VS 2017. This is the default. -->
     <PlatformToolset Condition="false" >v141</PlatformToolset>
+    <!-- v142 = 14.2, comes with VS15 aka VS 2019. -->
+    <PlatformToolset Condition="false" >v142</PlatformToolset>
   </PropertyGroup>
 
   <!-- SDK version (default: toolset's default, likely 8.1). Note that v141 has
