@@ -58,7 +58,7 @@ have an option of building dynamic libraries shared by the executables.
 
 * Memory-mapped files are not supported (we may add the support in the future
   though), because it is very system-dependent. OpenFST supports reading e. g.
-  CompactFST files into allocated memoty when memory mapping is not compiled in.
+  CompactFST files into allocated memory when memory mapping is not compiled in.
 * Dynamic registration of arc and FST types is not supported in the Visual Studio
   project versions (as they build only static libraries). CMake build does not
   have this limitation. Due to ABI being specific to Microsoft compiler version,
