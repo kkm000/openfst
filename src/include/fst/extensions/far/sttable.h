@@ -31,7 +31,7 @@ static constexpr int32 kSTTableFileVersion = 1;
 template <class T, class Writer>
 class STTableWriter {
  public:
-  explicit STTableWriter(const string &filename)
+  explicit STTableWriter(const std::string &filename)
       : stream_(filename, std::ios_base::out | std::ios_base::binary),
         error_(false) {
     WriteType(stream_, kSTTableMagicNumber);
@@ -43,7 +43,7 @@ class STTableWriter {
     }
   }
 
-  static STTableWriter<T, Writer> *Create(const string &filename) {
+  static STTableWriter<T, Writer> *Create(const std::string &filename) {
     if (filename.empty()) {
       LOG(ERROR) << "STTableWriter: Writing to standard out unsupported.";
       return nullptr;
@@ -51,8 +51,8 @@ class STTableWriter {
     return new STTableWriter<T, Writer>(filename);
   }
 
-  void Add(const string &key, const T &t) {
-    if (key == "") {
+  void Add(const std::string &key, const T &t) {
+    if (key.empty()) {
       FSTERROR() << "STTableWriter::Add: Key empty: " << key;
       error_ = true;
     } else if (key < last_key_) {
@@ -77,7 +77,7 @@ class STTableWriter {
   Writer entry_writer_;
   std::ofstream stream_;
   std::vector<int64> positions_;  // Position in file of each key-entry pair.
-  string last_key_;               // Last key.
+  std::string last_key_;          // Last key.
   bool error_;
 
   STTableWriter(const STTableWriter &) = delete;
@@ -94,7 +94,7 @@ class STTableWriter {
 template <class T, class Reader>
 class STTableReader {
  public:
-  explicit STTableReader(const std::vector<string> &filenames)
+  explicit STTableReader(const std::vector<std::string> &filenames)
       : sources_(filenames), error_(false) {
     compare_.reset(new Compare(&keys_));
     keys_.resize(filenames.size());
@@ -151,17 +151,18 @@ class STTableReader {
     for (auto &stream : streams_) delete stream;
   }
 
-  static STTableReader<T, Reader> *Open(const string &filename) {
+  static STTableReader<T, Reader> *Open(const std::string &filename) {
     if (filename.empty()) {
       LOG(ERROR) << "STTableReader: Operation not supported on standard input";
       return nullptr;
     }
-    std::vector<string> filenames;
+    std::vector<std::string> filenames;
     filenames.push_back(filename);
     return new STTableReader<T, Reader>(filenames);
   }
 
-  static STTableReader<T, Reader> *Open(const std::vector<string> &filenames) {
+  static STTableReader<T, Reader> *Open(
+      const std::vector<std::string> &filenames) {
     return new STTableReader<T, Reader>(filenames);
   }
 
@@ -172,7 +173,7 @@ class STTableReader {
     MakeHeap();
   }
 
-  bool Find(const string &key) {
+  bool Find(const std::string &key) {
     if (error_) return false;
     for (size_t i = 0; i < streams_.size(); ++i) LowerBound(i, key);
     MakeHeap();
@@ -199,7 +200,7 @@ class STTableReader {
     if (!heap_.empty()) PopHeap();
   }
 
-  const string &GetKey() const { return keys_[current_]; }
+  const std::string &GetKey() const { return keys_[current_]; }
 
   const T *GetEntry() const { return entry_.get(); }
 
@@ -208,19 +209,19 @@ class STTableReader {
  private:
   // Comparison functor used to compare stream IDs in the heap.
   struct Compare {
-    explicit Compare(const std::vector<string> *keys) : keys(keys) {}
+    explicit Compare(const std::vector<std::string> *keys) : keys(keys) {}
 
     bool operator()(size_t i, size_t j) const {
       return (*keys)[i] > (*keys)[j];
     };
 
    private:
-    const std::vector<string> *keys;
+    const std::vector<std::string> *keys;
   };
 
   // Positions the stream at the position corresponding to the lower bound for
   // the specified key.
-  void LowerBound(size_t id, const string &find_key) {
+  void LowerBound(size_t id, const std::string &find_key) {
     auto *strm = streams_[id];
     const auto &positions = positions_[id];
     if (positions.empty()) return;
@@ -229,7 +230,7 @@ class STTableReader {
     while (low < high) {
       size_t mid = (low + high) / 2;
       strm->seekg(positions[mid]);
-      string key;
+      std::string key;
       ReadType(*strm, &key);
       if (key > find_key) {
         high = mid;
@@ -286,9 +287,9 @@ class STTableReader {
 
   Reader entry_reader_;
   std::vector<std::istream *> streams_;        // Input streams.
-  std::vector<string> sources_;                // Corresponding file names.
+  std::vector<std::string> sources_;           // Corresponding file names.
   std::vector<std::vector<int64>> positions_;  // Index of positions.
-  std::vector<string> keys_;  // Lowest unread key for each stream.
+  std::vector<std::string> keys_;  // Lowest unread key for each stream.
   std::vector<int64> heap_;   // Heap containing ID of streams with unread keys.
   int64 current_;             // ID of current stream to be read.
   std::unique_ptr<Compare> compare_;  // Functor comparing stream IDs.
@@ -303,7 +304,7 @@ class STTableReader {
 //     void Read(std::istream &istrm, const string &filename);
 //   };
 template <class Header>
-bool ReadSTTableHeader(const string &filename, Header *header) {
+bool ReadSTTableHeader(const std::string &filename, Header *header) {
   if (filename.empty()) {
     LOG(ERROR) << "ReadSTTable: Can't read header from standard input";
     return false;
@@ -336,7 +337,7 @@ bool ReadSTTableHeader(const string &filename, Header *header) {
   strm.seekg(-2 * static_cast<int>(sizeof(int64)), std::ios_base::end);
   ReadType(strm, &i);  // Reads position for last entry in file.
   strm.seekg(i);
-  string key;
+  std::string key;
   ReadType(strm, &key);
   header->Read(strm, filename + ":" + key);
   if (strm.fail()) {
@@ -346,7 +347,7 @@ bool ReadSTTableHeader(const string &filename, Header *header) {
   return true;
 }
 
-bool IsSTTable(const string &filename);
+bool IsSTTable(const std::string &filename);
 
 }  // namespace fst
 

@@ -4,7 +4,6 @@
 // Two FSTS are equal iff their exit status is zero.
 
 #include <cstring>
-
 #include <memory>
 #include <string>
 
@@ -18,7 +17,8 @@ int fstequal_main(int argc, char **argv) {
   namespace s = fst::script;
   using fst::script::FstClass;
 
-  string usage = "Two FSTs are equal iff the exit status is zero.\n\n  Usage: ";
+  std::string usage =
+      "Two FSTs are equal iff the exit status is zero.\n\n  Usage: ";
   usage += argv[0];
   usage += " in1.fst in2.fst\n";
 
@@ -29,8 +29,8 @@ int fstequal_main(int argc, char **argv) {
     return 1;
   }
 
-  const string in1_name = strcmp(argv[1], "-") == 0 ? "" : argv[1];
-  const string in2_name = strcmp(argv[2], "-") == 0 ? "" : argv[2];
+  const std::string in1_name = strcmp(argv[1], "-") == 0 ? "" : argv[1];
+  const std::string in2_name = strcmp(argv[2], "-") == 0 ? "" : argv[2];
 
   if (in1_name.empty() && in2_name.empty()) {
     LOG(ERROR) << argv[0] << ": Can't take both inputs from standard input";

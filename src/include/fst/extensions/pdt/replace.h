@@ -13,8 +13,8 @@
 #include <utility>
 #include <vector>
 
-#include <fst/replace.h>
 #include <fst/replace-util.h>
+#include <fst/replace.h>
 #include <fst/symbol-table-ops.h>
 
 namespace fst {
@@ -65,20 +65,21 @@ template <class Arc>
 struct PdtReplaceOptions {
   using Label = typename Arc::Label;
 
-  explicit PdtReplaceOptions(Label root,
-                             PdtParserType type = PDT_LEFT_PARSER,
+  explicit PdtReplaceOptions(Label root, PdtParserType type = PDT_LEFT_PARSER,
                              Label start_paren_labels = kNoLabel,
-                             string left_paren_prefix = "(_",
-                             string right_paren_prefix = ")_") :
-      root(root), type(type), start_paren_labels(start_paren_labels),
-      left_paren_prefix(std::move(left_paren_prefix)),
-      right_paren_prefix(std::move(right_paren_prefix)) {}
+                             std::string left_paren_prefix = "(_",
+                             std::string right_paren_prefix = ")_")
+      : root(root),
+        type(type),
+        start_paren_labels(start_paren_labels),
+        left_paren_prefix(std::move(left_paren_prefix)),
+        right_paren_prefix(std::move(right_paren_prefix)) {}
 
   Label root;
   PdtParserType type;
   Label start_paren_labels;
-  const string left_paren_prefix;
-  const string right_paren_prefix;
+  const std::string left_paren_prefix;
+  const std::string right_paren_prefix;
 };
 
 // PdtParser: Base PDT parser class common to specific parsers.
@@ -214,8 +215,8 @@ class PdtParser {
   Label root_;
   // Index to use for the first parenthesis.
   Label start_paren_labels_;
-  const string left_paren_prefix_;
-  const string right_paren_prefix_;
+  const std::string left_paren_prefix_;
+  const std::string right_paren_prefix_;
   // Maps from non-terminal label to FST ID.
   std::unordered_map<Label, StateId> label2id_;
   // Given an output state, specifies the input FST (label, state) pair.

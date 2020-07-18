@@ -153,8 +153,8 @@ void RmEpsilonState<Arc, Queue>::Expand(typename Arc::StateId source) {
         if (!visited_[arc.nextstate]) eps_queue_.push(arc.nextstate);
       } else {
         const Element element(arc.ilabel, arc.olabel, arc.nextstate);
-        auto insert_result = element_map_.insert(
-            std::make_pair(element, std::make_pair(expand_id_, arcs_.size())));
+        auto insert_result = element_map_.emplace(
+            element, std::make_pair(expand_id_, arcs_.size()));
         if (insert_result.second) {
           arcs_.push_back(std::move(arc));
         } else {

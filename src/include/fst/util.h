@@ -56,7 +56,7 @@ inline std::istream &ReadType(std::istream &strm, T *t) {
 }
 
 // String case.
-inline std::istream &ReadType(std::istream &strm, string *s) {  // NOLINT
+inline std::istream &ReadType(std::istream &strm, std::string *s) {  // NOLINT
   s->clear();
   int32 ns = 0;
   strm.read(reinterpret_cast<char *>(&ns), sizeof(ns));
@@ -165,7 +165,8 @@ inline std::ostream &WriteType(std::ostream &strm, const T t) {
 }
 
 // String case.
-inline std::ostream &WriteType(std::ostream &strm, const string &s) {  // NOLINT
+inline std::ostream &WriteType(std::ostream &strm,  // NOLINT
+                               const std::string &s) {
   int32 ns = s.size();
   strm.write(reinterpret_cast<const char *>(&ns), sizeof(ns));
   return strm.write(s.data(), ns);
@@ -239,11 +240,11 @@ std::ostream &WriteType(std::ostream &strm, const std::unordered_set<T...> &c) {
 
 // Utilities for converting between int64 or Weight and string.
 
-int64 StrToInt64(const string &s, const string &src, size_t nline,
+int64 StrToInt64(const std::string &s, const std::string &src, size_t nline,
                  bool allow_negative, bool *error = nullptr);
 
 template <typename Weight>
-Weight StrToWeight(const string &s, const string &src, size_t nline) {
+Weight StrToWeight(const std::string &s, const std::string &src, size_t nline) {
   Weight w;
   std::istringstream strm(s);
   strm >> w;
@@ -256,7 +257,7 @@ Weight StrToWeight(const string &s, const string &src, size_t nline) {
 }
 
 template <typename Weight>
-void WeightToStr(Weight w, string *s) {
+void WeightToStr(Weight w, std::string *s) {
   std::ostringstream strm;
   strm.precision(9);
   strm << w;
@@ -270,7 +271,8 @@ void SplitString(char *line, const char *delim, std::vector<char *> *vec,
                  bool omit_empty_strings);
 
 template <typename I>
-bool ReadIntPairs(const string &filename, std::vector<std::pair<I, I>> *pairs,
+bool ReadIntPairs(const std::string &filename,
+                  std::vector<std::pair<I, I>> *pairs,
                   bool allow_negative = false) {
   std::ifstream strm(filename, std::ios_base::in);
   if (!strm) {
@@ -297,13 +299,13 @@ bool ReadIntPairs(const string &filename, std::vector<std::pair<I, I>> *pairs,
     if (err) return false;
     I i2 = StrToInt64(col[1], filename, nline, allow_negative, &err);
     if (err) return false;
-    pairs->push_back(std::make_pair(i1, i2));
+    pairs->emplace_back(i1, i2);
   }
   return true;
 }
 
 template <typename I>
-bool WriteIntPairs(const string &filename,
+bool WriteIntPairs(const std::string &filename,
                    const std::vector<std::pair<I, I>> &pairs) {
   std::ostream *strm = &std::cout;
   if (!filename.empty()) {
@@ -328,21 +330,21 @@ bool WriteIntPairs(const string &filename,
 // Utilities for reading/writing label pairs.
 
 template <typename Label>
-bool ReadLabelPairs(const string &filename,
+bool ReadLabelPairs(const std::string &filename,
                     std::vector<std::pair<Label, Label>> *pairs,
                     bool allow_negative = false) {
   return ReadIntPairs(filename, pairs, allow_negative);
 }
 
 template <typename Label>
-bool WriteLabelPairs(const string &filename,
+bool WriteLabelPairs(const std::string &filename,
                      const std::vector<std::pair<Label, Label>> &pairs) {
   return WriteIntPairs(filename, pairs);
 }
 
 // Utilities for converting a type name to a legal C symbol.
 
-void ConvertToLegalCSymbol(string *s);
+void ConvertToLegalCSymbol(std::string *s);
 
 // Utilities for stream I/O.
 

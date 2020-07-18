@@ -1,7 +1,7 @@
 if HAVE_COMPRESS
 compress_include_headers = fst/extensions/compress/compress.h \
-fst/extensions/compress/compress-script.h fst/extensions/compress/gzfile.h \
-fst/extensions/compress/elias.h fst/extensions/compress/randmod.h
+fst/extensions/compress/compressscript.h fst/extensions/compress/gzfile.h \
+fst/extensions/compress/elias.h
 endif
 
 if HAVE_FAR
@@ -104,18 +104,20 @@ fst/cache.h fst/closure.h fst/compact-fst.h fst/compat.h fst/complement.h \
 fst/compose-filter.h fst/compose.h fst/concat.h fst/config.h fst/connect.h \
 fst/const-fst.h fst/determinize.h fst/dfs-visit.h fst/difference.h \
 fst/disambiguate.h fst/edit-fst.h fst/encode.h fst/epsnormalize.h fst/equal.h \
-fst/equivalent.h fst/expanded-fst.h fst/expectation-weight.h \
-fst/factor-weight.h fst/filter-state.h fst/flags.h fst/float-weight.h \
-fst/fst-decl.h fst/fst.h fst/fstlib.h fst/generic-register.h fst/heap.h \
-fst/icu.h fst/intersect.h fst/interval-set.h fst/invert.h fst/isomorphic.h \
-fst/label-reachable.h fst/lexicographic-weight.h fst/lock.h fst/log.h \
-fst/lookahead-filter.h fst/lookahead-matcher.h fst/map.h fst/mapped-file.h \
-fst/matcher-fst.h fst/matcher.h fst/memory.h fst/minimize.h fst/mutable-fst.h \
-fst/pair-weight.h fst/partition.h fst/power-weight.h fst/product-weight.h \
-fst/project.h fst/properties.h fst/prune.h fst/push.h fst/queue.h \
-fst/randequivalent.h fst/randgen.h fst/rational.h fst/register.h \
-fst/relabel.h fst/replace-util.h fst/replace.h fst/reverse.h fst/reweight.h \
-fst/rmepsilon.h fst/rmfinalepsilon.h fst/set-weight.h fst/shortest-distance.h \
+fst/equivalent.h fst/expanded-fst.h fst/expander-cache.h \
+fst/expectation-weight.h fst/factor-weight.h fst/filter-state.h fst/flags.h \
+fst/float-weight.h fst/fst-decl.h fst/fst.h fst/fstlib.h \
+fst/generic-register.h fst/heap.h fst/icu.h fst/intersect.h \
+fst/interval-set.h fst/invert.h fst/isomorphic.h fst/label-reachable.h \
+fst/lexicographic-weight.h fst/lock.h fst/log.h fst/lookahead-filter.h \
+fst/lookahead-matcher.h fst/map.h fst/mapped-file.h fst/matcher-fst.h \
+fst/matcher.h fst/memory.h fst/minimize.h fst/mutable-fst.h \
+fst/pair-weight.h fst/partition.h fst/power-weight.h \
+fst/power-weight-mappers.h fst/product-weight.h fst/project.h \
+fst/properties.h fst/prune.h fst/push.h fst/queue.h fst/randequivalent.h \
+fst/randgen.h fst/rational.h fst/register.h fst/relabel.h fst/replace-util.h \
+fst/replace.h fst/reverse.h fst/reweight.h fst/rmepsilon.h \
+fst/rmfinalepsilon.h fst/set-weight.h fst/shortest-distance.h \
 fst/shortest-path.h fst/signed-log-weight.h fst/sparse-power-weight.h \
 fst/sparse-tuple-weight.h fst/state-map.h fst/state-reachable.h \
 fst/state-table.h fst/statesort.h fst/string-weight.h fst/string.h \

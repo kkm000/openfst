@@ -6,8 +6,16 @@
 
 #include <fst/types.h>
 
-#ifdef __BMI2__
+#if defined( __arm__)  // 32-bit ARM
+
+// Returns the position (0-63) of the r-th 1 bit in v.
+// 1 <= r <= CountOnes(v) <= 64.  Therefore, v must not be 0.
+uint32 nth_bit(uint64 v, uint32 r);
+
+#elif defined(__BMI2__)  // Intel Bit Manipulation Instruction Set 2
 // PDEP requires BMI2.
+
+#include <immintrin.h>
 
 // Returns the position (0-63) of the r-th 1 bit in v.
 // 1 <= r <= CountOnes(v) <= 64.  Therefore, v must not be 0.
@@ -16,7 +24,7 @@ inline uint32 nth_bit(uint64 v, uint32 r) {
   return __builtin_ctzll(_pdep_u64(uint64{1} << (r - 1), v));
 }
 
-#else  // !defined(__BMI2__)
+#else  // !defined(__BMI2__) && !defined(__arm__)
 
 extern const uint32 nth_bit_bit_offset[];
 

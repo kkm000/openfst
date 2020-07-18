@@ -27,11 +27,12 @@ template <class A>
 class FeatureGroupBuilder;
 
 // For logging purposes
-inline string TranslateLabel(int64 label, const SymbolTable *syms);
+inline std::string TranslateLabel(int64 label, const SymbolTable *syms);
 template <class Iterator>
-string JoinLabels(Iterator begin, Iterator end, const SymbolTable *syms);
+std::string JoinLabels(Iterator begin, Iterator end, const SymbolTable *syms);
 template <class Label>
-string JoinLabels(const std::vector<Label> &labels, const SymbolTable *syms);
+std::string JoinLabels(const std::vector<Label> &labels,
+                       const SymbolTable *syms);
 
 // Guesses the appropriate boundary label (start- or end-of-sentence)
 // for all labels equal to `boundary` and modifies the `sequence`
@@ -312,7 +313,7 @@ class FeatureGroupBuilder {
   // Reconstruct the path from trie root to given node for logging.
   bool TrieDfs(const Topology &topology, int cur, int target,
                std::vector<InputOutputLabel> *path) const;
-  string TriePath(int node, const Topology &topology) const;
+  std::string TriePath(int node, const Topology &topology) const;
 
   bool error_;
   size_t future_size_;
@@ -980,8 +981,8 @@ bool FeatureGroupBuilder<A>::TrieDfs(
 }
 
 template <class A>
-string FeatureGroupBuilder<A>::TriePath(int node,
-                                        const Topology &topology) const {
+std::string FeatureGroupBuilder<A>::TriePath(int node,
+                                             const Topology &topology) const {
   std::vector<InputOutputLabel> labels;
   TrieDfs(topology, topology.Root(), node, &labels);
   bool first = true;
@@ -1000,8 +1001,8 @@ string FeatureGroupBuilder<A>::TriePath(int node,
   return strm.str();
 }
 
-inline string TranslateLabel(int64 label, const SymbolTable *syms) {
-  string ret;
+inline std::string TranslateLabel(int64 label, const SymbolTable *syms) {
+  std::string ret;
   if (syms != nullptr) ret += syms->Find(label);
   if (ret.empty()) {
     std::ostringstream strm;
@@ -1012,7 +1013,7 @@ inline string TranslateLabel(int64 label, const SymbolTable *syms) {
 }
 
 template <class Iterator>
-string JoinLabels(Iterator begin, Iterator end, const SymbolTable *syms) {
+std::string JoinLabels(Iterator begin, Iterator end, const SymbolTable *syms) {
   if (begin == end) return "<empty>";
   std::ostringstream strm;
   bool first = true;
@@ -1027,7 +1028,8 @@ string JoinLabels(Iterator begin, Iterator end, const SymbolTable *syms) {
 }
 
 template <class Label>
-string JoinLabels(const std::vector<Label> &labels, const SymbolTable *syms) {
+std::string JoinLabels(const std::vector<Label> &labels,
+                       const SymbolTable *syms) {
   return JoinLabels(labels.begin(), labels.end(), syms);
 }
 

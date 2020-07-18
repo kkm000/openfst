@@ -158,7 +158,7 @@ inline std::ostream &operator<<(std::ostream &strm,
 
 template <class T>
 inline std::istream &operator>>(std::istream &strm, FloatWeightTpl<T> &w) {
-  string s;
+  std::string s;
   strm >> s;
   if (s == "Infinity") {
     w = FloatWeightTpl<T>(FloatLimits<T>::PosInfinity());
@@ -197,10 +197,9 @@ class TropicalWeightTpl : public FloatWeightTpl<T> {
     return Limits::NumberBad();
   }
 
-  static const string &Type() {
-    static const string *const type =
-        new string(string("tropical") +
-                   FloatWeightTpl<T>::GetPrecisionString());
+  static const std::string &Type() {
+    static const std::string *const type = new std::string(
+        std::string("tropical") + FloatWeightTpl<T>::GetPrecisionString());
     return *type;
   }
 
@@ -416,9 +415,9 @@ class LogWeightTpl : public FloatWeightTpl<T> {
 
   static constexpr LogWeightTpl NoWeight() { return Limits::NumberBad(); }
 
-  static const string &Type() {
-    static const string *const type =
-        new string(string("log") + FloatWeightTpl<T>::GetPrecisionString());
+  static const std::string &Type() {
+    static const std::string *const type = new std::string(
+        std::string("log") + FloatWeightTpl<T>::GetPrecisionString());
     return *type;
   }
 
@@ -637,9 +636,9 @@ class MinMaxWeightTpl : public FloatWeightTpl<T> {
 
   static constexpr MinMaxWeightTpl NoWeight() { return Limits::NumberBad(); }
 
-  static const string &Type() {
-    static const string *const type =
-        new string(string("minmax") + FloatWeightTpl<T>::GetPrecisionString());
+  static const std::string &Type() {
+    static const std::string *const type = new std::string(
+        std::string("minmax") + FloatWeightTpl<T>::GetPrecisionString());
     return *type;
   }
 

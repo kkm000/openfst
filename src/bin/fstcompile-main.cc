@@ -4,7 +4,6 @@
 // Creates binary FSTs from simple text format used by AT&T.
 
 #include <cstring>
-
 #include <fstream>
 #include <istream>
 #include <memory>
@@ -30,7 +29,8 @@ int fstcompile_main(int argc, char **argv) {
   using fst::SymbolTable;
   using fst::SymbolTableTextOptions;
 
-  string usage = "Creates binary FSTs from simple text format.\n\n  Usage: ";
+  std::string usage =
+      "Creates binary FSTs from simple text format.\n\n  Usage: ";
   usage += argv[0];
   usage += " [text.fst [binary.fst]]\n";
 
@@ -41,7 +41,7 @@ int fstcompile_main(int argc, char **argv) {
     return 1;
   }
 
-  string source = "standard input";
+  std::string source = "standard input";
   std::ifstream fstrm;
   if (argc > 1 && strcmp(argv[1], "-") != 0) {
     fstrm.open(argv[1]);
@@ -73,7 +73,7 @@ int fstcompile_main(int argc, char **argv) {
     if (!ssyms) return 1;
   }
 
-  const string dest = argc > 2 ? argv[2] : "";
+  const std::string dest = argc > 2 && strcmp(argv[2], "-") != 0 ? argv[2] : "";
 
   s::CompileFst(istrm, source, dest, FLAGS_fst_type, FLAGS_arc_type,
                 isyms.get(), osyms.get(), ssyms.get(), FLAGS_acceptor,

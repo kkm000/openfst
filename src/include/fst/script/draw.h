@@ -22,7 +22,7 @@ struct FstDrawerArgs {
   const SymbolTable *osyms;
   const SymbolTable *ssyms;
   const bool accep;
-  const string &title;
+  const std::string &title;
   const float width;
   const float height;
   const bool portrait;
@@ -31,17 +31,18 @@ struct FstDrawerArgs {
   const float nodesep;
   const int fontsize;
   const int precision;
-  const string &float_format;  // NOLINT
+  const std::string &float_format;  // NOLINT
   const bool show_weight_one;
   std::ostream *ostrm;
-  const string &dest;
+  const std::string &dest;
 
   FstDrawerArgs(const FstClass &fst, const SymbolTable *isyms,
                 const SymbolTable *osyms, const SymbolTable *ssyms, bool accep,
-                const string &title, float width, float height, bool portrait,
-                bool vertical, float ranksep, float nodesep, int fontsize,
-                int precision, const string &float_format,
-                bool show_weight_one, std::ostream *ostrm,  const string &dest)
+                const std::string &title, float width, float height,
+                bool portrait, bool vertical, float ranksep, float nodesep,
+                int fontsize, int precision, const std::string &float_format,
+                bool show_weight_one, std::ostream *ostrm,
+                const std::string &dest)
       : fst(fst),
         isyms(isyms),
         osyms(osyms),
@@ -64,7 +65,7 @@ struct FstDrawerArgs {
 
 template <class Arc>
 void DrawFst(FstDrawerArgs *args) {
-  const Fst<Arc> &fst = *(args->fst.GetFst<Arc>());
+  const Fst<Arc> &fst = *args->fst.GetFst<Arc>();
   FstDrawer<Arc> fstdrawer(fst, args->isyms, args->osyms, args->ssyms,
       args->accep, args->title, args->width, args->height, args->portrait,
       args->vertical, args->ranksep, args->nodesep, args->fontsize,
@@ -74,10 +75,11 @@ void DrawFst(FstDrawerArgs *args) {
 
 void DrawFst(const FstClass &fst, const SymbolTable *isyms,
              const SymbolTable *osyms, const SymbolTable *ssyms, bool accep,
-             const string &title, float width, float height, bool portrait,
+             const std::string &title, float width, float height, bool portrait,
              bool vertical, float ranksep, float nodesep, int fontsize,
-             int precision, const string &float_format, bool show_weight_one,
-             std::ostream *ostrm, const string &dest);
+             int precision, const std::string &float_format,
+             bool show_weight_one, std::ostream *ostrm,
+             const std::string &dest);
 
 }  // namespace script
 }  // namespace fst

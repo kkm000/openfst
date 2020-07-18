@@ -34,9 +34,9 @@ class StringReader {
 
   enum EntryType { LINE = 1, FILE = 2 };
 
-  StringReader(std::istream &istrm, const string &source, EntryType entry_type,
-               StringTokenType token_type, bool allow_negative_labels,
-               const SymbolTable *syms = nullptr,
+  StringReader(std::istream &istrm, const std::string &source,
+               EntryType entry_type, StringTokenType token_type,
+               bool allow_negative_labels, const SymbolTable *syms = nullptr,
                Label unknown_label = kNoStateId)
       : nline_(0),
         istrm_(istrm),
@@ -62,7 +62,7 @@ class StringReader {
       ++nline_;
     } else {
       content_.clear();
-      string line;
+      std::string line;
       while (getline(istrm_, line)) {
         ++nline_;
         content_.append(line);
@@ -106,31 +106,32 @@ class StringReader {
  private:
   size_t nline_;
   std::istream &istrm_;
-  string source_;
+  std::string source_;
   EntryType entry_type_;
   StringTokenType token_type_;
   const SymbolTable *symbols_;
   bool done_;
   StringCompiler<Arc> compiler_;
-  string content_;  // The actual content of the input stream's next FST.
+  std::string content_;  // The actual content of the input stream's next FST.
 
   StringReader(const StringReader &) = delete;
   StringReader &operator=(const StringReader &) = delete;
 };
 
 // Computes the minimal length required to encode each line number as a decimal
-// number.
+// number, or zero if the file is not seekable.
 int KeySize(const char *filename);
 
 template <class Arc>
-void FarCompileStrings(const std::vector<string> &in_fnames,
-                       const string &out_fname, const string &fst_type,
-                       const FarType &far_type, int32 generate_keys,
-                       FarEntryType fet, FarTokenType tt,
-                       const string &symbols_fname,
-                       const string &unknown_symbol, bool keep_symbols,
+void FarCompileStrings(const std::vector<std::string> &in_fnames,
+                       const std::string &out_fname,
+                       const std::string &fst_type, const FarType &far_type,
+                       int32 generate_keys, FarEntryType fet, FarTokenType tt,
+                       const std::string &symbols_fname,
+                       const std::string &unknown_symbol, bool keep_symbols,
                        bool initial_symbols, bool allow_negative_labels,
-                       const string &key_prefix, const string &key_suffix) {
+                       const std::string &key_prefix,
+                       const std::string &key_suffix) {
   typename StringReader<Arc>::EntryType entry_type;
   if (fet == FET_LINE) {
     entry_type = StringReader<Arc>::LINE;
@@ -184,14 +185,20 @@ void FarCompileStrings(const std::vector<string> &in_fnames,
   if (!far_writer) return;
   int n = 0;
   for (const auto &in_fname : in_fnames) {
+    // Don't try to call KeySize("").
     if (generate_keys == 0 && in_fname.empty()) {
       FSTERROR() << "FarCompileStrings: Read from a file instead of stdin or"
-                 << " set the --generate_keys flags.";
+                 << " set the --generate_keys flag.";
       return;
     }
-    int key_size =
+    const int key_size =
         generate_keys ? generate_keys : (entry_type == StringReader<Arc>::FILE
                                              ? 1 : KeySize(in_fname.c_str()));
+    if (key_size == 0) {
+      FSTERROR() << "FarCompileStrings: " << in_fname << " is not seekable.  "
+                 << "Read from a file instead or set the --generate_keys flag.";
+      return;
+    }
     std::ifstream fstrm;
     if (!in_fname.empty()) {
       fstrm.open(in_fname);
@@ -232,7 +239,7 @@ void FarCompileStrings(const std::vector<string> &in_fnames,
       keybuf.width(key_size);
       keybuf.fill('0');
       keybuf << n;
-      string key;
+      std::string key;
       if (generate_keys > 0) {
         key = keybuf.str();
       } else {

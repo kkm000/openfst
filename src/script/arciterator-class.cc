@@ -2,6 +2,7 @@
 // finite-state transducer library.
 
 #include <fst/script/arciterator-class.h>
+
 #include <fst/script/script-impl.h>
 
 namespace fst {

@@ -30,7 +30,6 @@ const int kLineLen = 8096;
 // Identifies stream data as a symbol table (and its endianity).
 static constexpr int32 kSymbolTableMagicNumber = 2125658996;
 
-
 DenseSymbolMap::DenseSymbolMap()
     : empty_(-1), buckets_(1 << 4), hash_mask_(buckets_.size() - 1) {
   std::uninitialized_fill(buckets_.begin(), buckets_.end(), empty_);
@@ -42,7 +41,7 @@ DenseSymbolMap::DenseSymbolMap(const DenseSymbolMap &other)
       buckets_(other.buckets_),
       hash_mask_(other.hash_mask_) {}
 
-std::pair<int64, bool> DenseSymbolMap::InsertOrFind(const string &key) {
+std::pair<int64, bool> DenseSymbolMap::InsertOrFind(KeyType key) {
   static constexpr float kMaxOccupancyRatio = 0.75;  // Grows when 75% full.
   if (Size() >= kMaxOccupancyRatio * buckets_.size()) {
     Rehash(buckets_.size() * 2);
@@ -59,7 +58,7 @@ std::pair<int64, bool> DenseSymbolMap::InsertOrFind(const string &key) {
   return {next, true};
 }
 
-int64 DenseSymbolMap::Find(const string &key) const {
+int64 DenseSymbolMap::Find(KeyType key) const {
   size_t idx = str_hash_(key) & hash_mask_;
   while (buckets_[idx] != empty_) {
     const auto stored_value = buckets_[idx];
@@ -74,7 +73,7 @@ void DenseSymbolMap::Rehash(size_t num_buckets) {
   hash_mask_ = buckets_.size() - 1;
   std::uninitialized_fill(buckets_.begin(), buckets_.end(), empty_);
   for (size_t i = 0; i < Size(); ++i) {
-    size_t idx = str_hash_(string(symbols_[i])) & hash_mask_;
+    size_t idx = str_hash_(symbols_[i]) & hash_mask_;
     while (buckets_[idx] != empty_) {
       idx = (idx + 1) & hash_mask_;
     }
@@ -88,7 +87,7 @@ void DenseSymbolMap::RemoveSymbol(size_t idx) {
 }
 
 SymbolTableImpl *SymbolTableImpl::ReadText(std::istream &strm,
-                                           const string &filename,
+                                           const std::string &filename,
                                            const SymbolTableTextOptions &opts) {
   std::unique_ptr<SymbolTableImpl> impl(new SymbolTableImpl(filename));
   int64 nline = 0;
@@ -160,7 +159,7 @@ void SymbolTableImpl::MaybeRecomputeCheckSum() const {
   check_sum_finalized_ = true;
 }
 
-int64 SymbolTableImpl::AddSymbol(const string &symbol, int64 key) {
+int64 SymbolTableImpl::AddSymbol(SymbolType symbol, int64 key) {
   if (key == kNoSymbol) return key;
   const auto insert_key = symbols_.InsertOrFind(symbol);
   if (!insert_key.second) {
@@ -233,7 +232,7 @@ SymbolTableImpl *SymbolTableImpl::Read(
     LOG(ERROR) << "SymbolTable::Read: Read failed";
     return nullptr;
   }
-  string name;
+  std::string name;
   ReadType(strm, &name);
   std::unique_ptr<SymbolTableImpl> impl(new SymbolTableImpl(name));
   ReadType(strm, &impl->available_key_);
@@ -243,7 +242,7 @@ SymbolTableImpl *SymbolTableImpl::Read(
     LOG(ERROR) << "SymbolTable::Read: Read failed";
     return nullptr;
   }
-  string symbol;
+  std::string symbol;
   int64 key;
   impl->check_sum_finalized_ = false;
   for (int64 i = 0; i < size; ++i) {
@@ -323,13 +322,13 @@ bool CompatSymbols(const SymbolTable *syms1, const SymbolTable *syms2,
   }
 }
 
-void SymbolTableToString(const SymbolTable *table, string *result) {
+void SymbolTableToString(const SymbolTable *table, std::string *result) {
   std::ostringstream ostrm;
   table->Write(ostrm);
   *result = ostrm.str();
 }
 
-SymbolTable *StringToSymbolTable(const string &str) {
+SymbolTable *StringToSymbolTable(const std::string &str) {
   std::istringstream istrm(str);
   return SymbolTable::Read(istrm, SymbolTableReadOptions());
 }

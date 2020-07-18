@@ -7,13 +7,13 @@ lib_LTLIBRARIES = libfstfar.la
 endif
 
 libfstfar_la_SOURCES = sttable.cc stlist.cc
-libfstfar_la_LDFLAGS = -version-info 16:0:0
+libfstfar_la_LDFLAGS = -version-info 17:0:0
 libfstfar_la_LIBADD = ../../lib/libfst.la -lm $(DL_LIBS)
 
 if HAVE_SCRIPT
 libfstfarscript_la_SOURCES = far-class.cc farscript.cc getters.cc script-impl.cc \
                              strings.cc
-libfstfarscript_la_LDFLAGS = -version-info 16:0:0
+libfstfarscript_la_LDFLAGS = -version-info 17:0:0
 libfstfarscript_la_LIBADD = \
     libfstfar.la ../../script/libfstscript.la \
         ../../lib/libfst.la -lm $(DL_LIBS)
@@ -26,17 +26,17 @@ bin_PROGRAMS = farcompilestrings farcreate farequal farextract farinfo \
 LDADD = libfstfarscript.la ../../script/libfstscript.la \
         ../../lib/libfst.la -lm $(DL_LIBS)
 
-farcompilestrings_SOURCES = farcompilestrings.cc
+farcompilestrings_SOURCES = farcompilestrings.cc farcompilestrings-main.cc
 
-farcreate_SOURCES = farcreate.cc
+farcreate_SOURCES = farcreate.cc farcreate-main.cc
 
-farequal_SOURCES = farequal.cc
+farequal_SOURCES = farequal.cc farequal-main.cc
 
-farextract_SOURCES = farextract.cc
+farextract_SOURCES = farextract.cc farextract-main.cc
 
-farinfo_SOURCES = farinfo.cc
+farinfo_SOURCES = farinfo.cc farinfo-main.cc
 
-farisomorphic_SOURCES = farisomorphic.cc
+farisomorphic_SOURCES = farisomorphic.cc farisomorphic-main.cc
 
-farprintstrings_SOURCES = farprintstrings.cc
+farprintstrings_SOURCES = farprintstrings.cc farprintstrings-main.cc
 endif

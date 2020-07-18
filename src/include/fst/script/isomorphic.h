@@ -20,8 +20,8 @@ using IsomorphicArgs = WithReturnValue<bool, IsomorphicInnerArgs>;
 
 template <class Arc>
 void Isomorphic(IsomorphicArgs *args) {
-  const Fst<Arc> &fst1 = *(std::get<0>(args->args).GetFst<Arc>());
-  const Fst<Arc> &fst2 = *(std::get<1>(args->args).GetFst<Arc>());
+  const Fst<Arc> &fst1 = *std::get<0>(args->args).GetFst<Arc>();
+  const Fst<Arc> &fst2 = *std::get<1>(args->args).GetFst<Arc>();
   args->retval = Isomorphic(fst1, fst2, std::get<2>(args->args));
 }
 

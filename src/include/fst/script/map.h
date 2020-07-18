@@ -60,7 +60,7 @@ using MapArgs = WithReturnValue<FstClass *, MapInnerArgs>;
 template <class Arc>
 void Map(MapArgs *args) {
   using Weight = typename Arc::Weight;
-  const Fst<Arc> &ifst = *(std::get<0>(args->args).GetFst<Arc>());
+  const Fst<Arc> &ifst = *std::get<0>(args->args).GetFst<Arc>();
   const auto map_type = std::get<1>(args->args);
   switch (map_type) {
     case ARC_SUM_MAPPER: {
@@ -95,7 +95,7 @@ void Map(MapArgs *args) {
       return;
     }
     case PLUS_MAPPER: {
-      const auto weight = *(std::get<4>(args->args).GetWeight<Weight>());
+      const auto weight = *std::get<4>(args->args).GetWeight<Weight>();
       std::unique_ptr<Fst<Arc>> ofst(ArcMap(ifst, PlusMapper<Arc>(weight)));
       args->retval = new FstClass(*ofst);
       return;
@@ -123,7 +123,7 @@ void Map(MapArgs *args) {
       return;
     }
     case TIMES_MAPPER: {
-      const auto weight = *(std::get<4>(args->args).GetWeight<Weight>());
+      const auto weight = *std::get<4>(args->args).GetWeight<Weight>();
       std::unique_ptr<Fst<Arc>> ofst(ArcMap(ifst, TimesMapper<Arc>(weight)));
       args->retval = new FstClass(*ofst);
       return;

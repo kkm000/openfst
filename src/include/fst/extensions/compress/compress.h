@@ -13,7 +13,6 @@
 #include <memory>
 #include <queue>
 #include <string>
-#include <utility>
 #include <vector>
 
 #include <fst/compat.h>
@@ -21,6 +20,7 @@
 #include <fst/extensions/compress/elias.h>
 #include <fst/extensions/compress/gzfile.h>
 #include <fst/encode.h>
+#include <fstream>
 #include <fst/fst.h>
 #include <fst/mutable-fst.h>
 #include <fst/statesort.h>
@@ -29,16 +29,16 @@ namespace fst {
 
 // Identifies stream data as a vanilla compressed FST.
 static const int32 kCompressMagicNumber = 1858869554;
-// Identifies stream data as (probably) a Gzip file accidentally read from
-// a vanilla stream, without gzip support.
+// Identifies stream data as (probably) a Gzip file accidentally read from a
+// vanilla stream, without gzip support.
 static const int32 kGzipMagicNumber = 0x8b1f;
 // Selects the two most significant bytes.
 constexpr uint32 kGzipMask = 0xffffffff >> 16;
 
 namespace internal {
 
-// Expands a Lempel Ziv code and returns the set of code words. expanded_code[i]
-// is the i^th Lempel Ziv codeword.
+// Expands a Lempel Ziv code and returns the set of code words where
+// expanded_code[i] is the i^th Lempel Ziv codeword.
 template <class Var, class Edge>
 bool ExpandLZCode(const std::vector<std::pair<Var, Edge>> &code,
                   std::vector<std::vector<Edge>> *expanded_code) {
@@ -48,16 +48,15 @@ bool ExpandLZCode(const std::vector<std::pair<Var, Edge>> &code,
       LOG(ERROR) << "ExpandLZCode: Not a valid code";
       return false;
     }
+    auto &codeword = (*expanded_code)[i];
     if (code[i].first == 0) {
-      (*expanded_code)[i].resize(1, code[i].second);
+      codeword.resize(1, code[i].second);
     } else {
-      (*expanded_code)[i].resize((*expanded_code)[code[i].first - 1].size() +
-                                 1);
-      std::copy((*expanded_code)[code[i].first - 1].begin(),
-                (*expanded_code)[code[i].first - 1].end(),
-                (*expanded_code)[i].begin());
-      (*expanded_code)[i][(*expanded_code)[code[i].first - 1].size()] =
-          code[i].second;
+      const auto &other_codeword = (*expanded_code)[code[i].first - 1];
+      codeword.resize(other_codeword.size() + 1);
+      std::copy(other_codeword.cbegin(), other_codeword.cend(),
+                codeword.begin());
+      codeword[other_codeword.size()] = code[i].second;
     }
   }
   return true;
@@ -65,29 +64,28 @@ bool ExpandLZCode(const std::vector<std::pair<Var, Edge>> &code,
 
 }  // namespace internal
 
-// Lempel Ziv on data structure Edge, with a less than operator
-// EdgeLessThan and an equals operator  EdgeEquals.
-// Edge has a value defaultedge which it never takes and
-// Edge is defined, it is initialized to defaultedge
+// Lempel Ziv on data structure Edge, with a less-than operator EdgeLessThan and
+// an equals operator EdgeEquals.
 template <class Var, class Edge, class EdgeLessThan, class EdgeEquals>
 class LempelZiv {
  public:
   LempelZiv() : dict_number_(0), default_edge_() {
     root_.current_number = dict_number_++;
     root_.current_edge = default_edge_;
-    decode_vector_.push_back(std::make_pair(0, default_edge_));
+    decode_vector_.emplace_back(0, default_edge_);
   }
-  // Encodes a vector input into output
+
+  // Encodes a vector input into output.
   void BatchEncode(const std::vector<Edge> &input,
                    std::vector<std::pair<Var, Edge>> *output);
 
-  // Decodes codedvector to output. Returns false if
-  // the index exceeds the size.
+  // Decodes codedvector to output, returning false if the index exceeds the
+  // size.
   bool BatchDecode(const std::vector<std::pair<Var, Edge>> &input,
                    std::vector<Edge> *output);
 
-  // Decodes a single dictionary element. Returns false
-  // if the index exceeds the size.
+  // Decodes a single dictionary element, returning false if the index exceeds
+  // the size.
   bool SingleDecode(const Var &index, Edge *output) {
     if (index >= decode_vector_.size()) {
       LOG(ERROR) << "LempelZiv::SingleDecode: "
@@ -100,21 +98,13 @@ class LempelZiv {
   }
 
   ~LempelZiv() {
-    for (auto it = (root_.next_number).begin(); it != (root_.next_number).end();
+    for (auto it = root_.next_number.begin(); it != root_.next_number.end();
          ++it) {
       CleanUp(it->second);
     }
   }
-  // Adds a single dictionary element while decoding
-  //  void AddDictElement(const std::pair<Var, Edge> &newdict) {
-  //    EdgeEquals InstEdgeEquals;
-  //  if (InstEdgeEquals(newdict.second, default_edge_) != 1)
-  //     decode_vector_.push_back(newdict);
-  //  }
 
  private:
-  // Node datastructure is used for encoding
-
   struct Node {
     Var current_number;
     Edge current_edge;
@@ -122,15 +112,15 @@ class LempelZiv {
   };
 
   void CleanUp(Node *temp) {
-    for (auto it = (temp->next_number).begin(); it != (temp->next_number).end();
+    for (auto it = temp->next_number.begin(); it != temp->next_number.end();
          ++it) {
       CleanUp(it->second);
     }
     delete temp;
   }
+
   Node root_;
   Var dict_number_;
-  // decode_vector_ is used for decoding
   std::vector<std::pair<Var, Edge>> decode_vector_;
   Edge default_edge_;
 };
@@ -138,45 +128,41 @@ class LempelZiv {
 template <class Var, class Edge, class EdgeLessThan, class EdgeEquals>
 void LempelZiv<Var, Edge, EdgeLessThan, EdgeEquals>::BatchEncode(
     const std::vector<Edge> &input, std::vector<std::pair<Var, Edge>> *output) {
-  for (typename std::vector<Edge>::const_iterator it = input.begin();
-       it != input.end(); ++it) {
-    Node *temp_node = &root_;
-    while (it != input.end()) {
-      auto next = (temp_node->next_number).find(*it);
-      if (next != (temp_node->next_number).end()) {
+  for (auto it = input.cbegin(); it != input.cend(); ++it) {
+    auto *temp_node = &root_;
+    while (it != input.cend()) {
+      auto next = temp_node->next_number.find(*it);
+      if (next != temp_node->next_number.cend()) {
         temp_node = next->second;
         ++it;
       } else {
         break;
       }
     }
-    if (it == input.end() && temp_node->current_number != 0) {
-      output->push_back(
-          std::make_pair(temp_node->current_number, default_edge_));
-    } else if (it != input.end()) {
-      output->push_back(std::make_pair(temp_node->current_number, *it));
-      Node *new_node = new (Node);
+    if (it == input.cend() && temp_node->current_number != 0) {
+      output->emplace_back(temp_node->current_number, default_edge_);
+    } else if (it != input.cend()) {
+      output->emplace_back(temp_node->current_number, *it);
+      auto *new_node = new Node();
       new_node->current_number = dict_number_++;
       new_node->current_edge = *it;
-      (temp_node->next_number)[*it] = new_node;
+      temp_node->next_number[*it] = new_node;
     }
-    if (it == input.end()) break;
+    if (it == input.cend()) break;
   }
 }
 
 template <class Var, class Edge, class EdgeLessThan, class EdgeEquals>
 bool LempelZiv<Var, Edge, EdgeLessThan, EdgeEquals>::BatchDecode(
     const std::vector<std::pair<Var, Edge>> &input, std::vector<Edge> *output) {
-  for (typename std::vector<std::pair<Var, Edge>>::const_iterator it =
-           input.begin();
-       it != input.end(); ++it) {
+  for (auto it = input.cbegin(); it != input.cend(); ++it) {
     std::vector<Edge> temp_output;
     EdgeEquals InstEdgeEquals;
     if (InstEdgeEquals(it->second, default_edge_) != 1) {
       decode_vector_.push_back(*it);
       temp_output.push_back(it->second);
     }
-    Var temp_integer = it->first;
+    auto temp_integer = it->first;
     if (temp_integer >= decode_vector_.size()) {
       LOG(ERROR) << "LempelZiv::BatchDecode: "
                  << "Index exceeded the dictionary size";
@@ -187,69 +173,60 @@ bool LempelZiv<Var, Edge, EdgeLessThan, EdgeEquals>::BatchDecode(
         temp_integer = decode_vector_[temp_integer].first;
       }
       std::reverse(temp_output.begin(), temp_output.end());
-      output->insert(output->end(), temp_output.begin(), temp_output.end());
+      output->insert(output->cend(), temp_output.begin(), temp_output.end());
     }
   }
   return true;
 }
 
-// The main Compressor class
 template <class Arc>
 class Compressor {
  public:
-  typedef typename Arc::StateId StateId;
-  typedef typename Arc::Label Label;
-  typedef typename Arc::Weight Weight;
+  using Label = typename Arc::Label;
+  using StateId = typename Arc::StateId;
+  using Weight = typename Arc::Weight;
 
-  Compressor() {}
+  Compressor() = default;
 
-  // Compresses fst into a boolean vector code. Returns true on sucesss.
+  // Compresses an FST into a boolean vector code, returning true on success.
   bool Compress(const Fst<Arc> &fst, std::ostream &strm);
 
-  // Decompresses the boolean vector into Fst. Returns true on sucesss.
-  bool Decompress(std::istream &strm, const string &source,
+  // Decompresses the boolean vector into an FST, returning true on success.
+  bool Decompress(std::istream &strm, const std::string &source,
                   MutableFst<Arc> *fst);
 
-  // Finds the BFS order of a fst
+  // Computes the BFS order of a FST.
   void BfsOrder(const ExpandedFst<Arc> &fst, std::vector<StateId> *order);
 
-  // Preprocessing step to convert fst to a isomorphic fst
-  // Returns a preproccess fst and a dictionary
+  // Preprocessing step to convert an FST to a isomorphic FST.
   void Preprocess(const Fst<Arc> &fst, MutableFst<Arc> *preprocessedfst,
                   EncodeMapper<Arc> *encoder);
 
-  // Performs Lempel Ziv and outputs a stream of integers
-  // and sends it to a stream
+  // Performs Lempel Ziv and outputs a stream of integers.
   void EncodeProcessedFst(const ExpandedFst<Arc> &fst, std::ostream &strm);
 
-  // Decodes fst from the stream
+  // Decodes FST from the stream.
   void DecodeProcessedFst(const std::vector<StateId> &input,
                           MutableFst<Arc> *fst, bool unweighted);
 
-  // Converts buffer_code_ to uint8 and writes to a stream.
-
-  // Writes the boolean file to the stream
+  // Writes the boolean file to the stream.
   void WriteToStream(std::ostream &strm);
 
-  // Writes the weights to the stream
+  // Writes the weights to the stream.
   void WriteWeight(const std::vector<Weight> &input, std::ostream &strm);
 
   void ReadWeight(std::istream &strm, std::vector<Weight> *output);
 
-  // Same as fst::Decode without the line RmFinalEpsilon(fst)
+  // Same as fst::Decode, but doesn't remove the final epsilons.
   void DecodeForCompress(MutableFst<Arc> *fst, const EncodeMapper<Arc> &mapper);
 
-  // Updates the buffer_code_
+  // Updates buffer_code_.
   template <class CVar>
   void WriteToBuffer(CVar input) {
     std::vector<bool> current_code;
     Elias<CVar>::DeltaEncode(input, &current_code);
-    if (!buffer_code_.empty()) {
-      buffer_code_.insert(buffer_code_.end(), current_code.begin(),
-                          current_code.end());
-    } else {
-      buffer_code_.assign(current_code.begin(), current_code.end());
-    }
+    buffer_code_.insert(buffer_code_.cend(), current_code.begin(),
+                        current_code.end());
   }
 
  private:
@@ -281,12 +258,13 @@ class Compressor {
   struct TransitionLessThan {
     bool operator()(const Transition &transition_one,
                     const Transition &transition_two) const {
-      if (transition_one.nextstate == transition_two.nextstate)
+      if (transition_one.nextstate == transition_two.nextstate) {
         return transition_one.label < transition_two.label;
-      else
+      } else {
         return transition_one.nextstate < transition_two.nextstate;
+      }
     }
-  } transition_less_than;
+  };
 
   struct TransitionEquals {
     bool operator()(const Transition &transition_one,
@@ -294,17 +272,18 @@ class Compressor {
       return transition_one.nextstate == transition_two.nextstate &&
              transition_one.label == transition_two.label;
     }
-  } transition_equals;
+  };
 
   struct OldDictCompare {
     bool operator()(const std::pair<StateId, Transition> &pair_one,
                     const std::pair<StateId, Transition> &pair_two) const {
-      if ((pair_one.second).nextstate == (pair_two.second).nextstate)
-        return (pair_one.second).label < (pair_two.second).label;
-      else
-        return (pair_one.second).nextstate < (pair_two.second).nextstate;
+      if (pair_one.second.nextstate == pair_two.second.nextstate) {
+        return pair_one.second.label < pair_two.second.label;
+      } else {
+        return pair_one.second.nextstate < pair_two.second.nextstate;
+      }
     }
-  } old_dict_compare;
+  };
 
   std::vector<bool> buffer_code_;
   std::vector<Weight> arc_weight_;
@@ -312,18 +291,16 @@ class Compressor {
 };
 
 template <class Arc>
-inline void Compressor<Arc>::DecodeForCompress(
-    MutableFst<Arc> *fst, const EncodeMapper<Arc> &mapper) {
+void Compressor<Arc>::DecodeForCompress(MutableFst<Arc> *fst,
+                                        const EncodeMapper<Arc> &mapper) {
   ArcMap(fst, EncodeMapper<Arc>(mapper, DECODE));
   fst->SetInputSymbols(mapper.InputSymbols());
   fst->SetOutputSymbols(mapper.OutputSymbols());
 }
 
-// Compressor::BfsOrder
 template <class Arc>
 void Compressor<Arc>::BfsOrder(const ExpandedFst<Arc> &fst,
                                std::vector<StateId> *order) {
-  Arc arc;
   StateId bfs_visit_number = 0;
   std::queue<StateId> states_queue;
   order->assign(fst.NumStates(), kNoStateId);
@@ -332,8 +309,8 @@ void Compressor<Arc>::BfsOrder(const ExpandedFst<Arc> &fst,
   while (!states_queue.empty()) {
     for (ArcIterator<Fst<Arc>> aiter(fst, states_queue.front()); !aiter.Done();
          aiter.Next()) {
-      arc = aiter.Value();
-      StateId nextstate = arc.nextstate;
+      const auto &arc = aiter.Value();
+      const auto nextstate = arc.nextstate;
       if ((*order)[nextstate] == kNoStateId) {
         (*order)[nextstate] = bfs_visit_number++;
         states_queue.push(nextstate);
@@ -341,12 +318,10 @@ void Compressor<Arc>::BfsOrder(const ExpandedFst<Arc> &fst,
     }
     states_queue.pop();
   }
-
-  // If the FST is unconnected, then the following
-  // code finds them
+  // Handles any unconnected states.
   while (bfs_visit_number < fst.NumStates()) {
-    int unseen_state = 0;
-    for (unseen_state = 0; unseen_state < fst.NumStates(); ++unseen_state) {
+    StateId unseen_state = 0;
+    for (; unseen_state < fst.NumStates(); ++unseen_state) {
       if ((*order)[unseen_state] == kNoStateId) break;
     }
     states_queue.push(unseen_state);
@@ -354,8 +329,8 @@ void Compressor<Arc>::BfsOrder(const ExpandedFst<Arc> &fst,
     while (!states_queue.empty()) {
       for (ArcIterator<Fst<Arc>> aiter(fst, states_queue.front());
            !aiter.Done(); aiter.Next()) {
-        arc = aiter.Value();
-        StateId nextstate = arc.nextstate;
+        const auto &arc = aiter.Value();
+        const auto nextstate = arc.nextstate;
         if ((*order)[nextstate] == kNoStateId) {
           (*order)[nextstate] = bfs_visit_number++;
           states_queue.push(nextstate);
@@ -371,15 +346,13 @@ void Compressor<Arc>::Preprocess(const Fst<Arc> &fst,
                                  MutableFst<Arc> *preprocessedfst,
                                  EncodeMapper<Arc> *encoder) {
   *preprocessedfst = fst;
-  if (!preprocessedfst->NumStates()) {
-    return;
-  }
-  // Relabels the edges and develops a dictionary
+  if (!preprocessedfst->NumStates()) return;
+  // Relabels the edges and develops a dictionary.
   Encode(preprocessedfst, encoder);
   std::vector<StateId> order;
-  // Finds the BFS sorting order of the fst
+  // Finds the BFS sorting order of the FST.
   BfsOrder(*preprocessedfst, &order);
-  // Reorders the states according to the BFS order
+  // Reorders the states according to the BFS order.
   StateSort(preprocessedfst, order);
 }
 
@@ -394,29 +367,24 @@ void Compressor<Arc>::EncodeProcessedFst(const ExpandedFst<Arc> &fst,
   std::vector<std::pair<StateId, LZLabel>> current_new_output;
   std::vector<std::pair<StateId, Transition>> current_old_output;
   std::vector<StateId> final_states;
-
-  StateId number_of_states = fst.NumStates();
-
+  const auto number_of_states = fst.NumStates();
   StateId seen_states = 0;
-  // Adding the number of states
+  // Adds the number of states.
   WriteToBuffer<StateId>(number_of_states);
-
   for (StateId state = 0; state < number_of_states; ++state) {
     current_new_input.clear();
     current_old_input.clear();
     current_new_output.clear();
     current_old_output.clear();
     if (state > seen_states) ++seen_states;
-
-    // Collecting the final states
+    // Collects the final states.
     if (fst.Final(state) != Weight::Zero()) {
       final_states.push_back(state);
       final_weight_.push_back(fst.Final(state));
     }
-
-    // Reading the states
+    // Reads the states.
     for (ArcIterator<Fst<Arc>> aiter(fst, state); !aiter.Done(); aiter.Next()) {
-      Arc arc = aiter.Value();
+      const auto &arc = aiter.Value();
       if (arc.nextstate > seen_states) {  // RILEY: > or >= ?
         ++seen_states;
         LZLabel temp_label;
@@ -431,16 +399,16 @@ void Compressor<Arc>::EncodeProcessedFst(const ExpandedFst<Arc> &fst,
         current_old_input.push_back(temp_transition);
       }
     }
-    // Adding new states
+    // Adds new states.
     dict_new.BatchEncode(current_new_input, &current_new_output);
     WriteToBuffer<StateId>(current_new_output.size());
-
-    for (auto it = current_new_output.begin(); it != current_new_output.end();
+    for (auto it = current_new_output.cbegin(); it != current_new_output.cend();
          ++it) {
       WriteToBuffer<StateId>(it->first);
       WriteToBuffer<Label>((it->second).label);
     }
-    // Adding old states by sorting and using difference coding
+    // Adds old states by sorting and using difference coding.
+    static const TransitionLessThan transition_less_than;
     std::sort(current_old_input.begin(), current_old_input.end(),
               transition_less_than);
     for (auto it = current_old_input.begin(); it != current_old_input.end();
@@ -464,13 +432,12 @@ void Compressor<Arc>::EncodeProcessedFst(const ExpandedFst<Arc> &fst,
     std::sort(dict_old_temp.begin(), dict_old_temp.end());
     std::sort(transition_old_temp.begin(), transition_old_temp.end(),
               transition_less_than);
-
     WriteToBuffer<StateId>(dict_old_temp.size());
-    if (dict_old_temp.size() != transition_old_temp.size())
-      WriteToBuffer<int>(1);
-    else
+    if (dict_old_temp.size() == transition_old_temp.size()) {
       WriteToBuffer<int>(0);
-
+    } else {
+      WriteToBuffer<int>(1);
+    }
     StateId previous;
     if (!dict_old_temp.empty()) {
       WriteToBuffer<StateId>(dict_old_temp.front());
@@ -485,8 +452,8 @@ void Compressor<Arc>::EncodeProcessedFst(const ExpandedFst<Arc> &fst,
     }
     if (!transition_old_temp.empty()) {
       WriteToBuffer<StateId>((transition_old_temp.front()).nextstate);
-      previous = (transition_old_temp.front()).nextstate;
-      WriteToBuffer<Label>((transition_old_temp.front()).label);
+      previous = transition_old_temp.front().nextstate;
+      WriteToBuffer<Label>(transition_old_temp.front().label);
     }
     if (transition_old_temp.size() > 1) {
       for (auto it = transition_old_temp.begin() + 1;
@@ -497,7 +464,7 @@ void Compressor<Arc>::EncodeProcessedFst(const ExpandedFst<Arc> &fst,
       }
     }
   }
-  // Adding final states
+  // Adds final states.
   WriteToBuffer<StateId>(final_states.size());
   if (!final_states.empty()) {
     for (auto it = final_states.begin(); it != final_states.end(); ++it) {
@@ -505,7 +472,7 @@ void Compressor<Arc>::EncodeProcessedFst(const ExpandedFst<Arc> &fst,
     }
   }
   WriteToStream(strm);
-  uint8 unweighted = (fst.Properties(kUnweighted, true) == kUnweighted);
+  const uint8 unweighted = fst.Properties(kUnweighted, true) == kUnweighted;
   WriteType(strm, unweighted);
   if (unweighted == 0) {
     WriteWeight(arc_weight_, strm);
@@ -528,8 +495,7 @@ void Compressor<Arc>::DecodeProcessedFst(const std::vector<StateId> &input,
   auto arc_weight_it = arc_weight_.begin();
   Transition default_transition;
   StateId seen_states = 1;
-
-  // Adding states.
+  // Adds states..
   const StateId num_states = input.front();
   if (num_states > 0) {
     const StateId start_state = fst->AddState();
@@ -538,17 +504,15 @@ void Compressor<Arc>::DecodeProcessedFst(const std::vector<StateId> &input,
       fst->AddState();
     }
   }
-
-  typename std::vector<StateId>::const_iterator main_it = input.begin();
+  auto main_it = input.cbegin();
   ++main_it;
-
   for (StateId current_state = 0; current_state < num_states; ++current_state) {
     if (current_state >= seen_states) ++seen_states;
     current_new_input.clear();
     current_new_output.clear();
     current_old_input.clear();
     current_old_output.clear();
-    // New states
+    // New states.
     StateId current_number_new_elements = *main_it;
     ++main_it;
     for (StateId new_integer = 0; new_integer < current_number_new_elements;
@@ -563,19 +527,17 @@ void Compressor<Arc>::DecodeProcessedFst(const std::vector<StateId> &input,
       current_new_input.push_back(temp_new_dict_element);
     }
     dict_new.BatchDecode(current_new_input, &current_new_output);
-    for (auto it = current_new_output.begin(); it != current_new_output.end();
-         ++it) {
+    for (const auto &label : current_new_output) {
       if (!unweighted) {
         fst->AddArc(current_state,
-                    Arc(it->label, it->label, *arc_weight_it, seen_states++));
+                    Arc(label.label, label.label, *arc_weight_it, seen_states));
         ++arc_weight_it;
       } else {
         fst->AddArc(current_state,
-                    Arc(it->label, it->label, Weight::One(), seen_states++));
+                    Arc(label.label, label.label, Weight::One(), seen_states));
       }
+      ++seen_states;
     }
-
-    // Old states dictionary
     StateId current_number_old_elements = *main_it;
     ++main_it;
     StateId is_zero_removed = *main_it;
@@ -596,22 +558,19 @@ void Compressor<Arc>::DecodeProcessedFst(const std::vector<StateId> &input,
       Transition temp_test;
       if (!dict_old.SingleDecode(pair_temp_transition.first, &temp_test)) {
         FSTERROR() << "Compressor::Decode: failed";
-        fst->DeleteStates();
         fst->SetProperties(kError, kError);
         return;
       }
       pair_temp_transition.second = temp_test;
       actual_old_dict_numbers.push_back(pair_temp_transition);
     }
-
-    // Reordering the dictionary elements
+    // Reorders the dictionary elements.
+    static const OldDictCompare old_dict_compare;
     std::sort(actual_old_dict_numbers.begin(), actual_old_dict_numbers.end(),
               old_dict_compare);
-
-    // Transitions
+    // Transitions.
     previous = 0;
     actual_old_dict_transitions.clear();
-
     for (StateId new_integer = 0;
          new_integer < current_number_old_elements - is_zero_removed;
          ++new_integer) {
@@ -628,25 +587,24 @@ void Compressor<Arc>::DecodeProcessedFst(const std::vector<StateId> &input,
       ++main_it;
       actual_old_dict_transitions.push_back(temp_transition);
     }
-
     if (is_zero_removed == 1) {
       actual_old_dict_transitions.push_back(default_transition);
     }
-
-    auto trans_it = actual_old_dict_transitions.begin();
-    auto dict_it = actual_old_dict_numbers.begin();
-
-    while (trans_it != actual_old_dict_transitions.end() &&
-           dict_it != actual_old_dict_numbers.end()) {
+    auto trans_it = actual_old_dict_transitions.cbegin();
+    auto dict_it = actual_old_dict_numbers.cbegin();
+    while (trans_it != actual_old_dict_transitions.cend() &&
+           dict_it != actual_old_dict_numbers.cend()) {
       if (dict_it->first == 0) {
         ++dict_it;
       } else {
         std::pair<StateId, Transition> temp_pair;
-        if (transition_equals(*trans_it, default_transition) == 1) {
+        static const TransitionEquals transition_equals;
+        static const TransitionLessThan transition_less_than;
+        if (transition_equals(*trans_it, default_transition)) {
           temp_pair.first = dict_it->first;
           temp_pair.second = default_transition;
           ++dict_it;
-        } else if (transition_less_than(dict_it->second, *trans_it) == 1) {
+        } else if (transition_less_than(dict_it->second, *trans_it)) {
           temp_pair.first = dict_it->first;
           temp_pair.second = *trans_it;
           ++dict_it;
@@ -658,23 +616,20 @@ void Compressor<Arc>::DecodeProcessedFst(const std::vector<StateId> &input,
         current_old_input.push_back(temp_pair);
       }
     }
-    while (trans_it != actual_old_dict_transitions.end()) {
+    while (trans_it != actual_old_dict_transitions.cend()) {
       std::pair<StateId, Transition> temp_pair;
       temp_pair.first = 0;
       temp_pair.second = *trans_it;
       ++trans_it;
       current_old_input.push_back(temp_pair);
     }
-
-    // Adding old elements in the dictionary
+    // Adds old elements in the dictionary.
     if (!dict_old.BatchDecode(current_old_input, &current_old_output)) {
       FSTERROR() << "Compressor::Decode: Failed";
-      fst->DeleteStates();
       fst->SetProperties(kError, kError);
       return;
     }
-
-    for (auto it = current_old_output.begin(); it != current_old_output.end();
+    for (auto it = current_old_output.cbegin(); it != current_old_output.cend();
          ++it) {
       if (!unweighted) {
         fst->AddArc(current_state,
@@ -686,15 +641,15 @@ void Compressor<Arc>::DecodeProcessedFst(const std::vector<StateId> &input,
       }
     }
   }
-  // Adding the final states
+  // Adds the final states.
   StateId number_of_final_states = *main_it;
   if (number_of_final_states > 0) {
     ++main_it;
     for (StateId temp_int = 0; temp_int < number_of_final_states; ++temp_int) {
-      if (!unweighted) {
-        fst->SetFinal(*main_it, final_weight_[temp_int]);
-      } else {
+      if (unweighted) {
         fst->SetFinal(*main_it, Weight(0));
+      } else {
+        fst->SetFinal(*main_it, final_weight_[temp_int]);
       }
       ++main_it;
     }
@@ -714,7 +669,7 @@ void Compressor<Arc>::ReadWeight(std::istream &strm,
 }
 
 template <class Arc>
-bool Compressor<Arc>::Decompress(std::istream &strm, const string &source,
+bool Compressor<Arc>::Decompress(std::istream &strm, const std::string &source,
                                  MutableFst<Arc> *fst) {
   fst->DeleteStates();
   int32 magic_number = 0;
@@ -743,10 +698,7 @@ bool Compressor<Arc>::Decompress(std::istream &strm, const string &source,
     ReadType(strm, &block);
     for (int j = 0; j < 8; ++j) {
       uint8 temp = msb & block;
-      if (temp == 128)
-        bool_code.push_back(1);
-      else
-        bool_code.push_back(0);
+      bool_code.push_back(temp == 128);
       block = block << 1;
     }
   }
@@ -769,8 +721,7 @@ void Compressor<Arc>::WriteWeight(const std::vector<Weight> &input,
                                   std::ostream &strm) {
   int64 size = input.size();
   WriteType(strm, size);
-  for (typename std::vector<Weight>::const_iterator it = input.begin();
-       it != input.end(); ++it) {
+  for (auto it = input.begin(); it != input.end(); ++it) {
     it->Write(strm);
   }
 }
@@ -780,10 +731,9 @@ void Compressor<Arc>::WriteToStream(std::ostream &strm) {
   while (buffer_code_.size() % 8 != 0) buffer_code_.push_back(1);
   int64 data_size = buffer_code_.size() / 8;
   WriteType(strm, data_size);
-  std::vector<bool>::const_iterator it;
-  int64 i;
+  int64 i = 0;
   uint8 block;
-  for (it = buffer_code_.begin(), i = 0; it != buffer_code_.end(); ++it, ++i) {
+  for (auto it = buffer_code_.begin(); it != buffer_code_.end(); ++it) {
     if (i % 8 == 0) {
       if (i > 0) WriteType(strm, block);
       block = 0;
@@ -791,6 +741,7 @@ void Compressor<Arc>::WriteToStream(std::ostream &strm) {
       block = block << 1;
     }
     block |= *it;
+    ++i;
   }
   WriteType(strm, block);
 }
@@ -801,7 +752,7 @@ bool Compressor<Arc>::Compress(const Fst<Arc> &fst, std::ostream &strm) {
   EncodeMapper<Arc> encoder(kEncodeLabels, ENCODE);
   Preprocess(fst, &processedfst, &encoder);
   WriteType(strm, kCompressMagicNumber);
-  encoder.Write(strm, "encoder stream");
+  encoder.Write(strm, "ostream");
   EncodeProcessedFst(processedfst, strm);
   return true;
 }
@@ -814,89 +765,73 @@ void Compress(const Fst<Arc> &fst, std::ostream &strm) {
   comp.Compress(fst, strm);
 }
 
-// Returns true on success.
 template <class Arc>
-bool Compress(const Fst<Arc> &fst, const string &file_name,
+bool Compress(const Fst<Arc> &fst, const std::string &filename,
               const bool gzip = false) {
   if (gzip) {
-    if (file_name.empty()) {
       std::stringstream strm;
       Compress(fst, strm);
-      OGzFile gzfile(fileno(stdout));
-      gzfile.write(strm);
+      OGzFile gzfile(filename);
       if (!gzfile) {
-        LOG(ERROR) << "Compress: Can't write to file: stdout";
+        LOG(ERROR) << "Compress: Can't open file: "
+                   << (filename.empty() ? "standard output" : filename);
         return false;
       }
-    } else {
-      std::stringstream strm;
-      Compress(fst, strm);
-      OGzFile gzfile(file_name);
+      gzfile.Write(strm);
       if (!gzfile) {
-        LOG(ERROR) << "Compress: Can't open file: " << file_name;
+        LOG(ERROR) << "Compress: Can't write to file: "
+                   << (filename.empty() ? "standard output" : filename);
         return false;
       }
-      gzfile.write(strm);
-      if (!gzfile) {
-        LOG(ERROR) << "Compress: Can't write to file: " << file_name;
-        return false;
-      }
-    }
-  } else if (file_name.empty()) {
-    Compress(fst, std::cout);
-  } else {
-    std::ofstream strm(file_name,
+  } else if (!filename.empty()) {
+    std::ofstream strm(filename,
                              std::ios_base::out | std::ios_base::binary);
     if (!strm) {
-      LOG(ERROR) << "Compress: Can't open file: " << file_name;
+      LOG(ERROR) << "Compress: Can't open file: " << filename;
       return false;
     }
     Compress(fst, strm);
+  } else {
+    Compress(fst, std::cout);
   }
   return true;
 }
 
 template <class Arc>
-void Decompress(std::istream &strm, const string &source,
+bool Decompress(std::istream &strm, const std::string &source,
                 MutableFst<Arc> *fst) {
   Compressor<Arc> comp;
   comp.Decompress(strm, source, fst);
+  return true;
 }
 
 // Returns true on success.
 template <class Arc>
-bool Decompress(const string &file_name, MutableFst<Arc> *fst,
+bool Decompress(const std::string &filename, MutableFst<Arc> *fst,
                 const bool gzip = false) {
   if (gzip) {
-    if (file_name.empty()) {
-      IGzFile gzfile(fileno(stdin));
-      Decompress(*gzfile.read(), "stdin", fst);
-      if (!gzfile) {
-        LOG(ERROR) << "Decompress: Can't read from file: stdin";
-        return false;
-      }
-    } else {
-      IGzFile gzfile(file_name);
-      if (!gzfile) {
-        LOG(ERROR) << "Decompress: Can't open file: " << file_name;
-        return false;
-      }
-      Decompress(*gzfile.read(), file_name, fst);
-      if (!gzfile) {
-        LOG(ERROR) << "Decompress: Can't read from file: " << file_name;
-        return false;
-      }
-    }
-  } else if (file_name.empty()) {
-    Decompress(std::cin, "stdin", fst);
-  } else {
-    std::ifstream strm(file_name,
-                            std::ios_base::in | std::ios_base::binary);
-    if (!strm) {
-      LOG(ERROR) << "Decompress: Can't open file: " << file_name;
+    IGzFile gzfile(filename);
+    if (!gzfile) {
+      LOG(ERROR) << "Decompress: Can't open file: "
+                 << (filename.empty() ? "standard input" : filename);
       return false;
     }
-    Decompress(strm, file_name, fst);
+    Decompress(*gzfile.Read(), filename, fst);
+    if (!gzfile) {
+      LOG(ERROR) << "Decompress: Can't read from file: "
+                 << (filename.empty() ? "standard input" : filename);
+      return false;
+    }
+  } else if (!filename.empty()) {
+    std::ifstream strm(filename,
+                            std::ios_base::in | std::ios_base::binary);
+    if (!strm) {
+      LOG(ERROR) << "Decompress: Can't open file: " << filename;
+      return false;
+    }
+    Decompress(strm, filename, fst);
+  } else {
+    Decompress(std::cin, "standard input", fst);
   }
   return true;
 }

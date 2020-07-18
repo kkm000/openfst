@@ -16,7 +16,7 @@ libfst_LTLIBRARIES = phi-fst.la rho-fst.la sigma-fst.la
 lib_LTLIBRARIES = libfstspecial.la
 
 libfstspecial_la_SOURCES = phi-fst.cc rho-fst.cc sigma-fst.cc
-libfstspecial_la_LDFLAGS = -version-info 16:0:0 -lm $(DL_LIBS)
+libfstspecial_la_LDFLAGS = -version-info 17:0:0 -lm $(DL_LIBS)
 libfstspecial_la_LIBADD = ../../lib/libfst.la -lm $(DL_LIBS)
 
 phi_fst_la_SOURCES = phi-fst.cc

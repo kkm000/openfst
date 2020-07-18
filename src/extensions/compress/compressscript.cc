@@ -1,13 +1,7 @@
 // See www.openfst.org for extensive documentation on this weighted
 // finite-state transducer library.
-//
-// Definitions of 'scriptable' versions of compression operations, that is,
-// those that can be called with FstClass-type arguments.
-//
-// See comments in nlp/fst/script/script-impl.h for how the registration
-// mechanism allows these to work with various arc types.
 
-#include <fst/extensions/compress/compress-script.h>
+#include <fst/extensions/compress/compressscript.h>
 
 #include <fst/arc-map.h>
 #include <fst/script/script-impl.h>
@@ -15,14 +9,20 @@
 namespace fst {
 namespace script {
 
-void Compress(const FstClass &fst, const string &filename, const bool gzip) {
-  CompressArgs args(fst, filename, gzip);
+bool Compress(const FstClass &fst, const std::string &filename,
+              const bool gzip) {
+  CompressInnerArgs iargs(fst, filename, gzip);
+  CompressArgs args(iargs);
   Apply<Operation<CompressArgs>>("Compress", fst.ArcType(), &args);
+  return args.retval;
 }
 
-void Decompress(const string &filename, MutableFstClass *fst, const bool gzip) {
-  DecompressArgs args(filename, fst, gzip);
+bool Decompress(const std::string &filename, MutableFstClass *fst,
+                const bool gzip) {
+  DecompressInnerArgs iargs(filename, fst, gzip);
+  DecompressArgs args(iargs);
   Apply<Operation<DecompressArgs>>("Decompress", fst->ArcType(), &args);
+  return args.retval;
 }
 
 // Register operations for common arc types.

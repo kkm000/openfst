@@ -45,9 +45,9 @@ class ProductWeight : public PairWeight<W1, W2> {
     return no_weight;
   }
 
-  static const string &Type() {
-    static const string *const type =
-        new string(W1::Type() + "_X_" + W2::Type());
+  static const std::string &Type() {
+    static const std::string *const type =
+        new std::string(W1::Type() + "_X_" + W2::Type());
     return *type;
   }
 

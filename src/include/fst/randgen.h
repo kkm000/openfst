@@ -6,8 +6,8 @@
 #ifndef FST_RANDGEN_H_
 #define FST_RANDGEN_H_
 
-#include <math.h>
-#include <stddef.h>
+#include <cmath>
+#include <cstddef>
 #include <limits>
 #include <map>
 #include <memory>
@@ -498,7 +498,7 @@ class RandGenFstImpl : public CacheImpl<ToArc> {
   // states as needed.
   void Expand(StateId s) {
     if (s == superfinal_) {
-      SetFinal(s, ToWeight::One());
+      SetFinal(s);
       SetArcs(s);
       return;
     }
@@ -535,9 +535,7 @@ class RandGenFstImpl : public CacheImpl<ToArc> {
             state_table_.emplace_back(
                 new RandState<FromArc>(kNoStateId, 0, 0, 0, nullptr));
           }
-          for (size_t n = 0; n < count; ++n) {
-            EmplaceArc(s, 0, 0, ToWeight::One(), superfinal_);
-          }
+          for (size_t n = 0; n < count; ++n) EmplaceArc(s, 0, 0, superfinal_);
         }
       }
     }
@@ -711,7 +709,7 @@ class RandGenVisitor {
       ofst_->AddArc(src, arc);
       src = dest;
     }
-    ofst_->SetFinal(src, Weight::One());
+    ofst_->SetFinal(src);
   }
 
   const Fst<FromArc> *ifst_;

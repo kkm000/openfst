@@ -4,7 +4,6 @@
 // Removes epsilons from an FST.
 
 #include <cstring>
-
 #include <memory>
 #include <string>
 
@@ -24,7 +23,7 @@ int fstrmepsilon_main(int argc, char **argv) {
   using fst::script::MutableFstClass;
   using fst::script::WeightClass;
 
-  string usage = "Removes epsilons from an FST.\n\n  Usage: ";
+  std::string usage = "Removes epsilons from an FST.\n\n  Usage: ";
   usage += argv[0];
   usage += " [in.fst [out.fst]]\n";
 
@@ -35,8 +34,10 @@ int fstrmepsilon_main(int argc, char **argv) {
     return 1;
   }
 
-  const string in_name = (argc > 1 && strcmp(argv[1], "-") != 0) ? argv[1] : "";
-  const string out_name = argc > 2 ? argv[2] : "";
+  const std::string in_name =
+      (argc > 1 && strcmp(argv[1], "-") != 0) ? argv[1] : "";
+  const std::string out_name =
+      (argc > 2 && strcmp(argv[2], "-") != 0) ? argv[2] : "";
 
   std::unique_ptr<MutableFstClass> fst(MutableFstClass::Read(in_name, true));
   if (!fst) return 1;

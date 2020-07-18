@@ -17,7 +17,7 @@ using UnionArgs = std::pair<MutableFstClass *, const FstClass &>;
 template <class Arc>
 void Union(UnionArgs *args) {
   MutableFst<Arc> *fst1 = std::get<0>(*args)->GetMutableFst<Arc>();
-  const Fst<Arc> &fst2 = *(std::get<1>(*args).GetFst<Arc>());
+  const Fst<Arc> &fst2 = *std::get<1>(*args).GetFst<Arc>();
   Union(fst1, fst2);
 }
 

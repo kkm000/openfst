@@ -7,12 +7,13 @@
 // See comments in nlp/fst/script/script-impl.h for how the registration
 // mechanism allows these to work with various arc types.
 
+#include <fst/extensions/pdt/pdtscript.h>
+
 #include <string>
 #include <vector>
 
 #include <fst/extensions/pdt/compose.h>
 #include <fst/extensions/pdt/expand.h>
-#include <fst/extensions/pdt/pdtscript.h>
 #include <fst/extensions/pdt/replace.h>
 #include <fst/extensions/pdt/reverse.h>
 #include <fst/extensions/pdt/shortest-path.h>
@@ -50,8 +51,8 @@ void PdtExpand(const FstClass &ifst,
 void PdtReplace(const std::vector<LabelFstClassPair> &pairs,
                 MutableFstClass *ofst, std::vector<LabelPair> *parens,
                 int64 root, PdtParserType parser_type, int64 start_paren_labels,
-                const string &left_paren_prefix,
-                const string &right_paren_prefix) {
+                const std::string &left_paren_prefix,
+                const std::string &right_paren_prefix) {
   for (size_t i = 1; i < pairs.size(); ++i) {
     if (!internal::ArcTypesMatch(*pairs[i - 1].second, *pairs[i].second,
                                  "PdtReplace"))

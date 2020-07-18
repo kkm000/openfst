@@ -21,13 +21,14 @@ DECLARE_string(far_field_separator);
 namespace fst {
 
 template <class Arc>
-void FarPrintStrings(const std::vector<string> &ifilenames,
+void FarPrintStrings(const std::vector<std::string> &ifilenames,
                      FarEntryType entry_type, FarTokenType far_token_type,
-                     const string &begin_key, const string &end_key,
+                     const std::string &begin_key, const std::string &end_key,
                      bool print_key, bool print_weight,
-                     const string &symbols_fname, bool initial_symbols,
-                     int32 generate_filenames, const string &filename_prefix,
-                     const string &filename_suffix) {
+                     const std::string &symbols_fname, bool initial_symbols,
+                     int32 generate_filenames,
+                     const std::string &filename_prefix,
+                     const std::string &filename_suffix) {
   StringTokenType token_type;
   if (far_token_type == FTT_SYMBOL) {
     token_type = StringTokenType::SYMBOL;
@@ -53,7 +54,7 @@ void FarPrintStrings(const std::vector<string> &ifilenames,
   std::unique_ptr<FarReader<Arc>> far_reader(FarReader<Arc>::Open(ifilenames));
   if (!far_reader) return;
   if (!begin_key.empty()) far_reader->Find(begin_key);
-  string okey;
+  std::string okey;
   int nrep = 0;
   for (int i = 1; !far_reader->Done(); far_reader->Next(), ++i) {
     const auto &key = far_reader->GetKey();
@@ -67,7 +68,7 @@ void FarPrintStrings(const std::vector<string> &ifilenames,
     const auto *fst = far_reader->GetFst();
     if (i == 1 && initial_symbols && !syms && fst->InputSymbols())
       syms.reset(fst->InputSymbols()->Copy());
-    string str;
+    std::string str;
     VLOG(2) << "Handling key: " << key;
     StringPrinter<Arc> string_printer(token_type,
                                       syms ? syms.get() : fst->InputSymbols());
@@ -87,7 +88,7 @@ void FarPrintStrings(const std::vector<string> &ifilenames,
         sstrm << key;
         if (nrep > 0) sstrm << "." << nrep;
       }
-      string filename;
+      std::string filename;
       filename = filename_prefix + sstrm.str() + filename_suffix;
       std::ofstream ostrm(filename);
       if (!ostrm) {

@@ -12,6 +12,7 @@
 #include <memory>
 #include <sstream>
 #include <string>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -20,6 +21,21 @@
 #include <fst/log.h>
 #include <fstream>
 #include <map>
+#include <functional>
+
+#ifndef OPENFST_HAVE_STD_STRING_VIEW
+#ifdef __has_include
+#if __has_include(<string_view>) && __cplusplus >= 201703L
+#define OPENFST_HAVE_STD_STRING_VIEW 1
+#endif
+#endif
+#endif
+#ifdef OPENFST_HAVE_STD_STRING_VIEW
+#include <string_view>
+#else
+#include <string>
+#endif
+
 
 DECLARE_bool(fst_compat_symbols);
 
@@ -35,18 +51,18 @@ struct SymbolTableReadOptions {
 
   SymbolTableReadOptions(
       std::vector<std::pair<int64, int64>> string_hash_ranges,
-      const string &source)
+      const std::string &source)
       : string_hash_ranges(std::move(string_hash_ranges)), source(source) {}
 
   std::vector<std::pair<int64, int64>> string_hash_ranges;
-  string source;
+  std::string source;
 };
 
 struct SymbolTableTextOptions {
   explicit SymbolTableTextOptions(bool allow_negative_labels = false);
 
   bool allow_negative_labels;
-  string fst_field_separator;
+  std::string fst_field_separator;
 };
 
 namespace internal {
@@ -57,17 +73,25 @@ extern const int kLineLen;
 // 75% occupancy.
 class DenseSymbolMap {
  public:
+  // Argument type for symbol lookups and inserts.
+
+#ifdef OPENFST_HAVE_STD_STRING_VIEW
+  using KeyType = std::string_view;
+#else
+  using KeyType = const std::string &;
+#endif  // OPENFST_HAVE_STD_STRING_VIEW
+
   DenseSymbolMap();
 
   DenseSymbolMap(const DenseSymbolMap &x);
 
-  std::pair<int64, bool> InsertOrFind(const string &key);
+  std::pair<int64, bool> InsertOrFind(KeyType key);
 
-  int64 Find(const string &key) const;
+  int64 Find(KeyType key) const;
 
   size_t Size() const { return symbols_.size(); }
 
-  const string &GetSymbol(size_t idx) const { return symbols_[idx]; }
+  const std::string &GetSymbol(size_t idx) const { return symbols_[idx]; }
 
   void RemoveSymbol(size_t idx);
 
@@ -75,16 +99,20 @@ class DenseSymbolMap {
   // num_buckets must be power of 2.
   void Rehash(size_t num_buckets);
 
+  std::hash<typename std::remove_const<
+      typename std::remove_reference<KeyType>::type>::type>
+      str_hash_;
   int64 empty_;
-  std::vector<string> symbols_;
-  std::hash<string> str_hash_;
+  std::vector<std::string> symbols_;
   std::vector<int64> buckets_;
   uint64 hash_mask_;
 };
 
 class SymbolTableImpl {
  public:
-  explicit SymbolTableImpl(const string &name)
+  using SymbolType = DenseSymbolMap::KeyType;
+
+  explicit SymbolTableImpl(const std::string &name)
       : name_(name),
         available_key_(0),
         dense_key_limit_(0),
@@ -99,9 +127,9 @@ class SymbolTableImpl {
         key_map_(impl.key_map_),
         check_sum_finalized_(false) {}
 
-  int64 AddSymbol(const string &symbol, int64 key);
+  int64 AddSymbol(SymbolType symbol, int64 key);
 
-  int64 AddSymbol(const string &symbol) {
+  int64 AddSymbol(SymbolType symbol) {
     return AddSymbol(symbol, available_key_);
   }
 
@@ -111,7 +139,7 @@ class SymbolTableImpl {
   void RemoveSymbol(int64 key);
 
   static SymbolTableImpl *ReadText(
-      std::istream &strm, const string &name,
+      std::istream &strm, const std::string &name,
       const SymbolTableTextOptions &opts = SymbolTableTextOptions());
 
   static SymbolTableImpl* Read(std::istream &strm,
@@ -121,7 +149,7 @@ class SymbolTableImpl {
 
   // Return the string associated with the key. If the key is out of
   // range (<0, >max), return an empty string.
-  string Find(int64 key) const {
+  std::string Find(int64 key) const {
     int64 idx = key;
     if (key < 0 || key >= dense_key_limit_) {
       const auto it = key_map_.find(key);
@@ -134,7 +162,7 @@ class SymbolTableImpl {
 
   // Returns the key associated with the symbol; if the symbol
   // does not exists, returns kNoSymbol.
-  int64 Find(const string &symbol) const {
+  int64 Find(SymbolType symbol) const {
     int64 idx = symbols_.Find(symbol);
     if (idx == kNoSymbol || idx < dense_key_limit_) return idx;
     return idx_key_[idx - dense_key_limit_];
@@ -142,7 +170,7 @@ class SymbolTableImpl {
 
   bool Member(int64 key) const { return !Find(key).empty(); }
 
-  bool Member(const string &symbol) const { return Find(symbol) != kNoSymbol; }
+  bool Member(SymbolType symbol) const { return Find(symbol) != kNoSymbol; }
 
   int64 GetNthKey(ssize_t pos) const {
     if (pos < 0 || pos >= symbols_.Size()) return kNoSymbol;
@@ -150,16 +178,16 @@ class SymbolTableImpl {
     return Find(symbols_.GetSymbol(pos));
   }
 
-  const string &Name() const { return name_; }
+  const std::string &Name() const { return name_; }
 
-  void SetName(const string &new_name) { name_ = new_name; }
+  void SetName(const std::string &new_name) { name_ = new_name; }
 
-  const string &CheckSum() const {
+  const std::string &CheckSum() const {
     MaybeRecomputeCheckSum();
     return check_sum_string_;
   }
 
-  const string &LabeledCheckSum() const {
+  const std::string &LabeledCheckSum() const {
     MaybeRecomputeCheckSum();
     return labeled_check_sum_string_;
   }
@@ -175,7 +203,7 @@ class SymbolTableImpl {
   // if the checksum is up-to-date (requiring no recomputation).
   void MaybeRecomputeCheckSum() const;
 
-  string name_;
+  std::string name_;
   int64 available_key_;
   int64 dense_key_limit_;
 
@@ -188,8 +216,8 @@ class SymbolTableImpl {
   std::map<int64, int64> key_map_;
 
   mutable bool check_sum_finalized_;
-  mutable string check_sum_string_;
-  mutable string labeled_check_sum_string_;
+  mutable std::string check_sum_string_;
+  mutable std::string labeled_check_sum_string_;
   mutable Mutex check_sum_mutex_;
 };
 
@@ -207,8 +235,10 @@ class SymbolTableImpl {
 // table with the lexical representation L o G.
 class SymbolTable {
  public:
+  using SymbolType = internal::SymbolTableImpl::SymbolType;
+
   // Constructs symbol table with an optional name.
-  explicit SymbolTable(const string &name = "<unspecified>")
+  explicit SymbolTable(const std::string &name = "<unspecified>")
       : impl_(std::make_shared<internal::SymbolTableImpl>(name)) {}
 
   virtual ~SymbolTable() {}
@@ -216,18 +246,19 @@ class SymbolTable {
   // Reads a text representation of the symbol table from an istream. Pass a
   // name to give the resulting SymbolTable.
   static SymbolTable *ReadText(
-      std::istream &strm, const string &name,
+      std::istream &strm, const std::string &name,
       const SymbolTableTextOptions &opts = SymbolTableTextOptions()) {
     auto *impl = internal::SymbolTableImpl::ReadText(strm, name, opts);
     return impl ? new SymbolTable(impl) : nullptr;
   }
 
   // Reads a text representation of the symbol table.
-  static SymbolTable *ReadText(const string &filename,
+  static SymbolTable *ReadText(
+      const std::string &filename,
       const SymbolTableTextOptions &opts = SymbolTableTextOptions()) {
     std::ifstream strm(filename, std::ios_base::in);
     if (!strm.good()) {
-      LOG(ERROR) << "SymbolTable::ReadText: Can't open file " << filename;
+      LOG(ERROR) << "SymbolTable::ReadText: Can't open file: " << filename;
       return nullptr;
     }
     return ReadText(strm, filename, opts);
@@ -242,19 +273,18 @@ class SymbolTable {
   }
 
   // Reads a binary dump of the symbol table from a stream.
-  static SymbolTable *Read(std::istream &strm,
-                           const string &source) {
+  static SymbolTable *Read(std::istream &strm, const std::string &source) {
     SymbolTableReadOptions opts;
     opts.source = source;
     return Read(strm, opts);
   }
 
   // Reads a binary dump of the symbol table.
-  static SymbolTable *Read(const string& filename) {
+  static SymbolTable *Read(const std::string &filename) {
     std::ifstream strm(filename,
                             std::ios_base::in | std::ios_base::binary);
     if (!strm.good()) {
-      LOG(ERROR) << "SymbolTable::Read: Can't open file " << filename;
+      LOG(ERROR) << "SymbolTable::Read: Can't open file: " << filename;
       return nullptr;
     }
     return Read(strm, filename);
@@ -267,14 +297,14 @@ class SymbolTable {
 
   // Adds a symbol with given key to table. A symbol table also keeps track of
   // the last available key (highest key value in the symbol table).
-  virtual int64 AddSymbol(const string &symbol, int64 key) {
+  virtual int64 AddSymbol(SymbolType symbol, int64 key) {
     MutateCheck();
     return impl_->AddSymbol(symbol, key);
   }
 
   // Adds a symbol to the table. The associated value key is automatically
   // assigned by the symbol table.
-  virtual int64 AddSymbol(const string &symbol) {
+  virtual int64 AddSymbol(SymbolType symbol) {
     MutateCheck();
     return impl_->AddSymbol(symbol);
   }
@@ -292,31 +322,29 @@ class SymbolTable {
 
   // Return the label-agnostic MD5 check-sum for this table. All new symbols
   // added to the table will result in an updated checksum. Deprecated.
-  virtual const string &CheckSum() const { return impl_->CheckSum(); }
+  virtual const std::string &CheckSum() const { return impl_->CheckSum(); }
 
   virtual int64 GetNthKey(ssize_t pos) const { return impl_->GetNthKey(pos); }
 
   // Returns the string associated with the key; if the key is out of
   // range (<0, >max), returns an empty string.
-  virtual string Find(int64 key) const { return impl_->Find(key); }
+  virtual std::string Find(int64 key) const { return impl_->Find(key); }
 
   // Returns the key associated with the symbol; if the symbol does not exist,
   // kNoSymbol is returned.
-  virtual int64 Find(const string &symbol) const { return impl_->Find(symbol); }
+  virtual int64 Find(SymbolType symbol) const { return impl_->Find(symbol); }
 
   // Same as CheckSum(), but returns an label-dependent version.
-  virtual const string &LabeledCheckSum() const {
+  virtual const std::string &LabeledCheckSum() const {
     return impl_->LabeledCheckSum();
   }
 
   virtual bool Member(int64 key) const { return impl_->Member(key); }
 
-  virtual bool Member(const string &symbol) const {
-    return impl_->Member(symbol);
-  }
+  virtual bool Member(SymbolType symbol) const { return impl_->Member(symbol); }
 
   // Returns the name of the symbol table.
-  virtual const string &Name() const { return impl_->Name(); }
+  virtual const std::string &Name() const { return impl_->Name(); }
 
   // Returns the current number of symbols in table (not necessarily equal to
   // AvailableKey()).
@@ -328,35 +356,51 @@ class SymbolTable {
   }
 
   // Sets the name of the symbol table.
-  virtual void SetName(const string &new_name) {
+  virtual void SetName(const std::string &new_name) {
     MutateCheck();
     impl_->SetName(new_name);
   }
 
   virtual bool Write(std::ostream &strm) const { return impl_->Write(strm); }
 
-  virtual bool Write(const string &filename) const {
-    std::ofstream strm(filename,
-                             std::ios_base::out | std::ios_base::binary);
-    if (!strm.good()) {
-      LOG(ERROR) << "SymbolTable::Write: Can't open file " << filename;
-      return false;
+  virtual bool Write(const std::string &filename) const {
+    if (!filename.empty()) {
+      std::ofstream strm(filename,
+                               std::ios_base::out | std::ios_base::binary);
+      if (!strm) {
+        LOG(ERROR) << "SymbolTable::Write: Can't open file: " << filename;
+        return false;
+      }
+      if (!Write(strm)) {
+        LOG(ERROR) << "SymbolTable::Write: Write failed: " << filename;
+        return false;
+      }
+      return true;
+    } else {
+      return Write(std::cout);
     }
-    return Write(strm);
   }
 
   // Dump a text representation of the symbol table via a stream.
   virtual bool WriteText(std::ostream &strm,
       const SymbolTableTextOptions &opts = SymbolTableTextOptions()) const;
 
-  // Dump an text representation of the symbol table.
-  virtual bool WriteText(const string &filename) const {
-    std::ofstream strm(filename);
-    if (!strm.good()) {
-      LOG(ERROR) << "SymbolTable::WriteText: Can't open file " << filename;
-      return false;
+  // Dump a text representation of the symbol table.
+  virtual bool WriteText(const std::string &filename) const {
+    if (!filename.empty()) {
+      std::ofstream strm(filename);
+      if (!strm) {
+        LOG(ERROR) << "SymbolTable::WriteText: Can't open file: " << filename;
+        return false;
+      }
+      if (!WriteText(strm)) {
+        LOG(ERROR) << "SymbolTable::WriteText: Write failed: " << filename;
+        return false;
+      }
+      return true;
+    } else {
+      return WriteText(std::cout);
     }
-    return WriteText(strm);
   }
 
  private:
@@ -390,7 +434,7 @@ class SymbolTableIterator {
   int64 Value() const { return key_; }
 
   // Return the string of the current symbol.
-  string Symbol() const { return table_.Find(key_); }
+  std::string Symbol() const { return table_.Find(key_); }
 
   // Advances iterator.
   void Next() {
@@ -421,8 +465,8 @@ template <class Label>
 SymbolTable *RelabelSymbolTable(const SymbolTable *table,
     const std::vector<std::pair<Label, Label>> &pairs) {
   auto *new_table = new SymbolTable(
-      table->Name().empty() ? string()
-                            : (string("relabeled_") + table->Name()));
+      table->Name().empty() ? std::string()
+                            : (std::string("relabeled_") + table->Name()));
   for (const auto &pair : pairs) {
     new_table->AddSymbol(table->Find(pair.first), pair.second);
   }
@@ -436,9 +480,9 @@ bool CompatSymbols(const SymbolTable *syms1, const SymbolTable *syms2,
 
 // Symbol Table serialization.
 
-void SymbolTableToString(const SymbolTable *table, string *result);
+void SymbolTableToString(const SymbolTable *table, std::string *result);
 
-SymbolTable *StringToSymbolTable(const string &str);
+SymbolTable *StringToSymbolTable(const std::string &str);
 
 }  // namespace fst
 

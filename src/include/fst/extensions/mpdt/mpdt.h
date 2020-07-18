@@ -145,12 +145,12 @@ class MPdtStack {
   }
 
   // TODO(rws): For debugging purposes only: remove later.
-  string PrintConfig(const Config &config) const {
-    string result = "[";
+  std::string PrintConfig(const Config &config) const {
+    std::string result = "[";
     for (Level i = 0; i < nlevels; ++i) {
       char s[128];
       snprintf(s, sizeof(s), "%d", config[i]);
-      result += string(s);
+      result += std::string(s);
       if (i < nlevels - 1) result += ", ";
     }
     result += "]";

@@ -16,16 +16,17 @@
 namespace fst {
 
 template <class Arc>
-void FarCreate(const std::vector<string> &in_fnames, const string &out_fname,
-               const int32 generate_keys, const FarType &far_type,
-               const string &key_prefix, const string &key_suffix) {
+void FarCreate(const std::vector<std::string> &in_fnames,
+               const std::string &out_fname, const int32 generate_keys,
+               const FarType &far_type, const std::string &key_prefix,
+               const std::string &key_suffix) {
   std::unique_ptr<FarWriter<Arc>> far_writer(
       FarWriter<Arc>::Create(out_fname, far_type));
   if (!far_writer) return;
   for (size_t i = 0; i < in_fnames.size(); ++i) {
     std::unique_ptr<Fst<Arc>> ifst(Fst<Arc>::Read(in_fnames[i]));
     if (!ifst) return;
-    string key;
+    std::string key;
     if (generate_keys > 0) {
       std::ostringstream keybuf;
       keybuf.width(generate_keys);

@@ -5,7 +5,7 @@
 from libc.stdint cimport *
 
 
-cdef extern from "<fst/types.h>" nogil:
+cdef extern from "base/integral_types.h" nogil:
 
   ctypedef int8_t int8
   ctypedef int16_t int16

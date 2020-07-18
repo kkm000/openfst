@@ -72,7 +72,7 @@ struct CompactFstOptions : public CacheOptions {
 //   // compacted using this compactor
 //   uint64 Properties() const;
 //   // Return a string identifying the type of compactor.
-//   static const string &Type();
+//   static const std::string &Type();
 //   // Return true if an error has occured.
 //   bool Error() const;
 //   // Writes a compactor to a file.
@@ -129,7 +129,7 @@ struct CompactFstOptions : public CacheOptions {
 //   uint64 Properties() const;
 //
 //   // Returns a string identifying the type of compactor.
-//   static const string &Type();
+//   static const std::string &Type();
 //
 //   // Writes a compactor to a file.
 //   bool Write(std::ostream &strm) const;
@@ -219,7 +219,7 @@ class DefaultCompactStore {
   bool Error() const { return error_; }
 
   // Returns a string identifying the type of data storage container.
-  static const string &Type();
+  static const std::string &Type();
 
  private:
   std::unique_ptr<MappedFile> states_region_;
@@ -454,8 +454,8 @@ bool DefaultCompactStore<Element, Unsigned>::Write(
 }
 
 template <class Element, class Unsigned>
-const string &DefaultCompactStore<Element, Unsigned>::Type() {
-  static const string *const type = new string("compact");
+const std::string &DefaultCompactStore<Element, Unsigned>::Type() {
+  static const std::string *const type = new std::string("compact");
   return *type;
 }
 
@@ -547,9 +547,9 @@ class DefaultCompactor {
 
   bool HasFixedOutdegree() const { return arc_compactor_->Size() != -1; }
 
-  static const string &Type() {
-    static const string *const type = [] {
-      string type = "compact";
+  static const std::string &Type() {
+    static const std::string *const type = [] {
+      std::string type = "compact";
       if (sizeof(U) != sizeof(uint32)) type += std::to_string(8 * sizeof(U));
       type += "_";
       type += C::Type();
@@ -557,7 +557,7 @@ class DefaultCompactor {
         type += "_";
         type += CompactStore::Type();
       }
-      return new string(type);
+      return new std::string(type);
     }();
     return *type;
   }
@@ -1086,7 +1086,7 @@ class CompactFst
   // Read a CompactFst from a file; return nullptr on error
   // Empty filename reads from standard input
   static CompactFst<A, ArcCompactor, Unsigned, CompactStore, CacheStore> *Read(
-      const string &filename) {
+      const std::string &filename) {
     auto *impl = ImplToExpandedFst<Impl>::Read(filename);
     return impl ? new CompactFst<A, ArcCompactor, Unsigned, CompactStore,
                                  CacheStore>(std::shared_ptr<Impl>(impl))
@@ -1097,7 +1097,7 @@ class CompactFst
     return GetImpl()->Write(strm, opts);
   }
 
-  bool Write(const string &filename) const override {
+  bool Write(const std::string &filename) const override {
     return Fst<Arc>::WriteFile(filename);
   }
 
@@ -1192,7 +1192,7 @@ bool CompactFst<A, ArcCompactor, Unsigned, CompactStore, CacheStore>::WriteFst(
   hdr.SetStart(fst.Start());
   hdr.SetNumStates(num_states);
   hdr.SetNumArcs(num_arcs);
-  string type = "compact";
+  std::string type = "compact";
   if (sizeof(Unsigned) != sizeof(uint32)) {
     type += std::to_string(CHAR_BIT * sizeof(Unsigned));
   }
@@ -1246,7 +1246,7 @@ bool CompactFst<A, ArcCompactor, Unsigned, CompactStore, CacheStore>::WriteFst(
   }
   strm.flush();
   if (!strm) {
-    LOG(ERROR) << "CompactFst write failed: " << opts.source;
+    LOG(ERROR) << "CompactFst::WriteFst: Write failed: " << opts.source;
     return false;
   }
   return true;
@@ -1346,17 +1346,15 @@ class StringCompactor {
 
   constexpr ssize_t Size() const { return 1; }
 
-  constexpr uint64 Properties() const {
-    return kString | kAcceptor | kUnweighted;
-  }
+  constexpr uint64 Properties() const { return kCompiledStringProperties; }
 
   bool Compatible(const Fst<Arc> &fst) const {
     const auto props = Properties();
     return fst.Properties(props, true) == props;
   }
 
-  static const string &Type() {
-    static const string *const type = new string("string");
+  static const std::string &Type() {
+    static const std::string *const type = new std::string("string");
     return *type;
   }
 
@@ -1396,8 +1394,8 @@ class WeightedStringCompactor {
     return fst.Properties(props, true) == props;
   }
 
-  static const string &Type() {
-    static const string *const type = new string("weighted_string");
+  static const std::string &Type() {
+    static const std::string *const type = new std::string("weighted_string");
     return *type;
   }
 
@@ -1436,8 +1434,9 @@ class UnweightedAcceptorCompactor {
     return fst.Properties(props, true) == props;
   }
 
-  static const string &Type() {
-    static const string *const type = new string("unweighted_acceptor");
+  static const std::string &Type() {
+    static const std::string *const type =
+        new std::string("unweighted_acceptor");
     return *type;
   }
 
@@ -1477,8 +1476,8 @@ class AcceptorCompactor {
     return fst.Properties(props, true) == props;
   }
 
-  static const string &Type() {
-    static const string *const type = new string("acceptor");
+  static const std::string &Type() {
+    static const std::string *const type = new std::string("acceptor");
     return *type;
   }
 
@@ -1518,8 +1517,8 @@ class UnweightedCompactor {
     return fst.Properties(props, true) == props;
   }
 
-  static const string &Type() {
-    static const string *const type = new string("unweighted");
+  static const std::string &Type() {
+    static const std::string *const type = new std::string("unweighted");
     return *type;
   }
 

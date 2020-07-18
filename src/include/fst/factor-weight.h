@@ -95,6 +95,27 @@ class IdentityFactor {
   void Reset() {}
 };
 
+// Factor the Fst to unfold it as needed so that every two paths leading to the
+// same state have the same weight. Requires applying only to arc weights
+// (FactorWeightOptions::mode == kFactorArcWeights).
+template <class W>
+class OneFactor {
+ public:
+  explicit OneFactor(const W &w) : weight_(w), done_(w == W::One()) {}
+
+  bool Done() const { return done_; }
+
+  void Next() { done_ = true; }
+
+  std::pair<W, W> Value() const { return std::make_pair(W::One(), weight_); }
+
+  void Reset() { done_ = weight_ == W::One(); }
+
+ private:
+  W weight_;
+  bool done_;
+};
+
 // Factors a StringWeight w as 'ab' where 'a' is a label.
 template <typename Label, StringType S = STRING_LEFT>
 class StringFactor {
@@ -260,11 +281,10 @@ class FactorWeightFstImpl : public CacheImpl<Arc> {
   Weight Final(StateId s) {
     if (!HasFinal(s)) {
       const auto &element = elements_[s];
-      // TODO(sorenj): fix so cast is unnecessary
       const auto weight =
           element.state == kNoStateId
               ? element.weight
-              : (Weight)Times(element.weight, fst_->Final(element.state));
+              : Times(element.weight, fst_->Final(element.state));
       FactorIterator siter(weight);
       if (!(mode_ & kFactorFinalWeights) || siter.Done()) {
         SetFinal(s, weight);
@@ -319,7 +339,7 @@ class FactorWeightFstImpl : public CacheImpl<Arc> {
       return unfactored_[element.state];
     } else {
       const auto insert_result =
-          element_map_.insert(std::make_pair(element, elements_.size()));
+          element_map_.emplace(element, elements_.size());
       if (insert_result.second) {
         elements_.push_back(element);
       }

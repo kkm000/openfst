@@ -25,8 +25,8 @@ namespace script {
 // for anything else!
 struct CompileFstInnerArgs {
   std::istream &istrm;
-  const string &source;
-  const string &fst_type;
+  const std::string &source;
+  const std::string &fst_type;
   const fst::SymbolTable *isyms;
   const fst::SymbolTable *osyms;
   const fst::SymbolTable *ssyms;
@@ -36,8 +36,9 @@ struct CompileFstInnerArgs {
   const bool nkeep;
   const bool allow_negative_labels;
 
-  CompileFstInnerArgs(std::istream &istrm, const string &source,
-                      const string &fst_type, const fst::SymbolTable *isyms,
+  CompileFstInnerArgs(std::istream &istrm, const std::string &source,
+                      const std::string &fst_type,
+                      const fst::SymbolTable *isyms,
                       const fst::SymbolTable *osyms,
                       const fst::SymbolTable *ssyms, bool accep, bool ikeep,
                       bool okeep, bool nkeep,
@@ -79,14 +80,15 @@ void CompileFstInternal(CompileFstArgs *args) {
   args->retval = fst ? new FstClass(*fst) : nullptr;
 }
 
-void CompileFst(std::istream &istrm, const string &source, const string &dest,
-                const string &fst_type, const string &arc_type,
-                const SymbolTable *isyms, const SymbolTable *osyms,
-                const SymbolTable *ssyms, bool accep, bool ikeep, bool okeep,
-                bool nkeep, bool allow_negative_labels);
+void CompileFst(std::istream &istrm, const std::string &source,
+                const std::string &dest, const std::string &fst_type,
+                const std::string &arc_type, const SymbolTable *isyms,
+                const SymbolTable *osyms, const SymbolTable *ssyms, bool accep,
+                bool ikeep, bool okeep, bool nkeep, bool allow_negative_labels);
 
-FstClass *CompileFstInternal(std::istream &istrm, const string &source,
-                             const string &fst_type, const string &arc_type,
+FstClass *CompileFstInternal(std::istream &istrm, const std::string &source,
+                             const std::string &fst_type,
+                             const std::string &arc_type,
                              const SymbolTable *isyms, const SymbolTable *osyms,
                              const SymbolTable *ssyms, bool accep, bool ikeep,
                              bool okeep, bool nkeep,

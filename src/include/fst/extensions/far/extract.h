@@ -16,17 +16,17 @@
 namespace fst {
 
 template <class Arc>
-inline void FarWriteFst(const Fst<Arc> *fst, string key, string *okey,
+inline void FarWriteFst(const Fst<Arc> *fst, std::string key, std::string *okey,
                         int *nrep, int32 generate_filenames, int i,
-                        const string &filename_prefix,
-                        const string &filename_suffix) {
+                        const std::string &filename_prefix,
+                        const std::string &filename_suffix) {
   if (key == *okey) {
     ++*nrep;
   } else {
     *nrep = 0;
   }
   *okey = key;
-  string ofilename;
+  std::string ofilename;
   if (generate_filenames) {
     std::ostringstream tmp;
     tmp.width(generate_filenames);
@@ -45,14 +45,16 @@ inline void FarWriteFst(const Fst<Arc> *fst, string key, string *okey,
 }
 
 template <class Arc>
-void FarExtract(const std::vector<string> &ifilenames, int32 generate_filenames,
-                const string &keys, const string &key_separator,
-                const string &range_delimiter, const string &filename_prefix,
-                const string &filename_suffix) {
+void FarExtract(const std::vector<std::string> &ifilenames,
+                int32 generate_filenames, const std::string &keys,
+                const std::string &key_separator,
+                const std::string &range_delimiter,
+                const std::string &filename_prefix,
+                const std::string &filename_suffix) {
   std::unique_ptr<FarReader<Arc>> far_reader(
       FarReader<Arc>::Open(ifilenames));
   if (!far_reader) return;
-  string okey;
+  std::string okey;
   int nrep = 0;
   std::vector<char *> key_vector;
   // User has specified a set of FSTs to extract, where some of these may in
@@ -63,7 +65,7 @@ void FarExtract(const std::vector<string> &ifilenames, int32 generate_filenames,
     SplitString(keys_cstr, key_separator.c_str(), &key_vector, true);
     int i = 0;
     for (size_t k = 0; k < key_vector.size(); ++k, ++i) {
-      string key = key_vector[k];
+      std::string key = key_vector[k];
       auto *key_cstr = new char[key.size() + 1];
       strcpy(key_cstr, key.c_str());
       std::vector<char *> range_vector;
@@ -77,8 +79,8 @@ void FarExtract(const std::vector<string> &ifilenames, int32 generate_filenames,
         FarWriteFst(fst, key, &okey, &nrep, generate_filenames, i,
                     filename_prefix, filename_suffix);
       } else if (range_vector.size() == 2) {  // A legal range
-        string begin_key = range_vector[0];
-        string end_key = range_vector[1];
+        std::string begin_key = range_vector[0];
+        std::string end_key = range_vector[1];
         if (begin_key.empty() || end_key.empty()) {
           LOG(ERROR) << "FarExtract: Illegal range specification " << key;
           return;
@@ -110,7 +112,6 @@ void FarExtract(const std::vector<string> &ifilenames, int32 generate_filenames,
     FarWriteFst(fst, key, &okey, &nrep, generate_filenames, i, filename_prefix,
                 filename_suffix);
   }
-  return;
 }
 
 }  // namespace fst
