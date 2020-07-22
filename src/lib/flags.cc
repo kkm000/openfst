@@ -14,6 +14,11 @@
 
 #include <cstring>
 
+#if _MSC_VER
+#include <io.h>
+#include <fcntl.h>
+#endif
+
 #include <fst/compat.h>
 #include <fst/flags.h>
 
@@ -38,6 +43,18 @@ static string prog_src;
 // Sets prog_src to src.
 static void SetProgSrc(const char *src) {
   prog_src = src;
+#if _MSC_VER
+  // This common code is invoked by all FST binaries, and only by them. Switch
+  // stdin and stdout into "binary" mode, so that 0x0A won't be translated into
+  // a 0x0D 0x0A byte pair in a pipe or a shell redirect. Other streams are
+  // already using ios::binary where binary files are read or written.
+  // Kudos to @daanzu for the suggested fix.
+  //    https://github.com/kkm000/openfst/issues/20
+  //    https://github.com/kkm000/openfst/pull/23
+  //    https://github.com/kkm000/openfst/pull/32
+  _setmode(_fileno(stdin), O_BINARY);
+  _setmode(_fileno(stdout), O_BINARY);
+#endif
   // Remove "-main" in src filename. Flags are defined in fstx.cc but SetFlags()
   // is called in fstx-main.cc, which results in a filename mismatch in
   // ShowUsageRestrict() below.
