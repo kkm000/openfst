@@ -6,7 +6,11 @@ under the [Apache 2.0 license](./COPYING). The home page for the library is
 located at http://openfst.org/. Check the [original README file](./README)
 for the current version, as we are not updating this file with the current
 release version. Make sure also to check the [NEWS](./NEWS) file for the
-latest changes.
+latest changes. This file is part of the original distribution.
+
+## Bugs And Limitations
+
+Refer to [BUGS.md](./BUGS.md) for known issues.
 
 ## Releases
 
@@ -16,8 +20,8 @@ in step. Sometimes we may skip a release, but we strive for that to be rather an
 exception. With each release, we drop a set of pre-built .exe files compiled for
 the x64 architecture and optimized for execution speed. We use the latest
 Microsoft compilers for it, so you may find you need to download and install the
-latest Microsoft C runtime. See [Microsoft KB2977003](https://support.microsoft.com/help/2977003/)
-for instructions.
+latest Microsoft C runtime. See [Microsoft KB2977003](
+https://support.microsoft.com/help/2977003/) for instructions.
 
 We do not release pre-built libraries, however, because Microsoft compiler ABI
 changes between versions, and is different for Debug and Release builds. You
@@ -54,18 +58,6 @@ solution root.
 Follow the normal CMake build procedure to generate build files. With CMake you
 have an option of building dynamic libraries shared by the executables.
 
-## Limitations
-
-* Memory-mapped files are not supported (we may add the support in the future
-  though), because it is very system-dependent. OpenFST supports reading e. g.
-  CompactFST files into allocated memory when memory mapping is not compiled in.
-* Dynamic registration of arc and FST types is not supported in the Visual Studio
-  project versions (as they build only static libraries). CMake build does not
-  have this limitation. Due to ABI being specific to Microsoft compiler version,
-  dynamically registered types must be compiled with strictly the same compiler
-  of the same major version, and mostly same build flags. This is quite hard to
-  get right, and is not recommended.
-
 ## Structure of the repository and tagging
 
 The `original` branch contains only imported original OpenFST files, with one
@@ -76,6 +68,9 @@ The last version point corresponds to the revision of OpenFST version. Most (but
 not all) of the versions has had only one revision, and therefore end in `.1`.
 The `winport` branch contains the port, with corresponding tags of the form
 `win/1.6.9.1`.
+
+Bug fix releases are marked with a `+` following a sequential number, for
+example, `win/1.7.2.1+01`
 
 You can review the changes to source code only with the git command e. g.
 
