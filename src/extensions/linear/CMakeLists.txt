@@ -11,11 +11,11 @@ if(HAVE_SCRIPT)
     fstscript
     fst
   )
-  set_target_properties(fstlinearscript PROPERTIES 
+  set_target_properties(fstlinearscript PROPERTIES
     SOVERSION "${SOVERSION}"
     FOLDER linear
   )
-  
+
   install(TARGETS fstlinearscript
 	LIBRARY DESTINATION lib
 	ARCHIVE DESTINATION lib
@@ -25,19 +25,19 @@ endif(HAVE_SCRIPT)
 
 if(HAVE_BIN)
   add_executable(fstlinear
-    fstlinear.cc)
+    fstlinear-main.cc fstlinear.cc)
   target_link_libraries(fstlinear
     fstlinearscript
-    fstscript 
+    fstscript
     fst
     ${CMAKE_DL_LIBS}
- )
+  )
 
   add_executable(fstloglinearapply
-    fstloglinearapply.cc)
+    fstloglinearapply-main.cc fstloglinearapply.cc)
   target_link_libraries(fstloglinearapply
     fstlinearscript
-    fstscript 
+    fstscript
     fst
     ${CMAKE_DL_LIBS}
   )
@@ -54,7 +54,7 @@ function (add_module _name)
     add_library(${ARGV})
     if (TARGET ${_name})
         target_link_libraries(${_name} fst)
-        set_target_properties(${_name} PROPERTIES 
+        set_target_properties(${_name} PROPERTIES
             WINDOWS_EXPORT_ALL_SYMBOLS true
             FOLDER linear/modules
         )
@@ -68,4 +68,3 @@ add_module(linear-tagger-fst MODULE
 
 add_module(linear-classifier-fst MODULE
   linear-classifier-fst.cc)
-

@@ -2,7 +2,7 @@ file(GLOB HEADER_FILES ../../include/fst/extensions/compress/*.h)
 message(STATUS "${HEADER_FILES}")
 
 add_library(fstcompressscript
-  compress-script.cc
+  compressscript.cc
   ${HEADER_FILES}
  )
 
@@ -22,7 +22,7 @@ install(TARGETS fstcompressscript
 
 if(HAVE_BIN)
   add_executable(fstcompress
-    fstcompress.cc)
+    fstcompress-main.cc fstcompress.cc)
 
   target_link_libraries(fstcompress
     fstcompressscript
@@ -32,21 +32,9 @@ if(HAVE_BIN)
     ${CMAKE_DL_LIBS}
    )
 
-  add_executable(fstrandmod
-    fstrandmod.cc
-  )
-
-  target_link_libraries(fstrandmod
-    fstcompressscript
-    fstscript
-    fst
-    ${ZLIBS}
-    ${CMAKE_DL_LIBS}
-  )
-
-  install(TARGETS fstcompress fstrandmod
-	        LIBRARY DESTINATION bin
-			ARCHIVE DESTINATION bin
-            RUNTIME DESTINATION bin
-		)
+  install(TARGETS fstcompress
+    LIBRARY DESTINATION bin
+    ARCHIVE DESTINATION bin
+    RUNTIME DESTINATION bin
+   )
 endif(HAVE_BIN)

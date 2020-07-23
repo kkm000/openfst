@@ -4,7 +4,7 @@ message(STATUS "${HEADER_FILES}")
 if(HAVE_SCRIPT)
   add_library(fstpdtscript getters.cc pdtscript.cc ${HEADER_FILES})
   target_link_libraries(fstpdtscript fstscript fst)
-  set_target_properties(fstpdtscript PROPERTIES 
+  set_target_properties(fstpdtscript PROPERTIES
     SOVERSION "${SOVERSION}"
     FOLDER pdt
   )
@@ -18,20 +18,19 @@ endif(HAVE_SCRIPT)
 
 if(HAVE_BIN)
   function (add_executable2 _name)
-      add_executable(${ARGV})
-      if (TARGET ${_name})
-          target_link_libraries(${_name} fstpdtscript fstscript fst ${CMAKE_DL_LIBS})
-          set_target_properties(${_name} PROPERTIES
-            FOLDER pdt/bin
-          )
-      endif()
-      install(TARGETS ${_name} RUNTIME DESTINATION bin)
+    add_executable(${_name} ${_name}-main.cc ${_name}.cc)
+    if (TARGET ${_name})
+      target_link_libraries(${_name}
+        fstpdtscript fstscript fst ${CMAKE_DL_LIBS})
+      set_target_properties(${_name} PROPERTIES FOLDER pdt/bin)
+    endif()
+    install(TARGETS ${_name} RUNTIME DESTINATION bin)
   endfunction()
 
-  add_executable2(pdtcompose  pdtcompose.cc)
-  add_executable2(pdtexpand  pdtexpand.cc)
-  add_executable2(pdtinfo  pdtinfo.cc)
-  add_executable2(pdtreplace  pdtreplace.cc)
-  add_executable2(pdtreverse  pdtreverse.cc)
-  add_executable2(pdtshortestpath  pdtshortestpath.cc)
+  add_executable2(pdtcompose)
+  add_executable2(pdtexpand)
+  add_executable2(pdtinfo)
+  add_executable2(pdtreplace)
+  add_executable2(pdtreverse)
+  add_executable2(pdtshortestpath)
 endif(HAVE_BIN)
