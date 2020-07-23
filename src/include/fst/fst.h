@@ -11,7 +11,6 @@
 
 #include <cmath>
 #include <cstddef>
-
 #include <iostream>
 #include <memory>
 #include <sstream>
@@ -35,7 +34,7 @@ DECLARE_bool(fst_align);
 
 namespace fst {
 
-bool IsFstHeader(std::istream &, const string &);
+bool IsFstHeader(std::istream &, const std::string &);
 
 class FstHeader;
 
@@ -54,7 +53,7 @@ struct FstReadOptions {
   // a warning indicating why it was chosen.
   enum FileReadMode { READ, MAP };
 
-  string source;                // Where you're reading from.
+  std::string source;           // Where you're reading from.
   const FstHeader *header;      // Pointer to FST header; if non-zero, use
                                 // this info (don't read a stream header).
   const SymbolTable *isymbols;  // Pointer to input symbols; if non-zero, use
@@ -65,30 +64,31 @@ struct FstReadOptions {
   bool read_isymbols;           // Read isymbols, if any (default: true).
   bool read_osymbols;           // Read osymbols, if any (default: true).
 
-  explicit FstReadOptions(const string &source = "<unspecified>",
+  explicit FstReadOptions(const std::string &source = "<unspecified>",
                           const FstHeader *header = nullptr,
                           const SymbolTable *isymbols = nullptr,
                           const SymbolTable *osymbols = nullptr);
 
-  explicit FstReadOptions(const string &source, const SymbolTable *isymbols,
+  explicit FstReadOptions(const std::string &source,
+                          const SymbolTable *isymbols,
                           const SymbolTable *osymbols = nullptr);
 
   // Helper function to convert strings FileReadModes into their enum value.
-  static FileReadMode ReadMode(const string &mode);
+  static FileReadMode ReadMode(const std::string &mode);
 
   // Outputs a debug string for the FstReadOptions object.
-  string DebugString() const;
+  std::string DebugString() const;
 };
 
 struct FstWriteOptions {
-  string source;        // Where you're writing to.
+  std::string source;   // Where you're writing to.
   bool write_header;    // Write the header?
   bool write_isymbols;  // Write input symbols?
   bool write_osymbols;  // Write output symbols?
   bool align;           // Write data aligned (may fail on pipes)?
   bool stream_write;    // Avoid seek operations in writing.
 
-  explicit FstWriteOptions(const string &source = "<unspecifed>",
+  explicit FstWriteOptions(const std::string &source = "<unspecifed>",
                            bool write_header = true, bool write_isymbols = true,
                            bool write_osymbols = true,
                            bool align = FLAGS_fst_align,
@@ -107,22 +107,22 @@ struct FstWriteOptions {
 
 class FstHeader {
  public:
-  enum {
+  enum Flags {
     HAS_ISYMBOLS = 0x1,  // Has input symbol table.
     HAS_OSYMBOLS = 0x2,  // Has output symbol table.
     IS_ALIGNED = 0x4,    // Memory-aligned (where appropriate).
-  } Flags;
+  };
 
   FstHeader() : version_(0), flags_(0), properties_(0), start_(-1),
       numstates_(0), numarcs_(0) {}
 
-  const string &FstType() const { return fsttype_; }
+  const std::string &FstType() const { return fsttype_; }
 
-  const string &ArcType() const { return arctype_; }
+  const std::string &ArcType() const { return arctype_; }
 
   int32 Version() const { return version_; }
 
-  int32 GetFlags() const { return flags_; }
+  uint32 GetFlags() const { return flags_; }
 
   uint64 Properties() const { return properties_; }
 
@@ -132,13 +132,13 @@ class FstHeader {
 
   int64 NumArcs() const { return numarcs_; }
 
-  void SetFstType(const string &type) { fsttype_ = type; }
+  void SetFstType(const std::string &type) { fsttype_ = type; }
 
-  void SetArcType(const string &type) { arctype_ = type; }
+  void SetArcType(const std::string &type) { arctype_ = type; }
 
   void SetVersion(int32 version) { version_ = version; }
 
-  void SetFlags(int32 flags) { flags_ = flags; }
+  void SetFlags(uint32 flags) { flags_ = flags; }
 
   void SetProperties(uint64 properties) { properties_ = properties; }
 
@@ -148,23 +148,22 @@ class FstHeader {
 
   void SetNumArcs(int64 numarcs) { numarcs_ = numarcs; }
 
-  bool Read(std::istream &strm, const string &source,
-            bool rewind = false);
+  bool Read(std::istream &strm, const std::string &source, bool rewind = false);
 
-  bool Write(std::ostream &strm, const string &source) const;
+  bool Write(std::ostream &strm, const std::string &source) const;
 
   // Outputs a debug string for the FstHeader object.
-  string DebugString() const;
+  std::string DebugString() const;
 
  private:
-  string fsttype_;     // E.g. "vector".
-  string arctype_;     // E.g. "standard".
-  int32 version_;      // Type version number.
-  int32 flags_;        // File format bits.
-  uint64 properties_;  // FST property bits.
-  int64 start_;        // Start state.
-  int64 numstates_;    // # of states.
-  int64 numarcs_;      // # of arcs.
+  std::string fsttype_;  // E.g. "vector".
+  std::string arctype_;  // E.g. "standard".
+  int32 version_;        // Type version number.
+  uint32 flags_;         // File format bits.
+  uint64 properties_;    // FST property bits.
+  int64 start_;          // Start state.
+  int64 numstates_;      // # of states.
+  int64 numarcs_;        // # of arcs.
 };
 
 // Specifies matcher action.
@@ -212,7 +211,7 @@ class Fst {
   virtual uint64 Properties(uint64 mask, bool test) const = 0;
 
   // FST type name.
-  virtual const string &Type() const = 0;
+  virtual const std::string &Type() const = 0;
 
   // Gets a copy of this Fst. The copying behaves as follows:
   //
@@ -252,7 +251,7 @@ class Fst {
 
   // Reads an FST from a file; returns nullptr on error. An empty filename
   // results in reading from standard input.
-  static Fst<Arc> *Read(const string &filename) {
+  static Fst<Arc> *Read(const std::string &filename) {
     if (!filename.empty()) {
       std::ifstream strm(filename,
                               std::ios_base::in | std::ios_base::binary);
@@ -275,7 +274,7 @@ class Fst {
 
   // Writes an FST to a file; returns false on error; an empty filename
   // results in writing to standard output.
-  virtual bool Write(const string &filename) const {
+  virtual bool Write(const std::string &filename) const {
     LOG(ERROR) << "Fst::Write: No write filename method for " << Type()
                << " FST type";
     return false;
@@ -300,17 +299,19 @@ class Fst {
   virtual MatcherBase<Arc> *InitMatcher(MatchType match_type) const;
 
  protected:
-  bool WriteFile(const string &filename) const {
+  bool WriteFile(const std::string &filename) const {
     if (!filename.empty()) {
       std::ofstream strm(filename,
                                std::ios_base::out | std::ios_base::binary);
       if (!strm) {
-        LOG(ERROR) << "Fst::Write: Can't open file: " << filename;
+        LOG(ERROR) << "Fst::WriteFile: Can't open file: " << filename;
         return false;
       }
-      bool val = Write(strm, FstWriteOptions(filename));
-      if (!val) LOG(ERROR) << "Fst::Write failed: " << filename;
-      return val;
+      if (!Write(strm, FstWriteOptions(filename))) {
+        LOG(ERROR) << "Fst::WriteFile: Write failed: " << filename;
+        return false;
+      }
+      return true;
     } else {
       return Write(std::cout, FstWriteOptions("standard output"));
     }
@@ -659,9 +660,9 @@ class FstImpl {
 
   FstImpl &operator=(FstImpl<Arc> &&impl) noexcept;
 
-  const string &Type() const { return type_; }
+  const std::string &Type() const { return type_; }
 
-  void SetType(const string &type) { type_ = type; }
+  void SetType(const std::string &type) { type_ = type; }
 
   virtual uint64 Properties() const { return properties_; }
 
@@ -739,7 +740,7 @@ class FstImpl {
   // cross-type serialization methods Fst::WriteFst.
   static void WriteFstHeader(const Fst<Arc> &fst, std::ostream &strm,
                              const FstWriteOptions &opts, int version,
-                             const string &type, uint64 properties,
+                             const std::string &type, uint64 properties,
                              FstHeader *hdr) {
     if (opts.write_header) {
       hdr->SetFstType(type);
@@ -772,7 +773,7 @@ class FstImpl {
   // success, false on failure.
   static bool UpdateFstHeader(const Fst<Arc> &fst, std::ostream &strm,
                               const FstWriteOptions &opts, int version,
-                              const string &type, uint64 properties,
+                              const std::string &type, uint64 properties,
                               FstHeader *hdr, size_t header_offset) {
     strm.seekp(header_offset);
     if (!strm) {
@@ -796,7 +797,7 @@ class FstImpl {
   mutable uint64 properties_;  // Property bits.
 
  private:
-  string type_;  // Unique name of FST class.
+  std::string type_;  // Unique name of FST class.
   std::unique_ptr<SymbolTable> isymbols_;
   std::unique_ptr<SymbolTable> osymbols_;
 };
@@ -816,13 +817,11 @@ bool FstImpl<Arc>::ReadHeader(std::istream &strm, const FstReadOptions &opts,
   } else if (!hdr->Read(strm, opts.source)) {
     return false;
   }
-  if (FLAGS_v >= 2) {
-    LOG(INFO) << "FstImpl::ReadHeader: source: " << opts.source
-              << ", fst_type: " << hdr->FstType()
-              << ", arc_type: " << Arc::Type()
-              << ", version: " << hdr->Version()
-              << ", flags: " << hdr->GetFlags();
-  }
+  VLOG(2) << "FstImpl::ReadHeader: source: " << opts.source
+          << ", fst_type: " << hdr->FstType()
+          << ", arc_type: " << Arc::Type()
+          << ", version: " << hdr->Version()
+          << ", flags: " << hdr->GetFlags();
   if (hdr->FstType() != type_) {
     LOG(ERROR) << "FstImpl::ReadHeader: FST not of type " << type_
                << ": " << opts.source;
@@ -896,7 +895,7 @@ class ImplToFst : public FST {
     }
   }
 
-  const string &Type() const override { return impl_->Type(); }
+  const std::string &Type() const override { return impl_->Type(); }
 
   const SymbolTable *InputSymbols() const override {
     return impl_->InputSymbols();
@@ -977,27 +976,27 @@ void Cast(const IFST &ifst, OFST *ofst) {
 // FST serialization.
 
 template <class Arc>
-string FstToString(const Fst<Arc> &fst,
-                   const FstWriteOptions &options =
-                       FstWriteOptions("FstToString")) {
+std::string FstToString(
+    const Fst<Arc> &fst,
+    const FstWriteOptions &options = FstWriteOptions("FstToString")) {
   std::ostringstream ostrm;
   fst.Write(ostrm, options);
   return ostrm.str();
 }
 
 template <class Arc>
-void FstToString(const Fst<Arc> &fst, string *result) {
+void FstToString(const Fst<Arc> &fst, std::string *result) {
   *result = FstToString(fst);
 }
 
 template <class Arc>
-void FstToString(const Fst<Arc> &fst, string *result,
+void FstToString(const Fst<Arc> &fst, std::string *result,
                  const FstWriteOptions &options) {
   *result = FstToString(fst, options);
 }
 
 template <class Arc>
-Fst<Arc> *StringToFst(const string &s) {
+Fst<Arc> *StringToFst(const std::string &s) {
   std::istringstream istrm(s);
   return Fst<Arc>::Read(istrm, FstReadOptions("StringToFst"));
 }

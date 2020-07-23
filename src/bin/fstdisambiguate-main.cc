@@ -4,7 +4,6 @@
 // Disambiguates an FST.
 
 #include <cstring>
-
 #include <memory>
 #include <string>
 
@@ -22,7 +21,7 @@ int fstdisambiguate_main(int argc, char **argv) {
   using fst::script::VectorFstClass;
   using fst::script::WeightClass;
 
-  string usage = "Disambiguates an FST.\n\n  Usage: ";
+  std::string usage = "Disambiguates an FST.\n\n  Usage: ";
   usage += argv[0];
   usage += " [in.fst [out.fst]]\n";
 
@@ -33,8 +32,10 @@ int fstdisambiguate_main(int argc, char **argv) {
     return 1;
   }
 
-  const string in_name = (argc > 1 && strcmp(argv[1], "-") != 0) ? argv[1] : "";
-  const string out_name = argc > 2 ? argv[2] : "";
+  const std::string in_name =
+      (argc > 1 && strcmp(argv[1], "-") != 0) ? argv[1] : "";
+  const std::string out_name =
+      (argc > 2 && strcmp(argv[2], "-") != 0) ? argv[2] : "";
 
   std::unique_ptr<FstClass> ifst(FstClass::Read(in_name));
   if (!ifst) return 1;

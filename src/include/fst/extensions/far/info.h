@@ -29,8 +29,8 @@ void AccumulateStatesAndArcs(const Fst<Arc> &fst, size_t *nstate, size_t *narc,
 }
 
 struct KeyInfo {
-  string key;
-  string type;
+  std::string key;
+  std::string type;
   size_t nstate = 0;
   size_t narc = 0;
   size_t nfinal = 0;
@@ -38,19 +38,19 @@ struct KeyInfo {
 
 struct FarInfoData {
   std::vector<KeyInfo> key_infos;
-  string far_type;
-  string arc_type;
+  std::string far_type;
+  std::string arc_type;
   size_t nfst = 0;
   size_t nstate = 0;
   size_t narc = 0;
   size_t nfinal = 0;
-  std::set<string> fst_types;
+  std::set<std::string> fst_types;
 };
 
 template <class Arc>
-void GetFarInfo(const std::vector<string> &filenames, const string &begin_key,
-                const string &end_key, const bool list_fsts,
-                FarInfoData *far_info) {
+void GetFarInfo(const std::vector<std::string> &filenames,
+                const std::string &begin_key, const std::string &end_key,
+                const bool list_fsts, FarInfoData *far_info) {
   *far_info = FarInfoData();
   std::unique_ptr<FarReader<Arc>> reader(FarReader<Arc>::Open(filenames));
   if (!reader) {
@@ -84,8 +84,9 @@ void GetFarInfo(const std::vector<string> &filenames, const string &begin_key,
 }
 
 template <class Arc>
-void FarInfo(const std::vector<string> &filenames, const string &begin_key,
-             const string &end_key, const bool list_fsts) {
+void FarInfo(const std::vector<std::string> &filenames,
+             const std::string &begin_key, const std::string &end_key,
+             const bool list_fsts) {
   FarInfoData info;
   GetFarInfo<Arc>(filenames, begin_key, end_key, list_fsts, &info);
   if (!list_fsts) {

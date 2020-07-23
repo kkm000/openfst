@@ -5,7 +5,6 @@
 // and arcs and property values (see properties.h).
 
 #include <cstring>
-
 #include <memory>
 #include <string>
 
@@ -22,7 +21,7 @@ int fstinfo_main(int argc, char **argv) {
   namespace s = fst::script;
   using fst::script::FstClass;
 
-  string usage = "Prints out information about an FST.\n\n  Usage: ";
+  std::string usage = "Prints out information about an FST.\n\n  Usage: ";
   usage += argv[0];
   usage += " [in.fst]\n";
 
@@ -33,7 +32,7 @@ int fstinfo_main(int argc, char **argv) {
     return 1;
   }
 
-  const string in_name =
+  const std::string in_name =
       (argc > 1 && (strcmp(argv[1], "-") != 0)) ? argv[1] : "";
 
   std::unique_ptr<FstClass> ifst(FstClass::Read(in_name));

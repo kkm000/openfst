@@ -27,8 +27,8 @@ struct CustomArc {
       : ilabel(i), olabel(o), weight(std::move(w)), nextstate(s) {}
   CustomArc() {}
 
-  static const string &Type() {  // Arc type name
-    static const string *const type = new string("my");
+  static const std::string &Type() {  // Arc type name
+    static const std::string *const type = new std::string("my");
     return *type;
   }
 
@@ -63,8 +63,8 @@ class CustomCompactor {
 
   bool Compatible(const Fst<A> &fst) const { return true; }
 
-  static const string &Type() {
-    static const string *const type = new string("my");
+  static const std::string &Type() {
+    static const std::string *const type = new std::string("my");
     return *type;
   }
 

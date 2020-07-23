@@ -17,7 +17,7 @@ using ConcatArgs1 = std::pair<MutableFstClass *, const FstClass &>;
 template <class Arc>
 void Concat(ConcatArgs1 *args) {
   MutableFst<Arc> *ofst = std::get<0>(*args)->GetMutableFst<Arc>();
-  const Fst<Arc> &ifst = *(std::get<1>(*args).GetFst<Arc>());
+  const Fst<Arc> &ifst = *std::get<1>(*args).GetFst<Arc>();
   Concat(ofst, ifst);
 }
 
@@ -25,7 +25,7 @@ using ConcatArgs2 = std::pair<const FstClass &, MutableFstClass *>;
 
 template <class Arc>
 void Concat(ConcatArgs2 *args) {
-  const Fst<Arc> &ifst = *(std::get<0>(*args).GetFst<Arc>());
+  const Fst<Arc> &ifst = *std::get<0>(*args).GetFst<Arc>();
   MutableFst<Arc> *ofst = std::get<1>(*args)->GetMutableFst<Arc>();
   Concat(ifst, ofst);
 }

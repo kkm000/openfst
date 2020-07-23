@@ -4,7 +4,6 @@
 // Minimizes a deterministic FST.
 
 #include <cstring>
-
 #include <memory>
 #include <string>
 
@@ -20,7 +19,7 @@ int fstminimize_main(int argc, char **argv) {
   using fst::script::MutableFstClass;
   using fst::script::VectorFstClass;
 
-  string usage = "Minimizes a deterministic FST.\n\n  Usage: ";
+  std::string usage = "Minimizes a deterministic FST.\n\n  Usage: ";
   usage += argv[0];
   usage += " [in.fst [out1.fst [out2.fst]]]\n";
 
@@ -31,10 +30,11 @@ int fstminimize_main(int argc, char **argv) {
     return 1;
   }
 
-  const string in_name = (argc > 1 && strcmp(argv[1], "-") != 0) ? argv[1] : "";
-  const string out1_name =
+  const std::string in_name =
+      (argc > 1 && strcmp(argv[1], "-") != 0) ? argv[1] : "";
+  const std::string out1_name =
       (argc > 2 && strcmp(argv[2], "-") != 0) ? argv[2] : "";
-  const string out2_name =
+  const std::string out2_name =
       (argc > 3 && strcmp(argv[3], "-") != 0) ? argv[3] : "";
 
   if (out1_name.empty() && out2_name.empty() && argc > 3) {

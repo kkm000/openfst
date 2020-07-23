@@ -16,7 +16,7 @@ using SynchronizeArgs = std::pair<const FstClass &, MutableFstClass *>;
 
 template <class Arc>
 void Synchronize(SynchronizeArgs *args) {
-  const Fst<Arc> &ifst = *(std::get<0>(*args).GetFst<Arc>());
+  const Fst<Arc> &ifst = *std::get<0>(*args).GetFst<Arc>();
   MutableFst<Arc> *ofst = std::get<1>(*args)->GetMutableFst<Arc>();
   Synchronize(ifst, ofst);
 }

@@ -27,15 +27,15 @@ struct FstPrinterArgs {
   const bool accept;
   const bool show_weight_one;
   std::ostream *ostrm;
-  const string &dest;
-  const string &sep;  // NOLINT
-  const string &missing_symbol;
+  const std::string &dest;
+  const std::string &sep;  // NOLINT
+  const std::string &missing_symbol;
 
   FstPrinterArgs(const FstClass &fst, const SymbolTable *isyms,
                  const SymbolTable *osyms, const SymbolTable *ssyms,
                  bool accept, bool show_weight_one, std::ostream *ostrm,
-                 const string &dest, const string &sep,
-                 const string &missing_sym = "")
+                 const std::string &dest, const std::string &sep,
+                 const std::string &missing_sym = "")
       : fst(fst),
         isyms(isyms),
         osyms(osyms),
@@ -50,25 +50,25 @@ struct FstPrinterArgs {
 
 template <class Arc>
 void PrintFst(FstPrinterArgs *args) {
-  const Fst<Arc> &fst = *(args->fst.GetFst<Arc>());
+  const Fst<Arc> &fst = *args->fst.GetFst<Arc>();
   FstPrinter<Arc> fstprinter(fst, args->isyms, args->osyms, args->ssyms,
                              args->accept, args->show_weight_one, args->sep,
                              args->missing_symbol);
   fstprinter.Print(args->ostrm, args->dest);
 }
 
-void PrintFst(const FstClass &fst, std::ostream &ostrm, const string &dest,
+void PrintFst(const FstClass &fst, std::ostream &ostrm, const std::string &dest,
               const SymbolTable *isyms, const SymbolTable *osyms,
               const SymbolTable *ssyms, bool accept, bool show_weight_one,
-              const string &missing_sym = "");
+              const std::string &missing_sym = "");
 
 // The same, but with more sensible defaults.
 template <class Arc>
-void PrintFst(const Fst<Arc> &fst, std::ostream &ostrm, const string &dest = "",
-              const SymbolTable *isyms = nullptr,
+void PrintFst(const Fst<Arc> &fst, std::ostream &ostrm,
+              const std::string &dest = "", const SymbolTable *isyms = nullptr,
               const SymbolTable *osyms = nullptr,
               const SymbolTable *ssyms = nullptr) {
-  const string sep = FLAGS_fst_field_separator.substr(0, 1);
+  const std::string sep = FLAGS_fst_field_separator.substr(0, 1);
   FstPrinter<Arc> fstprinter(fst, isyms, osyms, ssyms, true, true, sep);
   fstprinter.Print(&ostrm, dest);
 }

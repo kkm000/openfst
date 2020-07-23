@@ -164,51 +164,61 @@ libfstfarscript_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CXX \
 	$(LDFLAGS) -o $@
 @HAVE_SCRIPT_TRUE@am_libfstfarscript_la_rpath = -rpath $(libdir)
 PROGRAMS = $(bin_PROGRAMS)
-am__farcompilestrings_SOURCES_DIST = farcompilestrings.cc
+am__farcompilestrings_SOURCES_DIST = farcompilestrings.cc \
+	farcompilestrings-main.cc
 @HAVE_BIN_TRUE@am_farcompilestrings_OBJECTS =  \
-@HAVE_BIN_TRUE@	farcompilestrings.$(OBJEXT)
+@HAVE_BIN_TRUE@	farcompilestrings.$(OBJEXT) \
+@HAVE_BIN_TRUE@	farcompilestrings-main.$(OBJEXT)
 farcompilestrings_OBJECTS = $(am_farcompilestrings_OBJECTS)
 farcompilestrings_LDADD = $(LDADD)
 @HAVE_BIN_TRUE@farcompilestrings_DEPENDENCIES = libfstfarscript.la \
 @HAVE_BIN_TRUE@	../../script/libfstscript.la \
 @HAVE_BIN_TRUE@	../../lib/libfst.la $(am__DEPENDENCIES_1)
-am__farcreate_SOURCES_DIST = farcreate.cc
-@HAVE_BIN_TRUE@am_farcreate_OBJECTS = farcreate.$(OBJEXT)
+am__farcreate_SOURCES_DIST = farcreate.cc farcreate-main.cc
+@HAVE_BIN_TRUE@am_farcreate_OBJECTS = farcreate.$(OBJEXT) \
+@HAVE_BIN_TRUE@	farcreate-main.$(OBJEXT)
 farcreate_OBJECTS = $(am_farcreate_OBJECTS)
 farcreate_LDADD = $(LDADD)
 @HAVE_BIN_TRUE@farcreate_DEPENDENCIES = libfstfarscript.la \
 @HAVE_BIN_TRUE@	../../script/libfstscript.la \
 @HAVE_BIN_TRUE@	../../lib/libfst.la $(am__DEPENDENCIES_1)
-am__farequal_SOURCES_DIST = farequal.cc
-@HAVE_BIN_TRUE@am_farequal_OBJECTS = farequal.$(OBJEXT)
+am__farequal_SOURCES_DIST = farequal.cc farequal-main.cc
+@HAVE_BIN_TRUE@am_farequal_OBJECTS = farequal.$(OBJEXT) \
+@HAVE_BIN_TRUE@	farequal-main.$(OBJEXT)
 farequal_OBJECTS = $(am_farequal_OBJECTS)
 farequal_LDADD = $(LDADD)
 @HAVE_BIN_TRUE@farequal_DEPENDENCIES = libfstfarscript.la \
 @HAVE_BIN_TRUE@	../../script/libfstscript.la \
 @HAVE_BIN_TRUE@	../../lib/libfst.la $(am__DEPENDENCIES_1)
-am__farextract_SOURCES_DIST = farextract.cc
-@HAVE_BIN_TRUE@am_farextract_OBJECTS = farextract.$(OBJEXT)
+am__farextract_SOURCES_DIST = farextract.cc farextract-main.cc
+@HAVE_BIN_TRUE@am_farextract_OBJECTS = farextract.$(OBJEXT) \
+@HAVE_BIN_TRUE@	farextract-main.$(OBJEXT)
 farextract_OBJECTS = $(am_farextract_OBJECTS)
 farextract_LDADD = $(LDADD)
 @HAVE_BIN_TRUE@farextract_DEPENDENCIES = libfstfarscript.la \
 @HAVE_BIN_TRUE@	../../script/libfstscript.la \
 @HAVE_BIN_TRUE@	../../lib/libfst.la $(am__DEPENDENCIES_1)
-am__farinfo_SOURCES_DIST = farinfo.cc
-@HAVE_BIN_TRUE@am_farinfo_OBJECTS = farinfo.$(OBJEXT)
+am__farinfo_SOURCES_DIST = farinfo.cc farinfo-main.cc
+@HAVE_BIN_TRUE@am_farinfo_OBJECTS = farinfo.$(OBJEXT) \
+@HAVE_BIN_TRUE@	farinfo-main.$(OBJEXT)
 farinfo_OBJECTS = $(am_farinfo_OBJECTS)
 farinfo_LDADD = $(LDADD)
 @HAVE_BIN_TRUE@farinfo_DEPENDENCIES = libfstfarscript.la \
 @HAVE_BIN_TRUE@	../../script/libfstscript.la \
 @HAVE_BIN_TRUE@	../../lib/libfst.la $(am__DEPENDENCIES_1)
-am__farisomorphic_SOURCES_DIST = farisomorphic.cc
-@HAVE_BIN_TRUE@am_farisomorphic_OBJECTS = farisomorphic.$(OBJEXT)
+am__farisomorphic_SOURCES_DIST = farisomorphic.cc \
+	farisomorphic-main.cc
+@HAVE_BIN_TRUE@am_farisomorphic_OBJECTS = farisomorphic.$(OBJEXT) \
+@HAVE_BIN_TRUE@	farisomorphic-main.$(OBJEXT)
 farisomorphic_OBJECTS = $(am_farisomorphic_OBJECTS)
 farisomorphic_LDADD = $(LDADD)
 @HAVE_BIN_TRUE@farisomorphic_DEPENDENCIES = libfstfarscript.la \
 @HAVE_BIN_TRUE@	../../script/libfstscript.la \
 @HAVE_BIN_TRUE@	../../lib/libfst.la $(am__DEPENDENCIES_1)
-am__farprintstrings_SOURCES_DIST = farprintstrings.cc
-@HAVE_BIN_TRUE@am_farprintstrings_OBJECTS = farprintstrings.$(OBJEXT)
+am__farprintstrings_SOURCES_DIST = farprintstrings.cc \
+	farprintstrings-main.cc
+@HAVE_BIN_TRUE@am_farprintstrings_OBJECTS = farprintstrings.$(OBJEXT) \
+@HAVE_BIN_TRUE@	farprintstrings-main.$(OBJEXT)
 farprintstrings_OBJECTS = $(am_farprintstrings_OBJECTS)
 farprintstrings_LDADD = $(LDADD)
 @HAVE_BIN_TRUE@farprintstrings_DEPENDENCIES = libfstfarscript.la \
@@ -426,12 +436,12 @@ AM_CPPFLAGS = -I$(srcdir)/../../include $(ICU_CPPFLAGS)
 @HAVE_SCRIPT_FALSE@lib_LTLIBRARIES = libfstfar.la
 @HAVE_SCRIPT_TRUE@lib_LTLIBRARIES = libfstfar.la libfstfarscript.la
 libfstfar_la_SOURCES = sttable.cc stlist.cc
-libfstfar_la_LDFLAGS = -version-info 16:0:0
+libfstfar_la_LDFLAGS = -version-info 17:0:0
 libfstfar_la_LIBADD = ../../lib/libfst.la -lm $(DL_LIBS)
 @HAVE_SCRIPT_TRUE@libfstfarscript_la_SOURCES = far-class.cc farscript.cc getters.cc script-impl.cc \
 @HAVE_SCRIPT_TRUE@                             strings.cc
 
-@HAVE_SCRIPT_TRUE@libfstfarscript_la_LDFLAGS = -version-info 16:0:0
+@HAVE_SCRIPT_TRUE@libfstfarscript_la_LDFLAGS = -version-info 17:0:0
 @HAVE_SCRIPT_TRUE@libfstfarscript_la_LIBADD = \
 @HAVE_SCRIPT_TRUE@    libfstfar.la ../../script/libfstscript.la \
 @HAVE_SCRIPT_TRUE@        ../../lib/libfst.la -lm $(DL_LIBS)
@@ -439,13 +449,13 @@ libfstfar_la_LIBADD = ../../lib/libfst.la -lm $(DL_LIBS)
 @HAVE_BIN_TRUE@LDADD = libfstfarscript.la ../../script/libfstscript.la \
 @HAVE_BIN_TRUE@        ../../lib/libfst.la -lm $(DL_LIBS)
 
-@HAVE_BIN_TRUE@farcompilestrings_SOURCES = farcompilestrings.cc
-@HAVE_BIN_TRUE@farcreate_SOURCES = farcreate.cc
-@HAVE_BIN_TRUE@farequal_SOURCES = farequal.cc
-@HAVE_BIN_TRUE@farextract_SOURCES = farextract.cc
-@HAVE_BIN_TRUE@farinfo_SOURCES = farinfo.cc
-@HAVE_BIN_TRUE@farisomorphic_SOURCES = farisomorphic.cc
-@HAVE_BIN_TRUE@farprintstrings_SOURCES = farprintstrings.cc
+@HAVE_BIN_TRUE@farcompilestrings_SOURCES = farcompilestrings.cc farcompilestrings-main.cc
+@HAVE_BIN_TRUE@farcreate_SOURCES = farcreate.cc farcreate-main.cc
+@HAVE_BIN_TRUE@farequal_SOURCES = farequal.cc farequal-main.cc
+@HAVE_BIN_TRUE@farextract_SOURCES = farextract.cc farextract-main.cc
+@HAVE_BIN_TRUE@farinfo_SOURCES = farinfo.cc farinfo-main.cc
+@HAVE_BIN_TRUE@farisomorphic_SOURCES = farisomorphic.cc farisomorphic-main.cc
+@HAVE_BIN_TRUE@farprintstrings_SOURCES = farprintstrings.cc farprintstrings-main.cc
 all: all-am
 
 .SUFFIXES:
@@ -605,12 +615,19 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/far-class.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/farcompilestrings-main.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/farcompilestrings.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/farcreate-main.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/farcreate.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/farequal-main.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/farequal.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/farextract-main.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/farextract.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/farinfo-main.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/farinfo.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/farisomorphic-main.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/farisomorphic.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/farprintstrings-main.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/farprintstrings.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/farscript.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/getters.Plo@am__quote@

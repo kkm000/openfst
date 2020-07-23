@@ -16,12 +16,13 @@
 namespace fst {
 namespace script {
 
-using EncodeArgs1 = std::tuple<MutableFstClass *, uint32, bool, const string &>;
+using EncodeArgs1 =
+    std::tuple<MutableFstClass *, uint32, bool, const std::string &>;
 
 template <class Arc>
 void Encode(EncodeArgs1 *args) {
   MutableFst<Arc> *fst = std::get<0>(*args)->GetMutableFst<Arc>();
-  const string &coder_fname = std::get<3>(*args);
+  const std::string &coder_fname = std::get<3>(*args);
   // If true, reuse encode from disk. If false, make a new encoder and just use
   // the filename argument as the destination state.
   std::unique_ptr<EncodeMapper<Arc>> encoder(
@@ -41,7 +42,7 @@ void Encode(EncodeArgs2 *args) {
 }
 
 void Encode(MutableFstClass *fst, uint32 flags, bool reuse_encoder,
-            const string &coder_fname);
+            const std::string &coder_fname);
 
 void Encode(MutableFstClass *fst, EncodeMapperClass *encoder);
 

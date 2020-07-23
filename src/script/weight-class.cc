@@ -10,7 +10,8 @@ REGISTER_FST_WEIGHT(StdArc::Weight);
 REGISTER_FST_WEIGHT(LogArc::Weight);
 REGISTER_FST_WEIGHT(Log64Arc::Weight);
 
-WeightClass::WeightClass(const string &weight_type, const string &weight_str) {
+WeightClass::WeightClass(const std::string &weight_type,
+                         const std::string &weight_str) {
   WeightClassRegister *reg = WeightClassRegister::GetRegister();
   StrToWeightImplBaseT stw = reg->GetEntry(weight_type);
   if (!stw) {
@@ -21,20 +22,20 @@ WeightClass::WeightClass(const string &weight_type, const string &weight_str) {
   impl_.reset(stw(weight_str, "WeightClass", 0));
 }
 
-WeightClass WeightClass::Zero(const string &weight_type) {
+WeightClass WeightClass::Zero(const std::string &weight_type) {
   return WeightClass(weight_type, __ZERO__);
 }
 
-WeightClass WeightClass::One(const string &weight_type) {
+WeightClass WeightClass::One(const std::string &weight_type) {
   return WeightClass(weight_type, __ONE__);
 }
 
-WeightClass WeightClass::NoWeight(const string &weight_type) {
+WeightClass WeightClass::NoWeight(const std::string &weight_type) {
   return WeightClass(weight_type, __NOWEIGHT__);
 }
 
 bool WeightClass::WeightTypesMatch(const WeightClass &other,
-                                   const string &op_name) const {
+                                   const std::string &op_name) const {
   if (Type() != other.Type()) {
     FSTERROR() << "Weights with non-matching types passed to " << op_name
                << ": " << Type() << " and " << other.Type();

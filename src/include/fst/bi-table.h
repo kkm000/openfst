@@ -112,10 +112,11 @@ struct HashSet : public std::unordered_set<K, H, E, PoolAllocator<K>> {
 // current_entry_. The hash and key equality functions map to entries first. H
 // is the hash function and E is the equality function. If passed to the
 // constructor, ownership is given to this class.
-// TODO(rybach): remove support for (deprecated and unused) HS_DENSE, HS_SPARSE.
 template <class I, class T, class H, class E = std::equal_to<T>,
           HSType HS = HS_FLAT>
 class CompactHashBiTable {
+  static_assert(HS == HS_STL || HS == HS_FLAT, "Unsupported hash set type");
+
  public:
   friend class HashFunc;
   friend class HashEqual;
@@ -182,11 +183,9 @@ class CompactHashBiTable {
  private:
   static_assert(std::is_signed<I>::value, "I must be a signed type");
   // ... otherwise >= kCurrentKey comparisons as used below don't work.
-  // TODO(rybach): (1) remove kEmptyKey, kDeletedKey, (2) don't use >= for key
-  // comparison, (3) allow unsigned key types.
+  // TODO(rybach): (1) don't use >= for key comparison, (2) allow unsigned key
+  // types.
   static constexpr I kCurrentKey = -1;
-  static constexpr I kEmptyKey = -2;
-  static constexpr I kDeletedKey = -3;
 
   class HashFunc {
    public:
@@ -243,12 +242,6 @@ class CompactHashBiTable {
 
 template <class I, class T, class H, class E, HSType HS>
 constexpr I CompactHashBiTable<I, T, H, E, HS>::kCurrentKey;
-
-template <class I, class T, class H, class E, HSType HS>
-constexpr I CompactHashBiTable<I, T, H, E, HS>::kEmptyKey;
-
-template <class I, class T, class H, class E, HSType HS>
-constexpr I CompactHashBiTable<I, T, H, E, HS>::kDeletedKey;
 
 // An implementation using a vector for the entry to ID mapping. It is passed a
 // function object FP that should fingerprint entries uniquely to an integer

@@ -4,7 +4,6 @@
 // Creates the union of two FSTs.
 
 #include <cstring>
-
 #include <memory>
 #include <string>
 
@@ -17,7 +16,7 @@ int fstunion_main(int argc, char **argv) {
   using fst::script::FstClass;
   using fst::script::MutableFstClass;
 
-  string usage = "Creates the union of two FSTs.\n\n  Usage: ";
+  std::string usage = "Creates the union of two FSTs.\n\n  Usage: ";
   usage += argv[0];
   usage += " in1.fst in2.fst [out.fst]\n";
 
@@ -28,9 +27,10 @@ int fstunion_main(int argc, char **argv) {
     return 1;
   }
 
-  const string in1_name = strcmp(argv[1], "-") != 0 ? argv[1] : "";
-  const string in2_name = strcmp(argv[2], "-") != 0 ? argv[2] : "";
-  const string out_name = argc > 3 ? argv[3] : "";
+  const std::string in1_name = strcmp(argv[1], "-") != 0 ? argv[1] : "";
+  const std::string in2_name = strcmp(argv[2], "-") != 0 ? argv[2] : "";
+  const std::string out_name =
+      argc > 3 && strcmp(argv[3], "-") != 0 ? argv[3] : "";
 
   if (in1_name == "" && in2_name == "") {
     LOG(ERROR) << argv[0] << ": Can't take both inputs from standard input";

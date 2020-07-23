@@ -12,9 +12,9 @@
 namespace fst {
 namespace script {
 
-bool GetPdtComposeFilter(const string &str, PdtComposeFilter *cf);
+bool GetPdtComposeFilter(const std::string &str, PdtComposeFilter *cf);
 
-bool GetPdtParserType(const string &str, PdtParserType *pt);
+bool GetPdtParserType(const std::string &str, PdtParserType *pt);
 
 }  // namespace script
 }  // namespace fst

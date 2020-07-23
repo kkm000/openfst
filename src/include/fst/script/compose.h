@@ -17,8 +17,8 @@ using ComposeArgs = std::tuple<const FstClass &, const FstClass &,
 
 template <class Arc>
 void Compose(ComposeArgs *args) {
-  const Fst<Arc> &ifst1 = *(std::get<0>(*args).GetFst<Arc>());
-  const Fst<Arc> &ifst2 = *(std::get<1>(*args).GetFst<Arc>());
+  const Fst<Arc> &ifst1 = *std::get<0>(*args).GetFst<Arc>();
+  const Fst<Arc> &ifst2 = *std::get<1>(*args).GetFst<Arc>();
   MutableFst<Arc> *ofst = std::get<2>(*args)->GetMutableFst<Arc>();
   const auto &opts = std::get<3>(*args);
   Compose(ifst1, ifst2, ofst, opts);

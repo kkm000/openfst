@@ -6,7 +6,8 @@
 
 #include <fst/properties.h>
 
-#include <stddef.h>
+#include <cstddef>
+#include <string>
 #include <vector>
 
 namespace fst {

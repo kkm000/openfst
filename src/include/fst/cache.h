@@ -117,7 +117,7 @@ class CacheState {
   // Accesses ref count; used by the caller.
   int RefCount() const { return ref_count_; }
 
-  void SetFinal(Weight weight) { final_ = std::move(weight); }
+  void SetFinal(Weight weight = Weight::One()) { final_ = std::move(weight); }
 
   void ReserveArcs(size_t n) { arcs_.reserve(n); }
 
@@ -902,7 +902,7 @@ class CacheBaseImpl : public FstImpl<typename State::Arc> {
     if (s >= nknown_states_) nknown_states_ = s + 1;
   }
 
-  void SetFinal(StateId s, Weight weight) {
+  void SetFinal(StateId s, Weight weight = Weight::One()) {
     auto *state = cache_store_->GetMutableState(s);
     state->SetFinal(std::move(weight));
     static constexpr auto flags = kCacheFinal | kCacheRecent;
@@ -1318,7 +1318,9 @@ class ExpanderCacheStore {
 
     void AddArc(Arc &&arc) { state->PushArc(std::move(arc)); }
 
-    void SetFinal(Weight weight) { state->SetFinal(std::move(weight)); }
+    void SetFinal(Weight weight = Weight::One()) {
+      state->SetFinal(std::move(weight));
+    }
   };
 };
 

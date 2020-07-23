@@ -4,9 +4,9 @@
 #ifndef FST_SCRIPT_ENCODEMAPPER_CLASS_H_
 #define FST_SCRIPT_ENCODEMAPPER_CLASS_H_
 
+#include <iostream>
 #include <memory>
 #include <string>
-#include <iostream>
 
 #include <fst/fstlib.h>
 #include <fst/script/arc-class.h>
@@ -22,7 +22,7 @@ class EncodeMapperImplBase {
  public:
   // Returns an encoded ArcClass.
   virtual ArcClass operator()(const ArcClass &a) = 0;
-  virtual const string &ArcType() const = 0;
+  virtual const std::string &ArcType() const = 0;
   virtual uint32 Flags() const = 0;
   virtual uint64 Properties(uint64 inprops) = 0;
   virtual EncodeType Type() const = 0;
@@ -30,7 +30,7 @@ class EncodeMapperImplBase {
   virtual const SymbolTable *OutputSymbols() const = 0;
   virtual void SetInputSymbols(const SymbolTable *syms) = 0;
   virtual void SetOutputSymbols(const SymbolTable *syms) = 0;
-  virtual const string &WeightType() const = 0;
+  virtual const std::string &WeightType() const = 0;
   virtual ~EncodeMapperImplBase() {}
 };
 
@@ -43,7 +43,7 @@ class EncodeMapperClassImpl : public EncodeMapperImplBase {
 
   ArcClass operator()(const ArcClass &a) final;
 
-  const string &ArcType() const final { return Arc::Type(); }
+  const std::string &ArcType() const final { return Arc::Type(); }
 
   uint32 Flags() const final { return encoder_.Flags(); }
 
@@ -69,7 +69,7 @@ class EncodeMapperClassImpl : public EncodeMapperImplBase {
     encoder_.SetOutputSymbols(syms);
   }
 
-  const string &WeightType() const final { return Arc::Weight::Type(); }
+  const std::string &WeightType() const final { return Arc::Weight::Type(); }
 
   ~EncodeMapperClassImpl() override {}
 
@@ -97,7 +97,7 @@ using InitEncodeMapperClassArgs =
 
 class EncodeMapperClass {
  public:
-  EncodeMapperClass(const string &arc_type, uint32 flags, EncodeType type);
+  EncodeMapperClass(const std::string &arc_type, uint32 flags, EncodeType type);
 
   template <class Arc>
   EncodeMapperClass(uint32 flags, EncodeType type)
@@ -105,7 +105,7 @@ class EncodeMapperClass {
 
   ArcClass operator()(const ArcClass &arc) { return (*impl_)(arc); }
 
-  const string &ArcType() const { return impl_->ArcType(); }
+  const std::string &ArcType() const { return impl_->ArcType(); }
 
   uint32 Flags() const { return impl_->Flags(); }
 
@@ -125,7 +125,7 @@ class EncodeMapperClass {
     impl_->SetOutputSymbols(syms);
   }
 
-  const string &WeightType() const { return impl_->WeightType(); }
+  const std::string &WeightType() const { return impl_->WeightType(); }
 
   template <class Arc>
   friend void InitEncodeMapperClass(InitEncodeMapperClassArgs *args);

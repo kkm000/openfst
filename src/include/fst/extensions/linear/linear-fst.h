@@ -270,13 +270,13 @@ class LinearTaggerFstImpl : public CacheImpl<A> {
 
   std::shared_ptr<const LinearFstData<A>> data_;
   size_t delay_;
-  // Mapping from internal state tuple to *non-consecutive* ids
+  // Mapping from internal state tuple to *non-consecutive* IDs.
   Collection<StateId, Label> ngrams_;
-  // Mapping from non-consecutive id to actual state id
+  // Mapping from non-consecutive id to actual state ID.
   CompactHashBiTable<StateId, StateId, std::hash<StateId>> condensed_;
-  // Two frequently used vectors, reuse to avoid repeated heap
-  // allocation
-  std::vector<Label> state_stub_, next_stub_;
+  // Two frequently used vectors, reuse to avoid repeated heap allocation.
+  std::vector<Label> state_stub_;
+  std::vector<Label> next_stub_;
 
   LinearTaggerFstImpl &operator=(const LinearTaggerFstImpl &) = delete;
 };
@@ -493,7 +493,7 @@ class LinearTaggerFst : public ImplToFst<internal::LinearTaggerFstImpl<A>> {
     return new LinearFstMatcherTpl<LinearTaggerFst<A>>(this, match_type);
   }
 
-  static LinearTaggerFst<A> *Read(const string &filename) {
+  static LinearTaggerFst<A> *Read(const std::string &filename) {
     if (!filename.empty()) {
       std::ifstream strm(filename,
                               std::ios_base::in | std::ios_base::binary);
@@ -513,7 +513,7 @@ class LinearTaggerFst : public ImplToFst<internal::LinearTaggerFstImpl<A>> {
     return impl ? new LinearTaggerFst<A>(std::shared_ptr<Impl>(impl)) : nullptr;
   }
 
-  bool Write(const string &filename) const override {
+  bool Write(const std::string &filename) const override {
     if (!filename.empty()) {
       std::ofstream strm(filename,
                                std::ios_base::out | std::ios_base::binary);
@@ -778,22 +778,22 @@ class LinearClassifierFstImpl : public CacheImpl<A> {
   void FillState(StateId s, std::vector<Label> *output) {
     s = condensed_.FindEntry(s);
     for (NGramIterator it = ngrams_.FindSet(s); !it.Done(); it.Next()) {
-      Label label = it.Element();
-      output->push_back(label);
+      output->emplace_back(it.Element());
     }
   }
 
   std::shared_ptr<const LinearFstData<A>> data_;
   // Division of groups in `data_`; num_classes_ * num_groups_ ==
   // data_->NumGroups().
-  size_t num_classes_, num_groups_;
-  // Mapping from internal state tuple to *non-consecutive* ids
+  size_t num_classes_;
+  size_t num_groups_;
+  // Mapping from internal state tuple to *non-consecutive* IDs.
   Collection<StateId, Label> ngrams_;
-  // Mapping from non-consecutive id to actual state id
+  // Mapping from non-consecutive id to actual state ID.
   CompactHashBiTable<StateId, StateId, std::hash<StateId>> condensed_;
-  // Two frequently used vectors, reuse to avoid repeated heap
-  // allocation
-  std::vector<Label> state_stub_, next_stub_;
+  // Two frequently used vectors, reuse to avoid repeated heap allocation.
+  std::vector<Label> state_stub_;
+  std::vector<Label> next_stub_;
 
   void operator=(const LinearClassifierFstImpl<A> &) = delete;
 };
@@ -950,7 +950,7 @@ class LinearClassifierFst
     return new LinearFstMatcherTpl<LinearClassifierFst<A>>(this, match_type);
   }
 
-  static LinearClassifierFst<A> *Read(const string &filename) {
+  static LinearClassifierFst<A> *Read(const std::string &filename) {
     if (!filename.empty()) {
       std::ifstream strm(filename,
                               std::ios_base::in | std::ios_base::binary);
@@ -972,7 +972,7 @@ class LinearClassifierFst
                 : nullptr;
   }
 
-  bool Write(const string &filename) const override {
+  bool Write(const std::string &filename) const override {
     if (!filename.empty()) {
       std::ofstream strm(filename,
                                std::ios_base::out | std::ios_base::binary);

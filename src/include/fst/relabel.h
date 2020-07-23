@@ -78,11 +78,11 @@ void Relabel(
 // FST. If the 'unknown_i(o)symbol' is non-empty, it is used to label any
 // missing symbol in new_i(o)symbols table.
 template <class Arc>
-void Relabel(MutableFst<Arc> *fst,
-             const SymbolTable *old_isymbols, const SymbolTable *new_isymbols,
-             const string &unknown_isymbol, bool attach_new_isymbols,
+void Relabel(MutableFst<Arc> *fst, const SymbolTable *old_isymbols,
+             const SymbolTable *new_isymbols,
+             const std::string &unknown_isymbol, bool attach_new_isymbols,
              const SymbolTable *old_osymbols, const SymbolTable *new_osymbols,
-             const string &unknown_osymbol, bool attach_new_osymbols) {
+             const std::string &unknown_osymbol, bool attach_new_osymbols) {
   using Label = typename Arc::Label;
   // Constructs vectors of input-side label pairs.
   std::vector<std::pair<Label, Label>> ipairs;
@@ -112,7 +112,7 @@ void Relabel(MutableFst<Arc> *fst,
           ++num_missing_syms;
         }
       }
-      ipairs.push_back(std::make_pair(old_index, new_index));
+      ipairs.emplace_back(old_index, new_index);
     }
     if (num_missing_syms > 0) {
       LOG(WARNING) << "Target symbol table missing: " << num_missing_syms
@@ -133,7 +133,6 @@ void Relabel(MutableFst<Arc> *fst,
         ++num_missing_syms;
       }
     }
-
     for (SymbolTableIterator siter(*old_osymbols); !siter.Done();
          siter.Next()) {
       const auto old_index = siter.Value();
@@ -148,7 +147,7 @@ void Relabel(MutableFst<Arc> *fst,
           ++num_missing_syms;
         }
       }
-      opairs.push_back(std::make_pair(old_index, new_index));
+      opairs.emplace_back(old_index, new_index);
     }
     if (num_missing_syms > 0) {
       LOG(WARNING) << "Target symbol table missing: " << num_missing_syms

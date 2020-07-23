@@ -329,7 +329,7 @@ class FeatureGroup {
 
   size_t Delay() const { return delay_; }
 
-  string Stats() const;
+  std::string Stats() const;
 
  private:
   // Label along the arcs on the trie. `kNoLabel` means anything
@@ -463,7 +463,7 @@ inline int FeatureGroup<A>::FindFirstMatch(InputOutputLabel label,
 }
 
 template <class A>
-inline string FeatureGroup<A>::Stats() const {
+inline std::string FeatureGroup<A>::Stats() const {
   std::ostringstream strm;
   int num_states = 2;
   for (int i = 2; i < next_state_.size(); ++i)

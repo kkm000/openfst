@@ -5,7 +5,6 @@
 #define FST_SCRIPT_RANDGEN_H_
 
 #include <ctime>
-
 #include <tuple>
 
 #include <fst/randgen.h>
@@ -20,7 +19,7 @@ using RandGenArgs = std::tuple<const FstClass &, MutableFstClass *, time_t,
 
 template <class Arc>
 void RandGen(RandGenArgs *args) {
-  const Fst<Arc> &ifst = *(std::get<0>(*args).GetFst<Arc>());
+  const Fst<Arc> &ifst = *std::get<0>(*args).GetFst<Arc>();
   MutableFst<Arc> *ofst = std::get<1>(*args)->GetMutableFst<Arc>();
   const time_t seed = std::get<2>(*args);
   const auto &opts = std::get<3>(*args);

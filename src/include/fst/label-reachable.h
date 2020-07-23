@@ -218,7 +218,7 @@ class LabelReachable {
     // Maps labels to their new values in [1, label2index().size()].
     for (auto it = label2index.begin(); it != label2index.end(); ++it) {
       if (it->second != data_->FinalLabel()) {
-        pairs->push_back(std::make_pair(it->first, it->second));
+        pairs->emplace_back(it->first, it->second);
       }
     }
     if (avoid_collisions) {
@@ -227,7 +227,7 @@ class LabelReachable {
       for (size_t i = 1; i <= label2index.size(); ++i) {
         const auto it = label2index.find(i);
         if (it == label2index.end() || it->second == data_->FinalLabel()) {
-          pairs->push_back(std::make_pair(i, label2index.size() + 1));
+          pairs->emplace_back(i, label2index.size() + 1);
         }
       }
     }
@@ -387,7 +387,7 @@ class LabelReachable {
         auto arc = aiter.Value();
         const auto label = data_->ReachInput() ? arc.ilabel : arc.olabel;
         if (label) {
-          auto insert_result = label2state_.insert(std::make_pair(label, ons));
+          auto insert_result = label2state_.emplace(label, ons);
           if (insert_result.second) {
             indeg.push_back(0);
             ++ons;
@@ -400,7 +400,7 @@ class LabelReachable {
       // Redirects final weights to new final state.
       auto final_weight = fst_->Final(s);
       if (final_weight != Weight::Zero()) {
-        auto insert_result = label2state_.insert(std::make_pair(kNoLabel, ons));
+        auto insert_result = label2state_.emplace(kNoLabel, ons);
         if (insert_result.second) {
           indeg.push_back(0);
           ++ons;
@@ -415,15 +415,13 @@ class LabelReachable {
     // Adds new final states to the FST.
     while (fst_->NumStates() < ons) {
       StateId s = fst_->AddState();
-      fst_->SetFinal(s, Weight::One());
+      fst_->SetFinal(s);
     }
     // Creates a super-initial state for all states with zero in-degree.
     const auto start = fst_->AddState();
     fst_->SetStart(start);
     for (StateId s = 0; s < start; ++s) {
-      if (indeg[s] == 0) {
-        fst_->EmplaceArc(start, 0, 0, Weight::One(), s);
-      }
+      if (indeg[s] == 0) fst_->EmplaceArc(start, 0, 0, s);
     }
   }
 

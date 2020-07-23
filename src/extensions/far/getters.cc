@@ -16,7 +16,7 @@ namespace fst {
 
 namespace script {
 
-FarType GetFarType(const string &str) {
+FarType GetFarType(const std::string &str) {
   if (str == "fst") {
     return FAR_FST;
   } else if (str == "stlist") {
@@ -28,7 +28,7 @@ FarType GetFarType(const string &str) {
   }
 }
 
-bool GetFarEntryType(const string &str, FarEntryType *entry_type) {
+bool GetFarEntryType(const std::string &str, FarEntryType *entry_type) {
   if (str == "line") {
     *entry_type = FET_LINE;
   } else if (str == "file") {
@@ -39,7 +39,7 @@ bool GetFarEntryType(const string &str, FarEntryType *entry_type) {
   return true;
 }
 
-bool GetFarTokenType(const string &str, FarTokenType *token_type) {
+bool GetFarTokenType(const std::string &str, FarTokenType *token_type) {
   if (str == "symbol") {
     *token_type = FTT_SYMBOL;
   } else if (str == "byte") {
@@ -57,7 +57,7 @@ void ExpandArgs(int argc, char **argv, int *argcp, char ***argvp) {
 
 }  // namespace script
 
-string GetFarTypeString(FarType type) {
+std::string GetFarTypeString(FarType type) {
   switch (type) {
     case FAR_FST:
       return "fst";

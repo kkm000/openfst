@@ -32,48 +32,49 @@ namespace fst {
 template <class W, class K = int>
 class SparsePowerWeight : public SparseTupleWeight<W, K> {
  public:
+  using Base = SparseTupleWeight<W, K>;
   using ReverseWeight = SparsePowerWeight<typename W::ReverseWeight, K>;
 
   SparsePowerWeight() {}
 
-  explicit SparsePowerWeight(const SparseTupleWeight<W, K> &weight)
-      : SparseTupleWeight<W, K>(weight) {}
+  explicit SparsePowerWeight(const Base &weight)
+      : Base(weight) {}
 
   template <class Iterator>
   SparsePowerWeight(Iterator begin, Iterator end)
-      : SparseTupleWeight<W, K>(begin, end) {}
+      : Base(begin, end) {}
 
   // Initialize component `key` to `weight`, with `default_weight` for all
   // other components.
   SparsePowerWeight(const K &key, const W &weight,
                     const W &default_weight = W::Zero())
-      : SparseTupleWeight<W, K>(key, weight, default_weight) {}
+      : Base(key, weight, default_weight) {}
 
   static const SparsePowerWeight &Zero() {
-    static const SparsePowerWeight zero(SparseTupleWeight<W, K>::Zero());
+    static const SparsePowerWeight zero(Base::Zero());
     return zero;
   }
 
   static const SparsePowerWeight &One() {
-    static const SparsePowerWeight one(SparseTupleWeight<W, K>::One());
+    static const SparsePowerWeight one(Base::One());
     return one;
   }
 
   static const SparsePowerWeight &NoWeight() {
     static const SparsePowerWeight no_weight(
-        SparseTupleWeight<W, K>::NoWeight());
+        Base::NoWeight());
     return no_weight;
   }
 
   // Overide this: Overwrite the Type method to reflect the key type if using
   // a non-default key type.
-  static const string &Type() {
-    static const string *const type = [] {
-      string type = W::Type() + "_^n";
+  static const std::string &Type() {
+    static const std::string *const type = [] {
+      std::string type = W::Type() + "_^n";
       if (sizeof(K) != sizeof(uint32)) {
         type += "_" + std::to_string(CHAR_BIT * sizeof(K));
       }
-      return new string(type);
+      return new std::string(type);
     }();
     return *type;
   }
@@ -84,11 +85,11 @@ class SparsePowerWeight : public SparseTupleWeight<W, K> {
   }
 
   SparsePowerWeight Quantize(float delta = kDelta) const {
-    return SparsePowerWeight(SparseTupleWeight<W, K>::Quantize(delta));
+    return SparsePowerWeight(Base::Quantize(delta));
   }
 
   ReverseWeight Reverse() const {
-    return ReverseWeight(SparseTupleWeight<W, K>::Reverse());
+    return ReverseWeight(Base::Reverse());
   }
 };
 

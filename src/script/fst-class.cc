@@ -5,15 +5,15 @@
 // applications. Most users should use the lower-level templated versions
 // corresponding to these classes.
 
+#include <fst/script/fst-class.h>
+
 #include <istream>
 
 #include <fst/log.h>
-
 #include <fst/equal.h>
 #include <fst/fst-decl.h>
 #include <fst/reverse.h>
 #include <fst/union.h>
-#include <fst/script/fst-class.h>
 #include <fst/script/register.h>
 
 namespace fst {
@@ -30,7 +30,7 @@ REGISTER_FST_CLASSES(Log64Arc);
 namespace {
 
 template <class F>
-F *ReadFstClass(std::istream &istrm, const string &fname) {
+F *ReadFstClass(std::istream &istrm, const std::string &fname) {
   if (!istrm) {
     LOG(ERROR) << "ReadFstClass: Can't open file: " << fname;
     return nullptr;
@@ -49,7 +49,7 @@ F *ReadFstClass(std::istream &istrm, const string &fname) {
 }
 
 template <class F>
-FstClassImplBase *CreateFstClass(const string &arc_type) {
+FstClassImplBase *CreateFstClass(const std::string &arc_type) {
   static const auto *io_register =
       IORegistration<F>::Register::GetRegister();
   auto creator = io_register->GetCreator(arc_type);
@@ -77,7 +77,7 @@ FstClassImplBase *ConvertFstClass(const FstClass &other) {
 
 // FstClass methods.
 
-FstClass *FstClass::Read(const string &fname) {
+FstClass *FstClass::Read(const std::string &fname) {
   if (!fname.empty()) {
     std::ifstream istrm(fname, std::ios_base::in | std::ios_base::binary);
     return ReadFstClass<FstClass>(istrm, fname);
@@ -86,12 +86,12 @@ FstClass *FstClass::Read(const string &fname) {
   }
 }
 
-FstClass *FstClass::Read(std::istream &istrm, const string &source) {
+FstClass *FstClass::Read(std::istream &istrm, const std::string &source) {
   return ReadFstClass<FstClass>(istrm, source);
 }
 
 bool FstClass::WeightTypesMatch(const WeightClass &weight,
-                                const string &op_name) const {
+                                const std::string &op_name) const {
   if (WeightType() != weight.Type()) {
     FSTERROR() << "FST and weight with non-matching weight types passed to "
                << op_name << ": " << WeightType() << " and " << weight.Type();
@@ -102,7 +102,7 @@ bool FstClass::WeightTypesMatch(const WeightClass &weight,
 
 // MutableFstClass methods.
 
-MutableFstClass *MutableFstClass::Read(const string &fname, bool convert) {
+MutableFstClass *MutableFstClass::Read(const std::string &fname, bool convert) {
   if (convert == false) {
     if (!fname.empty()) {
       std::ifstream in(fname, std::ios_base::in | std::ios_base::binary);
@@ -123,7 +123,7 @@ MutableFstClass *MutableFstClass::Read(const string &fname, bool convert) {
 
 // VectorFstClass methods.
 
-VectorFstClass *VectorFstClass::Read(const string &fname) {
+VectorFstClass *VectorFstClass::Read(const std::string &fname) {
   if (!fname.empty()) {
     std::ifstream in(fname, std::ios_base::in | std::ios_base::binary);
     return ReadFstClass<VectorFstClass>(in, fname);
@@ -132,9 +132,8 @@ VectorFstClass *VectorFstClass::Read(const string &fname) {
   }
 }
 
-VectorFstClass::VectorFstClass(const string &arc_type)
+VectorFstClass::VectorFstClass(const std::string &arc_type)
     : MutableFstClass(CreateFstClass<VectorFstClass>(arc_type)) {}
-
 
 VectorFstClass::VectorFstClass(const FstClass &other)
     : MutableFstClass(ConvertFstClass<VectorFstClass>(other)) {}

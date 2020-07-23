@@ -171,8 +171,9 @@ class ILabelCompare {
  public:
   constexpr ILabelCompare() {}
 
-  constexpr bool operator()(const Arc &arc1, const Arc &arc2) const {
-    return arc1.ilabel < arc2.ilabel;
+  constexpr bool operator()(const Arc &lhs, const Arc &rhs) const {
+    return std::forward_as_tuple(lhs.ilabel, lhs.olabel) <
+           std::forward_as_tuple(rhs.ilabel, rhs.olabel);
   }
 
   constexpr uint64 Properties(uint64 props) const {
@@ -187,8 +188,9 @@ class OLabelCompare {
  public:
   constexpr OLabelCompare() {}
 
-  constexpr bool operator()(const Arc &arc1, const Arc &arc2) const {
-    return arc1.olabel < arc2.olabel;
+  constexpr bool operator()(const Arc &lhs, const Arc &rhs) const {
+    return std::forward_as_tuple(lhs.olabel, lhs.ilabel) <
+           std::forward_as_tuple(rhs.olabel, rhs.ilabel);
   }
 
   constexpr uint64 Properties(uint64 props) const {

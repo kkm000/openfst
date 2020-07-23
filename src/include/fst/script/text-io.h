@@ -16,10 +16,10 @@
 namespace fst {
 namespace script {
 
-bool ReadPotentials(const string &weight_type, const string &filename,
+bool ReadPotentials(const std::string &weight_type, const std::string &filename,
                     std::vector<WeightClass> *potentials);
 
-bool WritePotentials(const string &filename,
+bool WritePotentials(const std::string &filename,
                      const std::vector<WeightClass> &potentials);
 
 }  // namespace script

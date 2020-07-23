@@ -4,7 +4,6 @@
 // Reweights an FST.
 
 #include <cstring>
-
 #include <memory>
 #include <string>
 #include <vector>
@@ -21,7 +20,7 @@ int fstreweight_main(int argc, char **argv) {
   using fst::script::MutableFstClass;
   using fst::script::WeightClass;
 
-  string usage = "Reweights an FST.\n\n  Usage: ";
+  std::string usage = "Reweights an FST.\n\n  Usage: ";
   usage += argv[0];
   usage += " in.fst potential.txt [out.fst]\n";
 
@@ -32,9 +31,9 @@ int fstreweight_main(int argc, char **argv) {
     return 1;
   }
 
-  const string in_name = argv[1];
-  const string potentials_name = argv[2];
-  const string out_name = argc > 3 ? argv[3] : "";
+  const std::string in_name = argv[1];
+  const std::string potentials_name = argv[2];
+  const std::string out_name = argc > 3 ? argv[3] : "";
 
   std::unique_ptr<MutableFstClass> fst(MutableFstClass::Read(in_name, true));
   if (!fst) return 1;

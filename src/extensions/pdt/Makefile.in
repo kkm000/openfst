@@ -153,43 +153,50 @@ libfstpdtscript_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CXX \
 	$(LDFLAGS) -o $@
 @HAVE_SCRIPT_TRUE@am_libfstpdtscript_la_rpath = -rpath $(libdir)
 PROGRAMS = $(bin_PROGRAMS)
-am__pdtcompose_SOURCES_DIST = pdtcompose.cc
-@HAVE_BIN_TRUE@am_pdtcompose_OBJECTS = pdtcompose.$(OBJEXT)
+am__pdtcompose_SOURCES_DIST = pdtcompose.cc pdtcompose-main.cc
+@HAVE_BIN_TRUE@am_pdtcompose_OBJECTS = pdtcompose.$(OBJEXT) \
+@HAVE_BIN_TRUE@	pdtcompose-main.$(OBJEXT)
 pdtcompose_OBJECTS = $(am_pdtcompose_OBJECTS)
 pdtcompose_LDADD = $(LDADD)
 @HAVE_BIN_TRUE@pdtcompose_DEPENDENCIES = libfstpdtscript.la \
 @HAVE_BIN_TRUE@	../../script/libfstscript.la \
 @HAVE_BIN_TRUE@	../../lib/libfst.la $(am__DEPENDENCIES_1)
-am__pdtexpand_SOURCES_DIST = pdtexpand.cc
-@HAVE_BIN_TRUE@am_pdtexpand_OBJECTS = pdtexpand.$(OBJEXT)
+am__pdtexpand_SOURCES_DIST = pdtexpand.cc pdtexpand-main.cc
+@HAVE_BIN_TRUE@am_pdtexpand_OBJECTS = pdtexpand.$(OBJEXT) \
+@HAVE_BIN_TRUE@	pdtexpand-main.$(OBJEXT)
 pdtexpand_OBJECTS = $(am_pdtexpand_OBJECTS)
 pdtexpand_LDADD = $(LDADD)
 @HAVE_BIN_TRUE@pdtexpand_DEPENDENCIES = libfstpdtscript.la \
 @HAVE_BIN_TRUE@	../../script/libfstscript.la \
 @HAVE_BIN_TRUE@	../../lib/libfst.la $(am__DEPENDENCIES_1)
-am__pdtinfo_SOURCES_DIST = pdtinfo.cc
-@HAVE_BIN_TRUE@am_pdtinfo_OBJECTS = pdtinfo.$(OBJEXT)
+am__pdtinfo_SOURCES_DIST = pdtinfo.cc pdtinfo-main.cc
+@HAVE_BIN_TRUE@am_pdtinfo_OBJECTS = pdtinfo.$(OBJEXT) \
+@HAVE_BIN_TRUE@	pdtinfo-main.$(OBJEXT)
 pdtinfo_OBJECTS = $(am_pdtinfo_OBJECTS)
 pdtinfo_LDADD = $(LDADD)
 @HAVE_BIN_TRUE@pdtinfo_DEPENDENCIES = libfstpdtscript.la \
 @HAVE_BIN_TRUE@	../../script/libfstscript.la \
 @HAVE_BIN_TRUE@	../../lib/libfst.la $(am__DEPENDENCIES_1)
-am__pdtreplace_SOURCES_DIST = pdtreplace.cc
-@HAVE_BIN_TRUE@am_pdtreplace_OBJECTS = pdtreplace.$(OBJEXT)
+am__pdtreplace_SOURCES_DIST = pdtreplace.cc pdtreplace-main.cc
+@HAVE_BIN_TRUE@am_pdtreplace_OBJECTS = pdtreplace.$(OBJEXT) \
+@HAVE_BIN_TRUE@	pdtreplace-main.$(OBJEXT)
 pdtreplace_OBJECTS = $(am_pdtreplace_OBJECTS)
 pdtreplace_LDADD = $(LDADD)
 @HAVE_BIN_TRUE@pdtreplace_DEPENDENCIES = libfstpdtscript.la \
 @HAVE_BIN_TRUE@	../../script/libfstscript.la \
 @HAVE_BIN_TRUE@	../../lib/libfst.la $(am__DEPENDENCIES_1)
-am__pdtreverse_SOURCES_DIST = pdtreverse.cc
-@HAVE_BIN_TRUE@am_pdtreverse_OBJECTS = pdtreverse.$(OBJEXT)
+am__pdtreverse_SOURCES_DIST = pdtreverse.cc pdtreverse-main.cc
+@HAVE_BIN_TRUE@am_pdtreverse_OBJECTS = pdtreverse.$(OBJEXT) \
+@HAVE_BIN_TRUE@	pdtreverse-main.$(OBJEXT)
 pdtreverse_OBJECTS = $(am_pdtreverse_OBJECTS)
 pdtreverse_LDADD = $(LDADD)
 @HAVE_BIN_TRUE@pdtreverse_DEPENDENCIES = libfstpdtscript.la \
 @HAVE_BIN_TRUE@	../../script/libfstscript.la \
 @HAVE_BIN_TRUE@	../../lib/libfst.la $(am__DEPENDENCIES_1)
-am__pdtshortestpath_SOURCES_DIST = pdtshortestpath.cc
-@HAVE_BIN_TRUE@am_pdtshortestpath_OBJECTS = pdtshortestpath.$(OBJEXT)
+am__pdtshortestpath_SOURCES_DIST = pdtshortestpath.cc \
+	pdtshortestpath-main.cc
+@HAVE_BIN_TRUE@am_pdtshortestpath_OBJECTS = pdtshortestpath.$(OBJEXT) \
+@HAVE_BIN_TRUE@	pdtshortestpath-main.$(OBJEXT)
 pdtshortestpath_OBJECTS = $(am_pdtshortestpath_OBJECTS)
 pdtshortestpath_LDADD = $(LDADD)
 @HAVE_BIN_TRUE@pdtshortestpath_DEPENDENCIES = libfstpdtscript.la \
@@ -405,15 +412,15 @@ AM_CPPFLAGS = -I$(srcdir)/../../include $(ICU_CPPFLAGS)
 @HAVE_BIN_TRUE@        ../../script/libfstscript.la \
 @HAVE_BIN_TRUE@        ../../lib/libfst.la -lm $(DL_LIBS)
 
-@HAVE_BIN_TRUE@pdtcompose_SOURCES = pdtcompose.cc
-@HAVE_BIN_TRUE@pdtexpand_SOURCES = pdtexpand.cc
-@HAVE_BIN_TRUE@pdtinfo_SOURCES = pdtinfo.cc
-@HAVE_BIN_TRUE@pdtreplace_SOURCES = pdtreplace.cc
-@HAVE_BIN_TRUE@pdtreverse_SOURCES = pdtreverse.cc
-@HAVE_BIN_TRUE@pdtshortestpath_SOURCES = pdtshortestpath.cc
+@HAVE_BIN_TRUE@pdtcompose_SOURCES = pdtcompose.cc pdtcompose-main.cc
+@HAVE_BIN_TRUE@pdtexpand_SOURCES = pdtexpand.cc pdtexpand-main.cc
+@HAVE_BIN_TRUE@pdtinfo_SOURCES = pdtinfo.cc pdtinfo-main.cc
+@HAVE_BIN_TRUE@pdtreplace_SOURCES = pdtreplace.cc pdtreplace-main.cc
+@HAVE_BIN_TRUE@pdtreverse_SOURCES = pdtreverse.cc pdtreverse-main.cc
+@HAVE_BIN_TRUE@pdtshortestpath_SOURCES = pdtshortestpath.cc pdtshortestpath-main.cc
 @HAVE_SCRIPT_TRUE@lib_LTLIBRARIES = libfstpdtscript.la
 @HAVE_SCRIPT_TRUE@libfstpdtscript_la_SOURCES = getters.cc pdtscript.cc
-@HAVE_SCRIPT_TRUE@libfstpdtscript_la_LDFLAGS = -version-info 16:0:0
+@HAVE_SCRIPT_TRUE@libfstpdtscript_la_LDFLAGS = -version-info 17:0:0
 @HAVE_SCRIPT_TRUE@libfstpdtscript_la_LIBADD = ../../script/libfstscript.la \
 @HAVE_SCRIPT_TRUE@                            ../../lib/libfst.la -lm $(DL_LIBS)
 
@@ -569,12 +576,18 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/getters.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pdtcompose-main.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pdtcompose.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pdtexpand-main.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pdtexpand.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pdtinfo-main.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pdtinfo.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pdtreplace-main.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pdtreplace.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pdtreverse-main.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pdtreverse.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pdtscript.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pdtshortestpath-main.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pdtshortestpath.Po@am__quote@
 
 .cc.o:

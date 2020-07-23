@@ -6,9 +6,7 @@
 #ifndef FST_TEST_WEIGHT_TESTER_H_
 #define FST_TEST_WEIGHT_TESTER_H_
 
-#include <iostream>
 #include <sstream>
-
 #include <utility>
 
 #include <fst/log.h>
@@ -89,6 +87,9 @@ class WeightTester {
     // Check Power(w, 1) is w
     CHECK(Power(w1, 1) == w1);
 
+    // Check Power(w, 2) is Times(w, w)
+    CHECK(Power(w1, 2) == Times(w1, w1));
+
     // Check Power(w, 3) is Times(w, Times(w, w))
     CHECK(Power(w1, 3) == Times(w1, Times(w1, w1)));
 
@@ -160,6 +161,22 @@ class WeightTester {
 
     // Checks transitivity.
     if (w1 == w2 && w2 == w3) CHECK(w1 == w3);
+
+    // Checks that two weights are either equal or not equal.
+    CHECK((w1 == w2) ^ (w1 != w2));
+
+    if (w1 == w2) {
+      // Checks that equal weights have identical hashes.
+      CHECK(w1.Hash() == w2.Hash());
+      // Checks that equal weights are also approximately equal.
+      CHECK(ApproxEqual(w1, w2));
+    }
+
+    // Checks that weights which are not even approximately equal are also
+    // strictly unequal.
+    if (!ApproxEqual(w1, w2)) {
+      CHECK(w1 != w2);
+    }
   }
 
   // Tests binary serialization and textual I/O.

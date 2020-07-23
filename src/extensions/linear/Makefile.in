@@ -173,16 +173,19 @@ linear_tagger_fst_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CXX \
 @HAVE_SCRIPT_FALSE@am_linear_tagger_fst_la_rpath = -rpath $(libfstdir)
 @HAVE_SCRIPT_TRUE@am_linear_tagger_fst_la_rpath = -rpath $(libfstdir)
 PROGRAMS = $(bin_PROGRAMS)
-am__fstlinear_SOURCES_DIST = fstlinear.cc
-@HAVE_BIN_TRUE@am_fstlinear_OBJECTS = fstlinear.$(OBJEXT)
+am__fstlinear_SOURCES_DIST = fstlinear.cc fstlinear-main.cc
+@HAVE_BIN_TRUE@am_fstlinear_OBJECTS = fstlinear.$(OBJEXT) \
+@HAVE_BIN_TRUE@	fstlinear-main.$(OBJEXT)
 fstlinear_OBJECTS = $(am_fstlinear_OBJECTS)
 fstlinear_LDADD = $(LDADD)
 @HAVE_BIN_TRUE@fstlinear_DEPENDENCIES = libfstlinearscript.la \
 @HAVE_BIN_TRUE@	../../script/libfstscript.la \
 @HAVE_BIN_TRUE@	../../lib/libfst.la $(am__DEPENDENCIES_1)
-am__fstloglinearapply_SOURCES_DIST = fstloglinearapply.cc
+am__fstloglinearapply_SOURCES_DIST = fstloglinearapply.cc \
+	fstloglinearapply-main.cc
 @HAVE_BIN_TRUE@am_fstloglinearapply_OBJECTS =  \
-@HAVE_BIN_TRUE@	fstloglinearapply.$(OBJEXT)
+@HAVE_BIN_TRUE@	fstloglinearapply.$(OBJEXT) \
+@HAVE_BIN_TRUE@	fstloglinearapply-main.$(OBJEXT)
 fstloglinearapply_OBJECTS = $(am_fstloglinearapply_OBJECTS)
 fstloglinearapply_LDADD = $(LDADD)
 @HAVE_BIN_TRUE@fstloglinearapply_DEPENDENCIES = libfstlinearscript.la \
@@ -397,12 +400,12 @@ AM_CPPFLAGS = -I$(srcdir)/../../include $(ICU_CPPFLAGS)
 @HAVE_BIN_TRUE@LDADD = libfstlinearscript.la ../../script/libfstscript.la \
 @HAVE_BIN_TRUE@    ../../lib/libfst.la -lm $(DL_LIBS)
 
-@HAVE_BIN_TRUE@fstlinear_SOURCES = fstlinear.cc
-@HAVE_BIN_TRUE@fstloglinearapply_SOURCES = fstloglinearapply.cc
+@HAVE_BIN_TRUE@fstlinear_SOURCES = fstlinear.cc fstlinear-main.cc
+@HAVE_BIN_TRUE@fstloglinearapply_SOURCES = fstloglinearapply.cc fstloglinearapply-main.cc
 @HAVE_SCRIPT_TRUE@libfstlinearscript_la_SOURCES = linearscript.cc
-@HAVE_SCRIPT_TRUE@libfstlinearscript_la_LDFLAGS = -version-info 16:0:0 -lm $(DL_LIBS)
+@HAVE_SCRIPT_TRUE@libfstlinearscript_la_LDFLAGS = -version-info 17:0:0 -lm $(DL_LIBS)
 @HAVE_SCRIPT_TRUE@libfstlinearscript_la_LIBADD = ../../script/libfstscript.la \
-@HAVE_SCRIPT_TRUE@							../../lib/libfst.la -lm $(DL_LIBS)
+@HAVE_SCRIPT_TRUE@                               ../../lib/libfst.la -lm $(DL_LIBS)
 
 @HAVE_SCRIPT_FALSE@libfst_LTLIBRARIES = linear_tagger-fst.la linear_classifier-fst.la
 @HAVE_SCRIPT_TRUE@libfst_LTLIBRARIES = linear_tagger-fst.la \
@@ -589,7 +592,9 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fstlinear-main.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fstlinear.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fstloglinearapply-main.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fstloglinearapply.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/linear-classifier-fst.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/linear-tagger-fst.Plo@am__quote@

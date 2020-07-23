@@ -9,32 +9,31 @@
 
 #include <string>
 
-#include <fst/compose.h>          // For ComposeFilter.
-#include <fst/determinize.h>      // For DeterminizeType.
-#include <fst/encode.h>           // For kEncodeLabels (etc.).
-#include <fst/epsnormalize.h>     // For EpsNormalizeType.
-#include <fst/project.h>          // For ProjectType.
-#include <fst/push.h>             // For kPushWeights (etc.).
-#include <fst/queue.h>            // For QueueType.
-#include <fst/rational.h>         // For ClosureType.
-#include <fst/script/arcsort.h>       // For ArcSortType.
-#include <fst/script/map.h>           // For MapType.
-#include <fst/script/script-impl.h>   // For RandArcSelection.
-
 #include <fst/log.h>
+#include <fst/compose.h>         // For ComposeFilter.
+#include <fst/determinize.h>     // For DeterminizeType.
+#include <fst/encode.h>          // For kEncodeLabels (etc.).
+#include <fst/epsnormalize.h>    // For EpsNormalizeType.
+#include <fst/project.h>         // For ProjectType.
+#include <fst/push.h>            // For kPushWeights (etc.).
+#include <fst/queue.h>           // For QueueType.
+#include <fst/rational.h>        // For ClosureType.
+#include <fst/script/arcsort.h>      // For ArcSortType.
+#include <fst/script/map.h>          // For MapType.
+#include <fst/script/script-impl.h>  // For RandArcSelection.
 
 namespace fst {
 namespace script {
 
-bool GetArcSortType(const string &str, ArcSortType *sort_type);
+bool GetArcSortType(const std::string &str, ArcSortType *sort_type);
 
 inline ClosureType GetClosureType(bool closure_plus) {
   return closure_plus ? CLOSURE_PLUS : CLOSURE_STAR;
 }
 
-bool GetComposeFilter(const string &str, ComposeFilter *compose_filter);
+bool GetComposeFilter(const std::string &str, ComposeFilter *compose_filter);
 
-bool GetDeterminizeType(const string &str, DeterminizeType *det_type);
+bool GetDeterminizeType(const std::string &str, DeterminizeType *det_type);
 
 inline uint32 GetEncodeFlags(bool encode_labels, bool encode_weights) {
   return (encode_labels ? kEncodeLabels : 0) |
@@ -45,7 +44,7 @@ inline EpsNormalizeType GetEpsNormalizeType(bool eps_norm_output) {
   return eps_norm_output ? EPS_NORM_OUTPUT : EPS_NORM_INPUT;
 }
 
-bool GetMapType(const string &str, MapType *map_type);
+bool GetMapType(const std::string &str, MapType *map_type);
 
 inline ProjectType GetProjectType(bool project_output) {
   return project_output ? PROJECT_OUTPUT : PROJECT_INPUT;
@@ -59,11 +58,11 @@ inline uint32 GetPushFlags(bool push_weights, bool push_labels,
           (remove_common_affix ? kPushRemoveCommonAffix : 0));
 }
 
-bool GetQueueType(const string &str, QueueType *queue_type);
+bool GetQueueType(const std::string &str, QueueType *queue_type);
 
-bool GetRandArcSelection(const string &str, RandArcSelection *ras);
+bool GetRandArcSelection(const std::string &str, RandArcSelection *ras);
 
-bool GetReplaceLabelType(const string &str, bool epsilon_on_replace,
+bool GetReplaceLabelType(const std::string &str, bool epsilon_on_replace,
                          ReplaceLabelType *rlt);
 
 inline ReweightType GetReweightType(bool to_final) {

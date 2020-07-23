@@ -15,10 +15,10 @@
 namespace fst {
 namespace script {
 
-using RelabelArgs1 = std::tuple<MutableFstClass *, const SymbolTable *,
-                                const SymbolTable *, const string &, bool,
-                                const SymbolTable *, const SymbolTable *,
-                                const string &, bool>;
+using RelabelArgs1 =
+    std::tuple<MutableFstClass *, const SymbolTable *, const SymbolTable *,
+               const std::string &, bool, const SymbolTable *,
+               const SymbolTable *, const std::string &, bool>;
 
 template <class Arc>
 void Relabel(RelabelArgs1 *args) {
@@ -49,11 +49,11 @@ void Relabel(RelabelArgs2 *args) {
   Relabel(ofst, typed_ipairs, typed_opairs);
 }
 
-void Relabel(MutableFstClass *ofst,
-             const SymbolTable *old_isymbols, const SymbolTable *new_isymbols,
-             const string &unknown_isymbol,  bool attach_new_isymbols,
+void Relabel(MutableFstClass *ofst, const SymbolTable *old_isymbols,
+             const SymbolTable *new_isymbols,
+             const std::string &unknown_isymbol, bool attach_new_isymbols,
              const SymbolTable *old_osymbols, const SymbolTable *new_osymbols,
-             const string &unknown_osymbol, bool attach_new_osymbols);
+             const std::string &unknown_osymbol, bool attach_new_osymbols);
 
 void Relabel(MutableFstClass *ofst, const std::vector<LabelPair> &ipairs,
              const std::vector<LabelPair> &opairs);

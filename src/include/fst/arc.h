@@ -45,9 +45,13 @@ struct ArcTpl {
         weight(std::forward<T>(weight)),
         nextstate(nextstate) {}
 
-  static const string &Type() {
-    static const auto *const type =
-        new string(Weight::Type() == "tropical" ? "standard" : Weight::Type());
+  // Arc with weight One.
+  ArcTpl(Label ilabel, Label olabel, StateId nextstate)
+      : ArcTpl(ilabel, olabel, Weight::One(), nextstate) {}
+
+  static const std::string &Type() {
+    static const auto *const type = new std::string(
+        Weight::Type() == "tropical" ? "standard" : Weight::Type());
     return *type;
   }
 };
@@ -74,15 +78,19 @@ struct StringArc {
 
   StringArc() = default;
 
-  template <class W>
-  StringArc(Label ilabel, Label olabel, W &&weight, StateId nextstate)
+  template <class T>
+  StringArc(Label ilabel, Label olabel, T &&weight, StateId nextstate)
       : ilabel(ilabel),
         olabel(olabel),
-        weight(std::forward<W>(weight)),
+        weight(std::forward<T>(weight)),
         nextstate(nextstate) {}
 
-  static const string &Type() {
-    static const auto *const type = new string(
+  // Arc with weight One.
+  StringArc(Label ilabel, Label olabel, StateId nextstate)
+      : StringArc(ilabel, olabel, Weight::One(), nextstate) {}
+
+  static const std::string &Type() {
+    static const auto *const type = new std::string(
         S == STRING_LEFT ? "left_standard_string"
                          : (S == STRING_RIGHT ? "right_standard_string"
                                               : "restricted_standard_string"));
@@ -106,19 +114,25 @@ struct GallicArc {
 
   GallicArc() = default;
 
-  template <class W>
-  GallicArc(Label ilabel, Label olabel, W &&weight, StateId nextstate)
+  template <class T>
+  GallicArc(Label ilabel, Label olabel, T &&weight, StateId nextstate)
       : ilabel(ilabel),
         olabel(olabel),
-        weight(std::forward<W>(weight)),
+        weight(std::forward<T>(weight)),
         nextstate(nextstate) {}
 
+  // Arc with weight One.
+  GallicArc(Label ilabel, Label olabel, StateId nextstate)
+      : GallicArc(ilabel, olabel, Weight::One(), nextstate) {}
+
   explicit GallicArc(const Arc &arc)
-      : ilabel(arc.ilabel), olabel(arc.ilabel), weight(arc.olabel, arc.weight),
+      : ilabel(arc.ilabel),
+        olabel(arc.ilabel),
+        weight(arc.olabel, arc.weight),
         nextstate(arc.nextstate) {}
 
-  static const string &Type() {
-    static const auto *const type = new string(
+  static const std::string &Type() {
+    static const auto *const type = new std::string(
         (G == GALLIC_LEFT
              ? "left_gallic_"
              : (G == GALLIC_RIGHT
@@ -137,8 +151,7 @@ struct ReverseArc {
   using Arc = A;
   using Label = typename Arc::Label;
   using StateId = typename Arc::StateId;
-  using AWeight = typename Arc::Weight;
-  using Weight = typename AWeight::ReverseWeight;
+  using Weight = typename Arc::Weight::ReverseWeight;
 
   Label ilabel;
   Label olabel;
@@ -147,15 +160,19 @@ struct ReverseArc {
 
   ReverseArc() = default;
 
-  template <class W>
-  ReverseArc(Label ilabel, Label olabel, W &&weight, StateId nextstate)
+  template <class T>
+  ReverseArc(Label ilabel, Label olabel, T &&weight, StateId nextstate)
       : ilabel(ilabel),
         olabel(olabel),
-        weight(std::forward<W>(weight)),
+        weight(std::forward<T>(weight)),
         nextstate(nextstate) {}
 
-  static const string &Type() {
-    static const auto *const type = new string("reverse_" + Arc::Type());
+  // Arc with weight One.
+  ReverseArc(Label ilabel, Label olabel, StateId nextstate)
+      : ReverseArc(ilabel, olabel, Weight::One(), nextstate) {}
+
+  static const std::string &Type() {
+    static const auto *const type = new std::string("reverse_" + Arc::Type());
     return *type;
   }
 };
@@ -174,15 +191,19 @@ struct LexicographicArc {
 
   LexicographicArc() = default;
 
-  template <class W>
-  LexicographicArc(Label ilabel, Label olabel, W &&weight, StateId nextstate)
+  template <class T>
+  LexicographicArc(Label ilabel, Label olabel, T &&weight, StateId nextstate)
       : ilabel(ilabel),
         olabel(olabel),
-        weight(std::forward<W>(weight)),
+        weight(std::forward<T>(weight)),
         nextstate(nextstate) {}
 
-  static const string &Type() {
-    static const string *const type = new string(Weight::Type());
+  // Arc with weight One.
+  LexicographicArc(Label ilabel, Label olabel, StateId nextstate)
+      : LexicographicArc(ilabel, olabel, Weight::One(), nextstate) {}
+
+  static const std::string &Type() {
+    static const std::string *const type = new std::string(Weight::Type());
     return *type;
   }
 };
@@ -201,15 +222,19 @@ struct ProductArc {
 
   ProductArc() = default;
 
-  template <class W>
-  ProductArc(Label ilabel, Label olabel, W &&weight, StateId nextstate)
+  template <class T>
+  ProductArc(Label ilabel, Label olabel, T &&weight, StateId nextstate)
       : ilabel(ilabel),
         olabel(olabel),
-        weight(std::forward<W>(weight)),
+        weight(std::forward<T>(weight)),
         nextstate(nextstate) {}
 
-  static const string &Type() {
-    static const auto *const type = new string(Weight::Type());
+  // Arc with weight One.
+  ProductArc(Label ilabel, Label olabel, StateId nextstate)
+      : ProductArc(ilabel, olabel, Weight::One(), nextstate) {}
+
+  static const std::string &Type() {
+    static const auto *const type = new std::string(Weight::Type());
     return *type;
   }
 };
@@ -231,16 +256,20 @@ struct PowerArc {
 
   PowerArc() = default;
 
-  template <class W>
-  PowerArc(Label ilabel, Label olabel, W &&weight, StateId nextstate)
+  template <class T>
+  PowerArc(Label ilabel, Label olabel, T &&weight, StateId nextstate)
       : ilabel(ilabel),
         olabel(olabel),
-        weight(std::forward<W>(weight)),
+        weight(std::forward<T>(weight)),
         nextstate(nextstate) {}
 
-  static const string &Type() {
+  // Arc with weight One.
+  PowerArc(Label ilabel, Label olabel, StateId nextstate)
+      : PowerArc(ilabel, olabel, Weight::One(), nextstate) {}
+
+  static const std::string &Type() {
     static const auto *const type =
-        new string(Arc::Type() + "_^" + std::to_string(n));
+        new std::string(Arc::Type() + "_^" + std::to_string(n));
     return *type;
   }
 };
@@ -261,20 +290,24 @@ struct SparsePowerArc {
 
   SparsePowerArc() = default;
 
-  template <class W>
-  SparsePowerArc(Label ilabel, Label olabel, W &&weight, StateId nextstate)
+  template <class T>
+  SparsePowerArc(Label ilabel, Label olabel, T &&weight, StateId nextstate)
       : ilabel(ilabel),
         olabel(olabel),
-        weight(std::forward<W>(weight)),
+        weight(std::forward<T>(weight)),
         nextstate(nextstate) {}
 
-  static const string &Type() {
-    static const string *const type = [] {
-      string type = Arc::Type() + "_^n";
+  // Arc with weight One.
+  SparsePowerArc(Label ilabel, Label olabel, StateId nextstate)
+      : SparsePowerArc(ilabel, olabel, Weight::One(), nextstate) {}
+
+  static const std::string &Type() {
+    static const std::string *const type = [] {
+      std::string type = Arc::Type() + "_^n";
       if (sizeof(K) != sizeof(uint32)) {
         type += "_" + std::to_string(CHAR_BIT * sizeof(K));
       }
-      return new string(type);
+      return new std::string(type);
     }();
     return *type;
   }
@@ -298,16 +331,20 @@ struct ExpectationArc {
 
   ExpectationArc() = default;
 
-  template <class W>
-  ExpectationArc(Label ilabel, Label olabel, W &&weight, StateId nextstate)
+  template <class T>
+  ExpectationArc(Label ilabel, Label olabel, T &&weight, StateId nextstate)
       : ilabel(ilabel),
         olabel(olabel),
-        weight(std::forward<W>(weight)),
+        weight(std::forward<T>(weight)),
         nextstate(nextstate) {}
 
-  static const string &Type() {
+  // Arc with weight One.
+  ExpectationArc(Label ilabel, Label olabel, StateId nextstate)
+      : ExpectationArc(ilabel, olabel, Weight::One(), nextstate) {}
+
+  static const std::string &Type() {
     static const auto *const type =
-        new string("expectation_" + Arc::Type() + "_" + X2::Type());
+        new std::string("expectation_" + Arc::Type() + "_" + X2::Type());
     return *type;
   }
 };

@@ -6,7 +6,6 @@
 
 #include <climits>
 #include <ctime>
-
 #include <tuple>
 
 #include <fst/randequivalent.h>
@@ -24,8 +23,8 @@ using RandEquivalentArgs = WithReturnValue<bool, RandEquivalentInnerArgs>;
 
 template <class Arc>
 void RandEquivalent(RandEquivalentArgs *args) {
-  const Fst<Arc> &fst1 = *(std::get<0>(args->args).GetFst<Arc>());
-  const Fst<Arc> &fst2 = *(std::get<1>(args->args).GetFst<Arc>());
+  const Fst<Arc> &fst1 = *std::get<0>(args->args).GetFst<Arc>();
+  const Fst<Arc> &fst2 = *std::get<1>(args->args).GetFst<Arc>();
   const auto seed = std::get<4>(args->args);
   const auto &opts = std::get<5>(args->args);
   switch (opts.selector) {

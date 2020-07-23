@@ -16,7 +16,7 @@ using ReverseArgs = std::tuple<const FstClass &, MutableFstClass *, bool>;
 
 template <class Arc>
 void Reverse(ReverseArgs *args) {
-  const Fst<Arc> &ifst = *(std::get<0>(*args).GetFst<Arc>());
+  const Fst<Arc> &ifst = *std::get<0>(*args).GetFst<Arc>();
   MutableFst<Arc> *ofst = std::get<1>(*args)->GetMutableFst<Arc>();
   Reverse(ifst, ofst, std::get<2>(*args));
 }

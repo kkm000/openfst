@@ -101,7 +101,7 @@ using ShortestPathArgs = std::tuple<const FstClass &, MutableFstClass *,
 
 template <class Arc>
 void ShortestPath(ShortestPathArgs *args) {
-  const Fst<Arc> &ifst = *(std::get<0>(*args).GetFst<Arc>());
+  const Fst<Arc> &ifst = *std::get<0>(*args).GetFst<Arc>();
   MutableFst<Arc> *ofst = std::get<1>(*args)->GetMutableFst<Arc>();
   const ShortestPathOptions &opts = std::get<2>(*args);
   internal::ShortestPath(ifst, ofst, opts);

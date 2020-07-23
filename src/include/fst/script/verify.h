@@ -15,7 +15,7 @@ using VerifyArgs = WithReturnValue<bool, const FstClass &>;
 
 template <class Arc>
 void Verify(VerifyArgs *args) {
-  const Fst<Arc> &fst = *(args->args.GetFst<Arc>());
+  const Fst<Arc> &fst = *args->args.GetFst<Arc>();
   args->retval = Verify(fst);
 }
 

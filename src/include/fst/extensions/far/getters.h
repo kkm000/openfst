@@ -13,17 +13,17 @@
 namespace fst {
 namespace script {
 
-FarType GetFarType(const string &str);
+FarType GetFarType(const std::string &str);
 
-bool GetFarEntryType(const string &str, FarEntryType *entry_type);
+bool GetFarEntryType(const std::string &str, FarEntryType *entry_type);
 
-bool GetFarTokenType(const string &str, FarTokenType *token_type);
+bool GetFarTokenType(const std::string &str, FarTokenType *token_type);
 
 void ExpandArgs(int argc, char **argv, int *argcp, char ***argvp);
 
 }  // namespace script
 
-string GetFarTypeString(FarType type);
+std::string GetFarTypeString(FarType type);
 
 }  // namespace fst
 

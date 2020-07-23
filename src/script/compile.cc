@@ -1,29 +1,32 @@
 // See www.openfst.org for extensive documentation on this weighted
 // finite-state transducer library.
 
+#include <fst/script/compile.h>
+
 #include <istream>
 #include <string>
 
-#include <fst/script/compile.h>
 #include <fst/script/fst-class.h>
 #include <fst/script/script-impl.h>
 
 namespace fst {
 namespace script {
 
-void CompileFst(std::istream &istrm, const string &source, const string &dest,
-                const string &fst_type, const string &arc_type,
-                const SymbolTable *isyms, const SymbolTable *osyms,
-                const SymbolTable *ssyms, bool accep, bool ikeep, bool okeep,
-                bool nkeep, bool allow_negative_labels) {
+void CompileFst(std::istream &istrm, const std::string &source,
+                const std::string &dest, const std::string &fst_type,
+                const std::string &arc_type, const SymbolTable *isyms,
+                const SymbolTable *osyms, const SymbolTable *ssyms, bool accep,
+                bool ikeep, bool okeep, bool nkeep,
+                bool allow_negative_labels) {
   std::unique_ptr<FstClass> fst(
       CompileFstInternal(istrm, source, fst_type, arc_type, isyms, osyms, ssyms,
                          accep, ikeep, okeep, nkeep, allow_negative_labels));
   fst->Write(dest);
 }
 
-FstClass *CompileFstInternal(std::istream &istrm, const string &source,
-                             const string &fst_type, const string &arc_type,
+FstClass *CompileFstInternal(std::istream &istrm, const std::string &source,
+                             const std::string &fst_type,
+                             const std::string &arc_type,
                              const SymbolTable *isyms, const SymbolTable *osyms,
                              const SymbolTable *ssyms, bool accep, bool ikeep,
                              bool okeep, bool nkeep,

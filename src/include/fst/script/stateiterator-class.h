@@ -75,7 +75,7 @@ class StateIteratorClass {
 
 template <class Arc>
 void InitStateIteratorClass(InitStateIteratorClassArgs *args) {
-  const Fst<Arc> &fst = *(std::get<0>(*args).GetFst<Arc>());
+  const Fst<Arc> &fst = *std::get<0>(*args).GetFst<Arc>();
   std::get<1>(*args)->impl_.reset(new StateIteratorClassImpl<Arc>(fst));
 }
 

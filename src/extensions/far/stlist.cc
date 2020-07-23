@@ -8,7 +8,7 @@
 
 namespace fst {
 
-bool IsSTList(const string &filename) {
+bool IsSTList(const std::string &filename) {
   std::ifstream strm(filename, std::ios_base::in | std::ios_base::binary);
   if (!strm) return false;
   int32 magic_number = 0;

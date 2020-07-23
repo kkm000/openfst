@@ -4,7 +4,6 @@
 // Relabels input or output space of an FST.
 
 #include <cstring>
-
 #include <memory>
 #include <string>
 #include <vector>
@@ -30,7 +29,7 @@ int fstrelabel_main(int argc, char **argv) {
   using fst::SymbolTable;
   using fst::SymbolTableTextOptions;
 
-  string usage =
+  std::string usage =
       "Relabels the input and/or the output labels of the FST.\n\n"
       "  Usage: ";
   usage += argv[0];
@@ -49,9 +48,10 @@ int fstrelabel_main(int argc, char **argv) {
     return 1;
   }
 
-  const string in_name =
-      (argc > 1 && (strcmp(argv[1], "-") != 0)) ? argv[1] : "";
-  const string out_name = argc > 2 ? argv[2] : "";
+  const std::string in_name =
+      (argc > 1 && strcmp(argv[1], "-") != 0) ? argv[1] : "";
+  const std::string out_name =
+      (argc > 2 && strcmp(argv[2], "-") != 0) ? argv[2] : "";
 
   std::unique_ptr<MutableFstClass> fst(MutableFstClass::Read(in_name, true));
   if (!fst) return 1;

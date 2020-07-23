@@ -12,7 +12,6 @@
 #include <vector>
 
 #include <fst/log.h>
-
 #include <fst/extensions/pdt/paren.h>
 #include <fst/extensions/pdt/pdt.h>
 #include <fst/shortest-path.h>

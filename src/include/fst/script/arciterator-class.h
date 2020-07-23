@@ -106,7 +106,7 @@ class ArcIteratorClass {
 
 template <class Arc>
 void InitArcIteratorClass(InitArcIteratorClassArgs *args) {
-  const Fst<Arc> &fst = *(std::get<0>(*args).GetFst<Arc>());
+  const Fst<Arc> &fst = *std::get<0>(*args).GetFst<Arc>();
   std::get<2>(*args)->impl_.reset(
       new ArcIteratorClassImpl<Arc>(fst, std::get<1>(*args)));
 }
