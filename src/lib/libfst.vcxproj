@@ -52,6 +52,7 @@
     <ClInclude Include="..\include\fst\equal.h" />
     <ClInclude Include="..\include\fst\equivalent.h" />
     <ClInclude Include="..\include\fst\expanded-fst.h" />
+    <ClInclude Include="..\include\fst\expanded-cache.h" />
     <ClInclude Include="..\include\fst\expectation-weight.h" />
     <ClInclude Include="..\include\fst\factor-weight.h" />
     <ClInclude Include="..\include\fst\filter-state.h" />
@@ -83,6 +84,7 @@
     <ClInclude Include="..\include\fst\pair-weight.h" />
     <ClInclude Include="..\include\fst\partition.h" />
     <ClInclude Include="..\include\fst\power-weight.h" />
+    <ClInclude Include="..\include\fst\power-weight-mapper.h" />
     <ClInclude Include="..\include\fst\product-weight.h" />
     <ClInclude Include="..\include\fst\project.h" />
     <ClInclude Include="..\include\fst\properties.h" />
