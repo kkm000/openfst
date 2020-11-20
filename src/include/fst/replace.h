@@ -225,9 +225,9 @@ class VectorHashReplaceStateTable {
       }
     }
     state_table_.reset(
-        new StateTable(new ReplaceRootSelector<StateId, PrefixId>,
-                       new ReplaceFstStateFingerprint<StateId, PrefixId>,
-                       new ReplaceFingerprint<StateId, PrefixId>(&size_array_),
+        new StateTable(ReplaceRootSelector<StateId, PrefixId>(),
+                       ReplaceFstStateFingerprint<StateId, PrefixId>(),
+                       ReplaceFingerprint<StateId, PrefixId>(&size_array_),
                        root_size_, root_size_ + size_array_.back()));
   }
 
@@ -237,9 +237,9 @@ class VectorHashReplaceStateTable {
         size_array_(table.size_array_),
         prefix_table_(table.prefix_table_) {
     state_table_.reset(
-        new StateTable(new ReplaceRootSelector<StateId, PrefixId>,
-                       new ReplaceFstStateFingerprint<StateId, PrefixId>,
-                       new ReplaceFingerprint<StateId, PrefixId>(&size_array_),
+        new StateTable(ReplaceRootSelector<StateId, PrefixId>(),
+                       ReplaceFstStateFingerprint<StateId, PrefixId>(),
+                       ReplaceFingerprint<StateId, PrefixId>(&size_array_),
                        root_size_, root_size_ + size_array_.back()));
   }
 

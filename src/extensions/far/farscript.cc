@@ -5,6 +5,7 @@
 // those that can be called with FstClass-type arguments.
 
 #include <fst/extensions/far/farscript.h>
+
 #include <fst/extensions/far/far.h>
 #include <fst/script/script-impl.h>
 

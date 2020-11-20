@@ -19,22 +19,18 @@
 #include <fst/types.h>
 #include <fst/log.h>
 #include <fst/extensions/compress/elias.h>
-#include <fst/extensions/compress/gzfile.h>
 #include <fst/encode.h>
 #include <fstream>
 #include <fst/fst.h>
 #include <fst/mutable-fst.h>
+#include <fst/queue.h>
 #include <fst/statesort.h>
+#include <fst/visit.h>
 
 namespace fst {
 
 // Identifies stream data as a vanilla compressed FST.
 static const int32 kCompressMagicNumber = 1858869554;
-// Identifies stream data as (probably) a Gzip file accidentally read from a
-// vanilla stream, without gzip support.
-static const int32 kGzipMagicNumber = 0x8b1f;
-// Selects the two most significant bytes.
-constexpr uint32 kGzipMask = 0xffffffff >> 16;
 
 namespace internal {
 
@@ -302,44 +298,33 @@ void Compressor<Arc>::DecodeForCompress(MutableFst<Arc> *fst,
 template <class Arc>
 void Compressor<Arc>::BfsOrder(const ExpandedFst<Arc> &fst,
                                std::vector<StateId> *order) {
-  StateId bfs_visit_number = 0;
-  std::queue<StateId> states_queue;
+  class BfsVisitor {
+   public:
+    // Requires order->size() >= fst.NumStates().
+    explicit BfsVisitor(std::vector<StateId> *order) : order_(order) {}
+
+    void InitVisit(const Fst<Arc> &fst) {}
+
+    bool InitState(StateId s, StateId) {
+      order_->at(s) = num_bfs_states_++;
+      return true;
+    }
+
+    bool WhiteArc(StateId s, const Arc &arc) { return true; }
+    bool GreyArc(StateId s, const Arc &arc) { return true; }
+    bool BlackArc(StateId s, const Arc &arc) { return true; }
+    void FinishState(StateId s) {}
+    void FinishVisit() {}
+
+   private:
+    std::vector<StateId> *order_ = nullptr;
+    StateId num_bfs_states_ = 0;
+  };
+
   order->assign(fst.NumStates(), kNoStateId);
-  states_queue.push(fst.Start());
-  (*order)[fst.Start()] = bfs_visit_number++;
-  while (!states_queue.empty()) {
-    for (ArcIterator<Fst<Arc>> aiter(fst, states_queue.front()); !aiter.Done();
-         aiter.Next()) {
-      const auto &arc = aiter.Value();
-      const auto nextstate = arc.nextstate;
-      if ((*order)[nextstate] == kNoStateId) {
-        (*order)[nextstate] = bfs_visit_number++;
-        states_queue.push(nextstate);
-      }
-    }
-    states_queue.pop();
-  }
-  // Handles any unconnected states.
-  while (bfs_visit_number < fst.NumStates()) {
-    StateId unseen_state = 0;
-    for (; unseen_state < fst.NumStates(); ++unseen_state) {
-      if ((*order)[unseen_state] == kNoStateId) break;
-    }
-    states_queue.push(unseen_state);
-    (*order)[unseen_state] = bfs_visit_number++;
-    while (!states_queue.empty()) {
-      for (ArcIterator<Fst<Arc>> aiter(fst, states_queue.front());
-           !aiter.Done(); aiter.Next()) {
-        const auto &arc = aiter.Value();
-        const auto nextstate = arc.nextstate;
-        if ((*order)[nextstate] == kNoStateId) {
-          (*order)[nextstate] = bfs_visit_number++;
-          states_queue.push(nextstate);
-        }
-      }
-      states_queue.pop();
-    }
-  }
+  BfsVisitor visitor(order);
+  FifoQueue<StateId> queue;
+  Visit(fst, &visitor, &queue, AnyArcFilter<Arc>());
 }
 
 template <class Arc>
@@ -677,15 +662,6 @@ bool Compressor<Arc>::Decompress(std::istream &strm, const std::string &source,
   ReadType(strm, &magic_number);
   if (magic_number != kCompressMagicNumber) {
     LOG(ERROR) << "Decompress: Bad compressed Fst: " << source;
-    // If the most significant two bytes of the magic number match the
-    // gzip magic number, then we are probably reading a gzip file as an
-    // ordinary stream.
-    if ((magic_number & kGzipMask) == kGzipMagicNumber) {
-      LOG(ERROR) << "Decompress: Fst appears to be compressed with Gzip, but "
-                    "gzip decompression was not requested. Try with "
-                    "the --gzip flag"
-                    ".";
-    }
     return false;
   }
   std::unique_ptr<EncodeMapper<Arc>> encoder(
@@ -767,35 +743,18 @@ void Compress(const Fst<Arc> &fst, std::ostream &strm) {
 }
 
 template <class Arc>
-bool Compress(const Fst<Arc> &fst, const std::string &source,
-              const bool gzip = false) {
-  if (gzip) {
-      std::stringstream strm;
-      Compress(fst, strm);
-      OGzFile gzfile(source);
-      if (!gzfile) {
-        LOG(ERROR) << "Compress: Can't open file: "
-                   << (source.empty() ? "standard output" : source);
-        return false;
-      }
-      gzfile.Write(strm);
-      if (!gzfile) {
-        LOG(ERROR) << "Compress: Can't write to file: "
-                   << (source.empty() ? "standard output" : source);
-        return false;
-      }
-  } else if (!source.empty()) {
-    std::ofstream strm(source,
-                             std::ios_base::out | std::ios_base::binary);
-    if (!strm) {
+bool Compress(const Fst<Arc> &fst, const std::string &source) {
+  std::ofstream fstrm;
+  if (!source.empty()) {
+    fstrm.open(source, std::ios_base::out | std::ios_base::binary);
+    if (!fstrm) {
       LOG(ERROR) << "Compress: Can't open file: " << source;
       return false;
     }
-    Compress(fst, strm);
-  } else {
-    Compress(fst, std::cout);
   }
-  return true;
+  std::ostream &ostrm = fstrm.is_open() ? fstrm : std::cout;
+  Compress(fst, ostrm);
+  return !!ostrm;
 }
 
 template <class Arc>
@@ -808,32 +767,18 @@ bool Decompress(std::istream &strm, const std::string &source,
 
 // Returns true on success.
 template <class Arc>
-bool Decompress(const std::string &source, MutableFst<Arc> *fst,
-                const bool gzip = false) {
-  if (gzip) {
-    IGzFile gzfile(source);
-    if (!gzfile) {
-      LOG(ERROR) << "Decompress: Can't open file: "
-                 << (source.empty() ? "standard input" : source);
-      return false;
-    }
-    Decompress(*gzfile.Read(), source, fst);
-    if (!gzfile) {
-      LOG(ERROR) << "Decompress: Can't read from file: "
-                 << (source.empty() ? "standard input" : source);
-      return false;
-    }
-  } else if (!source.empty()) {
-    std::ifstream strm(source, std::ios_base::in | std::ios_base::binary);
-    if (!strm) {
+bool Decompress(const std::string &source, MutableFst<Arc> *fst) {
+  std::ifstream fstrm;
+  if (!source.empty()) {
+    fstrm.open(source, std::ios_base::in | std::ios_base::binary);
+    if (!fstrm) {
       LOG(ERROR) << "Decompress: Can't open file: " << source;
       return false;
     }
-    Decompress(strm, source, fst);
-  } else {
-    Decompress(std::cin, "standard input", fst);
   }
-  return true;
+  std::istream &istrm = fstrm.is_open() ? fstrm : std::cin;
+  Decompress(istrm, source.empty() ? "standard input" : source, fst);
+  return !!istrm;
 }
 
 }  // namespace fst

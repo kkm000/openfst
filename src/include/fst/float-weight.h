@@ -607,7 +607,209 @@ class Adder<LogWeightTpl<T>> {
     return Sum();
   }
 
-  Weight Sum() { return Weight(sum_); }
+  Weight Sum() const { return Weight(sum_); }
+
+  void Reset(Weight w = Weight::Zero()) {
+    sum_ = w.Value();
+    c_ = 0.0;
+  }
+
+ private:
+  double sum_;
+  double c_;   // Kahan compensation.
+};
+
+// Real semiring: (+, *, 0, 1).
+template <class T>
+class RealWeightTpl : public FloatWeightTpl<T> {
+ public:
+  using typename FloatWeightTpl<T>::ValueType;
+  using FloatWeightTpl<T>::Value;
+  using ReverseWeight = RealWeightTpl;
+  using Limits = FloatLimits<T>;
+
+  RealWeightTpl() noexcept : FloatWeightTpl<T>() {}
+
+  constexpr RealWeightTpl(T f) : FloatWeightTpl<T>(f) {}
+
+  static constexpr RealWeightTpl Zero() { return 0; }
+
+  static constexpr RealWeightTpl One() { return 1; }
+
+  static constexpr RealWeightTpl NoWeight() { return Limits::NumberBad(); }
+
+  static const std::string &Type() {
+    static const std::string *const type = new std::string(
+        std::string("real") + FloatWeightTpl<T>::GetPrecisionString());
+    return *type;
+  }
+
+  constexpr bool Member() const {
+    // The comments for TropicalWeightTpl<>::Member() apply here unchanged.
+    return Limits::NegInfinity() < Value();
+  }
+
+  RealWeightTpl<T> Quantize(float delta = kDelta) const {
+    if (!Member() || Value() == Limits::PosInfinity()) {
+      return *this;
+    } else {
+      return RealWeightTpl<T>(std::floor(Value() / delta + 0.5F) * delta);
+    }
+  }
+
+  constexpr RealWeightTpl<T> Reverse() const { return *this; }
+
+  static constexpr uint64 Properties() {
+    return kLeftSemiring | kRightSemiring | kCommutative;
+  }
+};
+
+// Single-precision log weight.
+using RealWeight = RealWeightTpl<float>;
+
+// Double-precision log weight.
+using Real64Weight = RealWeightTpl<double>;
+
+namespace internal {
+
+// a + b = KahanRealSum(a, b, ...).
+// Kahan compensated summation provides an error bound that is
+// independent of the number of addends. c is the compensation.
+inline double KahanRealSum(double a, double b, double *c) {
+  double y = b - *c;
+  double t = a + y;
+  *c = (t - a) - y;
+  return t;
+}
+
+};  // namespace internal
+
+// The comments for Times(Tropical...) above apply here unchanged.
+template <class T>
+inline RealWeightTpl<T> Plus(const RealWeightTpl<T> &w1,
+                             const RealWeightTpl<T> &w2) {
+  const T f1 = w1.Value();
+  const T f2 = w2.Value();
+  return RealWeightTpl<T>(f1 + f2);
+}
+
+inline RealWeightTpl<float> Plus(const RealWeightTpl<float> &w1,
+                                 const RealWeightTpl<float> &w2) {
+  return Plus<float>(w1, w2);
+}
+
+inline RealWeightTpl<double> Plus(const RealWeightTpl<double> &w1,
+                                  const RealWeightTpl<double> &w2) {
+  return Plus<double>(w1, w2);
+}
+
+template <class T>
+inline RealWeightTpl<T> Minus(const RealWeightTpl<T> &w1,
+                             const RealWeightTpl<T> &w2) {
+  // The comments for Divide(Tropical...) above apply here unchanged.
+  const T f1 = w1.Value();
+  const T f2 = w2.Value();
+  return RealWeightTpl<T>(f1 - f2);
+}
+
+inline RealWeightTpl<float> Minus(const RealWeightTpl<float> &w1,
+                                 const RealWeightTpl<float> &w2) {
+  return Minus<float>(w1, w2);
+}
+
+inline RealWeightTpl<double> Minus(const RealWeightTpl<double> &w1,
+                                  const RealWeightTpl<double> &w2) {
+  return Minus<double>(w1, w2);
+}
+
+// The comments for Times(Tropical...) above apply here similarly.
+template <class T>
+constexpr RealWeightTpl<T> Times(const RealWeightTpl<T> &w1,
+                                 const RealWeightTpl<T> &w2) {
+  return RealWeightTpl<T>(w1.Value() * w2.Value());
+}
+
+constexpr RealWeightTpl<float> Times(const RealWeightTpl<float> &w1,
+                                     const RealWeightTpl<float> &w2) {
+  return Times<float>(w1, w2);
+}
+
+constexpr RealWeightTpl<double> Times(const RealWeightTpl<double> &w1,
+                                      const RealWeightTpl<double> &w2) {
+  return Times<double>(w1, w2);
+}
+
+template <class T>
+constexpr RealWeightTpl<T> Divide(const RealWeightTpl<T> &w1,
+                                 const RealWeightTpl<T> &w2,
+                                 DivideType typ = DIVIDE_ANY) {
+  using Weight = RealWeightTpl<T>;
+  return w2.Member() ? Weight(w1.Value() / w2.Value()) : Weight::NoWeight();
+}
+
+constexpr RealWeightTpl<float> Divide(const RealWeightTpl<float> &w1,
+                                      const RealWeightTpl<float> &w2,
+                                      DivideType typ = DIVIDE_ANY) {
+  return Divide<float>(w1, w2, typ);
+}
+
+constexpr RealWeightTpl<double> Divide(const RealWeightTpl<double> &w1,
+                                       const RealWeightTpl<double> &w2,
+                                       DivideType typ = DIVIDE_ANY) {
+  return Divide<double>(w1, w2, typ);
+}
+
+// The comments for Power<>(Tropical...) above apply here unchanged.
+
+template <class T, class V,
+          bool Enable = !std::is_same<V, size_t>::value,
+          typename std::enable_if<Enable>::type * = nullptr>
+constexpr RealWeightTpl<T> Power(const RealWeightTpl<T> &w, V n) {
+  using Weight = RealWeightTpl<T>;
+  return (!w.Member() || n != n) ? Weight::NoWeight()
+      : (n == 0 || w == Weight::One()) ? Weight::One()
+      : Weight(pow(w.Value(), n));
+}
+
+// Specializes the library-wide template to use the above implementation; rules
+// of function template instantiation require this be a full instantiation.
+
+template <>
+constexpr RealWeightTpl<float> Power<RealWeightTpl<float>>(
+    const RealWeightTpl<float> &weight, size_t n) {
+  return Power<float, size_t, true>(weight, n);
+}
+
+template <>
+constexpr RealWeightTpl<double> Power<RealWeightTpl<double>>(
+    const RealWeightTpl<double> &weight, size_t n) {
+  return Power<double, size_t, true>(weight, n);
+}
+
+// Specialization using the Kahan compensated summation.
+template <class T>
+class Adder<RealWeightTpl<T>> {
+ public:
+  using Weight = RealWeightTpl<T>;
+
+  explicit Adder(Weight w = Weight::Zero())
+      : sum_(w.Value()),
+        c_(0.0) { }
+
+  Weight Add(const Weight &w) {
+    using Limits = FloatLimits<T>;
+    const T f = w.Value();
+    if (f == Limits::PosInfinity()) {
+      sum_ = f;
+    } else if (sum_ == Limits::PosInfinity()) {
+      return sum_;
+    } else {
+      sum_ = internal::KahanRealSum(sum_, f, &c_);
+    }
+    return Sum();
+  }
+
+  Weight Sum() const { return Weight(sum_); }
 
   void Reset(Weight w = Weight::Zero()) {
     sum_ = w.Value();
@@ -747,6 +949,20 @@ struct WeightConvert<TropicalWeight, LogWeight> {
 };
 
 template <>
+struct WeightConvert<RealWeight, LogWeight> {
+  LogWeight operator()(const RealWeight &w) const {
+    return -log(w.Value());
+  }
+};
+
+template <>
+struct WeightConvert<Real64Weight, LogWeight> {
+  LogWeight operator()(const Real64Weight &w) const {
+    return -log(w.Value());
+  }
+};
+
+template <>
 struct WeightConvert<Log64Weight, LogWeight> {
   constexpr LogWeight operator()(const Log64Weight &w) const {
     return w.Value();
@@ -762,11 +978,70 @@ struct WeightConvert<TropicalWeight, Log64Weight> {
 };
 
 template <>
+struct WeightConvert<RealWeight, Log64Weight> {
+  Log64Weight operator()(const RealWeight &w) const {
+    return -log(w.Value());
+  }
+};
+
+template <>
+struct WeightConvert<Real64Weight, Log64Weight> {
+  Log64Weight operator()(const Real64Weight &w) const {
+    return -log(w.Value());
+  }
+};
+
+template <>
 struct WeightConvert<LogWeight, Log64Weight> {
   constexpr Log64Weight operator()(const LogWeight &w) const {
     return w.Value();
   }
 };
+
+// Converts to real.
+template <>
+struct WeightConvert<LogWeight, RealWeight> {
+  RealWeight operator()(const LogWeight &w) const {
+    return exp(-w.Value());
+  }
+};
+
+template <>
+struct WeightConvert<Log64Weight, RealWeight> {
+  RealWeight operator()(const Log64Weight &w) const {
+    return exp(-w.Value());
+  }
+};
+
+template <>
+struct WeightConvert<Real64Weight, RealWeight> {
+  constexpr RealWeight operator()(const Real64Weight &w) const {
+    return w.Value();
+  }
+};
+
+// Converts to real64
+template <>
+struct WeightConvert<LogWeight, Real64Weight> {
+  Real64Weight operator()(const LogWeight &w) const {
+    return exp(-w.Value());
+  }
+};
+
+template <>
+struct WeightConvert<Log64Weight, Real64Weight> {
+  Real64Weight operator()(const Log64Weight &w) const {
+    return exp(-w.Value());
+  }
+};
+
+template <>
+struct WeightConvert<RealWeight, Real64Weight> {
+  constexpr Real64Weight operator()(const RealWeight &w) const {
+    return w.Value();
+  }
+};
+
 
 // This function object returns random integers chosen from [0,
 // num_random_weights). The boolean 'allow_zero' determines whether Zero() and
@@ -812,6 +1087,20 @@ class WeightGenerate<LogWeightTpl<T>>
     : public FloatWeightGenerate<LogWeightTpl<T>> {
  public:
   using Weight = LogWeightTpl<T>;
+  using Generate = FloatWeightGenerate<Weight>;
+
+  explicit WeightGenerate(bool allow_zero = true,
+                          size_t num_random_weights = kNumRandomWeights)
+      : Generate(allow_zero, num_random_weights) {}
+
+  Weight operator()() const { return Weight(Generate::operator()()); }
+};
+
+template <class T>
+class WeightGenerate<RealWeightTpl<T>>
+    : public FloatWeightGenerate<RealWeightTpl<T>> {
+ public:
+  using Weight = RealWeightTpl<T>;
   using Generate = FloatWeightGenerate<Weight>;
 
   explicit WeightGenerate(bool allow_zero = true,

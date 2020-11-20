@@ -15,7 +15,6 @@
 #include <fst/connect.h>
 #include <fst/dfs-visit.h>
 
-
 DECLARE_bool(fst_verify_properties);
 
 namespace fst {
@@ -114,10 +113,10 @@ uint64 ComputeProperties(const Fst<Arc> &fst, uint64 mask, uint64 *known,
       Arc prev_arc;
       // Creates these only if we need to.
       if (mask & (kIDeterministic | kNonIDeterministic)) {
-        ilabels.reset(new std::unordered_set<Label>());
+        ilabels = fst::make_unique<std::unordered_set<Label>>();
       }
       if (mask & (kODeterministic | kNonODeterministic)) {
-        olabels.reset(new std::unordered_set<Label>());
+        olabels = fst::make_unique<std::unordered_set<Label>>();
       }
       bool first_arc = true;
       for (ArcIterator<Fst<Arc>> aiter(fst, s); !aiter.Done(); aiter.Next()) {

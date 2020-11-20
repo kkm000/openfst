@@ -119,7 +119,7 @@ class VectorStateTable : public VectorBiTable<typename T::StateId, T, FP> {
   using VectorBiTable<StateId, StateTuple, FP>::Size;
   using VectorBiTable<StateId, StateTuple, FP>::Fingerprint;
 
-  explicit VectorStateTable(FP *fingerprint = nullptr, size_t table_size = 0)
+  explicit VectorStateTable(const FP &fingerprint = FP(), size_t table_size = 0)
       : VectorBiTable<StateId, StateTuple, FP>(fingerprint, table_size) {}
 
   StateId FindState(const StateTuple &tuple) { return FindId(tuple); }
@@ -146,8 +146,9 @@ class VectorHashStateTable
   using VectorHashBiTable<StateId, StateTuple, Select, FP, H>::Fingerprint;
   using VectorHashBiTable<StateId, StateTuple, Select, FP, H>::Hash;
 
-  VectorHashStateTable(Select *select, FP *fingerprint, H *hash,
-                       size_t vector_size = 0, size_t tuple_size = 0)
+  VectorHashStateTable(const Select &select, const FP &fingerprint,
+                       const H &hash, size_t vector_size = 0,
+                       size_t tuple_size = 0)
       : VectorHashBiTable<StateId, StateTuple, Select, FP, H>(
             select, fingerprint, hash, vector_size, tuple_size) {}
 
@@ -340,7 +341,7 @@ class ComposeFingerprint {
   ComposeFingerprint(StateId nstates1, StateId nstates2)
       : mult1_(nstates1), mult2_(nstates1 * nstates2) {}
 
-  size_t operator()(const StateTuple &tuple) {
+  size_t operator()(const StateTuple &tuple) const {
     return tuple.StateId1() + tuple.StateId2() * mult1_ +
            tuple.GetFilterState().Hash() * mult2_;
   }
@@ -378,13 +379,13 @@ class ProductComposeStateTable
 
   ProductComposeStateTable(const Fst<Arc> &fst1, const Fst<Arc> &fst2,
                            size_t table_size = 0)
-      : StateTable(new ComposeFingerprint<StateTuple>(CountStates(fst1),
-                                                      CountStates(fst2)),
+      : StateTable(ComposeFingerprint<StateTuple>(CountStates(fst1),
+                                                  CountStates(fst2)),
                    table_size) {}
 
   ProductComposeStateTable(
       const ProductComposeStateTable<Arc, StateTuple> &table)
-      : StateTable(new ComposeFingerprint<StateTuple>(table.Fingerprint())) {}
+      : StateTable(ComposeFingerprint<StateTuple>(table.Fingerprint())) {}
 
   constexpr bool Error() const { return false; }
 

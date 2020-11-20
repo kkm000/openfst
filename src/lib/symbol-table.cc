@@ -88,8 +88,8 @@ void DenseSymbolMap::ShrinkToFit() {
 }
 
 void MutableSymbolTableImpl::AddTable(const SymbolTable &table) {
-  for (SymbolTableIterator iter(table); !iter.Done(); iter.Next()) {
-    AddSymbol(iter.Symbol());
+  for (const auto &item : table) {
+    AddSymbol(item.Symbol());
   }
 }
 
@@ -366,13 +366,13 @@ bool SymbolTable::WriteText(std::ostream &strm,
     return false;
   }
   bool once_only = false;
-  for (SymbolTableIterator iter(*this); !iter.Done(); iter.Next()) {
+  for (const auto &item : *this) {
     std::ostringstream line;
-    if (iter.Value() < 0 && !opts.allow_negative_labels && !once_only) {
+    if (item.Label() < 0 && !opts.allow_negative_labels && !once_only) {
       LOG(WARNING) << "Negative symbol table entry when not allowed";
       once_only = true;
     }
-    line << iter.Symbol() << opts.fst_field_separator[0] << iter.Value()
+    line << item.Symbol() << opts.fst_field_separator[0] << item.Label()
          << '\n';
     strm.write(line.str().data(), line.str().length());
   }
@@ -395,18 +395,6 @@ bool SymbolTable::WriteText(const std::string &source) const {
     return WriteText(std::cout, SymbolTableTextOptions());
   }
 }
-
-SymbolTable::const_iterator SymbolTable::begin() const {
-  return SymbolTable::const_iterator(*this, 0);
-}
-
-SymbolTable::const_iterator SymbolTable::end() const {
-  return SymbolTable::const_iterator(*this, this->NumSymbols());
-}
-
-SymbolTable::const_iterator SymbolTable::cbegin() const { return begin(); }
-
-SymbolTable::const_iterator SymbolTable::cend() const { return end(); }
 
 bool CompatSymbols(const SymbolTable *syms1, const SymbolTable *syms2,
                    bool warning) {

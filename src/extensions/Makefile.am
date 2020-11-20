@@ -14,6 +14,14 @@ if HAVE_FAR
 fardir = far
 endif
 
+if HAVE_FSTS
+compactdir = compact
+constdir = const
+lineardir = linear
+lookaheaddir = lookahead
+ngramdir = ngram
+endif
+
 if HAVE_GRM
 fardir = far
 pdtdir = pdt

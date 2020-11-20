@@ -14,7 +14,6 @@
 #include <fst/fst.h>
 #include <fst/statesort.h>
 
-
 namespace fst {
 
 // DFS visitor class to return topological ordering.
@@ -30,7 +29,7 @@ class TopOrderVisitor {
       : order_(order), acyclic_(acyclic) {}
 
   void InitVisit(const Fst<Arc> &fst) {
-    finish_.reset(new std::vector<StateId>());
+    finish_ = fst::make_unique<std::vector<StateId>>();
     *acyclic_ = true;
   }
 

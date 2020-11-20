@@ -271,7 +271,7 @@ class Adder<SignedLogWeightTpl<T>> {
     return Sum();
   }
 
-  Weight Sum() { return Weight(X1(ssum_ ? 1.0 : -1.0), X2(sum_)); }
+  Weight Sum() const { return Weight(X1(ssum_ ? 1.0 : -1.0), X2(sum_)); }
 
   void Reset(Weight w = Weight::Zero()) {
     ssum_ = w.IsPositive();
@@ -348,6 +348,40 @@ struct WeightConvert<SignedLog64Weight, Log64Weight> {
   }
 };
 
+// Converts to real.
+template <>
+struct WeightConvert<SignedLogWeight, RealWeight> {
+  RealWeight operator()(const SignedLogWeight &weight) const {
+    return RealWeight(weight.Value1().Value() *
+                      exp(-weight.Value2().Value()));
+  }
+};
+
+template <>
+struct WeightConvert<SignedLog64Weight, RealWeight> {
+  RealWeight operator()(const SignedLog64Weight &weight) const {
+    return RealWeight(weight.Value1().Value() *
+                      exp(-weight.Value2().Value()));
+  }
+};
+
+// Converts to real64.
+template <>
+struct WeightConvert<SignedLogWeight, Real64Weight> {
+  Real64Weight operator()(const SignedLogWeight &weight) const {
+    return Real64Weight(weight.Value1().Value() *
+                        exp(-weight.Value2().Value()));
+  }
+};
+
+template <>
+struct WeightConvert<SignedLog64Weight, Real64Weight> {
+  Real64Weight operator()(const SignedLog64Weight &weight) const {
+    return Real64Weight(weight.Value1().Value() *
+                        exp(-weight.Value2().Value()));
+  }
+};
+
 // Converts to signed log.
 template <>
 struct WeightConvert<TropicalWeight, SignedLogWeight> {
@@ -367,6 +401,22 @@ template <>
 struct WeightConvert<Log64Weight, SignedLogWeight> {
   SignedLogWeight operator()(const Log64Weight &weight) const {
     return SignedLogWeight(1.0, weight.Value());
+  }
+};
+
+template <>
+struct WeightConvert<RealWeight, SignedLogWeight> {
+  SignedLogWeight operator()(const RealWeight &weight) const {
+    return SignedLogWeight(weight.Value() >= 0 ? 1.0 : -1.0,
+                           -log(std::abs(weight.Value())));
+  }
+};
+
+template <>
+struct WeightConvert<Real64Weight, SignedLogWeight> {
+  SignedLogWeight operator()(const Real64Weight &weight) const {
+    return SignedLogWeight(weight.Value() >= 0 ? 1.0 : -1.0,
+                           -log(std::abs(weight.Value())));
   }
 };
 
@@ -396,6 +446,22 @@ template <>
 struct WeightConvert<Log64Weight, SignedLog64Weight> {
   SignedLog64Weight operator()(const Log64Weight &weight) const {
     return SignedLog64Weight(1.0, weight.Value());
+  }
+};
+
+template <>
+struct WeightConvert<RealWeight, SignedLog64Weight> {
+  SignedLog64Weight operator()(const RealWeight &weight) const {
+    return SignedLog64Weight(weight.Value() >= 0 ? 1.0 : -1.0,
+                             -log(std::abs(weight.Value())));
+  }
+};
+
+template <>
+struct WeightConvert<Real64Weight, SignedLog64Weight> {
+  SignedLog64Weight operator()(const Real64Weight &weight) const {
+    return SignedLog64Weight(weight.Value() >= 0 ? 1.0 : -1.0,
+                             -log(std::abs(weight.Value())));
   }
 };
 

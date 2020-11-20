@@ -157,7 +157,6 @@ am__nobase_include_HEADERS_DIST = fst/accumulator.h fst/add-on.h \
 	fst/verify.h fst/visit.h fst/weight.h \
 	fst/extensions/compress/compress.h \
 	fst/extensions/compress/compressscript.h \
-	fst/extensions/compress/gzfile.h \
 	fst/extensions/compress/elias.h \
 	fst/extensions/far/compile-strings.h \
 	fst/extensions/far/create.h fst/extensions/far/equal.h \
@@ -405,8 +404,7 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 @HAVE_COMPRESS_TRUE@compress_include_headers = fst/extensions/compress/compress.h \
-@HAVE_COMPRESS_TRUE@fst/extensions/compress/compressscript.h fst/extensions/compress/gzfile.h \
-@HAVE_COMPRESS_TRUE@fst/extensions/compress/elias.h
+@HAVE_COMPRESS_TRUE@fst/extensions/compress/compressscript.h fst/extensions/compress/elias.h
 
 @HAVE_FAR_TRUE@far_include_headers = fst/extensions/far/compile-strings.h \
 @HAVE_FAR_TRUE@fst/extensions/far/create.h fst/extensions/far/equal.h \

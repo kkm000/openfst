@@ -25,8 +25,10 @@ class WeightApproxEqual {
  public:
   explicit WeightApproxEqual(float delta) : delta_(delta) {}
 
-  template <class Weight>
-  bool operator()(const Weight &w1, const Weight &w2) const {
+  // We use two weight types to avoid some conflicts caused by
+  // conversions.
+  template <class Weight1, class Weight2>
+  bool operator()(const Weight1 &w1, const Weight2 &w2) const {
     return ApproxEqual(w1, w2, delta_);
   }
 

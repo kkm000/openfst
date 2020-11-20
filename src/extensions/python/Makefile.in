@@ -14,9 +14,9 @@
 
 @SET_MAKE@
 
-# NB: we use the Cython-generated .cc files rather than the *.pxd/.pyx sources
+# NB: we use the Cython-generated .cpp files rather than the *.pxd/.pyx sources
 # used to generate them. Consequently, modifications to the .pyx files will not
-# influence the build unless the .cc files are regenerated using Cython.
+# influence the build unless the .cpp files are regenerated using Cython.
 
 VPATH = @srcdir@
 am__is_gnu_make = { \
@@ -351,7 +351,7 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 python_LTLIBRARIES = pywrapfst.la
 pyexec_LTILIBRARIES = pywrapfst.la
-pywrapfst_la_SOURCES = pywrapfst.cc
+pywrapfst_la_SOURCES = pywrapfst.cpp
 pywrapfst_la_CPPFLAGS = -I$(srcdir)/../../include $(PYTHON_CPPFLAGS)
 pywrapfst_la_CXXFLAGS = -fexceptions
 pywrapfst_la_LDFLAGS = -avoid-version -module
@@ -361,11 +361,13 @@ pywrapfst_la_LIBADD = ../far/libfstfarscript.la ../far/libfstfar.la \
 
 
 # Exports the *.pxd/*.pxd source files.
-EXTRA_DIST = basictypes.pxd cpywrapfst.pxd ios.pxd pywrapfst.pxd pywrapfst.pyx
+EXTRA_DIST = basictypes.pxd cpywrapfst.pxd ios.pxd \
+             pywrapfst.pxd pywrapfst.pyx utility.pxd
+
 all: all-am
 
 .SUFFIXES:
-.SUFFIXES: .cc .lo .o .obj
+.SUFFIXES: .cpp .lo .o .obj
 $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
@@ -448,7 +450,7 @@ $(am__depfiles_remade):
 
 am--depfiles: $(am__depfiles_remade)
 
-.cc.o:
+.cpp.o:
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\
 @am__fastdepCXX_TRUE@	$(CXXCOMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ $< &&\
 @am__fastdepCXX_TRUE@	$(am__mv) $$depbase.Tpo $$depbase.Po
@@ -456,7 +458,7 @@ am--depfiles: $(am__depfiles_remade)
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXXCOMPILE) -c -o $@ $<
 
-.cc.obj:
+.cpp.obj:
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.obj$$||'`;\
 @am__fastdepCXX_TRUE@	$(CXXCOMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ `$(CYGPATH_W) '$<'` &&\
 @am__fastdepCXX_TRUE@	$(am__mv) $$depbase.Tpo $$depbase.Po
@@ -464,7 +466,7 @@ am--depfiles: $(am__depfiles_remade)
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXXCOMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
 
-.cc.lo:
+.cpp.lo:
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.lo$$||'`;\
 @am__fastdepCXX_TRUE@	$(LTCXXCOMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ $< &&\
 @am__fastdepCXX_TRUE@	$(am__mv) $$depbase.Tpo $$depbase.Plo
@@ -472,12 +474,12 @@ am--depfiles: $(am__depfiles_remade)
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LTCXXCOMPILE) -c -o $@ $<
 
-pywrapfst_la-pywrapfst.lo: pywrapfst.cc
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(pywrapfst_la_CPPFLAGS) $(CPPFLAGS) $(pywrapfst_la_CXXFLAGS) $(CXXFLAGS) -MT pywrapfst_la-pywrapfst.lo -MD -MP -MF $(DEPDIR)/pywrapfst_la-pywrapfst.Tpo -c -o pywrapfst_la-pywrapfst.lo `test -f 'pywrapfst.cc' || echo '$(srcdir)/'`pywrapfst.cc
+pywrapfst_la-pywrapfst.lo: pywrapfst.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(pywrapfst_la_CPPFLAGS) $(CPPFLAGS) $(pywrapfst_la_CXXFLAGS) $(CXXFLAGS) -MT pywrapfst_la-pywrapfst.lo -MD -MP -MF $(DEPDIR)/pywrapfst_la-pywrapfst.Tpo -c -o pywrapfst_la-pywrapfst.lo `test -f 'pywrapfst.cpp' || echo '$(srcdir)/'`pywrapfst.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/pywrapfst_la-pywrapfst.Tpo $(DEPDIR)/pywrapfst_la-pywrapfst.Plo
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='pywrapfst.cc' object='pywrapfst_la-pywrapfst.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='pywrapfst.cpp' object='pywrapfst_la-pywrapfst.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(pywrapfst_la_CPPFLAGS) $(CPPFLAGS) $(pywrapfst_la_CXXFLAGS) $(CXXFLAGS) -c -o pywrapfst_la-pywrapfst.lo `test -f 'pywrapfst.cc' || echo '$(srcdir)/'`pywrapfst.cc
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(pywrapfst_la_CPPFLAGS) $(CPPFLAGS) $(pywrapfst_la_CXXFLAGS) $(CXXFLAGS) -c -o pywrapfst_la-pywrapfst.lo `test -f 'pywrapfst.cpp' || echo '$(srcdir)/'`pywrapfst.cpp
 
 mostlyclean-libtool:
 	-rm -f *.lo

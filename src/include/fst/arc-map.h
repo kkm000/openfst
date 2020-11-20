@@ -635,6 +635,26 @@ inline void ArcMapFst<A, B, C>::InitStateIterator(
   data->base = new StateIterator<ArcMapFst<A, B, C>>(*this);
 }
 
+// Constructs and returns an ArcMapFst.  This allows constructing ArcMapFsts
+// without specifying all the types. The template argument is typically
+// not specified, so a call looks like: MakeArcMapFst(fst, Mapper(...)).
+template <class ArcMapper>
+ArcMapFst<typename ArcMapper::FromArc, typename ArcMapper::ToArc, ArcMapper>
+MakeArcMapFst(const Fst<typename ArcMapper::FromArc> &fst,
+              const ArcMapper &mapper) {
+  return ArcMapFst<typename ArcMapper::FromArc, typename ArcMapper::ToArc,
+                   ArcMapper>(fst, mapper);
+}
+
+// Constructs and returns an ArcMapFst.  As above, but using the
+// ArcMapFst(..., ArcMapper *) constructor.
+template <class ArcMapper>
+ArcMapFst<typename ArcMapper::FromArc, typename ArcMapper::ToArc, ArcMapper>
+MakeArcMapFst(const Fst<typename ArcMapper::FromArc> &fst, ArcMapper *mapper) {
+  return ArcMapFst<typename ArcMapper::FromArc, typename ArcMapper::ToArc,
+                   ArcMapper>(fst, mapper);
+}
+
 // Utility Mappers.
 
 // Mapper that returns its input.

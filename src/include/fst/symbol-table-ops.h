@@ -31,9 +31,9 @@ SymbolTable *PruneSymbolTable(const Fst<Arc> &fst, const SymbolTable &syms,
     }
   }
   auto *pruned = new SymbolTable(syms.Name() + "_pruned");
-  for (SymbolTableIterator stiter(syms); !stiter.Done(); stiter.Next()) {
-    const auto label = stiter.Value();
-    if (seen.count(label)) pruned->AddSymbol(stiter.Symbol(), label);
+  for (const auto &stitem : syms) {
+    const auto label = stitem.Label();
+    if (seen.count(label)) pruned->AddSymbol(stitem.Symbol(), label);
   }
   return pruned;
 }

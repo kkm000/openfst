@@ -87,13 +87,18 @@ cdef Weight _power(Weight lhs, size_t n)
 # SymbolTable.
 
 ctypedef fst.SymbolTable * SymbolTable_ptr
+ctypedef const fst.SymbolTable * const_SymbolTable_ptr
 
 
 cdef class _SymbolTable(object):
 
-  cdef fst.SymbolTable *_table
+  cdef const fst.SymbolTable *_raw(self)
 
-  cpdef int64 available_key(self)
+  cdef void _raise_nonexistent(self) except *
+
+  cdef const fst.SymbolTable *_raw_ptr_or_raise(self) except *
+
+  cpdef int64 available_key(self) except *
 
   cpdef bytes checksum(self)
 
@@ -103,11 +108,11 @@ cdef class _SymbolTable(object):
 
   cpdef bytes labeled_checksum(self)
 
-  cpdef bool member(self, key)
+  cpdef bool member(self, key) except *
 
-  cpdef string name(self)
+  cpdef string name(self) except *
 
-  cpdef size_t num_symbols(self)
+  cpdef size_t num_symbols(self) except *
 
   cpdef void write(self, source) except *
 
@@ -116,26 +121,39 @@ cdef class _SymbolTable(object):
   cpdef bytes write_to_string(self)
 
 
-cdef class _EncodeMapperSymbolTable(_SymbolTable):
+cdef class _EncodeMapperSymbolTableView(_SymbolTable):
+
+  # Indicates whether this view is of an input or output SymbolTable
+  cdef bool _input_side
 
   cdef shared_ptr[fst.EncodeMapperClass] _mapper
 
 
-cdef class _FstSymbolTable(_SymbolTable):
+cdef class _FstSymbolTableView(_SymbolTable):
+
+  # Indicates whether this view is of an input or output SymbolTable
+  cdef bool _input_side
 
   cdef shared_ptr[fst.FstClass] _fst
 
 
 cdef class _MutableSymbolTable(_SymbolTable):
 
-  cpdef int64 add_symbol(self, symbol, int64 key=?)
+  cdef fst.SymbolTable *_mutable_raw(self)
 
-  cpdef void add_table(self, _SymbolTable syms)
+  cdef fst.SymbolTable *_mutable_raw_ptr_or_raise(self) except *
+
+  cpdef int64 add_symbol(self, symbol, int64 key=?) except *
+
+  cpdef void add_table(self, _SymbolTable syms) except *
 
   cpdef void set_name(self, new_name) except *
 
 
-cdef class _MutableFstSymbolTable(_MutableSymbolTable):
+cdef class _MutableFstSymbolTableView(_MutableSymbolTable):
+
+  # Indicates whether this view is of an input or output SymbolTable
+  cdef bool _input_side
 
   cdef shared_ptr[fst.MutableFstClass] _mfst
 
@@ -145,43 +163,34 @@ cdef class SymbolTable(_MutableSymbolTable):
   cdef unique_ptr[fst.SymbolTable] _smart_table
 
 
-cdef _EncodeMapperSymbolTable _init_EncodeMapperSymbolTable(
-    fst.SymbolTable *table,
-    shared_ptr[fst.EncodeMapperClass] encoder)
+cdef _EncodeMapperSymbolTableView _init_EncodeMapperSymbolTableView(
+    shared_ptr[fst.EncodeMapperClass] encoder, bool input_side)
 
 
-cdef _FstSymbolTable _init_FstSymbolTable(fst.SymbolTable *table,
-                                          shared_ptr[fst.FstClass] ifst)
+cdef _FstSymbolTableView _init_FstSymbolTableView(shared_ptr[fst.FstClass] ifst,
+                                                  bool input_side)
 
 
-cdef _MutableFstSymbolTable _init_MutableFstSymbolTable(
-    fst.SymbolTable *table,
-    shared_ptr[fst.MutableFstClass] ifst)
+cdef _MutableFstSymbolTableView _init_MutableFstSymbolTableView(
+    shared_ptr[fst.MutableFstClass] ifst, bool input_side)
 
 
-cdef SymbolTable _init_SymbolTable(fst.SymbolTable *table)
+cdef SymbolTable _init_SymbolTable(unique_ptr[fst.SymbolTable] table)
 
 
 cpdef _SymbolTable _read_SymbolTable_from_string(state)
 
 
-cdef class SymbolTableIterator(object):
+cdef class _SymbolTableIterator(object):
 
-  cdef shared_ptr[fst.SymbolTable] _table
+  cdef _SymbolTable _table
   cdef unique_ptr[fst.SymbolTableIterator] _siter
-
-  cpdef bool done(self)
-
-  cpdef void next(self)
-
-  cpdef void reset(self)
-
-  cpdef string symbol(self)
-
-  cpdef int64 value(self)
 
 
 # EncodeMapper.
+
+
+ctypedef fst.EncodeMapperClass * EncodeMapperClass_ptr
 
 
 cdef class EncodeMapper(object):
@@ -200,18 +209,19 @@ cdef class EncodeMapper(object):
 
   cpdef bytes write_to_string(self)
 
-  cpdef _EncodeMapperSymbolTable input_symbols(self)
+  cpdef _EncodeMapperSymbolTableView input_symbols(self)
 
-  cpdef _EncodeMapperSymbolTable output_symbols(self)
+  cpdef _EncodeMapperSymbolTableView output_symbols(self)
 
-  cpdef void set_input_symbols(self, _SymbolTable syms) except *
+  cdef void _set_input_symbols(self, _SymbolTable syms) except *
 
-  cpdef void set_output_symbols(self, _SymbolTable syms) except *
+  cdef void _set_output_symbols(self, _SymbolTable syms) except *
 
 
-cdef EncodeMapper _init_EncodeMapper(fst.EncodeMapperClass *mapper)
+cdef EncodeMapper _init_EncodeMapper(EncodeMapperClass_ptr mapper)
 
 cpdef EncodeMapper _read_EncodeMapper_from_string(state)
+
 
 # Fst.
 
@@ -222,7 +232,7 @@ ctypedef fst.MutableFstClass * MutableFstClass_ptr
 ctypedef fst.VectorFstClass * VectorFstClass_ptr
 
 
-cdef class _Fst(object):
+cdef class Fst(object):
 
   cdef shared_ptr[fst.FstClass] _fst
 
@@ -238,7 +248,7 @@ cdef class _Fst(object):
 
   cpdef ArcIterator arcs(self, int64 state)
 
-  cpdef _Fst copy(self)
+  cpdef Fst copy(self)
 
   cpdef void draw(self,
                   source,
@@ -256,13 +266,13 @@ cdef class _Fst(object):
                   int32 fontsize=?,
                   int32 precision=?,
                   float_format=?,
-                  bool show_weight_one=?)
+                  bool show_weight_one=?) except *
 
   cpdef Weight final(self, int64 state)
 
   cpdef string fst_type(self)
 
-  cpdef _FstSymbolTable input_symbols(self)
+  cpdef _FstSymbolTableView input_symbols(self)
 
   cpdef size_t num_arcs(self, int64 state) except *
 
@@ -270,7 +280,15 @@ cdef class _Fst(object):
 
   cpdef size_t num_output_epsilons(self, int64 state) except *
 
-  cpdef _FstSymbolTable output_symbols(self)
+  cpdef _FstSymbolTableView output_symbols(self)
+
+  cpdef string print(self,
+                    _SymbolTable isymbols=?,
+                    _SymbolTable osymbols=?,
+                    _SymbolTable ssymbols=?,
+                    bool acceptor=?,
+                    bool show_weight_one=?,
+                    missing_sym=?) except *
 
   cpdef uint64 properties(self, uint64 mask, bool test)
 
@@ -284,7 +302,7 @@ cdef class _Fst(object):
                     _SymbolTable ssymbols=?,
                     bool acceptor=?,
                     bool show_weight_one=?,
-                    missing_sym=?)
+                    missing_sym=?) except *
 
   cpdef bool verify(self)
 
@@ -295,7 +313,7 @@ cdef class _Fst(object):
   cpdef bytes write_to_string(self)
 
 
-cdef class _MutableFst(_Fst):
+cdef class MutableFst(Fst):
 
   cdef shared_ptr[fst.MutableFstClass] _mfst
 
@@ -303,17 +321,17 @@ cdef class _MutableFst(_Fst):
 
   cdef void _add_arc(self, int64 state, Arc arc) except *
 
-  cpdef int64 add_state(self) except *
+  cpdef int64 add_state(self)
 
-  cpdef void add_states(self, size_t) except *
+  cpdef void add_states(self, size_t)
 
   cdef void _arcsort(self, sort_type=?) except *
 
-  cdef void _closure(self, bool closure_plus=?) except *
+  cdef void _closure(self, bool closure_plus=?)
 
-  cdef void _concat(self, _Fst fst2) except *
+  cdef void _concat(self, Fst fst2) except *
 
-  cdef void _connect(self) except *
+  cdef void _connect(self)
 
   cdef void _decode(self, EncodeMapper) except *
 
@@ -323,7 +341,7 @@ cdef class _MutableFst(_Fst):
 
   cdef void _encode(self, EncodeMapper) except *
 
-  cdef void _invert(self) except *
+  cdef void _invert(self)
 
   cdef void _minimize(self, float delta=?, bool allow_nondet=?) except *
 
@@ -338,7 +356,7 @@ cdef class _MutableFst(_Fst):
   cdef void _push(self,
                   float delta=?,
                   bool remove_total_weight=?,
-                  bool to_final=?) except *
+                  bool to_final=?)
 
   cdef void _relabel_pairs(self, ipairs=?, opairs=?) except *
 
@@ -354,7 +372,7 @@ cdef class _MutableFst(_Fst):
 
   cdef void _reserve_arcs(self, int64 state, size_t n) except *
 
-  cdef void _reserve_states(self, int64 n) except *
+  cdef void _reserve_states(self, int64 n)
 
   cdef void _reweight(self, potentials, bool to_final=?) except *
 
@@ -375,23 +393,26 @@ cdef class _MutableFst(_Fst):
 
   cdef void _set_output_symbols(self, _SymbolTable syms) except *
 
-  cdef void _topsort(self) except *
+  cdef void _topsort(self)
+
+
+cdef class VectorFst(MutableFst):
+
+    pass
 
 
 # Construction helpers.
 
 
-cdef _Fst _init_Fst(FstClass_ptr tfst)
+cdef Fst _init_Fst(FstClass_ptr tfst)
 
-cdef _MutableFst _init_MutableFst(MutableFstClass_ptr tfst)
+cdef MutableFst _init_MutableFst(MutableFstClass_ptr tfst)
 
-cdef _Fst _init_XFst(FstClass_ptr tfst)
+cdef Fst _init_XFst(FstClass_ptr tfst)
 
-cdef _MutableFst _create_Fst(arc_type=?)
+cpdef Fst _read_Fst(source)
 
-cpdef _Fst _read(source)
-
-cpdef _Fst _read_Fst_from_string(state)
+cpdef Fst _read_Fst_from_string(state)
 
 
 # Iterators.
@@ -470,111 +491,103 @@ cdef class StateIterator(object):
 # Constructive operations on Fst.
 
 
-cdef _Fst _map(_Fst ifst, float delta=?, map_type=?, double power=?, weight=?)
+cdef Fst _map(Fst ifst, float delta=?, map_type=?, double power=?, weight=?)
 
-cpdef _Fst arcmap(_Fst ifst,
-                  float delta=?,
-                  map_type=?,
-                  double power=?,
-                  weight=?)
+cpdef Fst arcmap(Fst ifst, float delta=?, map_type=?, double power=?, weight=?)
 
-cpdef _MutableFst compose(_Fst ifst1,
-                          _Fst ifst2,
-                          compose_filter=?,
-                          bool connect=?)
+cpdef MutableFst compose(Fst ifst1,
+                         Fst ifst2,
+                         compose_filter=?,
+                         bool connect=?)
 
-cpdef _Fst convert(_Fst ifst, fst_type=?)
+cpdef Fst convert(Fst ifst, fst_type=?)
 
-cpdef _MutableFst determinize(_Fst ifst,
-                              float delta=?,
-                              det_type=?,
-                              int64 nstate=?,
-                              int64 subsequential_label=?,
-                              weight=?,
-                              bool increment_subsequential_label=?)
+cpdef MutableFst determinize(Fst ifst,
+                             float delta=?,
+                             det_type=?,
+                             int64 nstate=?,
+                             int64 subsequential_label=?,
+                             weight=?,
+                             bool increment_subsequential_label=?)
 
-cpdef _MutableFst difference(_Fst ifst1,
-                             _Fst ifst2,
-                             compose_filter=?,
-                             bool connect=?)
-
-cpdef _MutableFst disambiguate(_Fst ifst,
-                               float delta=?,
-                               int64 nstate=?,
-                               int64 subsequential_label=?,
-                               weight=?)
-
-cpdef _MutableFst epsnormalize(_Fst ifst, bool eps_norm_output=?)
-
-cpdef bool equal(_Fst ifst1, _Fst ifst2, float delta=?)
-
-cpdef bool equivalent(_Fst ifst1, _Fst ifst2, float delta=?) except *
-
-cpdef _MutableFst intersect(_Fst ifst1,
-                            _Fst ifst2,
+cpdef MutableFst difference(Fst ifst1,
+                            Fst ifst2,
                             compose_filter=?,
                             bool connect=?)
 
-cpdef bool isomorphic(_Fst ifst1, _Fst ifst2, float delta=?)
+cpdef MutableFst disambiguate(Fst ifst,
+                              float delta=?,
+                              int64 nstate=?,
+                              int64 subsequential_label=?,
+                              weight=?)
 
-cpdef _MutableFst prune(_Fst ifst,
-                        float delta=?,
-                        int64 nstate=?,
-                        weight=?)
+cpdef MutableFst epsnormalize(Fst ifst, bool eps_norm_output=?)
 
-cpdef _MutableFst push(_Fst ifst,
+cpdef bool equal(Fst ifst1, Fst ifst2, float delta=?)
+
+cpdef bool equivalent(Fst ifst1, Fst ifst2, float delta=?) except *
+
+cpdef MutableFst intersect(Fst ifst1,
+                           Fst ifst2,
+                           compose_filter=?,
+                           bool connect=?)
+
+cpdef bool isomorphic(Fst ifst1, Fst ifst2, float delta=?)
+
+cpdef MutableFst prune(Fst ifst,
                        float delta=?,
-                       bool push_weights=?,
-                       bool push_labels=?,
-                       bool remove_common_affix=?,
-                       bool remove_total_weight=?,
-                       bool to_final=?)
+                       int64 nstate=?,
+                       weight=?)
 
-cpdef bool randequivalent(_Fst ifst1,
-                          _Fst ifst2,
+cpdef MutableFst push(Fst ifst,
+                      float delta=?,
+                      bool push_weights=?,
+                      bool push_labels=?,
+                      bool remove_common_affix=?,
+                      bool remove_total_weight=?,
+                      bool to_final=?)
+
+cpdef bool randequivalent(Fst ifst1,
+                          Fst ifst2,
                           int32 npath=?,
                           float delta=?,
                           time_t seed=?,
                           select=?,
                           int32 max_length=?) except *
 
-cpdef _MutableFst randgen(_Fst ifst,
-                          int32 npath=?,
-                          time_t seed=?,
-                          select=?,
-                          int32 max_length=?,
-                          bool remove_total_weight=?,
-                          bool weighted=?)
+cpdef MutableFst randgen(Fst ifst,
+                         int32 npath=?,
+                         time_t seed=?,
+                         select=?,
+                         int32 max_length=?,
+                         bool remove_total_weight=?,
+                         bool weighted=?)
 
-cdef fst.ReplaceLabelType _get_replace_label_type(
-    string rlt,
-    bool epsilon_on_replace) except *
+cpdef MutableFst replace(pairs,
+                         call_arc_labeling=?,
+                         return_arc_labeling=?,
+                         bool epsilon_on_replace=?,
+                         int64 return_label=?)
 
-cpdef _MutableFst replace(pairs,
-                          call_arc_labeling=?,
-                          return_arc_labeling=?,
-                          bool epsilon_on_replace=?,
-                          int64 return_label=?)
+cpdef MutableFst reverse(Fst ifst, bool require_superinitial=?)
 
-cpdef _MutableFst reverse(_Fst ifst, bool require_superinitial=?)
-
-cdef vector[fst.WeightClass] *_shortestdistance(_Fst ifst,
+cdef vector[fst.WeightClass] *_shortestdistance(Fst ifst,
                                                 float delta=?,
                                                 int64 nstate=?,
                                                 queue_type=?,
                                                 bool reverse=?) except *
 
-cpdef _MutableFst shortestpath(_Fst ifst,
-                               float delta=?,
-                               int32 nshortest=?,
-                               int64 nstate=?,
-                               queue_type=?,
-                               bool unique=?,
-                               weight=?)
+cpdef MutableFst shortestpath(Fst ifst,
+                              float delta=?,
+                              int32 nshortest=?,
+                              int64 nstate=?,
+                              queue_type=?,
+                              bool unique=?,
+                              weight=?)
 
-cpdef _Fst statemap(_Fst ifst, map_type)
+cpdef Fst statemap(Fst ifst, map_type)
 
-cpdef _MutableFst synchronize(_Fst ifst)
+cpdef MutableFst synchronize(Fst ifst)
 
 
 # Compiler.
@@ -594,7 +607,7 @@ cdef class Compiler(object):
   cdef bool _keep_state_numbering
   cdef bool _allow_negative_labels
 
-  cpdef _Fst compile(self)
+  cpdef Fst compile(self)
 
   cpdef void write(self, expression)
 
@@ -613,9 +626,9 @@ cdef class FarReader(object):
 
   cpdef string far_type(self)
 
-  cpdef bool find(self, key) except *
+  cpdef bool find(self, key)
 
-  cpdef _Fst get_fst(self)
+  cpdef Fst get_fst(self)
 
   cpdef string get_key(self)
 
@@ -634,7 +647,7 @@ cdef class FarWriter(object):
 
   cdef void close(self)
 
-  cpdef void add(self, key, _Fst ifst) except *
+  cpdef void add(self, key, Fst ifst) except *
 
   cpdef bool error(self)
 

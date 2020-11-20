@@ -30,7 +30,6 @@
 #include <fst/shortest-distance.h>
 #include <fst/state-map.h>
 
-
 namespace fst {
 namespace internal {
 
@@ -225,7 +224,7 @@ class CyclicMinimizer {
     PrePartition(fst);
     // Allocates arc iterator queue.
     ArcIterCompare comp(P_);
-    aiter_queue_.reset(new ArcIterQueue(comp));
+    aiter_queue_ = fst::make_unique<ArcIterQueue>(comp);
   }
   // Partitions all classes with destination C.
   void Split(ClassId C) {

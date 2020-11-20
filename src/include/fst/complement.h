@@ -16,7 +16,6 @@
 #include <fst/fst.h>
 #include <fst/test-properties.h>
 
-
 namespace fst {
 
 template <class Arc>
@@ -200,7 +199,8 @@ class ArcIterator<ComplementFst<Arc>> : public ArcIteratorBase<Arc> {
 
   ArcIterator(const ComplementFst<Arc> &fst, StateId s) : s_(s), pos_(0) {
     if (s_ != 0) {
-      aiter_.reset(new ArcIterator<Fst<Arc>>(*fst.GetImpl()->fst_, s - 1));
+      aiter_ =
+          fst::make_unique<ArcIterator<Fst<Arc>>>(*fst.GetImpl()->fst_, s - 1);
     }
   }
 

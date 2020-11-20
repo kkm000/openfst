@@ -34,7 +34,6 @@
 
 #include <fst/cache.h>
 
-
 namespace fst {
 namespace internal {
 
@@ -588,7 +587,7 @@ inline void EditFstImpl<Arc, WrappedFstT, MutableFstT>::DeleteStates() {
   data_->DeleteStates();
   // we are deleting all states, so just forget about pointer to wrapped_
   // and do what default constructor does: set wrapped_ to a new VectorFst
-  wrapped_.reset(new MutableFstT());
+  wrapped_ = fst::make_unique<MutableFstT>();
   const auto new_props =
       DeleteAllStatesProperties(FstImpl<Arc>::Properties(), kStaticProperties);
   FstImpl<Arc>::SetProperties(new_props);

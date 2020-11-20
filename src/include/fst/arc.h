@@ -59,6 +59,8 @@ struct ArcTpl {
 using StdArc = ArcTpl<TropicalWeight>;
 using LogArc = ArcTpl<LogWeight>;
 using Log64Arc = ArcTpl<Log64Weight>;
+using RealArc = ArcTpl<RealWeight>;
+using Real64Arc = ArcTpl<Real64Weight>;
 using SignedLogArc = ArcTpl<SignedLogWeight>;
 using SignedLog64Arc = ArcTpl<SignedLog64Weight>;
 using MinMaxArc = ArcTpl<MinMaxWeight>;

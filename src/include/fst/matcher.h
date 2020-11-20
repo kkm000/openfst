@@ -16,7 +16,6 @@
 
 #include <fst/mutable-fst.h>  // for all internal FST accessors.
 
-
 namespace fst {
 
 // Matchers find and iterate through requested labels at FST states. In the
@@ -531,7 +530,7 @@ void HashMatcher<FST>::SetState(typename FST::Arc::StateId s) {
   // Resets everything for the state.
   state_ = s;
   loop_.nextstate = state_;
-  aiter_.reset(new ArcIterator<FST>(fst_, state_));
+  aiter_ = fst::make_unique<ArcIterator<FST>>(fst_, state_);
   if (match_type_ == MATCH_NONE) {
     FSTERROR() << "HashMatcher: Bad match type";
     error_ = true;
@@ -1521,14 +1520,15 @@ class Matcher {
   Matcher(const FST &fst, MatchType match_type)
       : owned_fst_(fst.Copy()),
         base_(owned_fst_->InitMatcher(match_type)) {
-    if (!base_) base_.reset(new SortedMatcher<FST>(owned_fst_.get(),
-                                                   match_type));
+    if (!base_)
+      base_ =
+          fst::make_unique<SortedMatcher<FST>>(owned_fst_.get(), match_type);
   }
 
   // This doesn't copy the FST.
   Matcher(const FST *fst, MatchType match_type)
       : base_(fst->InitMatcher(match_type)) {
-    if (!base_) base_.reset(new SortedMatcher<FST>(fst, match_type));
+    if (!base_) base_ = fst::make_unique<SortedMatcher<FST>>(fst, match_type);
   }
 
   // This makes a copy of the FST.

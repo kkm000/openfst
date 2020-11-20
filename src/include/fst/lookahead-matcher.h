@@ -21,7 +21,6 @@
 #include <fst/label-reachable.h>
 #include <fst/matcher.h>
 
-
 DECLARE_string(save_relabel_ipairs);
 DECLARE_string(save_relabel_opairs);
 
@@ -416,11 +415,15 @@ template <class M,
           uint32 flags = kLookAheadEpsilons | kLookAheadWeight |
                          kLookAheadPrefix | kLookAheadNonEpsilonPrefix |
                          kLookAheadKeepRelabelData,
-          class Accumulator = DefaultAccumulator<typename M::Arc>,
-          class Reachable = LabelReachable<typename M::Arc, Accumulator>>
+          class Accum = DefaultAccumulator<typename M::Arc>,
+          class R = LabelReachable<typename M::Arc, Accum>>
 class LabelLookAheadMatcher
     : public LookAheadMatcherBase<typename M::FST::Arc> {
  public:
+  using Matcher = M;
+  using Accumulator = Accum;
+  using Reachable = R;
+
   using FST = typename M::FST;
   using Arc = typename FST::Arc;
   using Label = typename Arc::Label;
@@ -551,7 +554,7 @@ class LabelLookAheadMatcher
 
   template <class LFST>
   void InitLookAheadFst(const LFST &fst, bool copy = false) {
-    lfst_ = static_cast<const Fst<Arc> *>(&fst);
+    lfst_ = &fst;
     if (label_reachable_) {
       const bool reach_input = Type(false) == MATCH_OUTPUT;
       label_reachable_->ReachInit(fst, reach_input, copy);
@@ -582,12 +585,12 @@ class LabelLookAheadMatcher
     const bool reach_input = match_type == MATCH_INPUT;
     if (data) {
       if (reach_input == data->ReachInput()) {
-        label_reachable_.reset(new Reachable(data, accumulator));
+        label_reachable_ = fst::make_unique<Reachable>(data, accumulator);
       }
     } else if ((reach_input && (kFlags & kInputLookAheadMatcher)) ||
                (!reach_input && (kFlags & kOutputLookAheadMatcher))) {
-      label_reachable_.reset(new Reachable(fst, reach_input, accumulator,
-                                           kFlags & kLookAheadKeepRelabelData));
+      label_reachable_ = fst::make_unique<Reachable>(
+          fst, reach_input, accumulator, kFlags & kLookAheadKeepRelabelData);
     }
   }
 
@@ -605,7 +608,7 @@ template <class LFST>
 inline bool LabelLookAheadMatcher<M, flags, Accumulator,
                                   Reachable>::LookAheadFst(const LFST &fst,
                                                            StateId s) {
-  if (static_cast<const Fst<Arc> *>(&fst) != lfst_) InitLookAheadFst(fst);
+  if (&fst != lfst_) InitLookAheadFst(fst);
   ClearLookAheadWeight();
   ClearLookAheadPrefix();
   if (!label_reachable_) return true;
@@ -635,6 +638,34 @@ inline bool LabelLookAheadMatcher<M, flags, Accumulator,
     SetLookAheadWeight(reach_arc ? Plus(LookAheadWeight(), lfinal) : lfinal);
   }
   return reach_arc || reach_final;
+}
+
+// Relabels the fst with Reachable::Reachable.  Relabels input
+// if data.First() is non-null, otherwise relabels output.
+// Optionally saves the input/output label pairs to a file
+// if save_relabel_ipairs/opairs is non-empty.
+template <class Reachable, class FST, class Data>
+void RelabelForReachable(FST *fst, const Data &data,
+                         const std::string &save_relabel_ipairs,
+                         const std::string &save_relabel_opairs) {
+  using Label = typename FST::Arc::Label;
+  if (data.First() != nullptr) {  // reach_input.
+    Reachable reachable(data.SharedFirst());
+    reachable.Relabel(fst, /*relabel_input=*/true);
+    if (!save_relabel_ipairs.empty()) {
+      std::vector<std::pair<Label, Label>> pairs;
+      reachable.RelabelPairs(&pairs, /*avoid_collisions=*/true);
+      WriteLabelPairs(save_relabel_ipairs, pairs);
+    }
+  } else {
+    Reachable reachable(data.SharedSecond());
+    reachable.Relabel(fst, /*relabel_input=*/false);
+    if (!save_relabel_opairs.empty()) {
+      std::vector<std::pair<Label, Label>> pairs;
+      reachable.RelabelPairs(&pairs, /*avoid_collisions=*/true);
+      WriteLabelPairs(save_relabel_opairs, pairs);
+    }
+  }
 }
 
 // Label-lookahead relabeling class.
@@ -687,25 +718,12 @@ inline LabelLookAheadRelabeler<Arc, Data>::LabelLookAheadRelabeler(
     // do a deep copy when the Fst is modified.
     mfst.reset(static_cast<MutableFst<Arc> *>(&fst));
   } else {
-    mfst.reset(new VectorFst<Arc>(fst));
+    mfst = fst::make_unique<VectorFst<Arc>>(fst);
   }
-  if (data->First()) {  // reach_input.
-    Reachable reachable(data->SharedFirst());
-    reachable.Relabel(mfst.get(), true);
-    if (!FLAGS_save_relabel_ipairs.empty()) {
-      std::vector<std::pair<Label, Label>> pairs;
-      reachable.RelabelPairs(&pairs, true);
-      WriteLabelPairs(FLAGS_save_relabel_ipairs, pairs);
-    }
-  } else {
-    Reachable reachable(data->SharedSecond());
-    reachable.Relabel(mfst.get(), false);
-    if (!FLAGS_save_relabel_opairs.empty()) {
-      std::vector<std::pair<Label, Label>> pairs;
-      reachable.RelabelPairs(&pairs, true);
-      WriteLabelPairs(FLAGS_save_relabel_opairs, pairs);
-    }
-  }
+
+  RelabelForReachable<Reachable>(mfst.get(), *data, FLAGS_save_relabel_ipairs,
+                                 FLAGS_save_relabel_opairs);
+
   if (is_mutable) {
     // Pointer was just borrowed, don't delete it.
     mfst.release();
@@ -732,15 +750,16 @@ class LookAheadMatcher {
       : owned_fst_(fst.Copy()),
         base_(owned_fst_->InitMatcher(match_type)),
         lookahead_(false) {
-    if (!base_) base_.reset(new SortedMatcher<FST>(owned_fst_.get(),
-                                                   match_type));
+    if (!base_)
+      base_ =
+          fst::make_unique<SortedMatcher<FST>>(owned_fst_.get(), match_type);
   }
 
   // This doesn't copy the FST.
   LookAheadMatcher(const FST *fst, MatchType match_type)
       : base_(fst->InitMatcher(match_type)),
         lookahead_(false) {
-    if (!base_) base_.reset(new SortedMatcher<FST>(fst, match_type));
+    if (!base_) base_ = fst::make_unique<SortedMatcher<FST>>(fst, match_type);
   }
 
   // This makes a copy of the FST.

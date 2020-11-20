@@ -415,7 +415,7 @@ class StateIterator {
   StateId s_;
 };
 
-// Flags to control the behavior on an arc iterator.
+// Flags to control the behavior on an arc iterator via SetFlags().
 // Value() gives valid ilabel.
 static constexpr uint8 kArcILabelValue = 0x01;
 // Value() call gives valid olabel.
@@ -451,9 +451,9 @@ class ArcIteratorBase {
   virtual void Reset() = 0;
   // Advances to arbitrary arc by position.
   virtual void Seek(size_t) = 0;
-  // Returns current behavorial flags.
+  // Returns current behavorial flags, a bitmask of kArcFlags.
   virtual uint8 Flags() const = 0;
-  // Sets behavorial flags.
+  // Sets behavorial flags, a bitmask of kArcFlags.
   virtual void SetFlags(uint8, uint8) = 0;
 };
 

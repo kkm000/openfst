@@ -41,6 +41,11 @@ class BitmapIndex {
   BitmapIndex(BitmapIndex &&) = default;
   BitmapIndex &operator=(BitmapIndex &&) = default;
 
+  // Convenience constructor to avoid a separate BuildIndex call.
+  BitmapIndex(const uint64 *bits, std::size_t num_bits) {
+    BuildIndex(bits, num_bits);
+  }
+
   bool Get(size_t index) const {
     return (bits_[index >> kStorageLogBitSize] &
             (kOne << (index & kStorageBlockMask))) != 0;

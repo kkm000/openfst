@@ -69,8 +69,9 @@ void FarPrintStrings(const std::vector<std::string> &isources,
       syms.reset(fst->InputSymbols()->Copy());
     std::string str;
     VLOG(2) << "Handling key: " << key;
-    StringPrinter<Arc> string_printer(token_type,
-                                      syms ? syms.get() : fst->InputSymbols());
+    StringPrinter<Arc> string_printer(
+        token_type, syms ? syms.get() : fst->InputSymbols(),
+        /*eps_sym_print_type=*/EpsilonSymbolPrintType::SYMBOLS_INCL_EPS);
     string_printer(*fst, &str);
     if (entry_type == FET_LINE) {
       if (print_key) std::cout << key << FLAGS_far_field_separator[0];

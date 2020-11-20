@@ -68,9 +68,9 @@ class FstClassImplBase : public FstClassBase {
   virtual int64 NumStates() const = 0;
   virtual bool ReserveArcs(int64, size_t) = 0;
   virtual void ReserveStates(int64) = 0;
-  virtual void SetInputSymbols(SymbolTable *) = 0;
+  virtual void SetInputSymbols(const SymbolTable *) = 0;
   virtual bool SetFinal(int64, const WeightClass &) = 0;
-  virtual void SetOutputSymbols(SymbolTable *) = 0;
+  virtual void SetOutputSymbols(const SymbolTable *) = 0;
   virtual void SetProperties(uint64, uint64) = 0;
   virtual bool SetStart(int64) = 0;
   ~FstClassImplBase() override {}
@@ -212,7 +212,7 @@ class FstClassImpl : public FstClassImplBase {
   }
 
   // Warning: calling this method casts the FST to a mutable FST.
-  void SetInputSymbols(SymbolTable *isyms) final {
+  void SetInputSymbols(const SymbolTable *isyms) final {
     static_cast<MutableFst<Arc> *>(impl_.get())->SetInputSymbols(isyms);
   }
 
@@ -225,7 +225,7 @@ class FstClassImpl : public FstClassImplBase {
   }
 
   // Warning: calling this method casts the FST to a mutable FST.
-  void SetOutputSymbols(SymbolTable *osyms) final {
+  void SetOutputSymbols(const SymbolTable *osyms) final {
     static_cast<MutableFst<Arc> *>(impl_.get())->SetOutputSymbols(osyms);
   }
 
@@ -451,7 +451,7 @@ class MutableFstClass : public FstClass {
 
   static MutableFstClass *Read(const std::string &source, bool convert = false);
 
-  void SetInputSymbols(SymbolTable *isyms) {
+  void SetInputSymbols(const SymbolTable *isyms) {
     GetImpl()->SetInputSymbols(isyms);
   }
 
@@ -460,7 +460,7 @@ class MutableFstClass : public FstClass {
     return GetImpl()->SetFinal(s, weight);
   }
 
-  void SetOutputSymbols(SymbolTable *osyms) {
+  void SetOutputSymbols(const SymbolTable *osyms) {
     GetImpl()->SetOutputSymbols(osyms);
   }
 

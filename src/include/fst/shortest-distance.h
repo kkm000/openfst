@@ -13,6 +13,7 @@
 
 #include <fst/arcfilter.h>
 #include <fst/cache.h>
+#include <fst/equal.h>
 #include <fst/queue.h>
 #include <fst/reverse.h>
 #include <fst/test-properties.h>
@@ -61,7 +62,8 @@ namespace internal {
 // conventions, fst may not be freed before this class. Vector distance
 // should not be modified by the user between these calls. The Error() method
 // returns true iff an error was encountered.
-template <class Arc, class Queue, class ArcFilter>
+template <class Arc, class Queue, class ArcFilter,
+          class WeightEqual = WeightApproxEqual>
 class ShortestDistanceState {
  public:
   using StateId = typename Arc::StateId;
@@ -74,7 +76,7 @@ class ShortestDistanceState {
         distance_(distance),
         state_queue_(opts.state_queue),
         arc_filter_(opts.arc_filter),
-        delta_(opts.delta),
+        weight_equal_(opts.delta),
         first_path_(opts.first_path),
         retain_(retain),
         source_id_(0),
@@ -115,7 +117,7 @@ class ShortestDistanceState {
   std::vector<Weight> *distance_;
   Queue *state_queue_;
   ArcFilter arc_filter_;
-  const float delta_;
+  WeightEqual weight_equal_;           // Determines when relaxation stops.
   const bool first_path_;
   const bool retain_;  // Retain and reuse information across calls.
 
@@ -130,9 +132,9 @@ class ShortestDistanceState {
 
 // Compute the shortest distance; if source is kNoStateId, uses the initial
 // state of the FST.
-template <class Arc, class Queue, class ArcFilter>
-void ShortestDistanceState<Arc, Queue, ArcFilter>::ShortestDistance(
-    StateId source) {
+template <class Arc, class Queue, class ArcFilter, class WeightEqual>
+    void ShortestDistanceState<Arc, Queue, ArcFilter,
+                               WeightEqual>::ShortestDistance(StateId source) {
   if (fst_.Start() == kNoStateId) {
     if (fst_.Properties(kError, false)) error_ = true;
     return;
@@ -195,7 +197,7 @@ void ShortestDistanceState<Arc, Queue, ArcFilter>::ShortestDistance(
       auto &na = adder_[nextstate];
       auto &nr = radder_[nextstate];
       auto weight = Times(r, arc.weight);
-      if (!ApproxEqual(nd, Plus(nd, weight), delta_)) {
+      if (!weight_equal_(nd, Plus(nd, weight))) {
         nd = na.Add(weight);
         nr.Add(weight);
         if (!nd.Member() || !nr.Sum().Member()) {

@@ -18,6 +18,7 @@ INSTALLATION:
   --enable-compress        Enable compression extension (def: no)
   --enable-const-fsts      Enable ConstFst extensions (def: no)
   --enable-far             Enable FAR extensions (def: no)
+  --enable-fsts            Enable all FST SO extensions (def: no)
   --enable-grm             Enable all dependencies of OpenGrm (def: no)
   --enable-linear-fsts     Enable LinearTagger/ClassifierFst extensions (def: no)
   --enable-lookahead-fsts  Enable LookAheadFst extensions (def: no)
@@ -60,7 +61,7 @@ USAGE:
   or /usr/local/include/fst/extensions.
 
 BUILDING WITH BAZEL:
-  As of release 1.7.2 it is possible to build the core library and binaries as
+  Release 1.7.2 provides the ability to build the core library and binaries as
   well as several extensions with Bazel and to depend on OpenFst as an
   external dependency in other projects compiled with Bazel. Please refer to
   https://bazel.build for information on using Bazel. OpenFst can be compiled
@@ -71,6 +72,8 @@ BUILDING WITH BAZEL:
   Tests can be run in a similar fashion:
 
   $ bazel test //:all
+
+  The Bazel build-file is provided as-is.
 
 DOCUMENTATION:
   See www.openfst.org for general documentation.

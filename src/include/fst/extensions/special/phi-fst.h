@@ -21,7 +21,7 @@ namespace internal {
 template <class Label>
 class PhiFstMatcherData {
  public:
-  PhiFstMatcherData(
+  explicit PhiFstMatcherData(
       Label phi_label = FLAGS_phi_fst_phi_label,
       bool phi_loop = FLAGS_phi_fst_phi_loop,
       MatcherRewriteMode rewrite_mode = RewriteMode(FLAGS_phi_fst_rewrite_mode))

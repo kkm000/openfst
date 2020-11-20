@@ -23,7 +23,6 @@
 #include <fst/log.h>
 
 #include <fst/pair-weight.h>
-#include <fst/product-weight.h>
 
 
 namespace fst {
@@ -114,6 +113,37 @@ inline ExpectationWeight<X1, X2> Divide(const ExpectationWeight<X1, X2> &w1,
   FSTERROR() << "ExpectationWeight::Divide: Not implemented";
   return ExpectationWeight<X1, X2>::NoWeight();
 }
+
+// Specialization for enpectation weight
+template <class X1, class X2>
+class Adder<ExpectationWeight<X1, X2>> {
+ public:
+  using Weight = ExpectationWeight<X1, X2>;
+
+  Adder() {}
+
+  explicit Adder(Weight w)
+      : adder1_(w.Value1()),
+        adder2_(w.Value2()) {}
+
+  Weight Add(const Weight &w) {
+    adder1_.Add(w.Value1());
+    adder2_.Add(w.Value2());
+    return Sum();
+  }
+
+  Weight Sum() const { return Weight(adder1_.Sum(), adder2_.Sum()); }
+
+  void Reset(Weight w = Weight::Zero()) {
+    adder1_.Reset(w.Value1());
+    adder2_.Reset(w.Value2());
+  }
+
+ private:
+  Adder<X1> adder1_;
+  Adder<X2> adder2_;
+};
+
 
 // This function object generates weights by calling the underlying generators
 // for the template weight types, like all other pair weight types. This is

@@ -662,7 +662,7 @@ class ReplaceAccumulatorData {
     accumulators_.resize(fst_tuples.size());
     for (Label i = 0; i < accumulators_.size(); ++i) {
       if (!accumulators_[i]) {
-        accumulators_[i].reset(new Accumulator());
+        accumulators_[i] = fst::make_unique<Accumulator>();
         accumulators_[i]->Init(*(fst_tuples[i].second));
       }
       fst_array_.emplace_back(fst_tuples[i].second->Copy());
@@ -874,7 +874,7 @@ class SafeReplaceAccumulator {
     ArcIteratorPtr(const ArcIteratorPtr &copy) {}
 
     void Set(const Fst<Arc> &fst, StateId state_id) {
-      ptr_.reset(new ArcIterator<Fst<Arc>>(fst, state_id));
+      ptr_ = fst::make_unique<ArcIterator<Fst<Arc>>>(fst, state_id);
     }
 
     ArcIterator<Fst<Arc>> *get() { return ptr_.get(); }

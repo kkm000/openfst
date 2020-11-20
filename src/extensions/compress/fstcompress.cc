@@ -5,7 +5,6 @@
 
 DEFINE_string(arc_type, "standard", "Output arc type");
 DEFINE_bool(decode, false, "Decode");
-DEFINE_bool(gzip, false, "Also applies gzip (de)compression");
 
 int fstcompress_main(int argc, char **argv);
 

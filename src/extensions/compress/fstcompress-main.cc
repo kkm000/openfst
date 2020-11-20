@@ -15,7 +15,6 @@
 
 DECLARE_string(arc_type);
 DECLARE_bool(decode);
-DECLARE_bool(gzip);
 
 int fstcompress_main(int argc, char **argv) {
   namespace s = fst::script;
@@ -41,7 +40,7 @@ int fstcompress_main(int argc, char **argv) {
 
   if (FLAGS_decode) {
     VectorFstClass fst(FLAGS_arc_type);
-    if (!s::Decompress(in_name, &fst, FLAGS_gzip)) {
+    if (!s::Decompress(in_name, &fst)) {
       FSTERROR() << "Decompression failed";
       return 1;
     }
@@ -49,7 +48,7 @@ int fstcompress_main(int argc, char **argv) {
   } else {
     std::unique_ptr<FstClass> ifst(FstClass::Read(in_name));
     if (!ifst) return 1;
-    if (!s::Compress(*ifst, out_name, FLAGS_gzip)) {
+    if (!s::Compress(*ifst, out_name)) {
       FSTERROR() << "Compression failed";
       return 1;
     }

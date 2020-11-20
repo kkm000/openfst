@@ -305,10 +305,10 @@ class ArcSampler<Arc, FastLogProbArcSelector<Arc>> {
         selector_(sampler.selector_),
         max_length_(sampler.max_length_) {
     if (fst) {
-      accumulator_.reset(new Accumulator());
+      accumulator_ = fst::make_unique<Accumulator>();
       accumulator_->Init(*fst);
     } else {  // Shallow copy.
-      accumulator_.reset(new Accumulator(*sampler.accumulator_));
+      accumulator_ = fst::make_unique<Accumulator>(*sampler.accumulator_);
     }
   }
 

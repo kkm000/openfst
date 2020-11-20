@@ -94,6 +94,7 @@ namespace internal {
 template <class FST, class T>
 class AddOnImpl : public FstImpl<typename FST::Arc> {
  public:
+  using FstType = FST;
   using Arc = typename FST::Arc;
   using Label = typename Arc::Label;
   using StateId = typename Arc::StateId;

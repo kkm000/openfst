@@ -32,6 +32,8 @@ using fst::GallicWeight;
 using fst::LexicographicWeight;
 using fst::LogWeight;
 using fst::LogWeightTpl;
+using fst::RealWeight;
+using fst::RealWeightTpl;
 using fst::MinMaxWeight;
 using fst::MinMaxWeightTpl;
 using fst::NaturalLess;
@@ -66,6 +68,11 @@ void TestTemplatedWeights(int repeat) {
   LogWeightGenerate log_generate;
   WeightTester<LogWeightTpl<T>, LogWeightGenerate> log_tester(log_generate);
   log_tester.Test(repeat);
+
+  using RealWeightGenerate = WeightGenerate<RealWeightTpl<T>>;
+  RealWeightGenerate real_generate;
+  WeightTester<RealWeightTpl<T>, RealWeightGenerate> real_tester(real_generate);
+  real_tester.Test(repeat);
 
   using MinMaxWeightGenerate = WeightGenerate<MinMaxWeightTpl<T>>;
   MinMaxWeightGenerate minmax_generate(true);
@@ -291,20 +298,24 @@ int main(int argc, char **argv) {
   FLAGS_fst_weight_parentheses = "";
 
   // Makes sure type names for templated weights are consistent.
-  CHECK(TropicalWeight::Type() == "tropical");
+  CHECK_EQ(TropicalWeight::Type(), "tropical");
   CHECK(TropicalWeightTpl<double>::Type() != TropicalWeightTpl<float>::Type());
-  CHECK(LogWeight::Type() == "log");
+  CHECK_EQ(LogWeight::Type(), "log");
   CHECK(LogWeightTpl<double>::Type() != LogWeightTpl<float>::Type());
+  CHECK_EQ(RealWeight::Type(), "real");
+  CHECK(RealWeightTpl<double>::Type() != RealWeightTpl<float>::Type());
   TropicalWeightTpl<double> w(2.0);
   TropicalWeight tw(2.0);
   CHECK_EQ(w.Value(), tw.Value());
 
   TestAdder<TropicalWeight>(1000);
   TestAdder<LogWeight>(1000);
+  TestAdder<RealWeight>(1000);
   TestSignedAdder<SignedLogWeight>(1000);
 
-  TestImplicitConversion<LogWeight>();
   TestImplicitConversion<TropicalWeight>();
+  TestImplicitConversion<LogWeight>();
+  TestImplicitConversion<RealWeight>();
   TestImplicitConversion<MinMaxWeight>();
 
   TestWeightConversion<TropicalWeight, LogWeight>(2.0);

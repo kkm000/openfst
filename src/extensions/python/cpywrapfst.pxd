@@ -166,6 +166,28 @@ cdef extern from "<fst/fstlib.h>" namespace "fst" nogil:
 
     SymbolTableTextOptions(bool)
 
+  # This is actually a nested class, but Cython doesn't need to know that.
+  cdef cppclass SymbolTableIterator "fst::SymbolTable::iterator":
+
+      SymbolTableIterator(const SymbolTableIterator &)
+
+      cppclass value_type:
+
+        int64 Label()
+        string Symbol()
+
+      # When wrapped in a unique_ptr siter.Label() and siter.Symbol() are
+      # ambiguous to Cython because there's no way to make the -> explicit.
+      # This hacks around that.
+      const value_type &Pair "operator*"()
+
+      SymbolTableIterator &operator++()
+
+      bool operator==(const SymbolTableIterator &, const SymbolTableIterator &)
+
+      bool operator!=(const SymbolTableIterator &, const SymbolTableIterator &)
+
+
   # Symbol tables.
   cdef cppclass SymbolTable:
 
@@ -224,6 +246,10 @@ cdef extern from "<fst/fstlib.h>" namespace "fst" nogil:
 
     bool WriteText(const string &)
 
+    SymbolTableIterator begin()
+
+    SymbolTableIterator end()
+
     int64 AvailableKey()
 
     size_t NumSymbols()
@@ -234,20 +260,6 @@ cdef extern from "<fst/fstlib.h>" namespace "fst" nogil:
                                 bool *)
 
   SymbolTable *FstReadSymbols(const string &, bool)
-
-  cdef cppclass SymbolTableIterator:
-
-    SymbolTableIterator(const SymbolTable &)
-
-    bool Done()
-
-    void Next()
-
-    void Reset()
-
-    string Symbol()
-
-    int64 Value()
 
 
 cdef extern from "<fst/script/fstscript.h>" namespace "fst::script" nogil:
@@ -369,9 +381,9 @@ cdef extern from "<fst/script/fstscript.h>" namespace "fst::script" nogil:
 
     bool SetFinal(int64, const WeightClass &)
 
-    void SetInputSymbols(SymbolTable *)
+    void SetInputSymbols(const SymbolTable *)
 
-    void SetOutputSymbols(SymbolTable *)
+    void SetOutputSymbols(const SymbolTable *)
 
     void SetProperties(uint64, uint64)
 

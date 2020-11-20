@@ -292,8 +292,6 @@ class SymbolTableImpl final : public MutableSymbolTableImpl {
 
 }  // namespace internal
 
-class SymbolTableIterator;
-
 // Symbol (string) to integer (and reverse) mapping.
 //
 // The SymbolTable implements the mappings of labels to strings and reverse.
@@ -307,7 +305,70 @@ class SymbolTableIterator;
 class SymbolTable {
  public:
   using SymbolType = internal::SymbolTableImpl::SymbolType;
-  using iterator = SymbolTableIterator;
+
+  class iterator {
+   public:
+    // TODO(wolfsonkin): Expand `SymbolTable::iterator` to be a random access
+    // iterator.
+    using iterator_category = std::input_iterator_tag;
+
+    class value_type {
+     public:
+      // Return the label of the current symbol.
+      int64 Label() const { return key_; }
+
+      // Return the string of the current symbol.
+      // TODO(wolfsonkin): Consider adding caching.
+      std::string Symbol() const { return table_->Find(key_); }
+
+     private:
+      explicit value_type(const SymbolTable &table, ssize_t pos)
+          : table_(&table), key_(table.GetNthKey(pos)) {}
+
+      // Sets this item to the pos'th element in the symbol table
+      void SetPosition(ssize_t pos) { key_ = table_->GetNthKey(pos); }
+
+      friend class SymbolTable::iterator;
+
+      const SymbolTable *table_;  // Does not own the underlying SymbolTable.
+      int64 key_;
+    };
+
+    using difference_type = std::ptrdiff_t;
+    using pointer = const value_type *const;
+    using reference = const value_type &;
+
+    iterator &operator++() {
+      ++pos_;
+      if (pos_ < nsymbols_) iter_item_.SetPosition(pos_);
+      return *this;
+    }
+
+    iterator operator++(int) {
+      iterator retval = *this;
+      ++(*this);
+      return retval;
+    }
+
+    bool operator==(const iterator &that) const { return (pos_ == that.pos_); }
+
+    bool operator!=(const iterator &that) const { return !(*this == that); }
+
+    reference operator*() { return iter_item_; }
+
+    pointer operator->() const { return &iter_item_; }
+
+   private:
+    explicit iterator(const SymbolTable &table, ssize_t pos = 0)
+        : pos_(pos), nsymbols_(table.NumSymbols()), iter_item_(table, pos) {}
+
+    friend class SymbolTable;
+
+    ssize_t pos_;
+    size_t nsymbols_;
+    value_type iter_item_;
+  };
+
   using const_iterator = iterator;
 
   // Constructs symbol table with an optional name.
@@ -440,10 +501,13 @@ class SymbolTable {
   // Dumps a text representation of the symbol table.
   bool WriteText(const std::string &source) const;
 
-  const_iterator begin() const;
-  const_iterator end() const;
-  const_iterator cbegin() const;
-  const_iterator cend() const;
+  const_iterator begin() const { return const_iterator(*this, 0); }
+
+  const_iterator end() const { return const_iterator(*this, NumSymbols()); }
+
+  const_iterator cbegin() const { return begin(); }
+
+  const_iterator cend() const { return end(); }
 
  protected:
   explicit SymbolTable(std::shared_ptr<internal::SymbolTableImplBase> impl)
@@ -471,98 +535,35 @@ class SymbolTable {
   std::shared_ptr<internal::SymbolTableImplBase> impl_;
 };
 
-namespace internal {
-
-// TODO(wolfsonkin): Consider adding std::tie and structured bindings support.
-class SymbolTableIteratorItem {
- public:
-  explicit SymbolTableIteratorItem(const SymbolTable &table, ssize_t pos)
-      : table_(table), key_(table.GetNthKey(pos)) {}
-
-  // Return the label of the current symbol.
-  int64 Label() const { return key_; }
-
-  // Return the string of the current symbol.
-  // TODO(wolfsonkin): Consider adding caching
-  std::string Symbol() const { return table_.Find(key_); }
-
- private:
-  // Sets this item to the pos'th element in the symbol table
-  void SetPosition(ssize_t pos) { key_ = table_.GetNthKey(pos); }
-
-  friend class fst::SymbolTableIterator;
-  const SymbolTable &table_;
-  int64 key_;
-};
-
-}  // namespace internal
-
 // Iterator class for symbols in a symbol table.
-class SymbolTableIterator {
+class OPENFST_DEPRECATED(
+    "Use SymbolTable::iterator, a C++ compliant iterator, instead")
+    SymbolTableIterator {
  public:
-  using iterator_category = std::input_iterator_tag;
-  using value_type = internal::SymbolTableIteratorItem;
-  using difference_type = std::ptrdiff_t;
-  using pointer = const value_type *const;
-  using reference = const value_type &;
-
   explicit SymbolTableIterator(const SymbolTable &table)
-      : SymbolTableIterator(table, 0) {}
+      : table_(table), iter_(table.begin()), end_(table.end()) {}
 
   ~SymbolTableIterator() {}
 
   // Returns whether iterator is done.
-  bool Done() const { return (pos_ == nsymbols_); }
+  bool Done() const { return (iter_ == end_); }
 
   // Return the key of the current symbol.
-  int64 Value() const { return iter_item_.Label(); }
+  int64 Value() const { return iter_->Label(); }
 
   // Return the string of the current symbol.
-  std::string Symbol() const { return iter_item_.Symbol(); }
+  std::string Symbol() const { return iter_->Symbol(); }
 
   // Advances iterator.
-  void Next() {
-    ++pos_;
-    if (pos_ < nsymbols_) iter_item_.SetPosition(pos_);
-  }
-
-  SymbolTableIterator &operator++() {
-    Next();
-    return *this;
-  }
-
-  SymbolTableIterator operator++(int) {
-    SymbolTableIterator retval = *this;
-    ++(*this);
-    return retval;
-  }
-
-  bool operator==(const SymbolTableIterator &other) const {
-    return (pos_ == other.pos_);
-  }
-
-  bool operator!=(const SymbolTableIterator &other) const {
-    return !(*this == other);
-  }
-
-  reference operator*() { return iter_item_; }
-
-  pointer operator->() const { return &iter_item_; }
+  void Next() { ++iter_; }
 
   // Resets iterator.
-  void Reset() {
-    pos_ = 0;
-    iter_item_.SetPosition(pos_);
-  }
+  void Reset() { iter_ = table_.begin(); }
 
  private:
-  explicit SymbolTableIterator(const SymbolTable &table, ssize_t pos)
-      : pos_(pos), nsymbols_(table.NumSymbols()), iter_item_(table, pos) {}
-  friend class SymbolTable;
-
-  ssize_t pos_;
-  size_t nsymbols_;
-  value_type iter_item_;
+  const SymbolTable &table_;
+  SymbolTable::iterator iter_;
+  const SymbolTable::iterator end_;
 };
 
 // Relabels a symbol table as specified by the input vector of pairs

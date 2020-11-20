@@ -9,8 +9,8 @@
 namespace fst {
 namespace script {
 
-bool Compress(const FstClass &fst, const std::string &source, const bool gzip) {
-  CompressInnerArgs iargs(fst, source, gzip);
+bool Compress(const FstClass &fst, const std::string &source) {
+  CompressInnerArgs iargs(fst, source);
   CompressArgs args(iargs);
   Apply<Operation<CompressArgs>>("Compress", fst.ArcType(), &args);
   return args.retval;
@@ -18,9 +18,8 @@ bool Compress(const FstClass &fst, const std::string &source, const bool gzip) {
 
 REGISTER_FST_OPERATION_3ARCS(Compress, CompressArgs);
 
-bool Decompress(const std::string &source, MutableFstClass *fst,
-                const bool gzip) {
-  DecompressInnerArgs iargs(source, fst, gzip);
+bool Decompress(const std::string &source, MutableFstClass *fst) {
+  DecompressInnerArgs iargs(source, fst);
   DecompressArgs args(iargs);
   Apply<Operation<DecompressArgs>>("Decompress", fst->ArcType(), &args);
   return args.retval;

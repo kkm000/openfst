@@ -1,7 +1,6 @@
 if HAVE_COMPRESS
 compress_include_headers = fst/extensions/compress/compress.h \
-fst/extensions/compress/compressscript.h fst/extensions/compress/gzfile.h \
-fst/extensions/compress/elias.h
+fst/extensions/compress/compressscript.h fst/extensions/compress/elias.h
 endif
 
 if HAVE_FAR

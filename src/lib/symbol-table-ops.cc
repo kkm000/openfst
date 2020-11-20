@@ -19,13 +19,13 @@ SymbolTable *MergeSymbolTable(const SymbolTable &left, const SymbolTable &right,
   bool left_has_all = true;
   bool right_has_all = true;
   bool relabel = false;
-  for (SymbolTableIterator liter(left); !liter.Done(); liter.Next()) {
-    merged->AddSymbol(liter.Symbol(), liter.Value());
+  for (const auto &litem : left) {
+    merged->AddSymbol(litem.Symbol(), litem.Label());
     if (right_has_all) {
-      int64 key = right.Find(liter.Symbol());
+      int64 key = right.Find(litem.Symbol());
       if (key == -1) {
         right_has_all = false;
-      } else if (!relabel && key != liter.Value()) {
+      } else if (!relabel && key != litem.Label()) {
         relabel = true;
       }
     }
@@ -36,22 +36,22 @@ SymbolTable *MergeSymbolTable(const SymbolTable &left, const SymbolTable &right,
   }
   // Adds all symbols we can from right symbol table.
   std::vector<std::string> conflicts;
-  for (SymbolTableIterator riter(right); !riter.Done(); riter.Next()) {
-    int64 key = merged->Find(riter.Symbol());
+  for (const auto &ritem : right) {
+    int64 key = merged->Find(ritem.Symbol());
     if (key != -1) {
       // Symbol already exists, maybe with different value.
-      if (key != riter.Value()) relabel = true;
+      if (key != ritem.Label()) relabel = true;
       continue;
     }
     // Symbol doesn't exist from left.
     left_has_all = false;
-    if (!merged->Find(riter.Value()).empty()) {
+    if (!merged->Find(ritem.Label()).empty()) {
       // We can't add this where we want to, add it later, in order.
-      conflicts.push_back(riter.Symbol());
+      conflicts.push_back(ritem.Symbol());
       continue;
     }
     // There is a hole and we can add this symbol with its ID.
-    merged->AddSymbol(riter.Symbol(), riter.Value());
+    merged->AddSymbol(ritem.Symbol(), ritem.Label());
   }
   if (right_relabel_output) *right_relabel_output = relabel;
   if (left_has_all) return left.Copy();
@@ -62,9 +62,8 @@ SymbolTable *MergeSymbolTable(const SymbolTable &left, const SymbolTable &right,
 
 SymbolTable *CompactSymbolTable(const SymbolTable &syms) {
   std::map<int64, std::string> sorted;
-  SymbolTableIterator stiter(syms);
-  for (; !stiter.Done(); stiter.Next()) {
-    sorted[stiter.Value()] = stiter.Symbol();
+  for (const auto &stitem : syms) {
+    sorted[stitem.Label()] = stitem.Symbol();
   }
   auto *compact = new SymbolTable(syms.Name() + "_compact");
   int64 newkey = 0;

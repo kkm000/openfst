@@ -54,16 +54,15 @@ using LogArc = ArcTpl<LogWeight>;
 // Stores.
 
 template <class Element, class U>
-class DefaultCompactStore;
+class CompactArcStore;
 
 template <class Arc>
 class DefaultCacheStore;
 
 // Compactors.
 
-template <class AC, class U,
-          class S = DefaultCompactStore<typename AC::Element, U>>
-class DefaultCompactor;
+template <class AC, class U, class S = CompactArcStore<typename AC::Element, U>>
+class CompactArcCompactor;
 
 // FST templates.
 
@@ -73,10 +72,10 @@ class CompactFst;
 // The Unsigned type is used to represent indices into the compact arc array.
 template <class Arc, class ArcCompactor, class Unsigned = uint32,
           class CompactStore =
-              DefaultCompactStore<typename ArcCompactor::Element, Unsigned>,
+              CompactArcStore<typename ArcCompactor::Element, Unsigned>,
           class CacheStore = DefaultCacheStore<Arc>>
 using CompactArcFst =
-    CompactFst<Arc, DefaultCompactor<ArcCompactor, Unsigned, CompactStore>,
+    CompactFst<Arc, CompactArcCompactor<ArcCompactor, Unsigned, CompactStore>,
                CacheStore>;
 
 template <class Arc, class U = uint32>

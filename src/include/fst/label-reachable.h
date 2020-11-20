@@ -7,7 +7,6 @@
 #ifndef FST_LABEL_REACHABLE_H_
 #define FST_LABEL_REACHABLE_H_
 
-#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -21,6 +20,7 @@
 #include <fst/util.h>
 #include <fst/vector-fst.h>
 
+#include <unordered_map>
 
 namespace fst {
 
@@ -86,12 +86,12 @@ class LabelReachableData {
  private:
   LabelReachableData() {}
 
-  bool reach_input_;                              // Input labels considered?
-  bool keep_relabel_data_;                        // Save label2index_ to file?
-  bool have_relabel_data_;                        // Using label2index_?
-  Label final_label_;                             // Final label.
+  bool reach_input_;                               // Input labels considered?
+  bool keep_relabel_data_;                         // Save label2index_ to file?
+  bool have_relabel_data_;                         // Using label2index_?
+  Label final_label_;                              // Final label.
   std::unordered_map<Label, Label> label2index_;  // Finds index for a label.
-  std::vector<LabelIntervalSet> interval_sets_;   // Interval sets per state.
+  std::vector<LabelIntervalSet> interval_sets_;    // Interval sets per state.
 };
 
 // Apply a new state order to a vector of LabelIntervalSets. order[i] gives

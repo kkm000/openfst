@@ -13,21 +13,18 @@
 
 #include <fst/types.h>
 #include <fst/log.h>
-#include <fst/compose.h>  // for ComposeOptions
-#include <fst/util.h>
-
-#include <fst/script/arg-packs.h>
-#include <fst/script/fst-class.h>
-#include <fst/script/shortest-path.h>
-
 #include <fst/extensions/mpdt/compose.h>
 #include <fst/extensions/mpdt/expand.h>
 #include <fst/extensions/mpdt/info.h>
 #include <fst/extensions/mpdt/reverse.h>
-
 #include <fst/extensions/pdt/pdtscript.h>  // For LabelClassPair,
-                                               // FstClassPair, and to detect
-                                               // any collisions.
+#include <fst/compose.h>               // for ComposeOptions
+#include <fst/util.h>
+#include <fst/script/arg-packs.h>
+#include <fst/script/fst-class.h>
+#include <fst/script/shortest-path.h>
+// FstClassPair, and to detect
+// any collisions.
 
 namespace fst {
 namespace script {

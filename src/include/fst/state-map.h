@@ -19,7 +19,6 @@
 #include <fst/cache.h>
 #include <fst/mutable-fst.h>
 
-
 namespace fst {
 
 // StateMapper Interface. The class determines how states are mapped; useful for
@@ -407,7 +406,7 @@ class IdentityStateMapper {
   Weight Final(StateId state) const { return fst_.Final(state); }
 
   void SetState(StateId state) {
-    aiter_.reset(new ArcIterator<Fst<Arc>>(fst_, state));
+    aiter_ = fst::make_unique<ArcIterator<Fst<Arc>>>(fst_, state);
   }
 
   bool Done() const { return aiter_->Done(); }

@@ -119,10 +119,8 @@ void Push(const Fst<Arc> &ifst, MutableFst<Arc> *ofst, uint8 ptype,
     if (ptype & kPushWeights) {
       ShortestDistance(gfst, &gdistance, rtype == REWEIGHT_TO_INITIAL, delta);
     } else {
-      ArcMapFst<Arc, Arc, RmWeightMapper<Arc>> uwfst(ifst,
-                                                      RmWeightMapper<Arc>());
-      ArcMapFst<Arc, GallicArc<Arc, gtype>, ToGallicMapper<Arc, gtype>> guwfst(
-          uwfst, ToGallicMapper<Arc, gtype>());
+      auto uwfst = MakeArcMapFst(ifst, RmWeightMapper<Arc>());
+      auto guwfst = MakeArcMapFst(uwfst, ToGallicMapper<Arc, gtype>());
       ShortestDistance(guwfst, &gdistance, rtype == REWEIGHT_TO_INITIAL, delta);
     }
     auto total_weight = GallicWeight::One();

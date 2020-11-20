@@ -25,7 +25,6 @@
 #include <fst/prune.h>
 #include <fst/test-properties.h>
 
-
 namespace fst {
 
 // Common divisors are used in determinization to compute transition weights.
@@ -975,7 +974,8 @@ void DeterminizeFstImpl<A, G, D, F, T>::Init(const Fst<A> &fst, F *filter) {
       subsequential_label_, increment_subsequential_label_,
       increment_subsequential_label_);
   const FactorWeightFst<ToArc, FactorIterator> factored_fst(det_fsa, fopts);
-  from_fst_.reset(new FromFst(factored_fst, FromMapper(subsequential_label_)));
+  from_fst_ = fst::make_unique<FromFst>(factored_fst,
+                                         FromMapper(subsequential_label_));
 }
 
 }  // namespace internal

@@ -1,9 +1,10 @@
 // See www.openfst.org for extensive documentation on this weighted
 // finite-state transducer library.
 
+#include <fst/extensions/far/stlist.h>
+
 #include <ios>
 
-#include <fst/extensions/far/stlist.h>
 #include <fstream>
 
 namespace fst {

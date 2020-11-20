@@ -3,8 +3,8 @@
 
 #include <fst/extensions/far/far-class.h>
 
-#include <fst/script/script-impl.h>
 #include <fst/extensions/far/script-impl.h>
+#include <fst/script/script-impl.h>
 
 namespace fst {
 namespace script {

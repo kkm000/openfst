@@ -17,7 +17,6 @@
 #include <fst/replace.h>
 #include <fst/test-properties.h>
 
-
 namespace fst {
 
 using RationalFstOptions = CacheOptions;
@@ -227,7 +226,8 @@ class RationalFstImpl : public FstImpl<A> {
   ReplaceFst<Arc> *Replace() const {
     if (!replace_) {
       fst_tuples_[0].second = rfst_.Copy();
-      replace_.reset(new ReplaceFst<Arc>(fst_tuples_, replace_options_));
+      replace_ =
+          fst::make_unique<ReplaceFst<Arc>>(fst_tuples_, replace_options_);
     }
     return replace_.get();
   }

@@ -439,10 +439,8 @@ class WeightedTester {
 
     {
       VLOG(1) << "Check gallic mappers (delayed).";
-      ToGallicMapper<Arc> to_mapper;
-      FromGallicMapper<Arc> from_mapper;
-      ArcMapFst<Arc, GallicArc<Arc>, ToGallicMapper<Arc>> G(T, to_mapper);
-      ArcMapFst<GallicArc<Arc>, Arc, FromGallicMapper<Arc>> F(G, from_mapper);
+      auto G = MakeArcMapFst(T, ToGallicMapper<Arc>());
+      auto F = MakeArcMapFst(G, FromGallicMapper<Arc>());
       CHECK(Equiv(T, F));
     }
   }
@@ -960,8 +958,7 @@ class WeightedTester {
     CHECK(Verify(pfst));
 
     DifferenceFst<Arc> D(fst, DeterminizeFst<Arc>(RmEpsilonFst<Arc>(
-                                  ArcMapFst<Arc, Arc, RmWeightMapper<Arc>>(
-                                      pfst, RmWeightMapper<Arc>()))));
+                                  MakeArcMapFst(pfst, RmWeightMapper<Arc>()))));
     Weight sum1 = Times(ShortestDistance(fst), threshold);
     Weight sum2 = ShortestDistance(D);
     return ApproxEqual(Plus(sum1, sum2), sum1, kTestDelta);

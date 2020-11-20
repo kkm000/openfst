@@ -86,12 +86,20 @@ class MatcherFst : public ImplToExpandedFst<internal::AddOnImpl<F, Data>> {
 
   MatcherFst() : ImplToExpandedFst<Impl>(std::make_shared<Impl>(FST(), Name)) {}
 
+  // Constructs a MatcherFst from an FST, which is the underlying FST type used
+  // by this class. Uses the existing Data if present, and runs Init on it.
+  // Stores fst internally, making a thread-safe copy of it.
   explicit MatcherFst(const FST &fst, std::shared_ptr<Data> data = nullptr)
       : ImplToExpandedFst<Impl>(data ? CreateImpl(fst, Name, data)
                                      : CreateDataAndImpl(fst, Name)) {}
 
-  explicit MatcherFst(const Fst<Arc> &fst)
-      : ImplToExpandedFst<Impl>(CreateDataAndImpl(fst, Name)) {}
+  // Constructs a MatcherFst from an Fst<Arc>, which is *not* the underlying
+  // FST type used by this class. Uses the existing Data if present, and
+  // runs Init on it.  Stores fst internally, converting Fst<Arc> to FST and
+  // therefore making a deep copy.
+  explicit MatcherFst(const Fst<Arc> &fst, std::shared_ptr<Data> data = nullptr)
+      : ImplToExpandedFst<Impl>(data ? CreateImpl(fst, Name, data)
+                                     : CreateDataAndImpl(fst, Name)) {}
 
   // See Fst<>::Copy() for doc.
   MatcherFst(const MatcherFst &fst, bool safe = false)
@@ -157,6 +165,7 @@ class MatcherFst : public ImplToExpandedFst<internal::AddOnImpl<F, Data>> {
  protected:
   using ImplToFst<Impl, ExpandedFst<Arc>>::GetImpl;
 
+  // Makes a thread-safe copy of fst.
   static std::shared_ptr<Impl> CreateDataAndImpl(const FST &fst,
                                                  const std::string &name) {
     FstMatcher imatcher(fst, MATCH_INPUT);
@@ -166,13 +175,25 @@ class MatcherFst : public ImplToExpandedFst<internal::AddOnImpl<F, Data>> {
                                              omatcher.GetSharedData()));
   }
 
+  // Makes a deep copy of fst.
   static std::shared_ptr<Impl> CreateDataAndImpl(const Fst<Arc> &fst,
                                                  const std::string &name) {
     FST result(fst);
     return CreateDataAndImpl(result, name);
   }
 
+  // Makes a thread-safe copy of fst.
   static std::shared_ptr<Impl> CreateImpl(const FST &fst,
+                                          const std::string &name,
+                                          std::shared_ptr<Data> data) {
+    auto impl = std::make_shared<Impl>(fst, name);
+    impl->SetAddOn(data);
+    Init init(&impl);
+    return impl;
+  }
+
+  // Makes a deep copy of fst.
+  static std::shared_ptr<Impl> CreateImpl(const Fst<Arc> &fst,
                                           const std::string &name,
                                           std::shared_ptr<Data> data) {
     auto impl = std::make_shared<Impl>(fst, name);
