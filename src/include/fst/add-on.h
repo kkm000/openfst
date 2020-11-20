@@ -9,6 +9,7 @@
 #define FST_ADD_ON_H_
 
 #include <stddef.h>
+
 #include <memory>
 #include <string>
 #include <utility>
@@ -108,7 +109,7 @@ class AddOnImpl : public FstImpl<typename FST::Arc> {
 
   // We make a thread-safe copy of the FST by default since an FST
   // implementation is expected to not share mutable data between objects.
-  AddOnImpl(const FST &fst, const string &type,
+  AddOnImpl(const FST &fst, const std::string &type,
             std::shared_ptr<T> t = std::shared_ptr<T>())
       : fst_(fst, true), t_(std::move(t)) {
     SetType(type);
@@ -119,7 +120,7 @@ class AddOnImpl : public FstImpl<typename FST::Arc> {
 
   // Conversion from const Fst<Arc> & to F always copies the underlying
   // implementation.
-  AddOnImpl(const Fst<Arc> &fst, const string &type,
+  AddOnImpl(const Fst<Arc> &fst, const std::string &type,
             std::shared_ptr<T> t = std::shared_ptr<T>())
       : fst_(fst), t_(std::move(t)) {
     SetType(type);
@@ -220,7 +221,7 @@ class AddOnImpl : public FstImpl<typename FST::Arc> {
   void SetAddOn(std::shared_ptr<T> t) { t_ = t; }
 
  private:
-  explicit AddOnImpl(const string &type) : t_() {
+  explicit AddOnImpl(const std::string &type) : t_() {
     SetType(type);
     SetProperties(kExpanded);
   }

@@ -1,9 +1,10 @@
 // See www.openfst.org for extensive documentation on this weighted
 // finite-state transducer library.
 
+#include <fst/script/verify.h>
+
 #include <fst/script/fst-class.h>
 #include <fst/script/script-impl.h>
-#include <fst/script/verify.h>
 
 namespace fst {
 namespace script {

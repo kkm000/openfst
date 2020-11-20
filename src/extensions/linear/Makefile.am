@@ -6,16 +6,16 @@ bin_PROGRAMS = fstlinear fstloglinearapply
 LDADD = libfstlinearscript.la ../../script/libfstscript.la \
     ../../lib/libfst.la -lm $(DL_LIBS)
 
-fstlinear_SOURCES = fstlinear.cc
+fstlinear_SOURCES = fstlinear.cc fstlinear-main.cc
 
-fstloglinearapply_SOURCES = fstloglinearapply.cc
+fstloglinearapply_SOURCES = fstloglinearapply.cc fstloglinearapply-main.cc
 endif
 
 if HAVE_SCRIPT
 libfstlinearscript_la_SOURCES = linearscript.cc
-libfstlinearscript_la_LDFLAGS = -version-info 16:0:0 -lm $(DL_LIBS)
+libfstlinearscript_la_LDFLAGS = -version-info 17:0:0 -lm $(DL_LIBS)
 libfstlinearscript_la_LIBADD = ../../script/libfstscript.la \
-							../../lib/libfst.la -lm $(DL_LIBS)
+                               ../../lib/libfst.la -lm $(DL_LIBS)
 endif
 
 if HAVE_SCRIPT

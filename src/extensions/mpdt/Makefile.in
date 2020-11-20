@@ -151,32 +151,36 @@ libfstmpdtscript_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CXX \
 	$(LDFLAGS) -o $@
 @HAVE_SCRIPT_TRUE@am_libfstmpdtscript_la_rpath = -rpath $(libdir)
 PROGRAMS = $(bin_PROGRAMS)
-am__mpdtcompose_SOURCES_DIST = mpdtcompose.cc
-@HAVE_BIN_TRUE@am_mpdtcompose_OBJECTS = mpdtcompose.$(OBJEXT)
+am__mpdtcompose_SOURCES_DIST = mpdtcompose.cc mpdtcompose-main.cc
+@HAVE_BIN_TRUE@am_mpdtcompose_OBJECTS = mpdtcompose.$(OBJEXT) \
+@HAVE_BIN_TRUE@	mpdtcompose-main.$(OBJEXT)
 mpdtcompose_OBJECTS = $(am_mpdtcompose_OBJECTS)
 mpdtcompose_LDADD = $(LDADD)
 @HAVE_BIN_TRUE@mpdtcompose_DEPENDENCIES = libfstmpdtscript.la \
 @HAVE_BIN_TRUE@	../pdt/libfstpdtscript.la \
 @HAVE_BIN_TRUE@	../../script/libfstscript.la \
 @HAVE_BIN_TRUE@	../../lib/libfst.la $(am__DEPENDENCIES_1)
-am__mpdtexpand_SOURCES_DIST = mpdtexpand.cc
-@HAVE_BIN_TRUE@am_mpdtexpand_OBJECTS = mpdtexpand.$(OBJEXT)
+am__mpdtexpand_SOURCES_DIST = mpdtexpand.cc mpdtexpand-main.cc
+@HAVE_BIN_TRUE@am_mpdtexpand_OBJECTS = mpdtexpand.$(OBJEXT) \
+@HAVE_BIN_TRUE@	mpdtexpand-main.$(OBJEXT)
 mpdtexpand_OBJECTS = $(am_mpdtexpand_OBJECTS)
 mpdtexpand_LDADD = $(LDADD)
 @HAVE_BIN_TRUE@mpdtexpand_DEPENDENCIES = libfstmpdtscript.la \
 @HAVE_BIN_TRUE@	../pdt/libfstpdtscript.la \
 @HAVE_BIN_TRUE@	../../script/libfstscript.la \
 @HAVE_BIN_TRUE@	../../lib/libfst.la $(am__DEPENDENCIES_1)
-am__mpdtinfo_SOURCES_DIST = mpdtinfo.cc
-@HAVE_BIN_TRUE@am_mpdtinfo_OBJECTS = mpdtinfo.$(OBJEXT)
+am__mpdtinfo_SOURCES_DIST = mpdtinfo.cc mpdtinfo-main.cc
+@HAVE_BIN_TRUE@am_mpdtinfo_OBJECTS = mpdtinfo.$(OBJEXT) \
+@HAVE_BIN_TRUE@	mpdtinfo-main.$(OBJEXT)
 mpdtinfo_OBJECTS = $(am_mpdtinfo_OBJECTS)
 mpdtinfo_LDADD = $(LDADD)
 @HAVE_BIN_TRUE@mpdtinfo_DEPENDENCIES = libfstmpdtscript.la \
 @HAVE_BIN_TRUE@	../pdt/libfstpdtscript.la \
 @HAVE_BIN_TRUE@	../../script/libfstscript.la \
 @HAVE_BIN_TRUE@	../../lib/libfst.la $(am__DEPENDENCIES_1)
-am__mpdtreverse_SOURCES_DIST = mpdtreverse.cc
-@HAVE_BIN_TRUE@am_mpdtreverse_OBJECTS = mpdtreverse.$(OBJEXT)
+am__mpdtreverse_SOURCES_DIST = mpdtreverse.cc mpdtreverse-main.cc
+@HAVE_BIN_TRUE@am_mpdtreverse_OBJECTS = mpdtreverse.$(OBJEXT) \
+@HAVE_BIN_TRUE@	mpdtreverse-main.$(OBJEXT)
 mpdtreverse_OBJECTS = $(am_mpdtreverse_OBJECTS)
 mpdtreverse_LDADD = $(LDADD)
 @HAVE_BIN_TRUE@mpdtreverse_DEPENDENCIES = libfstmpdtscript.la \
@@ -392,13 +396,13 @@ AM_CPPFLAGS = -I$(srcdir)/../../include $(ICU_CPPFLAGS)
 @HAVE_BIN_TRUE@    ../../script/libfstscript.la \
 @HAVE_BIN_TRUE@    ../../lib/libfst.la -lm $(DL_LIBS)
 
-@HAVE_BIN_TRUE@mpdtcompose_SOURCES = mpdtcompose.cc
-@HAVE_BIN_TRUE@mpdtexpand_SOURCES = mpdtexpand.cc
-@HAVE_BIN_TRUE@mpdtinfo_SOURCES = mpdtinfo.cc
-@HAVE_BIN_TRUE@mpdtreverse_SOURCES = mpdtreverse.cc
+@HAVE_BIN_TRUE@mpdtcompose_SOURCES = mpdtcompose.cc mpdtcompose-main.cc
+@HAVE_BIN_TRUE@mpdtexpand_SOURCES = mpdtexpand.cc mpdtexpand-main.cc
+@HAVE_BIN_TRUE@mpdtinfo_SOURCES = mpdtinfo.cc mpdtinfo-main.cc
+@HAVE_BIN_TRUE@mpdtreverse_SOURCES = mpdtreverse.cc mpdtreverse-main.cc
 @HAVE_SCRIPT_TRUE@lib_LTLIBRARIES = libfstmpdtscript.la
 @HAVE_SCRIPT_TRUE@libfstmpdtscript_la_SOURCES = mpdtscript.cc
-@HAVE_SCRIPT_TRUE@libfstmpdtscript_la_LDFLAGS = -version-info 16:0:0
+@HAVE_SCRIPT_TRUE@libfstmpdtscript_la_LDFLAGS = -version-info 17:0:0
 @HAVE_SCRIPT_TRUE@libfstmpdtscript_la_LIBADD = ../../script/libfstscript.la \
 @HAVE_SCRIPT_TRUE@                             ../../lib/libfst.la -lm $(DL_LIBS)
 
@@ -545,9 +549,13 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mpdtcompose-main.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mpdtcompose.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mpdtexpand-main.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mpdtexpand.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mpdtinfo-main.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mpdtinfo.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mpdtreverse-main.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mpdtreverse.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mpdtscript.Plo@am__quote@
 

@@ -18,6 +18,11 @@ licenses(["notice"])  # Apache 2.0
 
 exports_files(["COPYING"])
 
+config_setting(
+    name = "has_absl",
+    values = {"define": "absl=1"},
+)
+
 prefix_dir = "src/"
 
 static_binary = 1
@@ -268,7 +273,15 @@ cc_library(
         prefix_dir + "include/fst/log.h",
         prefix_dir + "include/fst/types.h",
     ],
+    defines = select({
+        ":has_absl": ["OPENFST_HAS_ABSL=1"],
+        "//conditions:default": [],
+    }),
     includes = [prefix_dir + "include"],
+    deps = select({
+        ":has_absl": ["@com_google_absl//absl/synchronization"],
+        "//conditions:default": [],
+    }),
 )
 
 # Core library tests (test/)
@@ -769,7 +782,10 @@ cc_library(
 [
     cc_binary(
         name = "far%s" % operation,
-        srcs = [prefix_dir + "extensions/far/far%s.cc" % operation],
+        srcs = [
+            prefix_dir + "extensions/far/far%s.cc" % operation,
+            prefix_dir + "extensions/far/far%s-main.cc" % operation,
+        ],
         linkstatic = static_binary,
         deps = [":farscript"],
     )

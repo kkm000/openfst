@@ -25,7 +25,7 @@ using PushArgs2 = std::tuple<const FstClass &, MutableFstClass *, uint32,
 
 template <class Arc>
 void Push(PushArgs2 *args) {
-  const Fst<Arc> &ifst = *(std::get<0>(*args).GetFst<Arc>());
+  const Fst<Arc> &ifst = *std::get<0>(*args).GetFst<Arc>();
   MutableFst<Arc> *ofst = std::get<1>(*args)->GetMutableFst<Arc>();
   switch (std::get<3>(*args)) {
     case REWEIGHT_TO_FINAL: {

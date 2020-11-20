@@ -1,9 +1,10 @@
 // See www.openfst.org for extensive documentation on this weighted
 // finite-state transducer library.
 
+#include <fst/script/shortest-path.h>
+
 #include <fst/script/fst-class.h>
 #include <fst/script/script-impl.h>
-#include <fst/script/shortest-path.h>
 
 namespace fst {
 namespace script {

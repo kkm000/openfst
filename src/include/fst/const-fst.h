@@ -53,7 +53,7 @@ class ConstFstImpl : public FstImpl<A> {
         narcs_(0),
         nstates_(0),
         start_(kNoStateId) {
-    string type = "const";
+    std::string type = "const";
     if (sizeof(Unsigned) != sizeof(uint32)) {
       type += std::to_string(CHAR_BIT * sizeof(Unsigned));
     }
@@ -146,7 +146,7 @@ constexpr int ConstFstImpl<Arc, Unsigned>::kMinFileVersion;
 template <class Arc, class Unsigned>
 ConstFstImpl<Arc, Unsigned>::ConstFstImpl(const Fst<Arc> &fst)
     : narcs_(0), nstates_(0) {
-  string type = "const";
+  std::string type = "const";
   if (sizeof(Unsigned) != sizeof(uint32)) {
     type += std::to_string(CHAR_BIT * sizeof(Unsigned));
   }
@@ -275,7 +275,7 @@ class ConstFst : public ImplToExpandedFst<internal::ConstFstImpl<A, Unsigned>> {
 
   // Read a ConstFst from a file; return nullptr on error; empty filename reads
   // from standard input.
-  static ConstFst<A, Unsigned> *Read(const string &filename) {
+  static ConstFst<A, Unsigned> *Read(const std::string &filename) {
     auto *impl = ImplToExpandedFst<Impl>::Read(filename);
     return impl ? new ConstFst<A, Unsigned>(std::shared_ptr<Impl>(impl))
                 : nullptr;
@@ -285,7 +285,7 @@ class ConstFst : public ImplToExpandedFst<internal::ConstFstImpl<A, Unsigned>> {
     return WriteFst(*this, strm, opts);
   }
 
-  bool Write(const string &filename) const override {
+  bool Write(const std::string &filename) const override {
     return Fst<Arc>::WriteFile(filename);
   }
 
@@ -352,7 +352,7 @@ bool ConstFst<Arc, Unsigned>::WriteFst(const FST &fst, std::ostream &strm,
   hdr.SetStart(fst.Start());
   hdr.SetNumStates(num_states);
   hdr.SetNumArcs(num_arcs);
-  string type = "const";
+  std::string type = "const";
   if (sizeof(Unsigned) != sizeof(uint32)) {
     type += std::to_string(CHAR_BIT * sizeof(Unsigned));
   }
@@ -401,7 +401,7 @@ bool ConstFst<Arc, Unsigned>::WriteFst(const FST &fst, std::ostream &strm,
   }
   strm.flush();
   if (!strm) {
-    LOG(ERROR) << "ConstFst::WriteFst: write failed: " << opts.source;
+    LOG(ERROR) << "ConstFst::WriteFst: Write failed: " << opts.source;
     return false;
   }
   if (update_header) {

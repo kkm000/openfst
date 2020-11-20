@@ -359,9 +359,9 @@ void NShortestPath(const Fst<RevArc> &ifst, MutableFst<Arc> *ofst,
   }
   ofst->SetStart(ofst->AddState());
   const auto final_state = ofst->AddState();
-  ofst->SetFinal(final_state, Weight::One());
+  ofst->SetFinal(final_state);
   while (pairs.size() <= final_state) {
-    pairs.push_back(std::make_pair(kNoStateId, Weight::Zero()));
+    pairs.emplace_back(kNoStateId, Weight::Zero());
   }
   pairs[final_state] = std::make_pair(ifst.Start(), Weight::One());
   std::vector<StateId> heap;
@@ -387,9 +387,7 @@ void NShortestPath(const Fst<RevArc> &ifst, MutableFst<Arc> *ofst,
     }
     while (r.size() <= p.first + 1) r.push_back(0);
     ++r[p.first + 1];
-    if (p.first == kNoStateId) {
-      ofst->AddArc(ofst->Start(), Arc(0, 0, Weight::One(), state));
-    }
+    if (p.first == kNoStateId) ofst->AddArc(ofst->Start(), Arc(0, 0, state));
     if ((p.first == kNoStateId) && (r[p.first + 1] == nshortest)) break;
     if (r[p.first + 1] > nshortest) continue;
     if (p.first == kNoStateId) continue;
@@ -399,7 +397,7 @@ void NShortestPath(const Fst<RevArc> &ifst, MutableFst<Arc> *ofst,
       Arc arc(rarc.ilabel, rarc.olabel, rarc.weight.Reverse(), rarc.nextstate);
       const auto weight = Times(p.second, arc.weight);
       const auto next = ofst->AddState();
-      pairs.push_back(std::make_pair(arc.nextstate, weight));
+      pairs.emplace_back(arc.nextstate, weight);
       arc.nextstate = state;
       ofst->AddArc(next, std::move(arc));
       heap.push_back(next);
@@ -409,7 +407,7 @@ void NShortestPath(const Fst<RevArc> &ifst, MutableFst<Arc> *ofst,
     if (final_weight != Weight::Zero()) {
       const auto weight = Times(p.second, final_weight);
       const auto next = ofst->AddState();
-      pairs.push_back(std::make_pair(kNoStateId, weight));
+      pairs.emplace_back(kNoStateId, weight);
       ofst->AddArc(next, Arc(0, 0, final_weight, state));
       heap.push_back(next);
       std::push_heap(heap.begin(), heap.end(), compare);

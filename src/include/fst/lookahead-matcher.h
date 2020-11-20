@@ -687,6 +687,9 @@ inline LabelLookAheadRelabeler<Arc, Data>::LabelLookAheadRelabeler(
   const bool is_mutable = fst.Properties(kMutable, false);
   std::unique_ptr<MutableFst<Arc>> mfst;
   if (is_mutable) {
+    // Borrow pointer from fst without increasing ref count; it will
+    // be released below. We do not want to call Copy() since that would
+    // do a deep copy when the Fst is modified.
     mfst.reset(static_cast<MutableFst<Arc> *>(&fst));
   } else {
     mfst.reset(new VectorFst<Arc>(fst));
@@ -708,7 +711,10 @@ inline LabelLookAheadRelabeler<Arc, Data>::LabelLookAheadRelabeler(
       WriteLabelPairs(FLAGS_save_relabel_opairs, pairs);
     }
   }
-  if (!is_mutable) {
+  if (is_mutable) {
+    // Pointer was just borrowed, don't delete it.
+    mfst.release();
+  } else {
     *impl = std::make_shared<Impl>(*mfst, name);
     (*impl)->SetAddOn(data);
   }

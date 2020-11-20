@@ -1,3 +1,6 @@
+// See www.openfst.org for extensive documentation on this weighted
+// finite-state transducer library.
+//
 // Registration of common FST and arc types.
 
 #include <fst/arc.h>

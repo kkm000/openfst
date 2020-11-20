@@ -6,6 +6,7 @@
 #ifndef FST_VECTOR_FST_H_
 #define FST_VECTOR_FST_H_
 
+#include <algorithm>
 #include <string>
 #include <utility>
 #include <vector>
@@ -154,9 +155,7 @@ class VectorFstBaseImpl : public FstImpl<typename S::Arc> {
   VectorFstBaseImpl() : start_(kNoStateId) {}
 
   ~VectorFstBaseImpl() override {
-    for (size_t s = 0; s < states_.size(); ++s) {
-      State::Destroy(states_[s], &state_alloc_);
-    }
+    for (auto *state : states_) State::Destroy(state, &state_alloc_);
   }
 
   // Copying is not permitted.
@@ -173,9 +172,12 @@ class VectorFstBaseImpl : public FstImpl<typename S::Arc> {
   }
 
   VectorFstBaseImpl<S> &operator=(VectorFstBaseImpl<S> &&impl) noexcept {
-    states_ = std::move(impl.states_);
+    for (auto *state : states_) {
+      State::Destroy(state, &state_alloc_);
+    }
+    states_.clear();
+    std::swap(states_, impl.states_);
     start_ = impl.start_;
-    impl.states_.clear();
     impl.start_ = kNoStateId;
     return *this;
   }
@@ -202,14 +204,18 @@ class VectorFstBaseImpl : public FstImpl<typename S::Arc> {
     states_[state]->SetFinal(std::move(weight));
   }
 
-  StateId AddState() {
-    states_.push_back(new (&state_alloc_) State(arc_alloc_));
-    return states_.size() - 1;
-  }
-
   StateId AddState(State *state) {
     states_.push_back(state);
     return states_.size() - 1;
+  }
+
+  StateId AddState() { return AddState(CreateState()); }
+
+  void AddStates(size_t n) {
+    const auto curr_num_states = NumStates();
+    states_.resize(n + curr_num_states);
+    std::generate(states_.begin() + curr_num_states, states_.end(),
+                  [this] { return CreateState(); });
   }
 
   void AddArc(StateId state, const Arc &arc) { states_[state]->AddArc(arc); }
@@ -278,7 +284,7 @@ class VectorFstBaseImpl : public FstImpl<typename S::Arc> {
 
   void SetState(StateId state, State *vstate) { states_[state] = vstate; }
 
-  void ReserveStates(StateId n) { states_.reserve(n); }
+  void ReserveStates(size_t n) { states_.reserve(n); }
 
   void ReserveArcs(StateId state, size_t n) { states_[state]->ReserveArcs(n); }
 
@@ -297,10 +303,12 @@ class VectorFstBaseImpl : public FstImpl<typename S::Arc> {
   }
 
  private:
-  std::vector<State *> states_;                 // States represenation.
-  StateId start_;                               // Initial state.
-  typename State::StateAllocator state_alloc_;  // For state allocation.
-  typename State::ArcAllocator arc_alloc_;      // For arc allocation.
+  State *CreateState() { return new (&state_alloc_) State(arc_alloc_); }
+
+  std::vector<State *> states_;
+  StateId start_;
+  typename State::StateAllocator state_alloc_;
+  typename State::ArcAllocator arc_alloc_;
 };
 
 // This is a VectorFstBaseImpl container that holds VectorStates and manages FST
@@ -355,6 +363,11 @@ class VectorFstImpl : public VectorFstBaseImpl<S> {
     const auto state = BaseImpl::AddState();
     SetProperties(AddStateProperties(Properties()));
     return state;
+  }
+
+  void AddStates(size_t n) {
+    BaseImpl::AddStates(n);
+    SetProperties(AddStateProperties(Properties()));
   }
 
   void AddArc(StateId state, const Arc &arc) {
@@ -545,7 +558,7 @@ class VectorFst : public ImplToMutableFst<internal::VectorFstImpl<S>> {
 
   // Read a VectorFst from a file, returning nullptr on error; empty filename
   // reads from standard input.
-  static VectorFst<Arc, State> *Read(const string &filename) {
+  static VectorFst<Arc, State> *Read(const std::string &filename) {
     auto *impl = ImplToExpandedFst<Impl, MutableFst<Arc>>::Read(filename);
     return impl ? new VectorFst<Arc, State>(std::shared_ptr<Impl>(impl))
                 : nullptr;
@@ -555,7 +568,7 @@ class VectorFst : public ImplToMutableFst<internal::VectorFstImpl<S>> {
     return WriteFst(*this, strm, opts);
   }
 
-  bool Write(const string &filename) const override {
+  bool Write(const std::string &filename) const override {
     return Fst<Arc>::WriteFile(filename);
   }
 

@@ -89,7 +89,7 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-@HAVE_BIN_TRUE@bin_PROGRAMS = fstcompress$(EXEEXT) fstrandmod$(EXEEXT)
+@HAVE_BIN_TRUE@bin_PROGRAMS = fstcompress$(EXEEXT)
 subdir = src/extensions/compress
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ac_python_devel.m4 \
@@ -137,9 +137,9 @@ am__DEPENDENCIES_1 =
 @HAVE_SCRIPT_TRUE@libfstcompressscript_la_DEPENDENCIES =  \
 @HAVE_SCRIPT_TRUE@	../../script/libfstscript.la \
 @HAVE_SCRIPT_TRUE@	../../lib/libfst.la $(am__DEPENDENCIES_1)
-am__libfstcompressscript_la_SOURCES_DIST = compress-script.cc
+am__libfstcompressscript_la_SOURCES_DIST = compressscript.cc
 @HAVE_SCRIPT_TRUE@am_libfstcompressscript_la_OBJECTS =  \
-@HAVE_SCRIPT_TRUE@	compress-script.lo
+@HAVE_SCRIPT_TRUE@	compressscript.lo
 libfstcompressscript_la_OBJECTS =  \
 	$(am_libfstcompressscript_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
@@ -152,18 +152,12 @@ libfstcompressscript_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CXX \
 	$(LDFLAGS) -o $@
 @HAVE_SCRIPT_TRUE@am_libfstcompressscript_la_rpath = -rpath $(libdir)
 PROGRAMS = $(bin_PROGRAMS)
-am__fstcompress_SOURCES_DIST = fstcompress.cc
-@HAVE_BIN_TRUE@am_fstcompress_OBJECTS = fstcompress.$(OBJEXT)
+am__fstcompress_SOURCES_DIST = fstcompress.cc fstcompress-main.cc
+@HAVE_BIN_TRUE@am_fstcompress_OBJECTS = fstcompress.$(OBJEXT) \
+@HAVE_BIN_TRUE@	fstcompress-main.$(OBJEXT)
 fstcompress_OBJECTS = $(am_fstcompress_OBJECTS)
 fstcompress_LDADD = $(LDADD)
 @HAVE_BIN_TRUE@fstcompress_DEPENDENCIES = libfstcompressscript.la \
-@HAVE_BIN_TRUE@	../../script/libfstscript.la \
-@HAVE_BIN_TRUE@	../../lib/libfst.la $(am__DEPENDENCIES_1)
-am__fstrandmod_SOURCES_DIST = fstrandmod.cc
-@HAVE_BIN_TRUE@am_fstrandmod_OBJECTS = fstrandmod.$(OBJEXT)
-fstrandmod_OBJECTS = $(am_fstrandmod_OBJECTS)
-fstrandmod_LDADD = $(LDADD)
-@HAVE_BIN_TRUE@fstrandmod_DEPENDENCIES = libfstcompressscript.la \
 @HAVE_BIN_TRUE@	../../script/libfstscript.la \
 @HAVE_BIN_TRUE@	../../lib/libfst.la $(am__DEPENDENCIES_1)
 AM_V_P = $(am__v_P_@AM_V@)
@@ -200,10 +194,9 @@ AM_V_CXXLD = $(am__v_CXXLD_@AM_V@)
 am__v_CXXLD_ = $(am__v_CXXLD_@AM_DEFAULT_V@)
 am__v_CXXLD_0 = @echo "  CXXLD   " $@;
 am__v_CXXLD_1 = 
-SOURCES = $(libfstcompressscript_la_SOURCES) $(fstcompress_SOURCES) \
-	$(fstrandmod_SOURCES)
+SOURCES = $(libfstcompressscript_la_SOURCES) $(fstcompress_SOURCES)
 DIST_SOURCES = $(am__libfstcompressscript_la_SOURCES_DIST) \
-	$(am__fstcompress_SOURCES_DIST) $(am__fstrandmod_SOURCES_DIST)
+	$(am__fstcompress_SOURCES_DIST)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -373,10 +366,9 @@ AM_CPPFLAGS = -I$(srcdir)/../../include $(ICU_CPPFLAGS)
 @HAVE_BIN_TRUE@        ../../lib/libfst.la \
 @HAVE_BIN_TRUE@        -lm $(DL_LIBS)
 
-@HAVE_BIN_TRUE@fstcompress_SOURCES = fstcompress.cc
-@HAVE_BIN_TRUE@fstrandmod_SOURCES = fstrandmod.cc
-@HAVE_SCRIPT_TRUE@libfstcompressscript_la_SOURCES = compress-script.cc
-@HAVE_SCRIPT_TRUE@libfstcompressscript_la_LDFLAGS = -version-info 16:0:0
+@HAVE_BIN_TRUE@fstcompress_SOURCES = fstcompress.cc fstcompress-main.cc
+@HAVE_SCRIPT_TRUE@libfstcompressscript_la_SOURCES = compressscript.cc
+@HAVE_SCRIPT_TRUE@libfstcompressscript_la_LDFLAGS = -version-info 17:0:0
 @HAVE_SCRIPT_TRUE@libfstcompressscript_la_LIBADD = \
 @HAVE_SCRIPT_TRUE@        ../../script/libfstscript.la \
 @HAVE_SCRIPT_TRUE@        ../../lib/libfst.la -lz -lm $(DL_LIBS)
@@ -507,19 +499,15 @@ fstcompress$(EXEEXT): $(fstcompress_OBJECTS) $(fstcompress_DEPENDENCIES) $(EXTRA
 	@rm -f fstcompress$(EXEEXT)
 	$(AM_V_CXXLD)$(CXXLINK) $(fstcompress_OBJECTS) $(fstcompress_LDADD) $(LIBS)
 
-fstrandmod$(EXEEXT): $(fstrandmod_OBJECTS) $(fstrandmod_DEPENDENCIES) $(EXTRA_fstrandmod_DEPENDENCIES) 
-	@rm -f fstrandmod$(EXEEXT)
-	$(AM_V_CXXLD)$(CXXLINK) $(fstrandmod_OBJECTS) $(fstrandmod_LDADD) $(LIBS)
-
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
 
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/compress-script.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/compressscript.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fstcompress-main.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fstcompress.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fstrandmod.Po@am__quote@
 
 .cc.o:
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\

@@ -30,7 +30,6 @@ namespace fst {
 // FST.
 template <class Arc>
 void Union(MutableFst<Arc> *fst1, const Fst<Arc> &fst2) {
-  using Weight = typename Arc::Weight;
   // Checks for symbol table compatibility.
   if (!CompatSymbols(fst1->InputSymbols(), fst2.InputSymbols()) ||
       !CompatSymbols(fst1->OutputSymbols(), fst2.OutputSymbols())) {
@@ -70,12 +69,12 @@ void Union(MutableFst<Arc> *fst1, const Fst<Arc> &fst2) {
     return;
   }
   if (initial_acyclic1) {
-    fst1->AddArc(start1, Arc(0, 0, Weight::One(), start2 + numstates1));
+    fst1->AddArc(start1, Arc(0, 0, start2 + numstates1));
   } else {
     const auto nstart1 = fst1->AddState();
     fst1->SetStart(nstart1);
-    fst1->AddArc(nstart1, Arc(0, 0, Weight::One(), start1));
-    fst1->AddArc(nstart1, Arc(0, 0, Weight::One(), start2 + numstates1));
+    fst1->AddArc(nstart1, Arc(0, 0, start1));
+    fst1->AddArc(nstart1, Arc(0, 0, start2 + numstates1));
   }
   fst1->SetProperties(UnionProperties(props1, props2), kFstProperties);
 }

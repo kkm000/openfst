@@ -49,7 +49,7 @@ class RhoFstMatcherData {
   MatcherRewriteMode RewriteMode() const { return rewrite_mode_; }
 
  private:
-  static MatcherRewriteMode RewriteMode(const string &mode) {
+  static MatcherRewriteMode RewriteMode(const std::string &mode) {
     if (mode == "auto") return MATCHER_REWRITE_AUTO;
     if (mode == "always") return MATCHER_REWRITE_ALWAYS;
     if (mode == "never") return MATCHER_REWRITE_NEVER;

@@ -35,11 +35,11 @@ static constexpr int32 kSTListFileVersion = 1;
 template <class T, class Writer>
 class STListWriter {
  public:
-  explicit STListWriter(const string &filename)
-      : stream_(filename.empty() ? &std::cout : new std::ofstream(
-                                                    filename,
-                                                    std::ios_base::out |
-                                                        std::ios_base::binary)),
+  explicit STListWriter(const std::string &filename)
+      : stream_(filename.empty() ? &std::cout
+                                 : new std::ofstream(
+                                       filename, std::ios_base::out |
+                                                     std::ios_base::binary)),
         error_(false) {
     WriteType(*stream_, kSTListMagicNumber);
     WriteType(*stream_, kSTListFileVersion);
@@ -50,12 +50,12 @@ class STListWriter {
     }
   }
 
-  static STListWriter<T, Writer> *Create(const string &filename) {
+  static STListWriter<T, Writer> *Create(const std::string &filename) {
     return new STListWriter<T, Writer>(filename);
   }
 
-  void Add(const string &key, const T &t) {
-    if (key == "") {
+  void Add(const std::string &key, const T &t) {
+    if (key.empty()) {
       FSTERROR() << "STListWriter::Add: Key empty: " << key;
       error_ = true;
     } else if (key < last_key_) {
@@ -71,14 +71,14 @@ class STListWriter {
   bool Error() const { return error_; }
 
   ~STListWriter() {
-    WriteType(*stream_, string());
+    WriteType(*stream_, std::string());
     if (stream_ != &std::cout) delete stream_;
   }
 
  private:
   Writer entry_writer_;
   std::ostream *stream_;  // Output stream.
-  string last_key_;       // Last key.
+  std::string last_key_;  // Last key.
   bool error_;
 
   STListWriter(const STListWriter &) = delete;
@@ -94,7 +94,7 @@ class STListWriter {
 template <class T, class Reader>
 class STListReader {
  public:
-  explicit STListReader(const std::vector<string> &filenames)
+  explicit STListReader(const std::vector<std::string> &filenames)
       : sources_(filenames), error_(false) {
     streams_.resize(filenames.size(), 0);
     bool has_stdin = false;
@@ -136,7 +136,7 @@ class STListReader {
         error_ = true;
         return;
       }
-      string key;
+      std::string key;
       ReadType(*streams_[i], &key);
       if (!key.empty()) heap_.push(std::make_pair(key, i));
       if (!*streams_[i]) {
@@ -161,13 +161,14 @@ class STListReader {
     }
   }
 
-  static STListReader<T, Reader> *Open(const string &filename) {
-    std::vector<string> filenames;
+  static STListReader<T, Reader> *Open(const std::string &filename) {
+    std::vector<std::string> filenames;
     filenames.push_back(filename);
     return new STListReader<T, Reader>(filenames);
   }
 
-  static STListReader<T, Reader> *Open(const std::vector<string> &filenames) {
+  static STListReader<T, Reader> *Open(
+      const std::vector<std::string> &filenames) {
     return new STListReader<T, Reader>(filenames);
   }
 
@@ -176,7 +177,7 @@ class STListReader {
     error_ = true;
   }
 
-  bool Find(const string &key) {
+  bool Find(const std::string &key) {
     FSTERROR() << "STListReader::Find: Operation not supported";
     error_ = true;
     return false;
@@ -187,7 +188,7 @@ class STListReader {
   void Next() {
     if (error_) return;
     auto current = heap_.top().second;
-    string key;
+    std::string key;
     heap_.pop();
     ReadType(*(streams_[current]), &key);
     if (!*streams_[current]) {
@@ -207,7 +208,7 @@ class STListReader {
     }
   }
 
-  const string &GetKey() const { return heap_.top().first; }
+  const std::string &GetKey() const { return heap_.top().first; }
 
   const T *GetEntry() const { return entry_.get(); }
 
@@ -216,10 +217,11 @@ class STListReader {
  private:
   Reader entry_reader_;                  // Read functor.
   std::vector<std::istream *> streams_;  // Input streams.
-  std::vector<string> sources_;          // Corresponding filenames.
-  std::priority_queue<
-      std::pair<string, size_t>, std::vector<std::pair<string, size_t>>,
-      std::greater<std::pair<string, size_t>>> heap_;  // (Key, stream id) heap
+  std::vector<std::string> sources_;     // Corresponding filenames.
+  std::priority_queue<std::pair<std::string, size_t>,
+                      std::vector<std::pair<std::string, size_t>>,
+                      std::greater<std::pair<std::string, size_t>>>
+      heap_;                          // (Key, stream id) heap
   mutable std::unique_ptr<T> entry_;  // The currently read entry.
   bool error_;
 
@@ -234,7 +236,7 @@ class STListReader {
 //    void Read(std::istream &strm, const string &filename);
 //  };
 template <class Header>
-bool ReadSTListHeader(const string &filename, Header *header) {
+bool ReadSTListHeader(const std::string &filename, Header *header) {
   if (filename.empty()) {
     LOG(ERROR) << "ReadSTListHeader: Can't read header from standard input";
     return false;
@@ -256,7 +258,7 @@ bool ReadSTListHeader(const string &filename, Header *header) {
     LOG(ERROR) << "ReadSTListHeader: Wrong file version: " << filename;
     return false;
   }
-  string key;
+  std::string key;
   ReadType(strm, &key);
   header->Read(strm, filename + ":" + key);
   if (!strm) {
@@ -266,7 +268,7 @@ bool ReadSTListHeader(const string &filename, Header *header) {
   return true;
 }
 
-bool IsSTList(const string &filename);
+bool IsSTList(const std::string &filename);
 
 }  // namespace fst
 

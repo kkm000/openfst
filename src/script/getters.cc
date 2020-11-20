@@ -3,7 +3,7 @@
 namespace fst {
 namespace script {
 
-bool GetArcSortType(const string &str, ArcSortType *sort_type) {
+bool GetArcSortType(const std::string &str, ArcSortType *sort_type) {
   if (str == "ilabel") {
     *sort_type = ILABEL_SORT;
   } else if (str == "olabel") {
@@ -14,7 +14,7 @@ bool GetArcSortType(const string &str, ArcSortType *sort_type) {
   return true;
 }
 
-bool GetComposeFilter(const string &str, ComposeFilter *compose_filter) {
+bool GetComposeFilter(const std::string &str, ComposeFilter *compose_filter) {
   if (str == "alt_sequence") {
     *compose_filter = ALT_SEQUENCE_FILTER;
   } else if (str == "auto") {
@@ -35,7 +35,7 @@ bool GetComposeFilter(const string &str, ComposeFilter *compose_filter) {
   return true;
 }
 
-bool GetDeterminizeType(const string &str, DeterminizeType *det_type) {
+bool GetDeterminizeType(const std::string &str, DeterminizeType *det_type) {
   if (str == "functional") {
     *det_type = DETERMINIZE_FUNCTIONAL;
   } else if (str == "nonfunctional") {
@@ -48,7 +48,7 @@ bool GetDeterminizeType(const string &str, DeterminizeType *det_type) {
   return true;
 }
 
-bool GetMapType(const string &str, MapType *map_type) {
+bool GetMapType(const std::string &str, MapType *map_type) {
   if (str == "arc_sum") {
     *map_type = ARC_SUM_MAPPER;
   } else if (str == "arc_unique") {
@@ -85,7 +85,7 @@ bool GetMapType(const string &str, MapType *map_type) {
   return true;
 }
 
-bool GetRandArcSelection(const string &str, RandArcSelection *ras) {
+bool GetRandArcSelection(const std::string &str, RandArcSelection *ras) {
   if (str == "uniform") {
     *ras = UNIFORM_ARC_SELECTOR;
   } else if (str == "log_prob") {
@@ -98,7 +98,7 @@ bool GetRandArcSelection(const string &str, RandArcSelection *ras) {
   return true;
 }
 
-bool GetQueueType(const string &str, QueueType *queue_type) {
+bool GetQueueType(const std::string &str, QueueType *queue_type) {
   if (str == "auto") {
     *queue_type = AUTO_QUEUE;
   } else if (str == "fifo") {
@@ -117,7 +117,7 @@ bool GetQueueType(const string &str, QueueType *queue_type) {
   return true;
 }
 
-bool GetReplaceLabelType(const string &str, bool epsilon_on_replace,
+bool GetReplaceLabelType(const std::string &str, bool epsilon_on_replace,
                          ReplaceLabelType *rlt) {
   if (epsilon_on_replace || str == "neither") {
     *rlt = REPLACE_LABEL_NEITHER;

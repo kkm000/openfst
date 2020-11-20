@@ -4,7 +4,6 @@
 // Encode transducer labels and/or weights.
 
 #include <cstring>
-
 #include <memory>
 #include <string>
 
@@ -23,7 +22,7 @@ int fstencode_main(int argc, char **argv) {
   using fst::script::FstClass;
   using fst::script::MutableFstClass;
 
-  string usage = "Encodes transducer labels and/or weights.\n\n  Usage: ";
+  std::string usage = "Encodes transducer labels and/or weights.\n\n  Usage: ";
   usage += argv[0];
   usage += " in.fst codex [out.fst]\n";
 
@@ -34,9 +33,10 @@ int fstencode_main(int argc, char **argv) {
     return 1;
   }
 
-  const string in_name = (strcmp(argv[1], "-") != 0) ? argv[1] : "";
-  const string codex_name = argv[2];
-  const string out_name = argc > 3 ? argv[3] : "";
+  const std::string in_name = (strcmp(argv[1], "-") != 0) ? argv[1] : "";
+  const std::string codex_name = argv[2];
+  const std::string out_name =
+      argc > 3 && strcmp(argv[3], "-") != 0 ? argv[3] : "";
 
   std::unique_ptr<MutableFstClass> fst(MutableFstClass::Read(in_name, true));
   if (!fst) return 1;

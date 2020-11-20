@@ -38,7 +38,7 @@ void PrintFstInfoImpl(const FstInfo &fstinfo, bool pipe) {
   ostrm << "output label multiplicity" << fstinfo.OutputLabelMultiplicity()
         << std::endl;
   ostrm.width(50);
-  string arc_type = "";
+  std::string arc_type = "";
   if (fstinfo.ArcFilterType() == "epsilon")
     arc_type = "epsilon ";
   else if (fstinfo.ArcFilterType() == "iepsilon")

@@ -6,7 +6,7 @@
 namespace fst {
 namespace script {
 
-bool GetPdtComposeFilter(const string &str, PdtComposeFilter *cf) {
+bool GetPdtComposeFilter(const std::string &str, PdtComposeFilter *cf) {
   if (str == "expand") {
     *cf = EXPAND_FILTER;
   } else if (str == "expand_paren") {
@@ -19,7 +19,7 @@ bool GetPdtComposeFilter(const string &str, PdtComposeFilter *cf) {
   return true;
 }
 
-bool GetPdtParserType(const string &str, PdtParserType *pt) {
+bool GetPdtParserType(const std::string &str, PdtParserType *pt) {
   if (str == "left") {
     *pt = PDT_LEFT_PARSER;
   } else if (str == "left_sr") {

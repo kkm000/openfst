@@ -15,7 +15,7 @@
 namespace fst {
 namespace script {
 
-using DecodeArgs1 = std::pair<MutableFstClass *, const string &>;
+using DecodeArgs1 = std::pair<MutableFstClass *, const std::string &>;
 
 template <class Arc>
 void Decode(DecodeArgs1 *args) {
@@ -39,7 +39,7 @@ void Decode(DecodeArgs2 *args) {
   Decode(fst, encoder);
 }
 
-void Decode(MutableFstClass *fst, const string &coder_fname);
+void Decode(MutableFstClass *fst, const std::string &coder_fname);
 
 void Decode(MutableFstClass *fst, const EncodeMapperClass &encoder);
 

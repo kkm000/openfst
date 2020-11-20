@@ -20,9 +20,9 @@ using PruneArgs1 = std::tuple<const FstClass &, MutableFstClass *,
 template <class Arc>
 void Prune(PruneArgs1 *args) {
   using Weight = typename Arc::Weight;
-  const Fst<Arc> &ifst = *(std::get<0>(*args).GetFst<Arc>());
+  const Fst<Arc> &ifst = *std::get<0>(*args).GetFst<Arc>();
   MutableFst<Arc> *ofst = std::get<1>(*args)->GetMutableFst<Arc>();
-  const auto weight_threshold = *(std::get<2>(*args).GetWeight<Weight>());
+  const auto weight_threshold = *std::get<2>(*args).GetWeight<Weight>();
   Prune(ifst, ofst, weight_threshold, std::get<3>(*args), std::get<4>(*args));
 }
 
@@ -33,7 +33,7 @@ template <class Arc>
 void Prune(PruneArgs2 *args) {
   using Weight = typename Arc::Weight;
   MutableFst<Arc> *fst = std::get<0>(*args)->GetMutableFst<Arc>();
-  const auto weight_threshold = *(std::get<1>(*args).GetWeight<Weight>());
+  const auto weight_threshold = *std::get<1>(*args).GetWeight<Weight>();
   Prune(fst, weight_threshold, std::get<2>(*args), std::get<3>(*args));
 }
 

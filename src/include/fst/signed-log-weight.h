@@ -51,9 +51,9 @@ class SignedLogWeightTpl : public PairWeight<TropicalWeight, LogWeightTpl<T>> {
     return no_weight;
   }
 
-  static const string &Type() {
-    static const string *const type =
-        new string("signed_log_" + X1::Type() + "_" + X2::Type());
+  static const std::string &Type() {
+    static const std::string *const type =
+        new std::string("signed_log_" + X1::Type() + "_" + X2::Type());
     return *type;
   }
 
@@ -105,7 +105,7 @@ inline SignedLogWeightTpl<T> Plus(const SignedLogWeightTpl<T> &w1,
     return w1;
   } else if (f1 == f2) {
     if (equal) {
-      return SignedLogWeightTpl<T>(X1(w1.Value1()), X2(f2 - log(2.0F)));
+      return SignedLogWeightTpl<T>(X1(w1.Value1()), X2(f2 - M_LN2));
     } else {
       return SignedLogWeightTpl<T>::Zero();
     }

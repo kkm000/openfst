@@ -13,9 +13,10 @@
 namespace fst {
 
 template <class Arc>
-bool FarEqual(const string &filename1, const string &filename2,
-              float delta = kDelta, const string &begin_key = string(),
-              const string &end_key = string()) {
+bool FarEqual(const std::string &filename1, const std::string &filename2,
+              float delta = kDelta,
+              const std::string &begin_key = std::string(),
+              const std::string &end_key = std::string()) {
   std::unique_ptr<FarReader<Arc>> reader1(FarReader<Arc>::Open(filename1));
   if (!reader1) {
     LOG(ERROR) << "FarEqual: Could not open FAR file " << filename1;

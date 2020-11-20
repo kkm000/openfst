@@ -211,16 +211,18 @@ Weight Power(const Weight &weight, size_t n) {
 template <class Weight>
 class Adder {
  public:
-  explicit Adder(Weight w = Weight::Zero()) : sum_(w) { }
+  Adder() : sum_(Weight::Zero()) {}
+
+  explicit Adder(Weight w) : sum_(std::move(w)) {}
 
   Weight Add(const Weight &w) {
     sum_ = Plus(sum_, w);
     return sum_;
   }
 
-  Weight Sum() { return sum_; }
+  Weight Sum() const { return sum_; }
 
-  void Reset(Weight w = Weight::Zero()) { sum_ = w; }
+  void Reset(Weight w = Weight::Zero()) { sum_ = std::move(w); }
 
  private:
   Weight sum_;
@@ -239,7 +241,7 @@ struct WeightConvert {
 // Specialized weight converter to self.
 template <class W>
 struct WeightConvert<W, W> {
-  W operator()(W weight) const { return weight; }
+  constexpr W operator()(W weight) const { return weight; }
 };
 
 // General random weight generator: raises error.
@@ -347,7 +349,7 @@ class CompositeWeightReader : public internal::CompositeWeightIO {
 
 template <class T>
 inline bool CompositeWeightReader::ReadElement(T *comp, bool last) {
-  string s;
+  std::string s;
   const bool has_parens = open_paren_ != 0;
   while ((c_ != std::istream::traits_type::eof()) && !std::isspace(c_) &&
          (c_ != separator_ || depth_ > 1 || last) &&

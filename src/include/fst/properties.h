@@ -7,6 +7,7 @@
 #define FST_PROPERTIES_H_
 
 #include <sys/types.h>
+
 #include <vector>
 
 #include <fst/compat.h>
@@ -119,10 +120,10 @@ constexpr uint64 kString = 0x0000100000000000ULL;
 // Not a string FST.
 constexpr uint64 kNotString = 0x0000200000000000ULL;
 
-// FST has least one weighted cycle.
+// FST has at least one weighted cycle.
 constexpr uint64 kWeightedCycles = 0x0000400000000000ULL;
 
-// Only unweighted cycles.
+// FST has no weighted cycles. Any cycles that may be present are unweighted.
 constexpr uint64 kUnweightedCycles = 0x0000800000000000ULL;
 
 // COMPOSITE PROPERTIES
@@ -133,6 +134,12 @@ constexpr uint64 kNullProperties =
     kNoOEpsilons | kILabelSorted | kOLabelSorted | kUnweighted | kAcyclic |
     kInitialAcyclic | kTopSorted | kAccessible | kCoAccessible | kString |
     kUnweightedCycles;
+
+// Properties of a string FST compiled into a string.
+constexpr uint64 kCompiledStringProperties =
+    kAcceptor | kString | kUnweighted | kIDeterministic | kODeterministic |
+    kILabelSorted | kOLabelSorted | kAcyclic | kInitialAcyclic |
+    kUnweightedCycles | kTopSorted | kAccessible | kCoAccessible;
 
 // Properties that are preserved when an FST is copied.
 constexpr uint64 kCopyProperties =

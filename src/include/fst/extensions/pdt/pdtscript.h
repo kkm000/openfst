@@ -12,19 +12,17 @@
 #include <vector>
 
 #include <fst/log.h>
-#include <fst/compose.h>  // for ComposeOptions
-#include <fst/util.h>
-
-#include <fst/script/arg-packs.h>
-#include <fst/script/fstscript.h>
-#include <fst/script/shortest-path.h>
-
 #include <fst/extensions/pdt/compose.h>
 #include <fst/extensions/pdt/expand.h>
 #include <fst/extensions/pdt/info.h>
 #include <fst/extensions/pdt/replace.h>
 #include <fst/extensions/pdt/reverse.h>
 #include <fst/extensions/pdt/shortest-path.h>
+#include <fst/compose.h>  // for ComposeOptions
+#include <fst/util.h>
+#include <fst/script/arg-packs.h>
+#include <fst/script/fstscript.h>
+#include <fst/script/shortest-path.h>
 
 namespace fst {
 namespace script {
@@ -99,7 +97,7 @@ void PdtExpand(const FstClass &ifst, const std::vector<LabelPair> &parens,
 using PdtReplaceArgs =
     std::tuple<const std::vector<LabelFstClassPair> &, MutableFstClass *,
                std::vector<LabelPair> *, int64, PdtParserType, int64,
-               const string &, const string &>;
+               const std::string &, const std::string &>;
 
 template <class Arc>
 void PdtReplace(PdtReplaceArgs *args) {
@@ -127,8 +125,8 @@ void PdtReplace(const std::vector<LabelFstClassPair> &pairs,
                 MutableFstClass *ofst, std::vector<LabelPair> *parens,
                 int64 root, PdtParserType parser_type = PDT_LEFT_PARSER,
                 int64 start_paren_labels = kNoLabel,
-                const string &left_paren_prefix = "(_",
-                const string &right_paren_prefix = "_)");
+                const std::string &left_paren_prefix = "(_",
+                const std::string &right_paren_prefix = "_)");
 
 using PdtReverseArgs =
     std::tuple<const FstClass &, const std::vector<LabelPair> &,

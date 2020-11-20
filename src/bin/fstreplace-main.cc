@@ -5,7 +5,6 @@
 // allowing for the definition of FSTs analogous to RTNs.
 
 #include <cstring>
-
 #include <string>
 #include <vector>
 
@@ -31,8 +30,9 @@ int fstreplace_main(int argc, char **argv) {
   using fst::script::VectorFstClass;
   using fst::ReplaceLabelType;
 
-  string usage = "Recursively replaces FST arcs with other FST(s).\n\n"
-                 "  Usage: ";
+  std::string usage =
+      "Recursively replaces FST arcs with other FST(s).\n\n"
+      "  Usage: ";
   usage += argv[0];
   usage += " root.fst rootlabel [rule1.fst label1 ...] [out.fst]\n";
 
@@ -43,8 +43,8 @@ int fstreplace_main(int argc, char **argv) {
     return 1;
   }
 
-  const string in_name = argv[1];
-  const string out_name = argc % 2 == 0 ? argv[argc - 1] : "";
+  const std::string in_name = argv[1];
+  const std::string out_name = argc % 2 == 0 ? argv[argc - 1] : "";
 
   auto *ifst = FstClass::Read(in_name);
   if (!ifst) return 1;

@@ -12,12 +12,13 @@ namespace script {
 
 // FarReaderClass.
 
-FarReaderClass *FarReaderClass::Open(const string &filename) {
-  const std::vector<string> filenames{filename};
+FarReaderClass *FarReaderClass::Open(const std::string &filename) {
+  const std::vector<std::string> filenames{filename};
   return FarReaderClass::Open(filenames);
 }
 
-FarReaderClass *FarReaderClass::Open(const std::vector<string> &filenames) {
+FarReaderClass *FarReaderClass::Open(
+    const std::vector<std::string> &filenames) {
   if (filenames.empty()) {
     LOG(ERROR) << "FarReaderClass::Open: No files specified";
     return nullptr;
@@ -37,8 +38,9 @@ REGISTER_FST_OPERATION(OpenFarReaderClass, Log64Arc, OpenFarReaderClassArgs);
 
 // FarWriterClass.
 
-FarWriterClass *FarWriterClass::Create(const string &filename,
-                                       const string &arc_type, FarType type) {
+FarWriterClass *FarWriterClass::Create(const std::string &filename,
+                                       const std::string &arc_type,
+                                       FarType type) {
   CreateFarWriterClassInnerArgs iargs(filename, type);
   CreateFarWriterClassArgs args(iargs);
   args.retval = nullptr;

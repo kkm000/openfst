@@ -7,6 +7,7 @@
 #define FST_FST_DECL_H_
 
 #include <sys/types.h>
+
 #include <memory>  // for allocator<>
 
 #include <fst/types.h>

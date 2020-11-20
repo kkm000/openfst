@@ -6,7 +6,7 @@
 
 namespace fst {
 
-bool IsSTTable(const string &filename) {
+bool IsSTTable(const std::string &filename) {
   std::ifstream strm(filename);
   if (!strm.good()) return false;
 

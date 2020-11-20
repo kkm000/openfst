@@ -18,7 +18,7 @@ namespace fst {
 
 // Returns true on success.
 template <typename Label>
-bool ReadLabelTriples(const string &filename,
+bool ReadLabelTriples(const std::string &filename,
                       std::vector<std::pair<Label, Label>> *pairs,
                       std::vector<Label> *assignments,
                       bool allow_negative = false) {
@@ -58,7 +58,7 @@ bool ReadLabelTriples(const string &filename,
 
 // Returns true on success.
 template <typename Label>
-bool WriteLabelTriples(const string &filename,
+bool WriteLabelTriples(const std::string &filename,
                        const std::vector<std::pair<Label, Label>> &pairs,
                        const std::vector<Label> &assignments) {
   if (pairs.size() != assignments.size()) {

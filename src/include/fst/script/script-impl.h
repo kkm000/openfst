@@ -81,10 +81,9 @@
 #include <string>
 #include <utility>
 
+#include <fst/log.h>
 #include <fst/generic-register.h>
 #include <fst/script/fst-class.h>
-
-#include <fst/log.h>
 
 namespace fst {
 namespace script {
@@ -97,29 +96,31 @@ enum RandArcSelection {
 
 // A generic register for operations with various kinds of signatures.
 // Needed since every function signature requires a new registration class.
-// The std::pair<string, string> is understood to be the operation name and arc
-// type; subclasses (or typedefs) need only provide the operation signature.
+// The std::pair<std::string, std::string> is understood to be the operation
+// name and arc type; subclasses (or typedefs) need only provide the operation
+// signature.
 
 template <class OperationSignature>
 class GenericOperationRegister
-    : public GenericRegister<std::pair<string, string>, OperationSignature,
+    : public GenericRegister<std::pair<std::string, std::string>,
+                             OperationSignature,
                              GenericOperationRegister<OperationSignature>> {
  public:
-  void RegisterOperation(const string &operation_name, const string &arc_type,
-                         OperationSignature op) {
+  void RegisterOperation(const std::string &operation_name,
+                         const std::string &arc_type, OperationSignature op) {
     this->SetEntry(std::make_pair(operation_name, arc_type), op);
   }
 
-  OperationSignature GetOperation(const string &operation_name,
-                                  const string &arc_type) {
+  OperationSignature GetOperation(const std::string &operation_name,
+                                  const std::string &arc_type) {
     return this->GetEntry(std::make_pair(operation_name, arc_type));
   }
 
  protected:
-  string ConvertKeyToSoFilename(
-      const std::pair<string, string> &key) const final {
+  std::string ConvertKeyToSoFilename(
+      const std::pair<std::string, std::string> &key) const final {
     // Uses the old-style FST for now.
-    string legal_type(key.second);  // The arc type.
+    std::string legal_type(key.second);  // The arc type.
     ConvertToLegalCSymbol(&legal_type);
     return legal_type + "-arc.so";
   }
@@ -155,7 +156,7 @@ struct Operation {
 // Template function to apply an operation by name.
 
 template <class OpReg>
-void Apply(const string &op_name, const string &arc_type,
+void Apply(const std::string &op_name, const std::string &arc_type,
            typename OpReg::ArgPack *args) {
   const auto op = OpReg::Register::GetRegister()->GetOperation(op_name,
                                                                arc_type);
@@ -173,7 +174,7 @@ namespace internal {
 // assuming that both m and n implement .ArcType(). The op_name argument is
 // used to construct the error message.
 template <class M, class N>
-bool ArcTypesMatch(const M &m, const N &n, const string &op_name) {
+bool ArcTypesMatch(const M &m, const N &n, const std::string &op_name) {
   if (m.ArcType() != n.ArcType()) {
     FSTERROR() << "Arguments with non-matching arc types passed to "
                << op_name << ":\t" << m.ArcType() << " and " << n.ArcType();

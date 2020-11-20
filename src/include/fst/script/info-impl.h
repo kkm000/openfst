@@ -35,8 +35,8 @@ class FstInfo {
   // minimal info is computed and can be requested.
   template <typename Arc>
   FstInfo(const Fst<Arc> &fst, bool test_properties,
-          const string &arc_filter_type = "any",
-          const string &info_type = "auto", bool verify = true)
+          const std::string &arc_filter_type = "any",
+          const std::string &info_type = "auto", bool verify = true)
       : fst_type_(fst.Type()),
         input_symbols_(fst.InputSymbols() ? fst.InputSymbols()->Name()
                                           : "none"),
@@ -165,17 +165,17 @@ class FstInfo {
 
   // Short info.
 
-  const string &FstType() const { return fst_type_; }
+  const std::string &FstType() const { return fst_type_; }
 
-  const string &ArcType() const { return arc_type_; }
+  const std::string &ArcType() const { return arc_type_; }
 
-  const string &InputSymbols() const { return input_symbols_; }
+  const std::string &InputSymbols() const { return input_symbols_; }
 
-  const string &OutputSymbols() const { return output_symbols_; }
+  const std::string &OutputSymbols() const { return output_symbols_; }
 
   bool LongInfo() const { return long_info_; }
 
-  const string &ArcFilterType() const { return arc_filter_type_; }
+  const std::string &ArcFilterType() const { return arc_filter_type_; }
 
   // Long info.
 
@@ -280,9 +280,9 @@ class FstInfo {
       FSTERROR() << "FstInfo: Method only available with long info signature";
   }
 
-  string fst_type_;
-  string input_symbols_;
-  string output_symbols_;
+  std::string fst_type_;
+  std::string input_symbols_;
+  std::string output_symbols_;
   int64 nstates_;
   size_t narcs_;
   int64 start_;
@@ -302,9 +302,9 @@ class FstInfo {
   bool input_lookahead_;
   bool output_lookahead_;
   uint64 properties_;
-  string arc_filter_type_;
+  std::string arc_filter_type_;
   bool long_info_;
-  string arc_type_;
+  std::string arc_type_;
 };
 
 void PrintFstInfoImpl(const FstInfo &fstinfo, bool pipe = false);

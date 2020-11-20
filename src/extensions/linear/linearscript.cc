@@ -42,11 +42,13 @@ bool ValidateEmptySymbol() {
   return okay;
 }
 
-void LinearCompile(const string &arc_type, const string &epsilon_symbol,
-                   const string &unknown_symbol, const string &vocab,
-                   char **models, int models_len, const string &out,
-                   const string &save_isymbols, const string &save_fsymbols,
-                   const string &save_osymbols) {
+void LinearCompile(const std::string &arc_type,
+                   const std::string &epsilon_symbol,
+                   const std::string &unknown_symbol, const std::string &vocab,
+                   char **models, int models_len, const std::string &out,
+                   const std::string &save_isymbols,
+                   const std::string &save_fsymbols,
+                   const std::string &save_osymbols) {
   LinearCompileArgs args(epsilon_symbol, unknown_symbol, vocab, models,
                          models_len, out, save_isymbols, save_fsymbols,
                          save_osymbols);
@@ -57,26 +59,26 @@ void LinearCompile(const string &arc_type, const string &epsilon_symbol,
 REGISTER_FST_LINEAR_OPERATIONS(StdArc);
 REGISTER_FST_LINEAR_OPERATIONS(LogArc);
 
-void SplitByWhitespace(const string &str, std::vector<string> *out) {
+void SplitByWhitespace(const std::string &str, std::vector<std::string> *out) {
   out->clear();
   std::istringstream strm(str);
-  string buf;
+  std::string buf;
   while (strm >> buf) out->push_back(buf);
 }
 
 int ScanNumClasses(char **models, int models_len) {
-  std::set<string> preds;
+  std::set<std::string> preds;
   for (int i = 0; i < models_len; ++i) {
     std::ifstream in(models[i]);
     if (!in) LOG(FATAL) << "Failed to open " << models[i];
 
-    string line;
+    std::string line;
     std::getline(in, line);
 
     size_t num_line = 1;
     while (std::getline(in, line)) {
       ++num_line;
-      std::vector<string> fields;
+      std::vector<std::string> fields;
       SplitByWhitespace(line, &fields);
       if (fields.size() != 3)
         LOG(FATAL) << "Wrong number of fields in source " << models[i]

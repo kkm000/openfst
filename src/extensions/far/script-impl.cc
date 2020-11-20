@@ -14,13 +14,13 @@
 namespace fst {
 namespace script {
 
-string LoadArcTypeFromFar(const string &far_fname) {
+std::string LoadArcTypeFromFar(const std::string &far_fname) {
   FarHeader hdr;
   if (!hdr.Read(far_fname)) {
     LOG(ERROR) << "Error reading FAR: " << far_fname;
     return "";
   }
-  string atype = hdr.ArcType();
+  std::string atype = hdr.ArcType();
   if (atype == "unknown") {
     LOG(ERROR) << "Empty FST archive: " << far_fname;
     return "";
@@ -28,7 +28,7 @@ string LoadArcTypeFromFar(const string &far_fname) {
   return atype;
 }
 
-string LoadArcTypeFromFst(const string &fst_fname) {
+std::string LoadArcTypeFromFst(const std::string &fst_fname) {
   FstHeader hdr;
   std::ifstream in(fst_fname, std::ios_base::in | std::ios_base::binary);
   if (!hdr.Read(in, fst_fname)) {

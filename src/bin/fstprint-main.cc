@@ -4,7 +4,6 @@
 // Prints out binary FSTs in simple text format used by AT&T.
 
 #include <cstring>
-
 #include <fstream>
 #include <memory>
 #include <ostream>
@@ -31,7 +30,8 @@ int fstprint_main(int argc, char **argv) {
   using fst::SymbolTable;
   using fst::SymbolTableTextOptions;
 
-  string usage = "Prints out binary FSTs in simple text format.\n\n  Usage: ";
+  std::string usage =
+      "Prints out binary FSTs in simple text format.\n\n  Usage: ";
   usage += argv[0];
   usage += " [binary.fst [text.fst]]\n";
 
@@ -42,13 +42,15 @@ int fstprint_main(int argc, char **argv) {
     return 1;
   }
 
-  const string in_name = (argc > 1 && strcmp(argv[1], "-") != 0) ? argv[1] : "";
-  const string out_name = argc > 2 ? argv[2] : "";
+  const std::string in_name =
+      (argc > 1 && strcmp(argv[1], "-") != 0) ? argv[1] : "";
+  const std::string out_name =
+      (argc > 2 && strcmp(argv[2], "-") != 0) ? argv[2] : "";
 
   std::unique_ptr<FstClass> fst(FstClass::Read(in_name));
   if (!fst) return 1;
 
-  string dest = "standard output";
+  std::string dest = "standard output";
   std::ofstream fstrm;
   if (argc == 3) {
     fstrm.open(argv[2]);

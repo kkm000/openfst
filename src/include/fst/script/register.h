@@ -37,25 +37,25 @@ struct FstClassRegEntry {
 
 template <class Reader, class Creator, class Converter>
 class FstClassIORegister
-    : public GenericRegister<string,
+    : public GenericRegister<std::string,
                              FstClassRegEntry<Reader, Creator, Converter>,
                              FstClassIORegister<Reader, Creator, Converter>> {
  public:
-  Reader GetReader(const string &arc_type) const {
+  Reader GetReader(const std::string &arc_type) const {
     return this->GetEntry(arc_type).reader;
   }
 
-  Creator GetCreator(const string &arc_type) const {
+  Creator GetCreator(const std::string &arc_type) const {
     return this->GetEntry(arc_type).creator;
   }
 
-  Converter GetConverter(const string &arc_type) const {
+  Converter GetConverter(const std::string &arc_type) const {
     return this->GetEntry(arc_type).converter;
   }
 
  protected:
-  string ConvertKeyToSoFilename(const string &key) const final {
-    string legal_type(key);
+  std::string ConvertKeyToSoFilename(const std::string &key) const final {
+    std::string legal_type(key);
     ConvertToLegalCSymbol(&legal_type);
     return legal_type + "-arc.so";
   }

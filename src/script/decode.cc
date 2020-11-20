@@ -1,15 +1,16 @@
 // See www.openfst.org for extensive documentation on this weighted
 // finite-state transducer library.
 
-#include <fst/script/fst-class.h>
-#include <fst/encode.h>
 #include <fst/script/decode.h>
+
+#include <fst/encode.h>
+#include <fst/script/fst-class.h>
 #include <fst/script/script-impl.h>
 
 namespace fst {
 namespace script {
 
-void Decode(MutableFstClass *fst, const string &coder_fname) {
+void Decode(MutableFstClass *fst, const std::string &coder_fname) {
   DecodeArgs1 args(fst, coder_fname);
   Apply<Operation<DecodeArgs1>>("Decode", fst->ArcType(), &args);
 }

@@ -35,10 +35,10 @@ using DisambiguateArgs = std::tuple<const FstClass &, MutableFstClass *,
 template <class Arc>
 void Disambiguate(DisambiguateArgs *args) {
   using Weight = typename Arc::Weight;
-  const Fst<Arc> &ifst = *(std::get<0>(*args).GetFst<Arc>());
+  const Fst<Arc> &ifst = *std::get<0>(*args).GetFst<Arc>();
   MutableFst<Arc> *ofst = std::get<1>(*args)->GetMutableFst<Arc>();
   const auto &opts = std::get<2>(*args);
-  const auto weight_threshold = *(opts.weight_threshold.GetWeight<Weight>());
+  const auto weight_threshold = *opts.weight_threshold.GetWeight<Weight>();
   const fst::DisambiguateOptions<Arc> disargs(opts.delta, weight_threshold,
                                                   opts.state_threshold,
                                                   opts.subsequential_label);

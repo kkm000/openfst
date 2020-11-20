@@ -30,29 +30,30 @@ namespace script {
 // only used to pass them deeper in the call graph. Be sure you understand why
 // this is so before using this struct for anything else!
 struct FarCompileStringsArgs {
-  const std::vector<string> &in_fnames;
-  const string &out_fname;
-  const string &fst_type;
+  const std::vector<std::string> &in_fnames;
+  const std::string &out_fname;
+  const std::string &fst_type;
   const FarType &far_type;
   const int32 generate_keys;
   const FarEntryType fet;
   const FarTokenType tt;
-  const string &symbols_fname;
-  const string &unknown_symbol;
+  const std::string &symbols_fname;
+  const std::string &unknown_symbol;
   const bool keep_symbols;
   const bool initial_symbols;
   const bool allow_negative_labels;
-  const string &key_prefix;
-  const string &key_suffix;
+  const std::string &key_prefix;
+  const std::string &key_suffix;
 
-  FarCompileStringsArgs(const std::vector<string> &in_fnames,
-                        const string &out_fname, const string &fst_type,
-                        const FarType &far_type, int32 generate_keys,
-                        FarEntryType fet, FarTokenType tt,
-                        const string &symbols_fname,
-                        const string &unknown_symbol, bool keep_symbols,
+  FarCompileStringsArgs(const std::vector<std::string> &in_fnames,
+                        const std::string &out_fname,
+                        const std::string &fst_type, const FarType &far_type,
+                        int32 generate_keys, FarEntryType fet, FarTokenType tt,
+                        const std::string &symbols_fname,
+                        const std::string &unknown_symbol, bool keep_symbols,
                         bool initial_symbols, bool allow_negative_labels,
-                        const string &key_prefix, const string &key_suffix)
+                        const std::string &key_prefix,
+                        const std::string &key_suffix)
       : in_fnames(in_fnames),
         out_fname(out_fname),
         fst_type(fst_type),
@@ -78,29 +79,32 @@ void FarCompileStrings(FarCompileStringsArgs *args) {
       args->allow_negative_labels, args->key_prefix, args->key_suffix);
 }
 
-void FarCompileStrings(const std::vector<string> &in_fnames,
-                       const string &out_fname, const string &arc_type,
-                       const string &fst_type, const FarType &far_type,
-                       int32 generate_keys, FarEntryType fet, FarTokenType tt,
-                       const string &symbols_fname,
-                       const string &unknown_symbol, bool keep_symbols,
+void FarCompileStrings(const std::vector<std::string> &in_fnames,
+                       const std::string &out_fname,
+                       const std::string &arc_type, const std::string &fst_type,
+                       const FarType &far_type, int32 generate_keys,
+                       FarEntryType fet, FarTokenType tt,
+                       const std::string &symbols_fname,
+                       const std::string &unknown_symbol, bool keep_symbols,
                        bool initial_symbols, bool allow_negative_labels,
-                       const string &key_prefix, const string &key_suffix);
+                       const std::string &key_prefix,
+                       const std::string &key_suffix);
 
 // Note: it is safe to pass these strings as references because this struct is
 // only used to pass them deeper in the call graph. Be sure you understand why
 // this is so before using this struct for anything else!
 struct FarCreateArgs {
-  const std::vector<string> &in_fnames;
-  const string &out_fname;
+  const std::vector<std::string> &in_fnames;
+  const std::string &out_fname;
   const int32 generate_keys;
   const FarType &far_type;
-  const string &key_prefix;
-  const string &key_suffix;
+  const std::string &key_prefix;
+  const std::string &key_suffix;
 
-  FarCreateArgs(const std::vector<string> &in_fnames, const string &out_fname,
-                const int32 generate_keys, const FarType &far_type,
-                const string &key_prefix, const string &key_suffix)
+  FarCreateArgs(const std::vector<std::string> &in_fnames,
+                const std::string &out_fname, const int32 generate_keys,
+                const FarType &far_type, const std::string &key_prefix,
+                const std::string &key_suffix)
       : in_fnames(in_fnames),
         out_fname(out_fname),
         generate_keys(generate_keys),
@@ -115,13 +119,14 @@ void FarCreate(FarCreateArgs *args) {
                  args->far_type, args->key_prefix, args->key_suffix);
 }
 
-void FarCreate(const std::vector<string> &in_fnames, const string &out_fname,
-               const string &arc_type, const int32 generate_keys,
-               const FarType &far_type, const string &key_prefix,
-               const string &key_suffix);
+void FarCreate(const std::vector<std::string> &in_fnames,
+               const std::string &out_fname, const std::string &arc_type,
+               const int32 generate_keys, const FarType &far_type,
+               const std::string &key_prefix, const std::string &key_suffix);
 
-using FarEqualInnerArgs = std::tuple<const string &, const string &, float,
-                                     const string &, const string &>;
+using FarEqualInnerArgs =
+    std::tuple<const std::string &, const std::string &, float,
+               const std::string &, const std::string &>;
 
 using FarEqualArgs = WithReturnValue<bool, FarEqualInnerArgs>;
 
@@ -132,14 +137,15 @@ void FarEqual(FarEqualArgs *args) {
       std::get<3>(args->args), std::get<4>(args->args));
 }
 
-bool FarEqual(const string &filename1, const string &filename2,
-              const string &arc_type, float delta = kDelta,
-              const string &begin_key = string(),
-              const string &end_key = string());
+bool FarEqual(const std::string &filename1, const std::string &filename2,
+              const std::string &arc_type, float delta = kDelta,
+              const std::string &begin_key = std::string(),
+              const std::string &end_key = std::string());
 
 using FarExtractArgs =
-    std::tuple<const std::vector<string> &, int32, const string &,
-               const string &, const string &, const string &, const string &>;
+    std::tuple<const std::vector<std::string> &, int32, const std::string &,
+               const std::string &, const std::string &, const std::string &,
+               const std::string &>;
 
 template <class Arc>
 void FarExtract(FarExtractArgs *args) {
@@ -149,13 +155,16 @@ void FarExtract(FarExtractArgs *args) {
                            std::get<6>(*args));
 }
 
-void FarExtract(const std::vector<string> &ifilenames, const string &arc_type,
-                int32 generate_filenames, const string &keys,
-                const string &key_separator, const string &range_delimiter,
-                const string &filename_prefix, const string &filename_suffix);
+void FarExtract(const std::vector<std::string> &ifilenames,
+                const std::string &arc_type, int32 generate_filenames,
+                const std::string &keys, const std::string &key_separator,
+                const std::string &range_delimiter,
+                const std::string &filename_prefix,
+                const std::string &filename_suffix);
 
-using FarInfoArgs = std::tuple<const std::vector<string> &, const string &,
-                               const string &, const bool>;
+using FarInfoArgs =
+    std::tuple<const std::vector<std::string> &, const std::string &,
+               const std::string &, const bool>;
 
 template <class Arc>
 void FarInfo(FarInfoArgs *args) {
@@ -163,12 +172,13 @@ void FarInfo(FarInfoArgs *args) {
                         std::get<2>(*args), std::get<3>(*args));
 }
 
-void FarInfo(const std::vector<string> &filenames, const string &arc_type,
-             const string &begin_key, const string &end_key,
-             const bool list_fsts);
+void FarInfo(const std::vector<std::string> &filenames,
+             const std::string &arc_type, const std::string &begin_key,
+             const std::string &end_key, const bool list_fsts);
 
-using GetFarInfoArgs = std::tuple<const std::vector<string> &, const string &,
-                                  const string &, const bool, FarInfoData *>;
+using GetFarInfoArgs =
+    std::tuple<const std::vector<std::string> &, const std::string &,
+               const std::string &, const bool, FarInfoData *>;
 
 template <class Arc>
 void GetFarInfo(GetFarInfoArgs *args) {
@@ -177,12 +187,14 @@ void GetFarInfo(GetFarInfoArgs *args) {
                            std::get<4>(*args));
 }
 
-void GetFarInfo(const std::vector<string> &filenames, const string &arc_type,
-                const string &begin_key, const string &end_key,
-                const bool list_fsts, FarInfoData *);
+void GetFarInfo(const std::vector<std::string> &filenames,
+                const std::string &arc_type, const std::string &begin_key,
+                const std::string &end_key, const bool list_fsts,
+                FarInfoData *);
 
-using FarIsomorphicInnerArgs = std::tuple<const string &, const string &, float,
-                                          const string &, const string &>;
+using FarIsomorphicInnerArgs =
+    std::tuple<const std::string &, const std::string &, float,
+               const std::string &, const std::string &>;
 
 using FarIsomorphicArgs = WithReturnValue<bool, FarIsomorphicInnerArgs>;
 
@@ -193,34 +205,32 @@ void FarIsomorphic(FarIsomorphicArgs *args) {
       std::get<3>(args->args), std::get<4>(args->args));
 }
 
-bool FarIsomorphic(const string &filename1, const string &filename2,
-                   const string &arc_type, float delta = kDelta,
-                   const string &begin_key = string(),
-                   const string &end_key = string());
+bool FarIsomorphic(const std::string &filename1, const std::string &filename2,
+                   const std::string &arc_type, float delta = kDelta,
+                   const std::string &begin_key = std::string(),
+                   const std::string &end_key = std::string());
 
 struct FarPrintStringsArgs {
-  const std::vector<string> &ifilenames;
+  const std::vector<std::string> &ifilenames;
   const FarEntryType entry_type;
   const FarTokenType token_type;
-  const string &begin_key;
-  const string &end_key;
+  const std::string &begin_key;
+  const std::string &end_key;
   const bool print_key;
   const bool print_weight;
-  const string &symbols_fname;
+  const std::string &symbols_fname;
   const bool initial_symbols;
   const int32 generate_filenames;
-  const string &filename_prefix;
-  const string &filename_suffix;
+  const std::string &filename_prefix;
+  const std::string &filename_suffix;
 
-  FarPrintStringsArgs(const std::vector<string> &ifilenames,
-                      const FarEntryType entry_type,
-                      const FarTokenType token_type, const string &begin_key,
-                      const string &end_key, const bool print_key,
-                      const bool print_weight, const string &symbols_fname,
-                      const bool initial_symbols,
-                      const int32 generate_filenames,
-                      const string &filename_prefix,
-                      const string &filename_suffix)
+  FarPrintStringsArgs(
+      const std::vector<std::string> &ifilenames, const FarEntryType entry_type,
+      const FarTokenType token_type, const std::string &begin_key,
+      const std::string &end_key, const bool print_key, const bool print_weight,
+      const std::string &symbols_fname, const bool initial_symbols,
+      const int32 generate_filenames, const std::string &filename_prefix,
+      const std::string &filename_suffix)
       : ifilenames(ifilenames),
         entry_type(entry_type),
         token_type(token_type),
@@ -244,14 +254,15 @@ void FarPrintStrings(FarPrintStringsArgs *args) {
       args->filename_suffix);
 }
 
-void FarPrintStrings(const std::vector<string> &ifilenames,
-                     const string &arc_type, const FarEntryType entry_type,
-                     const FarTokenType token_type, const string &begin_key,
-                     const string &end_key, const bool print_key,
-                     const bool print_weight, const string &symbols_fname,
+void FarPrintStrings(const std::vector<std::string> &ifilenames,
+                     const std::string &arc_type, const FarEntryType entry_type,
+                     const FarTokenType token_type,
+                     const std::string &begin_key, const std::string &end_key,
+                     const bool print_key, const bool print_weight,
+                     const std::string &symbols_fname,
                      const bool initial_symbols, const int32 generate_filenames,
-                     const string &filename_prefix,
-                     const string &filename_suffix);
+                     const std::string &filename_prefix,
+                     const std::string &filename_suffix);
 
 }  // namespace script
 }  // namespace fst

@@ -8,9 +8,9 @@
 #ifndef FST_EXTENSIONS_NGRAM_NGRAM_FST_H_
 #define FST_EXTENSIONS_NGRAM_NGRAM_FST_H_
 
-#include <stddef.h>
-#include <string.h>
 #include <algorithm>
+#include <cstddef>
+#include <cstring>
 #include <iostream>
 #include <string>
 #include <utility>
@@ -18,14 +18,15 @@
 
 #include <fst/compat.h>
 #include <fst/log.h>
-#include <fstream>
 #include <fst/extensions/ngram/bitmap-index.h>
+#include <fstream>
 #include <fst/fstlib.h>
 #include <fst/mapped-file.h>
 
 namespace fst {
 template <class A>
 class NGramFst;
+
 template <class A>
 class NGramFstMatcher;
 
@@ -96,7 +97,7 @@ class NGramFstImpl : public FstImpl<A> {
 
   static NGramFstImpl<A> *Read(std::istream &strm,  // NOLINT
                                const FstReadOptions &opts) {
-    NGramFstImpl<A> *impl = new NGramFstImpl();
+    auto impl = std::make_unique<NGramFstImpl<A>>();
     FstHeader hdr;
     if (!impl->ReadHeader(strm, opts, kMinFileVersion, &hdr)) return 0;
     uint64 num_states, num_futures, num_final;
@@ -116,12 +117,9 @@ class NGramFstImpl : public FstImpl<A> {
     memcpy(data + sizeof(num_states) + sizeof(num_futures),
            reinterpret_cast<char *>(&num_final), sizeof(num_final));
     strm.read(data + offset, size - offset);
-    if (strm.fail()) {
-      delete impl;
-      return nullptr;
-    }
+    if (strm.fail()) return nullptr;
     impl->Init(data, false, data_region);
-    return impl;
+    return impl.release();
   }
 
   bool Write(std::ostream &strm,  // NOLINT
@@ -382,7 +380,7 @@ class NGramFst : public ImplToExpandedFst<internal::NGramFstImpl<A>> {
     return impl ? new NGramFst<A>(std::shared_ptr<Impl>(impl)) : nullptr;
   }
 
-  static NGramFst<A> *Read(const string &filename) {
+  static NGramFst<A> *Read(const std::string &filename) {
     if (!filename.empty()) {
       std::ifstream strm(filename,
                               std::ios_base::in | std::ios_base::binary);
@@ -400,7 +398,7 @@ class NGramFst : public ImplToExpandedFst<internal::NGramFstImpl<A>> {
     return GetImpl()->Write(strm, opts);
   }
 
-  bool Write(const string &filename) const override {
+  bool Write(const std::string &filename) const override {
     return Fst<A>::WriteFile(filename);
   }
 

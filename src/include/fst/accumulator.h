@@ -411,7 +411,7 @@ class CacheLogAccumulatorData {
 
   void AddWeights(StateId s, std::vector<double> *weights) {
     if (cache_gc_ && cache_size_ >= cache_limit_) GC(false);
-    cache_.insert(std::make_pair(s, CacheState(weights, true)));
+    cache_.emplace(s, CacheState(weights, true));
     if (cache_gc_) cache_size_ += weights->capacity() * sizeof(double);
   }
 

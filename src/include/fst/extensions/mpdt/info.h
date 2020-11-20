@@ -26,9 +26,9 @@ class MPdtInfo {
            const std::vector<std::pair<Label, Label>> &parens,
            const std::vector<Label> &assignments);
 
-  const string &FstType() const { return fst_type_; }
+  const std::string &FstType() const { return fst_type_; }
 
-  const string &ArcType() const { return Arc::Type(); }
+  const std::string &ArcType() const { return Arc::Type(); }
 
   int64 NumStates() const { return nstates_; }
 
@@ -58,7 +58,7 @@ class MPdtInfo {
   void Print();
 
  private:
-  string fst_type_;
+  std::string fst_type_;
   int64 nstates_;
   int64 narcs_;
   int64 nopen_parens_[nlevels];
