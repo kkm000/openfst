@@ -69,6 +69,8 @@ void SetFlags(const char *usage, int *argc, char ***argv,
     if (int32_register->SetFlag(arg, val)) continue;
     auto int64_register = FlagRegister<int64>::GetRegister();
     if (int64_register->SetFlag(arg, val)) continue;
+    auto uint64_register = FlagRegister<uint64>::GetRegister();
+    if (uint64_register->SetFlag(arg, val)) continue;
     auto double_register = FlagRegister<double>::GetRegister();
     if (double_register->SetFlag(arg, val)) continue;
     LOG(FATAL) << "SetFlags: Bad option: " << (*argv)[index];
@@ -130,6 +132,8 @@ void ShowUsage(bool long_usage) {
   int32_register->GetUsage(&usage_set);
   auto int64_register = FlagRegister<int64>::GetRegister();
   int64_register->GetUsage(&usage_set);
+  auto uint64_register = FlagRegister<uint64>::GetRegister();
+  uint64_register->GetUsage(&usage_set);
   auto double_register = FlagRegister<double>::GetRegister();
   double_register->GetUsage(&usage_set);
   if (!prog_src.empty()) {

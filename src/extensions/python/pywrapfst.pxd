@@ -13,13 +13,13 @@ from libcpp.string cimport string
 from libcpp.utility cimport pair
 from libcpp.vector cimport vector
 
-from basictypes cimport *
+from cintegral_types cimport *
 
 cimport cpywrapfst as fst
 
-from ios cimport ostream
-from ios cimport ofstream
-from ios cimport stringstream
+from cios cimport ostream
+from cios cimport ofstream
+from cios cimport stringstream
 
 
 # Exportable helper functions.
@@ -551,17 +551,17 @@ cpdef bool randequivalent(Fst ifst1,
                           Fst ifst2,
                           int32 npath=?,
                           float delta=?,
-                          time_t seed=?,
                           select=?,
-                          int32 max_length=?) except *
+                          int32 max_length=?,
+                          uint64 seed=?) except *
 
 cpdef MutableFst randgen(Fst ifst,
                          int32 npath=?,
-                         time_t seed=?,
                          select=?,
                          int32 max_length=?,
                          bool remove_total_weight=?,
-                         bool weighted=?)
+                         bool weighted=?,
+                         uint64 seed=?)
 
 cpdef MutableFst replace(pairs,
                          call_arc_labeling=?,

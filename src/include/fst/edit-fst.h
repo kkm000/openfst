@@ -617,6 +617,8 @@ EditFstImpl<Arc, WrappedFstT, MutableFstT>::Read(std::istream &strm,
 }  // namespace internal
 
 // Concrete, editable FST. This class attaches interface to implementation.
+//
+// EditFst is thread-compatible.
 template <typename A, typename WrappedFstT = ExpandedFst<A>,
           typename MutableFstT = VectorFst<A>>
 class EditFst : public ImplToMutableFst<

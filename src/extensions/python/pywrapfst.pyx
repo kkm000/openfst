@@ -61,6 +61,11 @@ normal `k` prefix.
 
 ## Imports.
 
+# Cython operator workarounds.
+from cython.operator cimport address as addr       # &foo
+from cython.operator cimport dereference as deref  # *foo
+from cython.operator cimport preincrement as inc   # ++foo
+
 # C imports.
 from libc.stdint cimport INT32_MAX
 from libc.stdint cimport SIZE_MAX
@@ -72,14 +77,9 @@ from libcpp.cast cimport static_cast
 from libcpp.memory cimport static_pointer_cast
 
 # Missing C++ imports.
-from ios cimport ofstream
-from memory cimport WrapUnique
-from utility cimport move
-
-# Cython operator workarounds.
-from cython.operator cimport address as addr       # &foo
-from cython.operator cimport dereference as deref  # *foo
-from cython.operator cimport preincrement as inc   # ++foo
+from cios cimport ofstream
+from cmemory cimport WrapUnique
+from cutility cimport move
 
 # Python imports.
 import logging
@@ -3903,12 +3903,13 @@ cpdef bool randequivalent(Fst ifst1,
                           Fst ifst2,
                           int32 npath=1,
                           float delta=fst.kDelta,
-                          time_t seed=0,
+
                           select=b"uniform",
-                          int32 max_length=INT32_MAX) except *:
+                          int32 max_length=INT32_MAX,
+                          uint64 seed=0) except *:
   """
-  randequivalent(ifst1, ifst2, npath=1, delta=0.0009765625, seed=0,
-                 select="uniform", max_length=2147483647)
+  randequivalent(ifst1, ifst2, npath=1, delta=0.0009765625, select="uniform",
+                 max_length=2147483647, seed=0)
 
   Are two acceptors stochastically equivalent?
 
@@ -3945,18 +3946,18 @@ cpdef bool randequivalent(Fst ifst1,
   return fst.RandEquivalent(deref(ifst1._fst),
                             deref(ifst2._fst),
                             npath,
+                            deref(opts),
                             delta,
-                            seed,
-                            deref(opts))
+                            seed)
 
 
 cpdef MutableFst randgen(Fst ifst,
                          int32 npath=1,
-                         time_t seed=0,
                          select=b"uniform",
                          int32 max_length=INT32_MAX,
                          bool weighted=False,
-                         bool remove_total_weight=False):
+                         bool remove_total_weight=False,
+                         uint64 seed=0):
   """
   randgen(ifst, npath=1, seed=0, select="uniform", max_length=2147483647,
           weighted=False, remove_total_weight=False)
@@ -3997,7 +3998,7 @@ cpdef MutableFst randgen(Fst ifst,
   tfst.reset(new fst.VectorFstClass(ifst.arc_type()))
   if seed == 0:
     seed = time(NULL) + getpid()
-  fst.RandGen(deref(ifst._fst), tfst.get(), seed, deref(opts))
+  fst.RandGen(deref(ifst._fst), tfst.get(), deref(opts), seed)
   return _init_MutableFst(tfst.release())
 
 

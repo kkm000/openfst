@@ -1,17 +1,13 @@
 # See www.openfst.org for extensive documentation on this weighted
 # finite-state transducer library.
 
-
-from libc.time cimport time_t
-from libc.time cimport time
-
 from libcpp cimport bool
 from libcpp.string cimport string
 from libcpp.vector cimport vector
 from libcpp.utility cimport pair
 
-from basictypes cimport *
-from ios cimport *
+from cios cimport *
+from cintegral_types cimport *
 
 
 cdef extern from "<fst/util.h>" nogil:
@@ -653,14 +649,14 @@ cdef extern from "<fst/script/fstscript.h>" namespace "fst::script" nogil:
   cdef bool RandEquivalent(const FstClass &,
                            const FstClass &,
                            int32,
+                           const RandGenOptions[RandArcSelection] &,
                            float,
-                           time_t,
-                           const RandGenOptions[RandArcSelection] &)
+                           uint64)
 
   cdef void RandGen(const FstClass &,
                     MutableFstClass *,
-                    time_t,
-                    const RandGenOptions[RandArcSelection] &)
+                    const RandGenOptions[RandArcSelection] &,
+                    uint64)
 
   cdef void Relabel(MutableFstClass *,
                     const SymbolTable *,

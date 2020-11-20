@@ -270,12 +270,14 @@ bool StringFstToOutputLabels(const Fst<Arc> &fst,
     s = arc.nextstate;
     aiter.Next();
     if (!aiter.Done()) {
-      LOG(ERROR) << "StringFstToOutputLabels: State has multiple outgoing arcs";
+      LOG(ERROR) << "StringFstToOutputLabels: State " << s
+                 << " has multiple outgoing arcs";
       return false;
     }
   }
   if (fst.NumArcs(s) != 0) {
-    LOG(ERROR) << "StringFstToOutputLabels: Final state has outgoing arc(s)";
+    LOG(ERROR) << "StringFstToOutputLabels: Final state " << s
+               << " has outgoing arc(s)";
     return false;
   }
   return true;

@@ -9,10 +9,10 @@ namespace fst {
 namespace script {
 
 bool RandEquivalent(const FstClass &fst1, const FstClass &fst2, int32 npath,
-                    float delta, time_t seed,
-                    const RandGenOptions<RandArcSelection> &opts) {
+                    const RandGenOptions<RandArcSelection> &opts, float delta,
+                    uint64 seed) {
   if (!internal::ArcTypesMatch(fst1, fst2, "RandEquivalent")) return false;
-  RandEquivalentInnerArgs iargs(fst1, fst2, npath, delta, seed, opts);
+  RandEquivalentInnerArgs iargs(fst1, fst2, npath, opts, delta, seed);
   RandEquivalentArgs args(iargs);
   Apply<Operation<RandEquivalentArgs>>("RandEquivalent", fst1.ArcType(), &args);
   return args.retval;

@@ -50,8 +50,8 @@ bool Equal(const Fst<Arc> &fst1, const Fst<Arc> &fst2, WeightEqual weight_equal,
     return false;
   }
   if ((etype & kEqualCompatProperties) &&
-      !CompatProperties(fst1.Properties(kCopyProperties, false),
-                        fst2.Properties(kCopyProperties, false))) {
+      !internal::CompatProperties(fst1.Properties(kCopyProperties, false),
+                                  fst2.Properties(kCopyProperties, false))) {
     VLOG(1) << "Equal: Properties not compatible";
     return false;
   }

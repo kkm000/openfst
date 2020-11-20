@@ -17,7 +17,7 @@ DECLARE_double(delta);
 DECLARE_bool(random);
 DECLARE_int32(max_length);
 DECLARE_int32(npath);
-DECLARE_int32(seed);
+DECLARE_uint64(seed);
 DECLARE_string(select);
 
 int fstequivalent_main(int argc, char **argv) {
@@ -64,8 +64,8 @@ int fstequivalent_main(int argc, char **argv) {
       return 1;
     }
     const RandGenOptions<s::RandArcSelection> opts(ras, FLAGS_max_length);
-    bool result = s::RandEquivalent(*ifst1, *ifst2, FLAGS_npath, FLAGS_delta,
-                                    FLAGS_seed, opts);
+    bool result = s::RandEquivalent(*ifst1, *ifst2, FLAGS_npath, opts,
+                                    FLAGS_delta, FLAGS_seed);
     if (!result) VLOG(1) << "FSTs are not equivalent";
     return result ? 0 : 2;
   }

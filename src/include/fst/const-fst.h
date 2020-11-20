@@ -11,8 +11,6 @@
 #include <string>
 #include <vector>
 
-// Google-only...
-// ...Google-only
 #include <fst/types.h>
 #include <fst/log.h>
 
@@ -21,7 +19,6 @@
 #include <fst/mapped-file.h>
 #include <fst/test-properties.h>
 #include <fst/util.h>
-
 
 namespace fst {
 
@@ -48,12 +45,7 @@ class ConstFstImpl : public FstImpl<A> {
   using FstImpl<A>::SetProperties;
   using FstImpl<A>::Properties;
 
-  ConstFstImpl()
-      : states_(nullptr),
-        arcs_(nullptr),
-        narcs_(0),
-        nstates_(0),
-        start_(kNoStateId) {
+  ConstFstImpl() {
     std::string type = "const";
     if (sizeof(Unsigned) != sizeof(uint32)) {
       type += std::to_string(CHAR_BIT * sizeof(Unsigned));
@@ -121,11 +113,11 @@ class ConstFstImpl : public FstImpl<A> {
 
   std::unique_ptr<MappedFile> states_region_;  // Mapped file for states.
   std::unique_ptr<MappedFile> arcs_region_;    // Mapped file for arcs.
-  ConstState *states_;                         // States representation.
-  Arc *arcs_;                                  // Arcs representation.
-  size_t narcs_;                               // Number of arcs.
-  StateId nstates_;                            // Number of states.
-  StateId start_;                              // Initial state.
+  ConstState *states_ = nullptr;               // States representation.
+  Arc *arcs_ = nullptr;                        // Arcs representation.
+  size_t narcs_ = 0;                           // Number of arcs.
+  StateId nstates_ = 0;                        // Number of states.
+  StateId start_ = kNoStateId;                 // Initial state.
 
   ConstFstImpl(const ConstFstImpl &) = delete;
   ConstFstImpl &operator=(const ConstFstImpl &) = delete;
@@ -144,8 +136,7 @@ template <class Arc, class Unsigned>
 constexpr int ConstFstImpl<Arc, Unsigned>::kMinFileVersion;
 
 template <class Arc, class Unsigned>
-ConstFstImpl<Arc, Unsigned>::ConstFstImpl(const Fst<Arc> &fst)
-    : narcs_(0), nstates_(0) {
+ConstFstImpl<Arc, Unsigned>::ConstFstImpl(const Fst<Arc> &fst) {
   std::string type = "const";
   if (sizeof(Unsigned) != sizeof(uint32)) {
     type += std::to_string(CHAR_BIT * sizeof(Unsigned));
@@ -235,6 +226,8 @@ ConstFstImpl<Arc, Unsigned> *ConstFstImpl<Arc, Unsigned>::Read(
 // implementation and handles reference counting, delegating most methods to
 // ImplToExpandedFst. The unsigned type U is used to represent indices into the
 // arc array (default declared in fst-decl.h).
+//
+// ConstFst is thread-safe.
 template <class A, class Unsigned>
 class ConstFst : public ImplToExpandedFst<internal::ConstFstImpl<A, Unsigned>> {
  public:
@@ -255,8 +248,8 @@ class ConstFst : public ImplToExpandedFst<internal::ConstFstImpl<A, Unsigned>> {
   explicit ConstFst(const Fst<Arc> &fst)
       : ImplToExpandedFst<Impl>(std::make_shared<Impl>(fst)) {}
 
-  ConstFst(const ConstFst &fst, bool safe = false)
-      : ImplToExpandedFst<Impl>(fst) {}
+  ConstFst(const ConstFst &fst, bool unused_safe = false)
+      : ImplToExpandedFst<Impl>(fst.GetSharedImpl()) {}
 
   // Gets a copy of this ConstFst. See Fst<>::Copy() for further doc.
   ConstFst *Copy(bool safe = false) const override {
@@ -383,14 +376,6 @@ bool ConstFst<Arc, Unsigned>::WriteFst(const FST &fst, std::ostream &strm,
     for (ArcIterator<FST> aiter(fst, siter.Value()); !aiter.Done();
          aiter.Next()) {
       const auto &arc = aiter.Value();
-// Google-only...
-#ifdef MEMORY_SANITIZER
-      // arc may contain padding which has unspecified contents. Tell MSAN to
-      // not complain about it when writing it to a file.
-      ANNOTATE_MEMORY_IS_INITIALIZED(reinterpret_cast<const char *>(&arc),
-                                     sizeof(arc));
-#endif
-      // ...Google-only
       strm.write(reinterpret_cast<const char *>(&arc), sizeof(arc));
     }
   }

@@ -13,23 +13,28 @@
 
 #include <immintrin.h>
 
+namespace fst {
 // Returns the position (0-63) of the r-th 1 bit in v.
 // 1 <= r <= CountOnes(v) <= 64.  Therefore, v must not be 0.
 inline uint32 nth_bit(uint64 v, uint32 r) {
   // PDEP example from https://stackoverflow.com/a/27453505
   return __builtin_ctzll(_pdep_u64(uint64{1} << (r - 1), v));
 }
+}  // namespace fst
 
 #elif SIZE_MAX == UINT32_MAX
 // Detect 32-bit architectures via size_t.
 
+namespace fst {
 // Returns the position (0-63) of the r-th 1 bit in v.
 // 1 <= r <= CountOnes(v) <= 64.  Therefore, v must not be 0.
 uint32 nth_bit(uint64 v, uint32 r);
+}  // namespace fst
 
 #elif SIZE_MAX == UINT64_MAX
 // Default 64-bit version, used by ARM64 and Intel < Haswell.
 
+namespace fst {
 namespace internal {
 extern const uint64 kPrefixSumOverflow[65];
 extern const uint8 kSelectInByte[2048];
@@ -75,6 +80,7 @@ inline uint32 nth_bit(const uint64 v, const uint32 r) {
   return shift +
          internal::kSelectInByte[(rank_in_byte << 8) + ((v >> shift) & 0xFF)];
 }
+}  // namespace fst
 
 #else
 

@@ -4,9 +4,10 @@
 #ifndef FST_SCRIPT_RANDGEN_H_
 #define FST_SCRIPT_RANDGEN_H_
 
-#include <ctime>
+#include <random>
 #include <tuple>
 
+#include <fst/types.h>
 #include <fst/randgen.h>
 #include <fst/script/fst-class.h>
 #include <fst/script/script-impl.h>
@@ -14,15 +15,16 @@
 namespace fst {
 namespace script {
 
-using RandGenArgs = std::tuple<const FstClass &, MutableFstClass *, time_t,
-                               const RandGenOptions<RandArcSelection> &>;
+using RandGenArgs =
+    std::tuple<const FstClass &, MutableFstClass *,
+               const RandGenOptions<RandArcSelection> &, uint64>;
 
 template <class Arc>
 void RandGen(RandGenArgs *args) {
   const Fst<Arc> &ifst = *std::get<0>(*args).GetFst<Arc>();
   MutableFst<Arc> *ofst = std::get<1>(*args)->GetMutableFst<Arc>();
-  const time_t seed = std::get<2>(*args);
-  const auto &opts = std::get<3>(*args);
+  const auto &opts = std::get<2>(*args);
+  const uint64 seed = std::get<3>(*args);
   switch (opts.selector) {
     case UNIFORM_ARC_SELECTOR: {
       const UniformArcSelector<Arc> selector(seed);
@@ -52,9 +54,9 @@ void RandGen(RandGenArgs *args) {
 }
 
 void RandGen(const FstClass &ifst, MutableFstClass *ofst,
-             time_t seed = time(nullptr),
              const RandGenOptions<RandArcSelection> &opts =
-                 RandGenOptions<RandArcSelection>(UNIFORM_ARC_SELECTOR));
+                 RandGenOptions<RandArcSelection>(UNIFORM_ARC_SELECTOR),
+             uint64 seed = std::random_device()());
 
 }  // namespace script
 }  // namespace fst

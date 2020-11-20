@@ -705,7 +705,7 @@ void Compressor<Arc>::WriteWeight(const std::vector<Weight> &input,
 
 template <class Arc>
 void Compressor<Arc>::WriteToStream(std::ostream &strm) {
-  while (buffer_code_.size() % 8 != 0) buffer_code_.push_back(1);
+  while (buffer_code_.size() % 8 != 0) buffer_code_.push_back(true);
   int64 data_size = buffer_code_.size() / 8;
   WriteType(strm, data_size);
   int64 i = 0;

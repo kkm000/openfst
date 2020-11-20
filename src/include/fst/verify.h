@@ -76,15 +76,15 @@ bool Verify(const Fst<Arc> &fst, bool allow_negative_labels = false) {
       return false;
     }
   }
-  const auto fst_props = fst.Properties(kFstProperties, false);
+  const auto fst_props = fst.Properties(kFstProperties, /*test=*/false);
   if (fst_props & kError) {
     LOG(ERROR) << "Verify: FST error property is set";
     return false;
   }
   uint64 known_props;
   uint64 test_props =
-      ComputeProperties(fst, kFstProperties, &known_props, false);
-  if (!CompatProperties(fst_props, test_props)) {
+      internal::ComputeProperties(fst, kFstProperties, &known_props);
+  if (!internal::CompatProperties(fst_props, test_props)) {
     LOG(ERROR) << "Verify: Stored FST properties incorrect "
                << "(props1 = stored props, props2 = tested)";
     return false;

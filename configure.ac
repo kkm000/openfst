@@ -1,11 +1,11 @@
-AC_INIT([OpenFst], [1.7.6], [help@www.openfst.org])
+AC_INIT([OpenFst], [1.7.7], [help@www.openfst.org])
 AM_INIT_AUTOMAKE([foreign nostdinc -Wall -Werror subdir-objects])
 AM_PROG_AR
 
 AC_PROG_CXX
 # This library does not throw exceptions, so we do not generate exception
 # handling code. However, users are free to re-enable exception handling.
-CXX="$CXX -std=c++17 -fno-exceptions"
+CXX="$CXX -std=c++11 -fno-exceptions"
 
 AC_DISABLE_STATIC
 AC_PROG_LIBTOOL

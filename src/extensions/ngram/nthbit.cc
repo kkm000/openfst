@@ -5,6 +5,8 @@
 
 #include <fst/types.h>
 
+namespace fst {
+
 #if !defined(__BMI2__)  // BMI2 has everything in the header
 #if SIZE_MAX == UINT32_MAX
 
@@ -487,3 +489,5 @@ const uint8 kSelectInByte[8 * 256] = {
 }  // namespace internal
 #endif  // 64-bit, non-BMI2
 #endif  // !defined(__BMI2__)
+
+}  // namespace fst

@@ -79,7 +79,7 @@ fstshortestpath_SOURCES = fstshortestpath.cc fstshortestpath-main.cc
 fstsymbols_SOURCES = fstsymbols.cc fstsymbols-main.cc
 
 fstsynchronize_SOURCES = fstsynchronize.cc fstsynchronize-main.cc
- 
+
 fsttopsort_SOURCES = fsttopsort.cc fsttopsort-main.cc
 
 fstunion_SOURCES = fstunion.cc fstunion-main.cc

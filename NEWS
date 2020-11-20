@@ -1,4 +1,6 @@
 OpenFst: Release 1.7
+   * Property testing is now thread-safe (1.7.7)
+   * Modernizes random generation (1.7.7)
    * Adds MakeArcMapFst (1.7.6)
    * Adds RealWeight and Real64Weight (1.7.6)
    * Adds a new, idiomatic SymbolTable iterator interface (1.7.6)

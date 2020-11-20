@@ -7,6 +7,9 @@
 #ifndef FST_RANDEQUIVALENT_H_
 #define FST_RANDEQUIVALENT_H_
 
+#include <random>
+
+#include <fst/types.h>
 #include <fst/log.h>
 
 #include <fst/arcsort.h>
@@ -28,9 +31,9 @@ namespace fst {
 // generated path and checks that these two values are within a user-specified
 // delta. Returns optional error value (when FLAGS_error_fatal = false).
 template <class Arc, class ArcSelector>
-bool RandEquivalent(const Fst<Arc> &fst1, const Fst<Arc> &fst2,
-                    int32 num_paths, float delta,
+bool RandEquivalent(const Fst<Arc> &fst1, const Fst<Arc> &fst2, int32 npath,
                     const RandGenOptions<ArcSelector> &opts,
+                    float delta = kDelta, uint64 seed = std::random_device()(),
                     bool *error = nullptr) {
   using Weight = typename Arc::Weight;
   if (error) *error = false;
@@ -52,9 +55,11 @@ bool RandEquivalent(const Fst<Arc> &fst1, const Fst<Arc> &fst2,
   ArcSort(&sfst1, icomp);
   ArcSort(&sfst2, icomp);
   bool result = true;
-  for (int32 n = 0; n < num_paths; ++n) {
+  std::mt19937 rand(seed);
+  std::bernoulli_distribution coin(.5);
+  for (int32 n = 0; n < npath; ++n) {
     VectorFst<Arc> path;
-    const auto &fst = rand() % 2 ? sfst1 : sfst2;  // NOLINT
+    const auto &fst = coin(rand) ? sfst1 : sfst2;
     RandGen(fst, &path, opts);
     VectorFst<Arc> ipath(path);
     VectorFst<Arc> opath(path);
@@ -95,18 +100,18 @@ bool RandEquivalent(const Fst<Arc> &fst1, const Fst<Arc> &fst2,
   return result;
 }
 
-// Tests if two FSTs are equivalent by randomly generating a nnum_paths paths
+// Tests if two FSTs are equivalent by randomly generating a nnpath paths
 // (no longer than the path_length) using a user-specified seed, optionally
 // indicating an error setting an optional error argument to true.
 template <class Arc>
-bool RandEquivalent(const Fst<Arc> &fst1, const Fst<Arc> &fst2, int32 num_paths,
-                    float delta = kDelta, time_t seed = time(nullptr),
+bool RandEquivalent(const Fst<Arc> &fst1, const Fst<Arc> &fst2, int32 npath,
+                    float delta = kDelta, uint64 seed = std::random_device()(),
                     int32 max_length = std::numeric_limits<int32>::max(),
                     bool *error = nullptr) {
   const UniformArcSelector<Arc> uniform_selector(seed);
   const RandGenOptions<UniformArcSelector<Arc>> opts(uniform_selector,
                                                      max_length);
-  return RandEquivalent(fst1, fst2, num_paths, delta, opts, error);
+  return RandEquivalent(fst1, fst2, npath, opts, delta, seed, error);
 }
 
 }  // namespace fst

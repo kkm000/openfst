@@ -898,7 +898,7 @@ class FromGallicMapper {
       return A(arc.ilabel, 0, AW::Zero(), kNoStateId);
     }
     Label l = kNoLabel;
-    AW weight;
+    AW weight = AW::Zero();
     if (!Extract(arc.weight, &weight, &l) || arc.ilabel != arc.olabel) {
       FSTERROR() << "FromGallicMapper: Unrepresentable weight: " << arc.weight
                  << " for arc with ilabel = " << arc.ilabel

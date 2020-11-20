@@ -55,7 +55,7 @@ class FarReaderClassImpl : public FarReaderImplBase {
   bool Find(const std::string &key) final { return impl_->Find(key); }
 
   const FstClass *GetFstClass() const final {
-    fstc_.reset(new FstClass(*impl_->GetFst()));
+    fstc_ = fst::make_unique<FstClass>(*impl_->GetFst());
     return fstc_.get();
   }
 

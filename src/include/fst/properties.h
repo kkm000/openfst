@@ -12,6 +12,7 @@
 
 #include <fst/compat.h>
 #include <fst/types.h>
+#include <fst/log.h>
 
 namespace fst {
 
@@ -471,6 +472,39 @@ uint64 AddArcProperties(uint64 inprops, typename Arc::StateId s,
 
 extern const char *PropertyNames[];
 
+namespace internal {
+
+// For a binary property, the bit is always returned set. For a trinary (i.e.,
+// two-bit) property, both bits are returned set iff either corresponding input
+// bit is set.
+inline uint64 KnownProperties(uint64 props) {
+  return kBinaryProperties | (props & kTrinaryProperties) |
+         ((props & kPosTrinaryProperties) << 1) |
+         ((props & kNegTrinaryProperties) >> 1);
+}
+
+// Tests compatibility between two sets of properties.
+inline bool CompatProperties(uint64 props1, uint64 props2) {
+  const auto known_props1 = KnownProperties(props1);
+  const auto known_props2 = KnownProperties(props2);
+  const auto known_props = known_props1 & known_props2;
+  const auto incompat_props = (props1 & known_props) ^ (props2 & known_props);
+  if (incompat_props) {
+    uint64 prop = 1;
+    for (int i = 0; i < 64; ++i, prop <<= 1) {
+      if (prop & incompat_props) {
+        LOG(ERROR) << "CompatProperties: Mismatch: " << PropertyNames[i]
+                   << ": props1 = " << (props1 & prop ? "true" : "false")
+                   << ", props2 = " << (props2 & prop ? "true" : "false");
+      }
+    }
+    return false;
+  } else {
+    return true;
+  }
+}
+
+}  // namespace internal
 }  // namespace fst
 
 #endif  // FST_PROPERTIES_H_

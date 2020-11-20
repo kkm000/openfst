@@ -14,7 +14,7 @@
 
 DECLARE_int32(max_length);
 DECLARE_int32(npath);
-DECLARE_int32(seed);
+DECLARE_uint64(seed);
 DECLARE_string(select);
 DECLARE_bool(weighted);
 DECLARE_bool(remove_total_weight);
@@ -54,10 +54,11 @@ int fstrandgen_main(int argc, char **argv) {
     return 1;
   }
 
-  s::RandGen(*ifst, &ofst, FLAGS_seed,
+  s::RandGen(*ifst, &ofst,
              fst::RandGenOptions<s::RandArcSelection>(
                  ras, FLAGS_max_length, FLAGS_npath, FLAGS_weighted,
-                 FLAGS_remove_total_weight));
+                 FLAGS_remove_total_weight),
+             FLAGS_seed);
 
   return !ofst.Write(out_name);
 }

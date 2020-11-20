@@ -7,6 +7,7 @@
 #define FST_VECTOR_FST_H_
 
 #include <algorithm>
+#include <atomic>
 #include <string>
 #include <utility>
 #include <vector>
@@ -506,6 +507,8 @@ VectorFstImpl<S> *VectorFstImpl<S>::Read(std::istream &strm,
 // and handles reference counting, delegating most methods to ImplToMutableFst.
 // Also supports ReserveStates and ReserveArcs methods (cf. STL vector methods).
 // The second optional template argument gives the State definition.
+//
+// VectorFst is thread-compatible.
 template <class A, class S /* = VectorState<A> */>
 class VectorFst : public ImplToMutableFst<internal::VectorFstImpl<S>> {
  public:
@@ -527,8 +530,8 @@ class VectorFst : public ImplToMutableFst<internal::VectorFstImpl<S>> {
   explicit VectorFst(const Fst<Arc> &fst)
       : ImplToMutableFst<Impl>(std::make_shared<Impl>(fst)) {}
 
-  VectorFst(const VectorFst &fst, bool safe = false)
-      : ImplToMutableFst<Impl>(fst) {}
+  VectorFst(const VectorFst &fst, bool unused_safe = false)
+      : ImplToMutableFst<Impl>(fst.GetSharedImpl()) {}
 
   VectorFst(VectorFst &&) noexcept;
 
@@ -749,39 +752,41 @@ class MutableArcIterator<VectorFst<Arc, State>>
 
   void SetValue(const Arc &arc) final {
     const auto &oarc = state_->GetArc(i_);
-    if (oarc.ilabel != oarc.olabel) *properties_ &= ~kNotAcceptor;
+    uint64 properties = properties_->load(std::memory_order_relaxed);
+    if (oarc.ilabel != oarc.olabel) properties &= ~kNotAcceptor;
     if (oarc.ilabel == 0) {
-      *properties_ &= ~kIEpsilons;
-      if (oarc.olabel == 0) *properties_ &= ~kEpsilons;
+      properties &= ~kIEpsilons;
+      if (oarc.olabel == 0) properties &= ~kEpsilons;
     }
-    if (oarc.olabel == 0) *properties_ &= ~kOEpsilons;
+    if (oarc.olabel == 0) properties &= ~kOEpsilons;
     if (oarc.weight != Weight::Zero() && oarc.weight != Weight::One()) {
-      *properties_ &= ~kWeighted;
+      properties &= ~kWeighted;
     }
     state_->SetArc(arc, i_);
     if (arc.ilabel != arc.olabel) {
-      *properties_ |= kNotAcceptor;
-      *properties_ &= ~kAcceptor;
+      properties |= kNotAcceptor;
+      properties &= ~kAcceptor;
     }
     if (arc.ilabel == 0) {
-      *properties_ |= kIEpsilons;
-      *properties_ &= ~kNoIEpsilons;
+      properties |= kIEpsilons;
+      properties &= ~kNoIEpsilons;
       if (arc.olabel == 0) {
-        *properties_ |= kEpsilons;
-        *properties_ &= ~kNoEpsilons;
+        properties |= kEpsilons;
+        properties &= ~kNoEpsilons;
       }
     }
     if (arc.olabel == 0) {
-      *properties_ |= kOEpsilons;
-      *properties_ &= ~kNoOEpsilons;
+      properties |= kOEpsilons;
+      properties &= ~kNoOEpsilons;
     }
     if (arc.weight != Weight::Zero() && arc.weight != Weight::One()) {
-      *properties_ |= kWeighted;
-      *properties_ &= ~kUnweighted;
+      properties |= kWeighted;
+      properties &= ~kUnweighted;
     }
-    *properties_ &= kSetArcProperties | kAcceptor | kNotAcceptor | kEpsilons |
-                    kNoEpsilons | kIEpsilons | kNoIEpsilons | kOEpsilons |
-                    kNoOEpsilons | kWeighted | kUnweighted;
+    properties &= kSetArcProperties | kAcceptor | kNotAcceptor | kEpsilons |
+                  kNoEpsilons | kIEpsilons | kNoIEpsilons | kOEpsilons |
+                  kNoOEpsilons | kWeighted | kUnweighted;
+    properties_->store(properties, std::memory_order_relaxed);
   }
 
   uint8 Flags() const final { return kArcValueFlags; }
@@ -790,7 +795,7 @@ class MutableArcIterator<VectorFst<Arc, State>>
 
  private:
   State *state_;
-  uint64 *properties_;
+  std::atomic<uint64> *properties_;
   size_t i_;
 };
 

@@ -896,10 +896,10 @@ class WeightedTester {
     CHECK(Verify(fst2));
 
     // Ensures seed used once per instantiation.
-    static UniformArcSelector<A> uniform_selector(seed_);
+    static const UniformArcSelector<A> uniform_selector(seed_);
     RandGenOptions<UniformArcSelector<A>> opts(uniform_selector,
                                                kRandomPathLength);
-    return RandEquivalent(fst1, fst2, kNumRandomPaths, kTestDelta, opts);
+    return RandEquivalent(fst1, fst2, kNumRandomPaths, opts, kTestDelta, seed_);
   }
 
   // Tests FSA is unambiguous
@@ -928,7 +928,7 @@ class WeightedTester {
     }
 
     // Ensures seed used once per instantiation.
-    static UniformArcSelector<A> uniform_selector(seed_);
+    static const UniformArcSelector<A> uniform_selector(seed_);
     RandGenOptions<UniformArcSelector<A>> opts(uniform_selector,
                                                kRandomPathLength);
 

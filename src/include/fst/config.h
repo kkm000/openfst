@@ -1,5 +1,5 @@
 /* src/include/fst/config.h.  Generated from config.h.in by configure.  */
-// OpenFst config file 
+// OpenFst config file
 
 /* Define to 1 if you have the ICU library. */
 /* #undef HAVE_ICU */

@@ -55,10 +55,8 @@ class UniformArcSelector {
   using StateId = typename Arc::StateId;
   using Weight = typename Arc::Weight;
 
-  // Constructs a selector with a non-deterministic seed.
-  UniformArcSelector() : rand_(std::random_device()()) {}
-  // Constructs a selector with a given seed.
-  explicit UniformArcSelector(uint64 seed) : rand_(seed) {}
+  explicit UniformArcSelector(uint64 seed = std::random_device()())
+      : rand_(seed) {}
 
   size_t operator()(const Fst<Arc> &fst, StateId s) const {
     const auto n = fst.NumArcs(s) + (fst.Final(s) != Weight::Zero());
@@ -83,6 +81,7 @@ class LogProbArcSelector {
 
   // Constructs a selector with a non-deterministic seed.
   LogProbArcSelector() : seed_(std::random_device()()), rand_(seed_) {}
+
   // Constructs a selector with a given seed.
   explicit LogProbArcSelector(uint64 seed) : seed_(seed), rand_(seed) {}
 
@@ -750,8 +749,9 @@ void RandGen(const Fst<FromArc> &ifst, MutableFst<ToArc> *ofst,
 // Randomly generate a path through an FST with the uniform distribution
 // over the transitions.
 template <class FromArc, class ToArc>
-void RandGen(const Fst<FromArc> &ifst, MutableFst<ToArc> *ofst) {
-  const UniformArcSelector<FromArc> uniform_selector;
+void RandGen(const Fst<FromArc> &ifst, MutableFst<ToArc> *ofst,
+             uint64 seed = std::random_device()()) {
+  const UniformArcSelector<FromArc> uniform_selector(seed);
   RandGenOptions<UniformArcSelector<ToArc>> opts(uniform_selector);
   RandGen(ifst, ofst, opts);
 }

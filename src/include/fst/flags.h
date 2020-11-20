@@ -12,7 +12,7 @@
 //
 // See www.openfst.org for extensive documentation on this weighted
 // finite-state transducer library.
-// 
+//
 // Google-style flag handling declarations and inline definitions.
 
 #ifndef FST_LIB_FLAGS_H_
@@ -50,6 +50,7 @@
 #define DECLARE_string(name) extern std::string FLAGS_##name
 #define DECLARE_int32(name) extern int32 FLAGS_ ## name
 #define DECLARE_int64(name) extern int64 FLAGS_ ## name
+#define DECLARE_uint64(name) extern uint64 FLAGS_##name
 #define DECLARE_double(name) extern double FLAGS_ ## name
 
 template <typename T>
@@ -107,29 +108,34 @@ class FlagRegister {
   }
 
   bool SetFlag(const std::string &val, int32 *address) const {
-    char *p = 0;
+    char *p = nullptr;
     *address = strtol(val.c_str(), &p, 0);
     return !val.empty() && *p == '\0';
   }
 
   bool SetFlag(const std::string &val, int64 *address) const {
-    char *p = 0;
+    char *p = nullptr;
     *address = strtoll(val.c_str(), &p, 0);
     return !val.empty() && *p == '\0';
   }
 
-  bool SetFlag(const std::string &val, double *address) const {
+  bool SetFlag(const std::string &val, uint64 *address) const {
     char *p = 0;
+    *address = strtoull(val.c_str(), &p, 0);
+    return !val.empty() && *p == '\0';
+  }
+
+  bool SetFlag(const std::string &val, double *address) const {
+    char *p = nullptr;
     *address = strtod(val.c_str(), &p);
     return !val.empty() && *p == '\0';
   }
 
   bool SetFlag(const std::string &arg, const std::string &val) const {
     for (const auto &kv : flag_table_) {
-      const std::string &name = kv.first;
+      const auto &name = kv.first;
       const FlagDescription<T> &desc = kv.second;
-      if (arg == name)
-        return SetFlag(val, desc.address);
+      if (arg == name) return SetFlag(val, desc.address);
     }
     return false;
   }
@@ -137,7 +143,7 @@ class FlagRegister {
   void GetUsage(
       std::set<std::pair<std::string, std::string>> *usage_set) const {
     for (auto it = flag_table_.begin(); it != flag_table_.end(); ++it) {
-      const std::string &name = it->first;
+      const auto &name = it->first;
       const FlagDescription<T> &desc = it->second;
       std::string usage = "  --" + name;
       usage += ": type = ";
@@ -197,6 +203,7 @@ class FlagRegisterer {
   DEFINE_VAR(std::string, name, value, doc)
 #define DEFINE_int32(name, value, doc) DEFINE_VAR(int32, name, value, doc)
 #define DEFINE_int64(name, value, doc) DEFINE_VAR(int64, name, value, doc)
+#define DEFINE_uint64(name, value, doc) DEFINE_VAR(uint64, name, value, doc)
 #define DEFINE_double(name, value, doc) DEFINE_VAR(double, name, value, doc)
 
 
