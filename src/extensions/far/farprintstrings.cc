@@ -21,6 +21,7 @@ DEFINE_bool(initial_symbols, true,
             "Uses symbol table from the first Fst in archive for all entries.");
 
 int farprintstrings_main(int argc, char **argv);
+
 int main(int argc, char **argv) {
   return farprintstrings_main(argc, argv);
 }

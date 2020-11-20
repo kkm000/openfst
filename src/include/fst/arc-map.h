@@ -47,8 +47,8 @@ enum MapSymbolsAction {
 };
 
 // The ArcMapper interfaces defines how arcs and final weights are mapped.
-// This is useful for implementing operations that do not change the number of
-// arcs (except possibly superfinal arcs).
+// This is useful for implementing operations that apply to each arc separately
+// and do not change the number of arcs (except possibly superfinal arcs).
 //
 // template <class A, class B>
 // class ArcMapper {

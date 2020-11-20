@@ -97,9 +97,9 @@ class NGramFstImpl : public FstImpl<A> {
 
   static NGramFstImpl<A> *Read(std::istream &strm,  // NOLINT
                                const FstReadOptions &opts) {
-    auto impl = std::make_unique<NGramFstImpl<A>>();
+    auto impl = fst::make_unique<NGramFstImpl<A>>();
     FstHeader hdr;
-    if (!impl->ReadHeader(strm, opts, kMinFileVersion, &hdr)) return 0;
+    if (!impl->ReadHeader(strm, opts, kMinFileVersion, &hdr)) return nullptr;
     uint64 num_states, num_futures, num_final;
     const size_t offset =
         sizeof(num_states) + sizeof(num_futures) + sizeof(num_final);
@@ -165,7 +165,7 @@ class NGramFstImpl : public FstImpl<A> {
   StateId NumStates() const { return num_states_; }
 
   void InitStateIterator(StateIteratorData<A> *data) const {
-    data->base = 0;
+    data->base = nullptr;
     data->nstates = num_states_;
   }
 
@@ -380,15 +380,15 @@ class NGramFst : public ImplToExpandedFst<internal::NGramFstImpl<A>> {
     return impl ? new NGramFst<A>(std::shared_ptr<Impl>(impl)) : nullptr;
   }
 
-  static NGramFst<A> *Read(const std::string &filename) {
-    if (!filename.empty()) {
-      std::ifstream strm(filename,
+  static NGramFst<A> *Read(const std::string &source) {
+    if (!source.empty()) {
+      std::ifstream strm(source,
                               std::ios_base::in | std::ios_base::binary);
       if (!strm.good()) {
-        LOG(ERROR) << "NGramFst::Read: Can't open file: " << filename;
+        LOG(ERROR) << "NGramFst::Read: Can't open file: " << source;
         return nullptr;
       }
-      return Read(strm, FstReadOptions(filename));
+      return Read(strm, FstReadOptions(source));
     } else {
       return Read(std::cin, FstReadOptions("standard input"));
     }
@@ -398,8 +398,8 @@ class NGramFst : public ImplToExpandedFst<internal::NGramFstImpl<A>> {
     return GetImpl()->Write(strm, opts);
   }
 
-  bool Write(const std::string &filename) const override {
-    return Fst<A>::WriteFile(filename);
+  bool Write(const std::string &source) const override {
+    return Fst<A>::WriteFile(source);
   }
 
   inline void InitStateIterator(StateIteratorData<A> *data) const override {
@@ -488,12 +488,12 @@ NGramFstImpl<A>::NGramFstImpl(const Fst<A> &fst,
   }
 
   int64 num_states = CountStates(fst);
-  Label *context = new Label[num_states];
+  std::vector<Label> context(num_states, 0);
 
   // Find the unigram state by starting from the start state, following
   // epsilons.
   StateId unigram = fst.Start();
-  while (1) {
+  while (true) {
     if (unigram == kNoStateId) {
       FSTERROR() << "Could not identify unigram state";
       SetProperties(kError, kError);
@@ -590,8 +590,6 @@ NGramFstImpl<A>::NGramFstImpl(const Fst<A> &fst,
   if (!(context_props & kILabelSorted)) {
     ArcSort(&context_fst, ILabelCompare<Arc>());
   }
-
-  delete[] context;
 
   uint64 b64;
   Weight weight;
@@ -1004,21 +1002,21 @@ class ArcIterator<NGramFst<A>> : public ArcIteratorBase<A> {
     }
   }
 
-  uint32 Flags() const final { return flags_; }
+  uint8 Flags() const final { return flags_; }
 
-  void SetFlags(uint32 flags, uint32 mask) final {
+  void SetFlags(uint8 flags, uint8 mask) final {
     flags_ &= ~mask;
     flags_ |= (flags & kArcValueFlags);
   }
 
  private:
   mutable Arc arc_;
-  mutable uint32 lazy_;
+  mutable uint8 lazy_;
   const internal::NGramFstImpl<A> *impl_;  // Borrowed reference.
   mutable NGramFstInst<A> inst_;
 
   size_t i_;
-  uint32 flags_;
+  uint8 flags_;
 };
 
 }  // namespace fst

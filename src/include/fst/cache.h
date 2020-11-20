@@ -52,11 +52,11 @@ struct CacheImplOptions {
 };
 
 // Cache flags.
-constexpr uint32 kCacheFinal = 0x0001;   // Final weight has been cached.
-constexpr uint32 kCacheArcs = 0x0002;    // Arcs have been cached.
-constexpr uint32 kCacheInit = 0x0004;    // Initialized by GC.
-constexpr uint32 kCacheRecent = 0x0008;  // Visited since GC.
-constexpr uint32 kCacheFlags =
+constexpr uint8 kCacheFinal = 0x01;   // Final weight has been cached.
+constexpr uint8 kCacheArcs = 0x02;    // Arcs have been cached.
+constexpr uint8 kCacheInit = 0x04;    // Initialized by GC.
+constexpr uint8 kCacheRecent = 0x08;  // Visited since GC.
+constexpr uint8 kCacheFlags =
     kCacheFinal | kCacheArcs | kCacheInit | kCacheRecent;
 
 // Cache state, with arcs stored in a per-state std::vector.
@@ -112,7 +112,7 @@ class CacheState {
   const Arc *Arcs() const { return !arcs_.empty() ? &arcs_[0] : nullptr; }
 
   // Accesses flags; used by the caller.
-  uint32 Flags() const { return flags_; }
+  uint8 Flags() const { return flags_; }
 
   // Accesses ref count; used by the caller.
   int RefCount() const { return ref_count_; }
@@ -175,7 +175,7 @@ class CacheState {
   }
 
   // Sets status flags; used by the caller.
-  void SetFlags(uint32 flags, uint32 mask) const {
+  void SetFlags(uint8 flags, uint8 mask) const {
     flags_ &= ~mask;
     flags_ |= flags;
   }
@@ -213,7 +213,7 @@ class CacheState {
   size_t niepsilons_;                    // # of input epsilons.
   size_t noepsilons_;                    // # of output epsilons.
   std::vector<Arc, ArcAllocator> arcs_;  // Arcs representation.
-  mutable uint32 flags_;
+  mutable uint8 flags_;
   mutable int ref_count_;  // If 0, available for GC.
 };
 
@@ -1218,9 +1218,9 @@ class CacheArcIterator {
 
   void Seek(size_t a) { i_ = a; }
 
-  constexpr uint32 Flags() const { return kArcValueFlags; }
+  constexpr uint8 Flags() const { return kArcValueFlags; }
 
-  void SetFlags(uint32 flags, uint32 mask) {}
+  void SetFlags(uint8 flags, uint8 mask) {}
 
  private:
   const State *state_;
@@ -1266,9 +1266,9 @@ class CacheMutableArcIterator
 
   void SetValue(const Arc &arc) final { state_->SetArc(arc, i_); }
 
-  uint32 Flags() const final { return kArcValueFlags; }
+  uint8 Flags() const final { return kArcValueFlags; }
 
-  void SetFlags(uint32, uint32) final {}
+  void SetFlags(uint8, uint8) final {}
 
  private:
   size_t i_;

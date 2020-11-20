@@ -1,13 +1,14 @@
 // See www.openfst.org for extensive documentation on this weighted
 // finite-state transducer library.
 
+#include <fst/compat.h>
+#include <fst/extensions/linear/linearscript.h>
+
 #include <cctype>
 #include <cstdio>
 #include <set>
 
-#include <fst/compat.h>
 #include <fst/flags.h>
-#include <fst/extensions/linear/linearscript.h>
 #include <fst/arc.h>
 #include <fstream>
 #include <fst/script/script-impl.h>
@@ -28,9 +29,7 @@ namespace fst {
 namespace script {
 
 bool ValidateDelimiter() {
-  if (FLAGS_delimiter.size() == 1 && !std::isspace(FLAGS_delimiter[0]))
-    return true;
-  return false;
+  return FLAGS_delimiter.size() == 1 && !std::isspace(FLAGS_delimiter[0]);
 }
 
 bool ValidateEmptySymbol() {
@@ -55,9 +54,7 @@ void LinearCompile(const std::string &arc_type,
   Apply<Operation<LinearCompileArgs>>("LinearCompileTpl", arc_type, &args);
 }
 
-// Instantiate templates for common arc types
-REGISTER_FST_LINEAR_OPERATIONS(StdArc);
-REGISTER_FST_LINEAR_OPERATIONS(LogArc);
+REGISTER_FST_OPERATION_3ARCS(LinearCompileTpl, LinearCompileArgs);
 
 void SplitByWhitespace(const std::string &str, std::vector<std::string> *out) {
   out->clear();
@@ -71,10 +68,8 @@ int ScanNumClasses(char **models, int models_len) {
   for (int i = 0; i < models_len; ++i) {
     std::ifstream in(models[i]);
     if (!in) LOG(FATAL) << "Failed to open " << models[i];
-
     std::string line;
     std::getline(in, line);
-
     size_t num_line = 1;
     while (std::getline(in, line)) {
       ++num_line;

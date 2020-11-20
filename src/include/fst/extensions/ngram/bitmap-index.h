@@ -21,17 +21,24 @@
 // occurs.
 //
 // To handle overflows, a "primary" index containing a running count of
-// bits set in each block is created using the type uint64.
+// bits set in each block is created using the type uint32.  Therefore,
+// only bitstrings with < 2**32 ones are supported.
+//
+// For each 64 bits of input there are 16 bits of secondary index and
+// 32/kSecondaryBlockSize == 32/1023 bits of primary index,
+// for a 25.05% space overhead.
 
 namespace fst {
 
 class BitmapIndex {
  public:
-  static size_t StorageSize(size_t size) {
-    return ((size + kStorageBlockMask) >> kStorageLogBitSize);
+  static size_t StorageSize(size_t num_bits) {
+    return ((num_bits + kStorageBlockMask) >> kStorageLogBitSize);
   }
 
-  BitmapIndex() : bits_(nullptr), size_(0) {}
+  BitmapIndex() = default;
+  BitmapIndex(BitmapIndex &&) = default;
+  BitmapIndex &operator=(BitmapIndex &&) = default;
 
   bool Get(size_t index) const {
     return (bits_[index >> kStorageLogBitSize] &
@@ -46,13 +53,25 @@ class BitmapIndex {
     bits[index >> kStorageLogBitSize] &= ~(kOne << (index & kStorageBlockMask));
   }
 
-  size_t Bits() const { return size_; }
+  size_t Bits() const { return num_bits_; }
 
-  size_t ArraySize() const { return StorageSize(size_); }
+  size_t ArraySize() const { return StorageSize(num_bits_); }
+
+  // Number of bytes used to store the bit vector.
+  size_t ArrayBytes() const {
+    return ArraySize() * sizeof(bits_[0]);
+  }
+
+  // Number of bytes used to store the primary and secondary indices.
+  size_t IndexBytes() const {
+    return (primary_index_.size() * sizeof(primary_index_[0]) +
+            secondary_index_.size() * sizeof(secondary_index_[0]));
+  }
 
   // Returns the number of one bits in the bitmap
   size_t GetOnesCount() const {
-    return primary_index_[primary_index_size() - 1];
+    // Empty bitmaps still have a non-empty primary index.
+    return primary_index_.back();
   }
 
   // Returns the number of one bits in positions 0 to limit - 1.
@@ -97,7 +116,7 @@ class BitmapIndex {
   // Rebuilds from index for the associated Bitmap, should be called
   // whenever changes have been made to the Bitmap or else behavior
   // of the indexed bitmap methods will be undefined.
-  void BuildIndex(const uint64* bits, size_t size);
+  void BuildIndex(const uint64* bits, size_t num_bits);
 
   // the secondary index accumulates counts until it can possibly overflow
   // this constant computes the number of uint64 units that can fit into
@@ -105,6 +124,7 @@ class BitmapIndex {
   static const uint64 kOne = 1;
   static const uint32 kStorageBitSize = 64;
   static const uint32 kStorageLogBitSize = 6;
+  // Number of secondary index entries per primary index entry.
   static const uint32 kSecondaryBlockSize =
       ((1 << 16) - 1) >> kStorageLogBitSize;
 
@@ -118,9 +138,11 @@ class BitmapIndex {
   // count of the population of one bits contained in [0,i), there is
   // no reason to have an element in the zeroth position as this value would
   // necessarily be zero.  (The bits are indexed in a zero based way.)  Thus
-  // we don't store the 0th element in either index.  Both of the following
-  // functions, if greater than 0, must be decremented by one before retreiving
-  // the value from the corresponding array.
+  // we don't store the 0th element in either index for non-empty bitmaps.
+  // For empty bitmaps, the 0 is stored for the primary index, but not the
+  // secondary index.  Both of the following functions, if greater than 0,
+  // must be decremented by one before retrieving the value from the
+  // corresponding array.
   // returns the 1 + the block that contains the bitindex in question
   // the inverted version works the same but looks for zeros using an inverted
   // view of the index
@@ -147,19 +169,23 @@ class BitmapIndex {
   // The primary index is the actual running
   // count of one bits set for all blocks (and, thus, all uint64s).
   size_t primary_index_size() const {
+    // Special-case empty bitmaps to still store the 0 in the primary index.
+    if (ArraySize() == 0) return 1;
     return (ArraySize() + kSecondaryBlockSize - 1) / kSecondaryBlockSize;
   }
 
-  const uint64* bits_;
-  size_t size_;
+  const uint64* bits_ = nullptr;
+  size_t num_bits_ = 0;
 
   // The primary index contains the running popcount of all blocks
-  // which means the nth value contains the popcounts of
-  // [0,n*kSecondaryBlockSize], however, the 0th element is omitted.
+  // which means the nth value contains the popcounts of uint64 elements
+  // [0,n*kSecondaryBlockSize], however, the 0th element is omitted for
+  // non-empty bitmaps.
   std::vector<uint32> primary_index_;
   // The secondary index contains the running popcount of the associated
   // bitmap.  It is the same length (in units of uint16) as the
-  // bitmap's map is in units of uint64s.
+  // bitmap's map is in units of uint64s, namely ArraySize() ==
+  // StorageSize(num_bits_).
   std::vector<uint16> secondary_index_;
 };
 

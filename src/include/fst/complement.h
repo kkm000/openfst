@@ -50,7 +50,7 @@ class ComplementFstImpl : public FstImpl<A> {
 
   explicit ComplementFstImpl(const Fst<Arc> &fst) : fst_(fst.Copy()) {
     SetType("complement");
-    uint64 props = fst.Properties(kILabelSorted, false);
+    const auto props = fst.Properties(kILabelSorted, false);
     SetProperties(ComplementProperties(props), kCopyProperties);
     SetInputSymbols(fst.InputSymbols());
     SetOutputSymbols(fst.OutputSymbols());
@@ -66,7 +66,7 @@ class ComplementFstImpl : public FstImpl<A> {
 
   StateId Start() const {
     if (Properties(kError)) return kNoStateId;
-    auto start = fst_->Start();
+    const auto start = fst_->Start();
     return start != kNoStateId ? start + 1 : 0;
   }
 
@@ -247,9 +247,9 @@ class ArcIterator<ComplementFst<Arc>> : public ArcIteratorBase<Arc> {
     pos_ = a;
   }
 
-  uint32 Flags() const final { return kArcValueFlags; }
+  uint8 Flags() const final { return kArcValueFlags; }
 
-  void SetFlags(uint32, uint32) final {}
+  void SetFlags(uint8, uint8) final {}
 
  private:
   std::unique_ptr<ArcIterator<Fst<Arc>>> aiter_;

@@ -3,7 +3,6 @@
 
 #include <fst/script/convert.h>
 
-#include <fst/script/fst-class.h>
 #include <fst/script/script-impl.h>
 
 namespace fst {
@@ -16,9 +15,7 @@ FstClass *Convert(const FstClass &ifst, const std::string &new_type) {
   return args.retval;
 }
 
-REGISTER_FST_OPERATION(Convert, StdArc, ConvertArgs);
-REGISTER_FST_OPERATION(Convert, LogArc, ConvertArgs);
-REGISTER_FST_OPERATION(Convert, Log64Arc, ConvertArgs);
+REGISTER_FST_OPERATION_3ARCS(Convert, ConvertArgs);
 
 }  // namespace script
 }  // namespace fst

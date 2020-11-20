@@ -30,18 +30,16 @@ struct ReplaceOptions {
         return_label(return_label) {}
 };
 
-using LabelFstClassPair = std::pair<int64, const FstClass *>;
-
-using ReplaceArgs = std::tuple<const std::vector<LabelFstClassPair> &,
-                               MutableFstClass *, const ReplaceOptions &>;
+using ReplaceArgs =
+    std::tuple<const std::vector<std::pair<int64, const FstClass *>> &,
+               MutableFstClass *, const ReplaceOptions &>;
 
 template <class Arc>
 void Replace(ReplaceArgs *args) {
-  using LabelFstPair = std::pair<typename Arc::Label, const Fst<Arc> *>;
   // Now that we know the arc type, we construct a vector of
   // std::pair<real label, real fst> that the real Replace will use.
   const auto &untyped_pairs = std::get<0>(*args);
-  std::vector<LabelFstPair> typed_pairs;
+  std::vector<std::pair<typename Arc::Label, const Fst<Arc> *>> typed_pairs;
   typed_pairs.reserve(untyped_pairs.size());
   for (const auto &untyped_pair : untyped_pairs) {
     typed_pairs.emplace_back(untyped_pair.first,  // Converts label.
@@ -63,7 +61,7 @@ void Replace(ReplaceArgs *args) {
   *ofst = rfst;
 }
 
-void Replace(const std::vector<LabelFstClassPair> &pairs,
+void Replace(const std::vector<std::pair<int64, const FstClass *>> &pairs,
              MutableFstClass *ofst, const ReplaceOptions &opts);
 
 }  // namespace script

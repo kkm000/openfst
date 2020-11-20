@@ -33,7 +33,7 @@ void SplitString(char *full, const char *delim, std::vector<char *> *vec,
   }
 }
 
-int64 StrToInt64(const std::string &s, const std::string &src, size_t nline,
+int64 StrToInt64(const std::string &s, const std::string &source, size_t nline,
                  bool allow_negative, bool *error) {
   int64 n;
   const char *cs = s.c_str();
@@ -41,7 +41,7 @@ int64 StrToInt64(const std::string &s, const std::string &src, size_t nline,
   if (error) *error = false;
   n = strtoll(cs, &p, 10);
   if (p < cs + s.size() || (!allow_negative && n < 0)) {
-    FSTERROR() << "StrToInt64: Bad integer = " << s << "\", source = " << src
+    FSTERROR() << "StrToInt64: Bad integer = " << s << "\", source = " << source
                << ", line = " << nline;
     if (error) *error = true;
     return 0;

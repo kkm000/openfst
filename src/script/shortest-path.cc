@@ -3,7 +3,6 @@
 
 #include <fst/script/shortest-path.h>
 
-#include <fst/script/fst-class.h>
 #include <fst/script/script-impl.h>
 
 namespace fst {
@@ -19,9 +18,7 @@ void ShortestPath(const FstClass &ifst, MutableFstClass *ofst,
   Apply<Operation<ShortestPathArgs>>("ShortestPath", ifst.ArcType(), &args);
 }
 
-REGISTER_FST_OPERATION(ShortestPath, StdArc, ShortestPathArgs);
-REGISTER_FST_OPERATION(ShortestPath, LogArc, ShortestPathArgs);
-REGISTER_FST_OPERATION(ShortestPath, Log64Arc, ShortestPathArgs);
+REGISTER_FST_OPERATION_3ARCS(ShortestPath, ShortestPathArgs);
 
 }  // namespace script
 }  // namespace fst

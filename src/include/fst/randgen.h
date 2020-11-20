@@ -6,11 +6,13 @@
 #ifndef FST_RANDGEN_H_
 #define FST_RANDGEN_H_
 
+#include <algorithm>
 #include <cmath>
 #include <cstddef>
 #include <limits>
 #include <map>
 #include <memory>
+#include <numeric>
 #include <random>
 #include <utility>
 #include <vector>
@@ -27,6 +29,8 @@
 #include <fst/properties.h>
 #include <fst/util.h>
 #include <fst/weight.h>
+
+#include <vector>
 
 namespace fst {
 
@@ -256,19 +260,21 @@ class ArcSampler {
 template <class Result, class RNG>
 void OneMultinomialSample(const std::vector<double> &probs,
                           size_t num_to_sample, Result *result, RNG *rng) {
-  // Left-over probability mass.
-  double norm = 0;
-  for (double p : probs) norm += p;
+  using distribution = std::binomial_distribution<size_t>;
+  // Left-over probability mass.  Keep an array of the partial sums because
+  // keeping a scalar and modifying norm -= probs[i] in the loop will result
+  // in round-off error and can have probs[i] > norm.
+  std::vector<double> norm(probs.size());
+  std::partial_sum(probs.rbegin(), probs.rend(), norm.rbegin());
   // Left-over number of samples needed.
   for (size_t i = 0; i < probs.size(); ++i) {
-    size_t num_sampled = 0;
+    distribution::result_type num_sampled = 0;
     if (probs[i] > 0) {
-      std::binomial_distribution<> d(num_to_sample, probs[i] / norm);
+      distribution d(num_to_sample, probs[i] / norm[i]);
       num_sampled = d(*rng);
     }
     if (num_sampled != 0) (*result)[i] = num_sampled;
-    norm -= probs[i];
-    num_to_sample -= num_sampled;
+    num_to_sample -= std::min(num_sampled, num_to_sample);
   }
 }
 

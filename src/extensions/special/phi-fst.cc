@@ -1,8 +1,11 @@
 // See www.openfst.org for extensive documentation on this weighted
 // finite-state transducer library.
 
-#include <fst/fst.h>
 #include <fst/extensions/special/phi-fst.h>
+
+#include <fst/arc.h>
+#include <fst/fst.h>
+#include <fst/register.h>
 
 DEFINE_int64(phi_fst_phi_label, 0,
              "Label of transitions to be interpreted as phi ('failure') "
@@ -19,16 +22,16 @@ const char phi_fst_type[] = "phi";
 const char input_phi_fst_type[] = "input_phi";
 const char output_phi_fst_type[] = "output_phi";
 
-static FstRegisterer<StdPhiFst> PhiFst_StdArc_registerer;
-static FstRegisterer<LogPhiFst> PhiFst_LogArc_registerer;
-static FstRegisterer<Log64PhiFst> PhiFst_Log64Arc_registerer;
+REGISTER_FST(PhiFst, StdArc);
+REGISTER_FST(PhiFst, LogArc);
+REGISTER_FST(PhiFst, Log64Arc);
 
-static FstRegisterer<StdInputPhiFst> InputPhiFst_StdArc_registerer;
-static FstRegisterer<LogInputPhiFst> InputPhiFst_LogArc_registerer;
-static FstRegisterer<Log64InputPhiFst> InputPhiFst_Log64Arc_registerer;
+REGISTER_FST(InputPhiFst, StdArc);
+REGISTER_FST(InputPhiFst, LogArc);
+REGISTER_FST(InputPhiFst, Log64Arc);
 
-static FstRegisterer<StdOutputPhiFst> OutputPhiFst_StdArc_registerer;
-static FstRegisterer<LogOutputPhiFst> OutputPhiFst_LogArc_registerer;
-static FstRegisterer<Log64OutputPhiFst> OutputPhiFst_Log64Arc_registerer;
+REGISTER_FST(OutputPhiFst, StdArc);
+REGISTER_FST(OutputPhiFst, LogArc);
+REGISTER_FST(OutputPhiFst, Log64Arc);
 
 }  // namespace fst

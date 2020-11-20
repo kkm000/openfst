@@ -5,12 +5,14 @@
 #define FST_SCRIPT_FST_CLASS_H_
 
 #include <algorithm>
+#include <istream>
 #include <limits>
 #include <string>
 #include <type_traits>
 
 #include <fst/expanded-fst.h>
 #include <fst/fst.h>
+#include <fst/generic-register.h>
 #include <fst/mutable-fst.h>
 #include <fst/vector-fst.h>
 #include <fst/script/arc-class.h>
@@ -257,12 +259,12 @@ class FstClassImpl : public FstClassImplBase {
 
   const std::string &WeightType() const final { return Arc::Weight::Type(); }
 
-  bool Write(const std::string &fname) const final {
-    return impl_->Write(fname);
+  bool Write(const std::string &source) const final {
+    return impl_->Write(source);
   }
 
-  bool Write(std::ostream &ostr, const std::string &fname) const final {
-    const FstWriteOptions opts(fname);
+  bool Write(std::ostream &ostr, const std::string &source) const final {
+    const FstWriteOptions opts(source);
     return impl_->Write(ostr, opts);
   }
 
@@ -323,7 +325,7 @@ class FstClass : public FstClassBase {
     return impl_->Properties(mask, test);
   }
 
-  static FstClass *Read(const std::string &fname);
+  static FstClass *Read(const std::string &source);
 
   static FstClass *Read(std::istream &istrm, const std::string &source);
 
@@ -339,12 +341,12 @@ class FstClass : public FstClassBase {
   bool WeightTypesMatch(const WeightClass &weight,
                         const std::string &op_name) const;
 
-  bool Write(const std::string &fname) const final {
-    return impl_->Write(fname);
+  bool Write(const std::string &source) const final {
+    return impl_->Write(source);
   }
 
-  bool Write(std::ostream &ostr, const std::string &fname) const final {
-    return impl_->Write(ostr, fname);
+  bool Write(std::ostream &ostr, const std::string &source) const final {
+    return impl_->Write(ostr, source);
   }
 
   ~FstClass() override {}
@@ -447,7 +449,7 @@ class MutableFstClass : public FstClass {
 
   void ReserveStates(int64 n) { GetImpl()->ReserveStates(n); }
 
-  static MutableFstClass *Read(const std::string &fname, bool convert = false);
+  static MutableFstClass *Read(const std::string &source, bool convert = false);
 
   void SetInputSymbols(SymbolTable *isyms) {
     GetImpl()->SetInputSymbols(isyms);
@@ -513,7 +515,7 @@ class VectorFstClass : public MutableFstClass {
 
   explicit VectorFstClass(const std::string &arc_type);
 
-  static VectorFstClass *Read(const std::string &fname);
+  static VectorFstClass *Read(const std::string &source);
 
   template <class Arc>
   static VectorFstClass *Read(std::istream &stream,
@@ -536,6 +538,83 @@ class VectorFstClass : public MutableFstClass {
     return new FstClassImpl<Arc>(new VectorFst<Arc>(), true);
   }
 };
+
+// Registration stuff.
+
+// This class definition is to avoid a nested class definition inside the
+// FstClassIORegistration struct.
+template <class Reader, class Creator, class Converter>
+struct FstClassRegEntry {
+  Reader reader;
+  Creator creator;
+  Converter converter;
+
+  FstClassRegEntry(Reader r, Creator cr, Converter co)
+      : reader(r), creator(cr), converter(co) {}
+
+  FstClassRegEntry() : reader(nullptr), creator(nullptr), converter(nullptr) {}
+};
+
+// Actual FST IO method register.
+template <class Reader, class Creator, class Converter>
+class FstClassIORegister
+    : public GenericRegister<std::string,
+                             FstClassRegEntry<Reader, Creator, Converter>,
+                             FstClassIORegister<Reader, Creator, Converter>> {
+ public:
+  Reader GetReader(const std::string &arc_type) const {
+    return this->GetEntry(arc_type).reader;
+  }
+
+  Creator GetCreator(const std::string &arc_type) const {
+    return this->GetEntry(arc_type).creator;
+  }
+
+  Converter GetConverter(const std::string &arc_type) const {
+    return this->GetEntry(arc_type).converter;
+  }
+
+ protected:
+  std::string ConvertKeyToSoFilename(const std::string &key) const final {
+    std::string legal_type(key);
+    ConvertToLegalCSymbol(&legal_type);
+    return legal_type + "-arc.so";
+  }
+};
+
+// Struct containing everything needed to register a particular type
+// of FST class (e.g., a plain FstClass, or a MutableFstClass, etc.).
+template <class FstClassType>
+struct FstClassIORegistration {
+  using Reader = FstClassType *(*)(std::istream &stream,
+                                   const FstReadOptions &opts);
+
+  using Creator = FstClassImplBase *(*)();
+
+  using Converter = FstClassImplBase *(*)(const FstClass &other);
+
+  using Entry = FstClassRegEntry<Reader, Creator, Converter>;
+
+  // FST class Register.
+  using Register = FstClassIORegister<Reader, Creator, Converter>;
+
+  // FST class Register-er.
+  using Registerer =
+      GenericRegisterer<FstClassIORegister<Reader, Creator, Converter>>;
+};
+
+// Macros for registering other arc types.
+
+#define REGISTER_FST_CLASS(Class, Arc)                                         \
+  static FstClassIORegistration<Class>::Registerer Class##_##Arc##_registerer( \
+      Arc::Type(),                                                             \
+      FstClassIORegistration<Class>::Entry(                                    \
+          Class::Read<Arc>, Class::Create<Arc>, Class::Convert<Arc>))
+
+#define REGISTER_FST_CLASSES(Arc)           \
+  REGISTER_FST_CLASS(FstClass, Arc);        \
+  REGISTER_FST_CLASS(MutableFstClass, Arc); \
+  REGISTER_FST_CLASS(VectorFstClass, Arc);
 
 }  // namespace script
 }  // namespace fst

@@ -13,9 +13,8 @@
 #include <vector>
 
 #include <fst/compat.h>
-#include <fst/fst.h>
-
 #include <fst/extensions/linear/trie.h>
+#include <fst/fst.h>
 
 namespace fst {
 
@@ -392,7 +391,7 @@ template <class A>
 struct FeatureGroup<A>::InputOutputLabel {
   Label input, output;
 
-  InputOutputLabel(Label i = kNoLabel, Label o = kNoLabel)
+  explicit InputOutputLabel(Label i = kNoLabel, Label o = kNoLabel)
       : input(i), output(o) {}
 
   bool operator==(InputOutputLabel that) const {

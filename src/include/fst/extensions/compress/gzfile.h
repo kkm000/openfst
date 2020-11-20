@@ -27,9 +27,8 @@ namespace fst {
 // errors after construction or read/writing.
 class GzFile {
  public:
-  GzFile(const char *filename, const char *mode)
-      : gzfile_(gzopen(filename, mode)), error_(gzfile_ == nullptr) {
-  }
+  GzFile(const char *source, const char *mode)
+      : gzfile_(gzopen(source, mode)), error_(gzfile_ == nullptr) {}
 
   ~GzFile() { gzclose(gzfile_); }
 
@@ -50,15 +49,14 @@ class GzFile {
  private:
   gzFile gzfile_;
   bool error_;
-  bool close_me_ = false;
 };
 
 // Resource handle for writing stringstream to GzFile.
 class OGzFile {
  public:
-  explicit OGzFile(const std::string &filename) : OGzFile(filename.c_str()) {}
+  explicit OGzFile(const std::string &source) : OGzFile(source.c_str()) {}
 
-  explicit OGzFile(const char *filename) : gz_(GzFile(filename, "wb")) {}
+  explicit OGzFile(const char *source) : gz_(GzFile(source, "wb")) {}
 
   inline bool operator!() const { return !gz_; }
 
@@ -74,9 +72,9 @@ class OGzFile {
 // Resource handle for reading stringstream from GzFile.
 class IGzFile {
  public:
-  explicit IGzFile(const std::string &filename) : IGzFile(filename.c_str()) {}
+  explicit IGzFile(const std::string &source) : IGzFile(source.c_str()) {}
 
-  explicit IGzFile(const char *filename) : gz_(GzFile(filename, "rb")) {}
+  explicit IGzFile(const char *source) : gz_(GzFile(source, "rb")) {}
 
   inline bool operator!() const { return !gz_; }
 

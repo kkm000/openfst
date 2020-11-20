@@ -7,7 +7,6 @@
 #define FST_TEST_ALGO_TEST_H_
 
 #include <fst/log.h>
-
 #include <fst/fstlib.h>
 #include <fst/test/rand-fst.h>
 
@@ -51,8 +50,8 @@ void LookAheadCompose(const Fst<Arc> &ifst1, const Fst<Arc> &ifst2,
 }
 
 // Specialized and epsilon olabel acyclic - lookahead.
-void LookAheadCompose(const Fst<StdArc> &ifst1, const Fst<StdArc> &ifst2,
-                      MutableFst<StdArc> *ofst) {
+inline void LookAheadCompose(const Fst<StdArc> &ifst1, const Fst<StdArc> &ifst2,
+                             MutableFst<StdArc> *ofst) {
   std::vector<StdArc::StateId> order;
   bool acyclic;
   TopOrderVisitor<StdArc> visitor(&order, &acyclic);
@@ -72,9 +71,9 @@ void LookAheadCompose(const Fst<StdArc> &ifst1, const Fst<StdArc> &ifst2,
 template <class Arc, class WeightGenerator>
 class WeightedTester {
  public:
-  typedef typename Arc::Label Label;
-  typedef typename Arc::StateId StateId;
-  typedef typename Arc::Weight Weight;
+  using Label = typename Arc::Label;
+  using StateId = typename Arc::StateId;
+  using Weight = typename Arc::Weight;
 
   WeightedTester(time_t seed, const Fst<Arc> &zero_fst, const Fst<Arc> &one_fst,
                  const Fst<Arc> &univ_fst, WeightGenerator *weight_generator)
@@ -512,7 +511,7 @@ class WeightedTester {
 
     {
       VLOG(1) << "Check all epsilon filters leads to equivalent results.";
-      typedef Matcher<Fst<Arc>> M;
+      using M = Matcher<Fst<Arc>>;
       ComposeFst<Arc> C1(S1, S2);
       ComposeFst<Arc> C2(
           S1, S2, ComposeFstOptions<Arc, M, AltSequenceComposeFilter<M>>());
@@ -1025,10 +1024,10 @@ class UnweightedTester {
 template <>
 class UnweightedTester<StdArc> {
  public:
-  typedef StdArc Arc;
-  typedef Arc::Label Label;
-  typedef Arc::StateId StateId;
-  typedef Arc::Weight Weight;
+  using Arc = StdArc;
+  using Label = Arc::Label;
+  using StateId = Arc::StateId;
+  using Weight = Arc::Weight;
 
   UnweightedTester(const Fst<Arc> &zero_fsa, const Fst<Arc> &one_fsa,
                    const Fst<Arc> &univ_fsa)
@@ -1287,9 +1286,9 @@ class UnweightedTester<StdArc> {
 template <class Arc, class WeightGenerator>
 class AlgoTester {
  public:
-  typedef typename Arc::Label Label;
-  typedef typename Arc::StateId StateId;
-  typedef typename Arc::Weight Weight;
+  using Label = typename Arc::Label;
+  using StateId = typename Arc::StateId;
+  using Weight = typename Arc::Weight;
 
   AlgoTester(WeightGenerator generator, int seed)
       : weight_generator_(generator) {

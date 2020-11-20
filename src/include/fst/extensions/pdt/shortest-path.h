@@ -23,7 +23,8 @@ struct PdtShortestPathOptions {
   bool keep_parentheses;
   bool path_gc;
 
-  PdtShortestPathOptions(bool keep_parentheses = false, bool path_gc = true)
+  explicit PdtShortestPathOptions(bool keep_parentheses = false,
+                                  bool path_gc = true)
       : keep_parentheses(keep_parentheses), path_gc(path_gc) {}
 };
 
@@ -61,7 +62,7 @@ class PdtShortestPathData {
     StateId state;  // PDT state.
     StateId start;  // PDT paren "start" state.
 
-    SearchState(StateId s = kNoStateId, StateId t = kNoStateId)
+    explicit SearchState(StateId s = kNoStateId, StateId t = kNoStateId)
         : state(s), start(t) {}
 
     bool operator==(const SearchState &other) const {
@@ -73,8 +74,9 @@ class PdtShortestPathData {
   // Specifies paren ID, source and dest "start" states of a paren. These are
   // the "start" states of the respective sub-graphs.
   struct ParenSpec {
-    ParenSpec(Label paren_id = kNoLabel, StateId src_start = kNoStateId,
-              StateId dest_start = kNoStateId)
+    explicit ParenSpec(Label paren_id = kNoLabel,
+                       StateId src_start = kNoStateId,
+                       StateId dest_start = kNoStateId)
         : paren_id(paren_id), src_start(src_start), dest_start(dest_start) {}
 
     Label paren_id;
@@ -102,7 +104,7 @@ class PdtShortestPathData {
     uint8 flags;         // First byte reserved for PdtShortestPathData use.
   };
 
-  PdtShortestPathData(bool gc)
+  explicit PdtShortestPathData(bool gc)
       : gc_(gc), nstates_(0), ngc_(0), finished_(false) {}
 
   ~PdtShortestPathData() {

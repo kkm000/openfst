@@ -60,8 +60,8 @@ void Closure(RationalFst<Arc> *fst, ClosureType closure_type) {
 struct ClosureFstOptions : RationalFstOptions {
   ClosureType type;
 
-  ClosureFstOptions(const RationalFstOptions &opts,
-                    ClosureType type = CLOSURE_STAR)
+  explicit ClosureFstOptions(const RationalFstOptions &opts,
+                             ClosureType type = CLOSURE_STAR)
       : RationalFstOptions(opts), type(type) {}
 
   explicit ClosureFstOptions(ClosureType type = CLOSURE_STAR) : type(type) {}

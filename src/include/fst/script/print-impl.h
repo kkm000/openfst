@@ -14,8 +14,6 @@
 #include <fst/fstlib.h>
 #include <fst/util.h>
 
-DECLARE_string(fst_field_separator);
-
 namespace fst {
 
 // Print a binary FST in textual format (helper class for fstprint.cc).
@@ -28,23 +26,25 @@ class FstPrinter {
   using Label = typename Arc::Label;
   using Weight = typename Arc::Weight;
 
-  FstPrinter(const Fst<Arc> &fst, const SymbolTable *isyms,
-             const SymbolTable *osyms, const SymbolTable *ssyms, bool accep,
-             bool show_weight_one, const std::string &field_separator,
-             const std::string &missing_symbol = "")
+  explicit FstPrinter(const Fst<Arc> &fst, const SymbolTable *isyms,
+                      const SymbolTable *osyms,
+                      const SymbolTable *ssyms, bool accept,
+                      bool show_weight_one,
+                      const std::string &field_separator,
+                      const std::string &missing_symbol = "")
       : fst_(fst),
         isyms_(isyms),
         osyms_(osyms),
         ssyms_(ssyms),
-        accep_(accep && fst.Properties(kAcceptor, true)),
+        accept_(accept && (fst.Properties(kAcceptor, true) == kAcceptor)),
         ostrm_(nullptr),
         show_weight_one_(show_weight_one),
         sep_(field_separator),
         missing_symbol_(missing_symbol) {}
 
   // Prints FST to an output stream.
-  void Print(std::ostream *ostrm, const std::string &dest) {
-    ostrm_ = ostrm;
+  void Print(std::ostream &ostrm, const std::string &dest) {
+    ostrm_ = &ostrm;
     dest_ = dest;
     const auto start = fst_.Start();
     if (start == kNoStateId) return;
@@ -92,7 +92,7 @@ class FstPrinter {
       PrintStateId(arc.nextstate);
       *ostrm_ << sep_;
       PrintILabel(arc.ilabel);
-      if (!accep_) {
+      if (!accept_) {
         *ostrm_ << sep_;
         PrintOLabel(arc.olabel);
       }
@@ -115,7 +115,7 @@ class FstPrinter {
   const SymbolTable *isyms_;    // ilabel symbol table.
   const SymbolTable *osyms_;    // olabel symbol table.
   const SymbolTable *ssyms_;    // slabel symbol table.
-  bool accep_;                  // Print as acceptor when possible?
+  bool accept_;                 // Print as acceptor when possible?
   std::ostream *ostrm_;         // Text FST destination.
   std::string dest_;            // Text FST destination name.
   bool show_weight_one_;        // Print weights equal to Weight::One()?

@@ -4,8 +4,6 @@
 #ifndef FST_SCRIPT_ENCODE_H_
 #define FST_SCRIPT_ENCODE_H_
 
-#include <memory>
-#include <string>
 #include <tuple>
 #include <utility>
 
@@ -16,35 +14,16 @@
 namespace fst {
 namespace script {
 
-using EncodeArgs1 =
-    std::tuple<MutableFstClass *, uint32, bool, const std::string &>;
+using EncodeArgs = std::tuple<MutableFstClass *, EncodeMapperClass *>;
 
 template <class Arc>
-void Encode(EncodeArgs1 *args) {
+void Encode(EncodeArgs *args) {
   MutableFst<Arc> *fst = std::get<0>(*args)->GetMutableFst<Arc>();
-  const std::string &coder_fname = std::get<3>(*args);
-  // If true, reuse encode from disk. If false, make a new encoder and just use
-  // the filename argument as the destination state.
-  std::unique_ptr<EncodeMapper<Arc>> encoder(
-      std::get<2>(*args) ? EncodeMapper<Arc>::Read(coder_fname, ENCODE)
-                         : new EncodeMapper<Arc>(std::get<1>(*args), ENCODE));
-  Encode(fst, encoder.get());
-  if (!std::get<2>(*args)) encoder->Write(coder_fname);
+  EncodeMapper<Arc> *mapper = std::get<1>(*args)->GetEncodeMapper<Arc>();
+  Encode(fst, mapper);
 }
 
-using EncodeArgs2 = std::pair<MutableFstClass *, EncodeMapperClass *>;
-
-template <class Arc>
-void Encode(EncodeArgs2 *args) {
-  MutableFst<Arc> *fst = std::get<0>(*args)->GetMutableFst<Arc>();
-  EncodeMapper<Arc> *encoder = std::get<1>(*args)->GetEncodeMapper<Arc>();
-  Encode(fst, encoder);
-}
-
-void Encode(MutableFstClass *fst, uint32 flags, bool reuse_encoder,
-            const std::string &coder_fname);
-
-void Encode(MutableFstClass *fst, EncodeMapperClass *encoder);
+void Encode(MutableFstClass *fst, EncodeMapperClass *mapper);
 
 }  // namespace script
 }  // namespace fst

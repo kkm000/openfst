@@ -345,7 +345,7 @@ void NShortestPath(const Fst<RevArc> &ifst, MutableFst<Arc> *ofst,
   // (s, w). The vector pairs maps each state in ofst to the corresponding
   // pair maps states in ofst to the corresponding pair (s, w).
   std::vector<Pair> pairs;
-  // The supefinal state is denoted by kNoStateId. The distance from the
+  // The superfinal state is denoted by kNoStateId. The distance from the
   // superfinal state to the final state is semiring One, so
   // `distance[kNoStateId]` is not needed.
   const ShortestPathCompare<StateId, Weight> compare(pairs, distance,
@@ -496,8 +496,8 @@ void ShortestPath(const Fst<Arc> &ifst, MutableFst<Arc> *ofst,
                             opts.weight_threshold, opts.state_threshold);
   } else {
     std::vector<Weight> ddistance;
-    DeterminizeFstOptions<RevArc> dopts(opts.delta);
-    DeterminizeFst<RevArc> dfst(rfst, distance, &ddistance, dopts);
+    const DeterminizeFstOptions<RevArc> dopts(opts.delta);
+    const DeterminizeFst<RevArc> dfst(rfst, distance, &ddistance, dopts);
     internal::NShortestPath(dfst, ofst, ddistance, opts.nshortest, opts.delta,
                             opts.weight_threshold, opts.state_threshold);
   }

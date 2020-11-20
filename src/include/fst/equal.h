@@ -14,11 +14,11 @@
 
 namespace fst {
 
-constexpr uint32 kEqualFsts = 0x0001;
-constexpr uint32 kEqualFstTypes = 0x0002;
-constexpr uint32 kEqualCompatProperties = 0x0004;
-constexpr uint32 kEqualCompatSymbols = 0x0008;
-constexpr uint32 kEqualAll =
+constexpr uint8 kEqualFsts = 0x01;
+constexpr uint8 kEqualFstTypes = 0x02;
+constexpr uint8 kEqualCompatProperties = 0x04;
+constexpr uint8 kEqualCompatSymbols = 0x08;
+constexpr uint8 kEqualAll =
     kEqualFsts | kEqualFstTypes | kEqualCompatProperties | kEqualCompatSymbols;
 
 class WeightApproxEqual {
@@ -31,17 +31,17 @@ class WeightApproxEqual {
   }
 
  private:
-  float delta_;
+  const float delta_;
 };
 
-// Tests if two Fsts have the same states and arcs in the same order (when
-// etype & kEqualFst).
-// Also optional checks equality of Fst types (etype & kEqualFstTypes) and
-// compatibility of stored properties (etype & kEqualCompatProperties) and
-// of symbol tables (etype & kEqualCompatSymbols).
+// Tests if two FSTs have the same states and arcs in the same order (when
+// etype & kEqualFst); optionally, also checks equality of FST types
+// (etype & kEqualFstTypes) and compatibility of stored properties
+// (etype & kEqualCompatProperties) and of symbol tables
+// (etype & kEqualCompatSymbols).
 template <class Arc, class WeightEqual>
-bool Equal(const Fst<Arc> &fst1, const Fst<Arc> &fst2,
-           WeightEqual weight_equal, uint32 etype = kEqualFsts) {
+bool Equal(const Fst<Arc> &fst1, const Fst<Arc> &fst2, WeightEqual weight_equal,
+           uint8 etype = kEqualFsts) {
   if ((etype & kEqualFstTypes) && (fst1.Type() != fst2.Type())) {
     VLOG(1) << "Equal: Mismatched FST types (" << fst1.Type() << " != "
             << fst2.Type() << ")";
@@ -148,8 +148,8 @@ bool Equal(const Fst<Arc> &fst1, const Fst<Arc> &fst2,
 }
 
 template <class Arc>
-bool Equal(const Fst<Arc> &fst1, const Fst<Arc> &fst2,
-           float delta = kDelta, uint32 etype = kEqualFsts) {
+bool Equal(const Fst<Arc> &fst1, const Fst<Arc> &fst2, float delta = kDelta,
+           uint8 etype = kEqualFsts) {
   return Equal(fst1, fst2, WeightApproxEqual(delta), etype);
 }
 
@@ -158,11 +158,10 @@ bool Equal(const Fst<Arc> &fst1, const Fst<Arc> &fst2,
 // since it is a better match than double -> float narrowing, but
 // the instantiation will fail.
 template <class Arc>
-bool Equal(const Fst<Arc> &fst1, const Fst<Arc> &fst2,
-           double delta, uint32 etype = kEqualFsts) {
+bool Equal(const Fst<Arc> &fst1, const Fst<Arc> &fst2, double delta,
+           uint8 etype = kEqualFsts) {
   return Equal(fst1, fst2, WeightApproxEqual(static_cast<float>(delta)), etype);
 }
-
 
 }  // namespace fst
 

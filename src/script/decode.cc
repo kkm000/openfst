@@ -3,34 +3,21 @@
 
 #include <fst/script/decode.h>
 
-#include <fst/encode.h>
-#include <fst/script/fst-class.h>
 #include <fst/script/script-impl.h>
 
 namespace fst {
 namespace script {
 
-void Decode(MutableFstClass *fst, const std::string &coder_fname) {
-  DecodeArgs1 args(fst, coder_fname);
-  Apply<Operation<DecodeArgs1>>("Decode", fst->ArcType(), &args);
-}
-
-void Decode(MutableFstClass *fst, const EncodeMapperClass &encoder) {
-  if (!internal::ArcTypesMatch(*fst, encoder, "Decode")) {
+void Decode(MutableFstClass *fst, const EncodeMapperClass &mapper) {
+  if (!internal::ArcTypesMatch(*fst, mapper, "Decode")) {
     fst->SetProperties(kError, kError);
     return;
   }
-  DecodeArgs2 args(fst, encoder);
-  Apply<Operation<DecodeArgs2>>("Decode", fst->ArcType(), &args);
+  DecodeArgs args(fst, mapper);
+  Apply<Operation<DecodeArgs>>("Decode", fst->ArcType(), &args);
 }
 
-REGISTER_FST_OPERATION(Decode, StdArc, DecodeArgs1);
-REGISTER_FST_OPERATION(Decode, LogArc, DecodeArgs1);
-REGISTER_FST_OPERATION(Decode, Log64Arc, DecodeArgs1);
-
-REGISTER_FST_OPERATION(Decode, StdArc, DecodeArgs2);
-REGISTER_FST_OPERATION(Decode, LogArc, DecodeArgs2);
-REGISTER_FST_OPERATION(Decode, Log64Arc, DecodeArgs2);
+REGISTER_FST_OPERATION_3ARCS(Decode, DecodeArgs);
 
 }  // namespace script
 }  // namespace fst

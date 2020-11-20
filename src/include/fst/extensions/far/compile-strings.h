@@ -120,14 +120,14 @@ class StringReader {
 
 // Computes the minimal length required to encode each line number as a decimal
 // number, or zero if the file is not seekable.
-int KeySize(const char *filename);
+int KeySize(const char *source);
 
 template <class Arc>
-void FarCompileStrings(const std::vector<std::string> &in_fnames,
-                       const std::string &out_fname,
+void FarCompileStrings(const std::vector<std::string> &in_sources,
+                       const std::string &out_source,
                        const std::string &fst_type, const FarType &far_type,
                        int32 generate_keys, FarEntryType fet, FarTokenType tt,
-                       const std::string &symbols_fname,
+                       const std::string &symbols_source,
                        const std::string &unknown_symbol, bool keep_symbols,
                        bool initial_symbols, bool allow_negative_labels,
                        const std::string &key_prefix,
@@ -163,54 +163,55 @@ void FarCompileStrings(const std::vector<std::string> &in_fnames,
   }
   std::unique_ptr<const SymbolTable> syms;
   typename Arc::Label unknown_label = kNoLabel;
-  if (!symbols_fname.empty()) {
+  if (!symbols_source.empty()) {
     const SymbolTableTextOptions opts(allow_negative_labels);
-    syms.reset(SymbolTable::ReadText(symbols_fname, opts));
+    syms.reset(SymbolTable::ReadText(symbols_source, opts));
     if (!syms) {
       LOG(ERROR) << "FarCompileStrings: Error reading symbol table: "
-                 << symbols_fname;
+                 << symbols_source;
       return;
     }
     if (!unknown_symbol.empty()) {
       unknown_label = syms->Find(unknown_symbol);
       if (unknown_label == kNoLabel) {
         FSTERROR() << "FarCompileStrings: Label \"" << unknown_label
-                   << "\" missing from symbol table: " << symbols_fname;
+                   << "\" missing from symbol table: " << symbols_source;
         return;
       }
     }
   }
   std::unique_ptr<FarWriter<Arc>> far_writer(
-      FarWriter<Arc>::Create(out_fname, far_type));
+      FarWriter<Arc>::Create(out_source, far_type));
   if (!far_writer) return;
   int n = 0;
-  for (const auto &in_fname : in_fnames) {
+  for (const auto &in_source : in_sources) {
     // Don't try to call KeySize("").
-    if (generate_keys == 0 && in_fname.empty()) {
+    if (generate_keys == 0 && in_source.empty()) {
       FSTERROR() << "FarCompileStrings: Read from a file instead of stdin or"
                  << " set the --generate_keys flag.";
       return;
     }
-    const int key_size =
-        generate_keys ? generate_keys : (entry_type == StringReader<Arc>::FILE
-                                             ? 1 : KeySize(in_fname.c_str()));
+    const int key_size = generate_keys ? generate_keys
+                                       : (entry_type == StringReader<Arc>::FILE
+                                              ? 1
+                                              : KeySize(in_source.c_str()));
     if (key_size == 0) {
-      FSTERROR() << "FarCompileStrings: " << in_fname << " is not seekable.  "
+      FSTERROR() << "FarCompileStrings: " << in_source << " is not seekable.  "
                  << "Read from a file instead or set the --generate_keys flag.";
       return;
     }
     std::ifstream fstrm;
-    if (!in_fname.empty()) {
-      fstrm.open(in_fname);
+    if (!in_source.empty()) {
+      fstrm.open(in_source);
       if (!fstrm) {
-        FSTERROR() << "FarCompileStrings: Can't open file: " << in_fname;
+        FSTERROR() << "FarCompileStrings: Can't open file: " << in_source;
         return;
       }
     }
     std::istream &istrm = fstrm.is_open() ? fstrm : std::cin;
     bool keep_syms = keep_symbols;
     for (StringReader<Arc> reader(
-             istrm, in_fname.empty() ? "stdin" : in_fname, entry_type,
+             istrm, in_source.empty() ? "stdin" : in_source, entry_type,
              token_type, allow_negative_labels, syms.get(), unknown_label);
          !reader.Done(); reader.Next()) {
       ++n;
@@ -223,7 +224,7 @@ void FarCompileStrings(const std::vector<std::string> &in_fnames,
       if (initial_symbols) keep_syms = false;
       if (!fst) {
         FSTERROR() << "FarCompileStrings: Compiling string number " << n
-                   << " in file " << in_fname << " failed with token_type = "
+                   << " in file " << in_source << " failed with token_type = "
                    << (tt == FTT_BYTE
                            ? "byte"
                            : (tt == FTT_UTF8
@@ -243,14 +244,14 @@ void FarCompileStrings(const std::vector<std::string> &in_fnames,
       if (generate_keys > 0) {
         key = keybuf.str();
       } else {
-        auto *filename = new char[in_fname.size() + 1];
-        strcpy(filename, in_fname.c_str());
-        key = basename(filename);
+        auto *source = new char[in_source.size() + 1];
+        strcpy(source, in_source.c_str());  // NOLINT
+        key = basename(source);
         if (entry_type != StringReader<Arc>::FILE) {
           key += "-";
           key += keybuf.str();
         }
-        delete[] filename;
+        delete[] source;
       }
       far_writer->Add(key_prefix + key + key_suffix, *fst);
     }

@@ -3,7 +3,6 @@
 
 #include <fst/script/verify.h>
 
-#include <fst/script/fst-class.h>
 #include <fst/script/script-impl.h>
 
 namespace fst {
@@ -15,9 +14,7 @@ bool Verify(const FstClass &fst) {
   return args.retval;
 }
 
-REGISTER_FST_OPERATION(Verify, StdArc, VerifyArgs);
-REGISTER_FST_OPERATION(Verify, LogArc, VerifyArgs);
-REGISTER_FST_OPERATION(Verify, Log64Arc, VerifyArgs);
+REGISTER_FST_OPERATION_3ARCS(Verify, VerifyArgs);
 
 }  // namespace script
 }  // namespace fst

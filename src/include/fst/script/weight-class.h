@@ -117,15 +117,13 @@ class WeightClass {
     return *this;
   }
 
-  static constexpr const char *__ZERO__ = "__ZERO__";  // NOLINT
+  static constexpr char __ZERO__[] = "__ZERO__";  // NOLINT
+  static constexpr char __ONE__[] = "__ONE__";    // NOLINT
+  static constexpr char __NOWEIGHT__[] = "__NOWEIGHT__";  // NOLINT
 
   static WeightClass Zero(const std::string &weight_type);
 
-  static constexpr const char *__ONE__ = "__ONE__";  // NOLINT
-
   static WeightClass One(const std::string &weight_type);
-
-  static constexpr const char *__NOWEIGHT__ = "__NOWEIGHT__";  // NOLINT
 
   static WeightClass NoWeight(const std::string &weight_type);
 
@@ -149,8 +147,8 @@ class WeightClass {
 
   bool Member() const { return impl_ && impl_->Member(); }
 
-  bool WeightTypesMatch(const WeightClass &other,
-                        const std::string &op_name) const;
+  static bool WeightTypesMatch(const WeightClass &lhs, const WeightClass &rhs,
+                               const std::string &op_name);
 
   friend bool operator==(const WeightClass &lhs, const WeightClass &rhs);
 

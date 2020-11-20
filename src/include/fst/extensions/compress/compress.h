@@ -766,28 +766,28 @@ void Compress(const Fst<Arc> &fst, std::ostream &strm) {
 }
 
 template <class Arc>
-bool Compress(const Fst<Arc> &fst, const std::string &filename,
+bool Compress(const Fst<Arc> &fst, const std::string &source,
               const bool gzip = false) {
   if (gzip) {
       std::stringstream strm;
       Compress(fst, strm);
-      OGzFile gzfile(filename);
+      OGzFile gzfile(source);
       if (!gzfile) {
         LOG(ERROR) << "Compress: Can't open file: "
-                   << (filename.empty() ? "standard output" : filename);
+                   << (source.empty() ? "standard output" : source);
         return false;
       }
       gzfile.Write(strm);
       if (!gzfile) {
         LOG(ERROR) << "Compress: Can't write to file: "
-                   << (filename.empty() ? "standard output" : filename);
+                   << (source.empty() ? "standard output" : source);
         return false;
       }
-  } else if (!filename.empty()) {
-    std::ofstream strm(filename,
+  } else if (!source.empty()) {
+    std::ofstream strm(source,
                              std::ios_base::out | std::ios_base::binary);
     if (!strm) {
-      LOG(ERROR) << "Compress: Can't open file: " << filename;
+      LOG(ERROR) << "Compress: Can't open file: " << source;
       return false;
     }
     Compress(fst, strm);
@@ -807,29 +807,28 @@ bool Decompress(std::istream &strm, const std::string &source,
 
 // Returns true on success.
 template <class Arc>
-bool Decompress(const std::string &filename, MutableFst<Arc> *fst,
+bool Decompress(const std::string &source, MutableFst<Arc> *fst,
                 const bool gzip = false) {
   if (gzip) {
-    IGzFile gzfile(filename);
+    IGzFile gzfile(source);
     if (!gzfile) {
       LOG(ERROR) << "Decompress: Can't open file: "
-                 << (filename.empty() ? "standard input" : filename);
+                 << (source.empty() ? "standard input" : source);
       return false;
     }
-    Decompress(*gzfile.Read(), filename, fst);
+    Decompress(*gzfile.Read(), source, fst);
     if (!gzfile) {
       LOG(ERROR) << "Decompress: Can't read from file: "
-                 << (filename.empty() ? "standard input" : filename);
+                 << (source.empty() ? "standard input" : source);
       return false;
     }
-  } else if (!filename.empty()) {
-    std::ifstream strm(filename,
-                            std::ios_base::in | std::ios_base::binary);
+  } else if (!source.empty()) {
+    std::ifstream strm(source, std::ios_base::in | std::ios_base::binary);
     if (!strm) {
-      LOG(ERROR) << "Decompress: Can't open file: " << filename;
+      LOG(ERROR) << "Decompress: Can't open file: " << source;
       return false;
     }
-    Decompress(strm, filename, fst);
+    Decompress(strm, source, fst);
   } else {
     Decompress(std::cin, "standard input", fst);
   }

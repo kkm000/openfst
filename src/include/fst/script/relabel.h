@@ -28,11 +28,9 @@ void Relabel(RelabelArgs1 *args) {
           std::get<7>(*args), std::get<8>(*args));
 }
 
-using LabelPair = std::pair<int64, int64>;
-
-using RelabelArgs2 = std::tuple<MutableFstClass *,
-                                const std::vector<LabelPair> &,
-                                const std::vector<LabelPair> &>;
+using RelabelArgs2 =
+    std::tuple<MutableFstClass *, const std::vector<std::pair<int64, int64>> &,
+               const std::vector<std::pair<int64, int64>> &>;
 
 template <class Arc>
 void Relabel(RelabelArgs2 *args) {
@@ -55,8 +53,9 @@ void Relabel(MutableFstClass *ofst, const SymbolTable *old_isymbols,
              const SymbolTable *old_osymbols, const SymbolTable *new_osymbols,
              const std::string &unknown_osymbol, bool attach_new_osymbols);
 
-void Relabel(MutableFstClass *ofst, const std::vector<LabelPair> &ipairs,
-             const std::vector<LabelPair> &opairs);
+void Relabel(MutableFstClass *ofst,
+             const std::vector<std::pair<int64, int64>> &ipairs,
+             const std::vector<std::pair<int64, int64>> &opairs);
 
 }  // namespace script
 }  // namespace fst

@@ -51,11 +51,11 @@ class FstDrawer {
         show_weight_one_(show_weight_one) {}
 
   // Draws FST to an output buffer.
-  void Draw(std::ostream *strm, const std::string &dest) {
-    ostrm_ = strm;
+  void Draw(std::ostream &strm, const std::string &dest) {
+    ostrm_ = &strm;
     SetStreamState(ostrm_);
     dest_ = dest;
-    StateId start = fst_.Start();
+    const auto start = fst_.Start();
     if (start == kNoStateId) return;
     PrintString("digraph FST {\n");
     if (vertical_) {

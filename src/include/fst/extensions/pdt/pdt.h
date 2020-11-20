@@ -124,7 +124,7 @@ struct PdtStateTuple {
   StateId state_id;
   StackId stack_id;
 
-  PdtStateTuple(StateId state_id = kNoStateId, StackId stack_id = -1)
+  explicit PdtStateTuple(StateId state_id = kNoStateId, StackId stack_id = -1)
       : state_id(state_id), stack_id(stack_id) {}
 };
 

@@ -114,7 +114,7 @@ class PdtParser {
       if (!CompatSymbols(fst_array[0].second->OutputSymbols(),
                          fst_array[i].second->OutputSymbols())) {
         FSTERROR() << "PdtParser: Output symbol table of input FST " << i
-                   << " does not match input symbol table of 0th input FST";
+                   << " does not match output symbol table of 0th input FST";
         error_ = true;
       }
       fst_array_.emplace_back(fst_array[i].first, fst_array[i].second->Copy());

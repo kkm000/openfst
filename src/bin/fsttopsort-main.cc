@@ -34,7 +34,7 @@ int fsttopsort_main(int argc, char **argv) {
   std::unique_ptr<MutableFstClass> fst(MutableFstClass::Read(in_name, true));
   if (!fst) return 1;
 
-  bool acyclic = TopSort(fst.get());
+  bool acyclic = s::TopSort(fst.get());
 
   if (!acyclic) LOG(WARNING) << argv[0] << ": Input FST is cyclic";
 

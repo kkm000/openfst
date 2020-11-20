@@ -1,5 +1,11 @@
 OpenFst: Release 1.7
-   * Overloads Arc templatse with default weight argument (1.7.3)
+   * Removes harmful constexpr specifications in FAR (1.7.4)
+   * Improved script API support for EncodeMapper (1.7.4)
+   * New header format for the EncodeMapper (1.7.4)
+   * Imrproved C++17 compatibility shims (1.7.4)
+   * Rewrite of the compactor interface (1.7.4)
+   * Overloads Arc constructors with default weight argument (1.7.3)
+   * Fixes RmEpsilon and Union property checking bugs (1.7.3)
    * Makes Isomorphic more robust to nondeterminism (1.7.3)
    * Adds default weight argument to SetFinal (1.7.3)
    * Cleans up low-level logging (1.7.3)

@@ -20,7 +20,7 @@ namespace fst {
 template <class Weight, class WeightGenerator>
 class WeightTester {
  public:
-  WeightTester(WeightGenerator generator)
+  explicit WeightTester(WeightGenerator generator)
       : weight_generator_(std::move(generator)) {}
 
   void Test(int iterations, bool test_division = true) {
@@ -141,7 +141,7 @@ class WeightTester {
 
   // Tests reverse operation.
   void TestReverse(Weight w1, Weight w2) {
-    typedef typename Weight::ReverseWeight ReverseWeight;
+    using ReverseWeight = typename Weight::ReverseWeight;
 
     ReverseWeight rw1 = w1.Reverse();
     ReverseWeight rw2 = w2.Reverse();

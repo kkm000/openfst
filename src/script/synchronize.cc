@@ -3,7 +3,6 @@
 
 #include <fst/script/synchronize.h>
 
-#include <fst/script/fst-class.h>
 #include <fst/script/script-impl.h>
 
 namespace fst {
@@ -18,9 +17,7 @@ void Synchronize(const FstClass &ifst, MutableFstClass *ofst) {
   Apply<Operation<SynchronizeArgs>>("Synchronize", ifst.ArcType(), &args);
 }
 
-REGISTER_FST_OPERATION(Synchronize, StdArc, SynchronizeArgs);
-REGISTER_FST_OPERATION(Synchronize, LogArc, SynchronizeArgs);
-REGISTER_FST_OPERATION(Synchronize, Log64Arc, SynchronizeArgs);
+REGISTER_FST_OPERATION_3ARCS(Synchronize, SynchronizeArgs);
 
 }  // namespace script
 }  // namespace fst

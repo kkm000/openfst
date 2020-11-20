@@ -59,13 +59,16 @@
 //  provided you also have:
 //
 //  4) A registration for your new operation, on the arc types you care about.
-//     This can be provided easily by the REGISTER_FST_OPERATION macro in
-//     operations.h:
+//     This can be provided easily by the REGISTER_FST_OPERATION macro:
 //
 //       REGISTER_FST_OPERATION(Foo, StdArc, FooArgs);
 //       REGISTER_FST_OPERATION(Foo, MyArc, FooArgs);
 //       // .. etc
 //
+//     You can also use REGISTER_FST_OPERATION_3ARCS macro to register an
+//     operation for StdArc, LogArc, and Log64Arc:
+//
+//       REGISTER_FST_OPERATION_3ARCS(Foo, FooArcs);
 //
 //  That's it! Now when you call Foo(const FstClass &, MutableFstClass *),
 //  it dispatches (in #3) via the Apply<> function to the correct
@@ -99,7 +102,6 @@ enum RandArcSelection {
 // The std::pair<std::string, std::string> is understood to be the operation
 // name and arc type; subclasses (or typedefs) need only provide the operation
 // signature.
-
 template <class OperationSignature>
 class GenericOperationRegister
     : public GenericRegister<std::pair<std::string, std::string>,
@@ -142,19 +144,23 @@ struct Operation {
   // The register (hash) type.
   using Register = GenericOperationRegister<OpType>;
 
-  // The register-er type
+  // The register-er type.
   using Registerer = GenericRegisterer<Register>;
 };
 
 // Macro for registering new types of operations.
-
 #define REGISTER_FST_OPERATION(Op, Arc, ArgPack)               \
   static fst::script::Operation<ArgPack>::Registerer       \
       arc_dispatched_operation_##ArgPack##Op##Arc##_registerer \
-      (std::make_pair(#Op, Arc::Type()), Op<Arc>)
+      ({#Op, Arc::Type()}, Op<Arc>)
+
+// A macro that calls REGISTER_FST_OPERATION for widely-used arc types.
+#define REGISTER_FST_OPERATION_3ARCS(Op, ArgPack) \
+  REGISTER_FST_OPERATION(Op, StdArc, ArgPack);    \
+  REGISTER_FST_OPERATION(Op, LogArc, ArgPack);    \
+  REGISTER_FST_OPERATION(Op, Log64Arc, ArgPack)
 
 // Template function to apply an operation by name.
-
 template <class OpReg>
 void Apply(const std::string &op_name, const std::string &arc_type,
            typename OpReg::ArgPack *args) {
@@ -190,7 +196,7 @@ void CopyWeights(const std::vector<WeightClass> &weights,
   typed_weights->clear();
   typed_weights->reserve(weights.size());
   for (const auto &weight : weights) {
-    typed_weights->push_back(*weight.GetWeight<Weight>());
+    typed_weights->emplace_back(*weight.GetWeight<Weight>());
   }
 }
 

@@ -14,6 +14,9 @@ namespace {
 const size_t kPrimaryBlockBits =
     BitmapIndex::kStorageBitSize * BitmapIndex::kSecondaryBlockSize;
 
+static_assert(sizeof(long long) >= sizeof(uint64),  // NOLINT
+              "__builtin_...ll is used on uint64 values.");
+
 // If [begin, begin+size) is a monotonically increasing running sum of
 // popcounts for a bitmap, this will return the index of the word that contains
 // the value'th zero.  If value is larger then the number of zeros in the
@@ -164,14 +167,16 @@ size_t BitmapIndex::get_index_ones_count(size_t array_index) const {
   return sum;
 }
 
-void BitmapIndex::BuildIndex(const uint64 *bits, size_t size) {
+void BitmapIndex::BuildIndex(const uint64 *bits, size_t num_bits) {
   bits_ = bits;
-  size_ = size;
+  num_bits_ = num_bits;
   primary_index_.resize(primary_index_size());
   secondary_index_.resize(ArraySize());
   const uint64 zero = 0;
   const uint64 ones = ~zero;
   uint32 popcount = 0;
+  // We keep the primary index zero for empty bitmaps.
+  if (ArraySize() == 0) primary_index_.at(0) = 0;
   for (uint32 block = 0; block * kSecondaryBlockSize < ArraySize(); block++) {
     uint32 block_popcount = 0;
     uint32 block_begin = block * kSecondaryBlockSize;
@@ -180,7 +185,7 @@ void BitmapIndex::BuildIndex(const uint64 *bits, size_t size) {
     for (uint32 j = block_begin; j < block_end; ++j) {
       uint64 mask = ones;
       if (j == ArraySize() - 1) {
-        mask = ones >> (-size_ & BitmapIndex::kStorageBlockMask);
+        mask = ones >> (-num_bits_ & BitmapIndex::kStorageBlockMask);
       }
       block_popcount += __builtin_popcountll(bits_[j] & mask);
       secondary_index_[j] = block_popcount;
@@ -213,8 +218,7 @@ size_t BitmapIndex::find_inverted_secondary_block(size_t block_begin,
 inline size_t BitmapIndex::find_primary_block(size_t bit_index) const {
   return std::distance(
       primary_index_.begin(),
-      std::lower_bound(primary_index_.begin(),
-                       primary_index_.begin() + primary_index_size(),
+      std::lower_bound(primary_index_.begin(), primary_index_.end(),
                        bit_index));
 }
 

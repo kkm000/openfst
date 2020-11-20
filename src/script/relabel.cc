@@ -3,7 +3,6 @@
 
 #include <fst/script/relabel.h>
 
-#include <fst/script/fst-class.h>
 #include <fst/script/script-impl.h>
 
 namespace fst {
@@ -20,19 +19,15 @@ void Relabel(MutableFstClass *ofst, const SymbolTable *old_isyms,
   Apply<Operation<RelabelArgs1>>("Relabel", ofst->ArcType(), &args);
 }
 
-void Relabel(MutableFstClass *ofst, const std::vector<LabelPair> &ipairs,
-             const std::vector<LabelPair> &opairs) {
+void Relabel(MutableFstClass *ofst,
+             const std::vector<std::pair<int64, int64>> &ipairs,
+             const std::vector<std::pair<int64, int64>> &opairs) {
   RelabelArgs2 args(ofst, ipairs, opairs);
   Apply<Operation<RelabelArgs2>>("Relabel", ofst->ArcType(), &args);
 }
 
-REGISTER_FST_OPERATION(Relabel, StdArc, RelabelArgs1);
-REGISTER_FST_OPERATION(Relabel, LogArc, RelabelArgs1);
-REGISTER_FST_OPERATION(Relabel, Log64Arc, RelabelArgs1);
-
-REGISTER_FST_OPERATION(Relabel, StdArc, RelabelArgs2);
-REGISTER_FST_OPERATION(Relabel, LogArc, RelabelArgs2);
-REGISTER_FST_OPERATION(Relabel, Log64Arc, RelabelArgs2);
+REGISTER_FST_OPERATION_3ARCS(Relabel, RelabelArgs1);
+REGISTER_FST_OPERATION_3ARCS(Relabel, RelabelArgs2);
 
 }  // namespace script
 }  // namespace fst

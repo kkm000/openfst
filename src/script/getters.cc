@@ -1,3 +1,6 @@
+// See www.openfst.org for extensive documentation on this weighted
+// finite-state transducer library.
+
 #include <fst/script/getters.h>
 
 namespace fst {

@@ -13,7 +13,6 @@
 
 DECLARE_string(arc_filter);
 DECLARE_string(info_type);
-DECLARE_bool(pipe);
 DECLARE_bool(test_properties);
 DECLARE_bool(fst_verify);
 
@@ -38,8 +37,8 @@ int fstinfo_main(int argc, char **argv) {
   std::unique_ptr<FstClass> ifst(FstClass::Read(in_name));
   if (!ifst) return 1;
 
-  s::PrintFstInfo(*ifst, FLAGS_test_properties, FLAGS_arc_filter,
-                  FLAGS_info_type, FLAGS_fst_verify, FLAGS_pipe);
+  s::Info(*ifst, FLAGS_test_properties, FLAGS_arc_filter, FLAGS_info_type,
+          FLAGS_fst_verify);
 
-  return 0;
+      return 0;
 }

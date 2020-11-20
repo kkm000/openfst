@@ -12,9 +12,9 @@ template <class Arc, class WeightGenerator>
 void RandFst(const int num_random_states, const int num_random_arcs,
              const int num_random_labels, const float acyclic_prob,
              WeightGenerator *weight_generator, MutableFst<Arc> *fst) {
-  typedef typename Arc::Label Label;
-  typedef typename Arc::StateId StateId;
-  typedef typename Arc::Weight Weight;
+  using Label = typename Arc::Label;
+  using StateId = typename Arc::StateId;
+  using Weight = typename Arc::Weight;
 
   // Determines direction of the arcs wrt state numbering. This way we
   // can force acyclicity when desired.

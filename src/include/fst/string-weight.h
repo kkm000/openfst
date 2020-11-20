@@ -54,7 +54,7 @@ class StringWeight {
   StringWeight() {}
 
   template <typename Iterator>
-  StringWeight(const Iterator &begin, const Iterator &end) {
+  StringWeight(const Iterator begin, const Iterator end) {
     for (auto iter = begin; iter != end; ++iter) PushBack(*iter);
   }
 

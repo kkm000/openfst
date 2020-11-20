@@ -31,24 +31,24 @@ static constexpr int32 kSTTableFileVersion = 1;
 template <class T, class Writer>
 class STTableWriter {
  public:
-  explicit STTableWriter(const std::string &filename)
-      : stream_(filename, std::ios_base::out | std::ios_base::binary),
+  explicit STTableWriter(const std::string &source)
+      : stream_(source, std::ios_base::out | std::ios_base::binary),
         error_(false) {
     WriteType(stream_, kSTTableMagicNumber);
     WriteType(stream_, kSTTableFileVersion);
     if (stream_.fail()) {
       FSTERROR() << "STTableWriter::STTableWriter: Error writing to file: "
-                 << filename;
+                 << source;
       error_ = true;
     }
   }
 
-  static STTableWriter<T, Writer> *Create(const std::string &filename) {
-    if (filename.empty()) {
+  static STTableWriter<T, Writer> *Create(const std::string &source) {
+    if (source.empty()) {
       LOG(ERROR) << "STTableWriter: Writing to standard out unsupported.";
       return nullptr;
     }
-    return new STTableWriter<T, Writer>(filename);
+    return new STTableWriter<T, Writer>(source);
   }
 
   void Add(const std::string &key, const T &t) {
@@ -94,18 +94,18 @@ class STTableWriter {
 template <class T, class Reader>
 class STTableReader {
  public:
-  explicit STTableReader(const std::vector<std::string> &filenames)
-      : sources_(filenames), error_(false) {
+  explicit STTableReader(const std::vector<std::string> &sources)
+      : sources_(sources), error_(false) {
     compare_.reset(new Compare(&keys_));
-    keys_.resize(filenames.size());
-    streams_.resize(filenames.size(), 0);
-    positions_.resize(filenames.size());
-    for (size_t i = 0; i < filenames.size(); ++i) {
+    keys_.resize(sources.size());
+    streams_.resize(sources.size(), nullptr);
+    positions_.resize(sources.size());
+    for (size_t i = 0; i < sources.size(); ++i) {
       streams_[i] = new std::ifstream(
-          filenames[i], std::ios_base::in | std::ios_base::binary);
+          sources[i], std::ios_base::in | std::ios_base::binary);
       if (streams_[i]->fail()) {
         FSTERROR() << "STTableReader::STTableReader: Error reading file: "
-                 << filenames[i];
+                   << sources[i];
         error_ = true;
         return;
       }
@@ -115,13 +115,13 @@ class STTableReader {
       ReadType(*streams_[i], &file_version);
       if (magic_number != kSTTableMagicNumber) {
         FSTERROR() << "STTableReader::STTableReader: Wrong file type: "
-                   << filenames[i];
+                   << sources[i];
         error_ = true;
         return;
       }
       if (file_version != kSTTableFileVersion) {
         FSTERROR() << "STTableReader::STTableReader: Wrong file version: "
-                   << filenames[i];
+                   << sources[i];
         error_ = true;
         return;
       }
@@ -138,7 +138,7 @@ class STTableReader {
         streams_[i]->seekg(positions_[i][0]);
         if (streams_[i]->fail()) {
           FSTERROR() << "STTableReader::STTableReader: Error reading file: "
-                     << filenames[i];
+                     << sources[i];
           error_ = true;
           return;
         }
@@ -151,19 +151,19 @@ class STTableReader {
     for (auto &stream : streams_) delete stream;
   }
 
-  static STTableReader<T, Reader> *Open(const std::string &filename) {
-    if (filename.empty()) {
+  static STTableReader<T, Reader> *Open(const std::string &source) {
+    if (source.empty()) {
       LOG(ERROR) << "STTableReader: Operation not supported on standard input";
       return nullptr;
     }
-    std::vector<std::string> filenames;
-    filenames.push_back(filename);
-    return new STTableReader<T, Reader>(filenames);
+    std::vector<std::string> sources;
+    sources.push_back(source);
+    return new STTableReader<T, Reader>(sources);
   }
 
   static STTableReader<T, Reader> *Open(
-      const std::vector<std::string> &filenames) {
-    return new STTableReader<T, Reader>(filenames);
+      const std::vector<std::string> &sources) {
+    return new STTableReader<T, Reader>(sources);
   }
 
   void Reset() {
@@ -301,17 +301,17 @@ class STTableReader {
 // The Header type must provide at least the following interface:
 //
 //   struct Header {
-//     void Read(std::istream &istrm, const string &filename);
+//     void Read(std::istream &istrm, const string &source);
 //   };
 template <class Header>
-bool ReadSTTableHeader(const std::string &filename, Header *header) {
-  if (filename.empty()) {
+bool ReadSTTableHeader(const std::string &source, Header *header) {
+  if (source.empty()) {
     LOG(ERROR) << "ReadSTTable: Can't read header from standard input";
     return false;
   }
-  std::ifstream strm(filename, std::ios_base::in | std::ios_base::binary);
+  std::ifstream strm(source, std::ios_base::in | std::ios_base::binary);
   if (!strm) {
-    LOG(ERROR) << "ReadSTTableHeader: Could not open file: " << filename;
+    LOG(ERROR) << "ReadSTTableHeader: Could not open file: " << source;
     return false;
   }
   int32 magic_number = 0;
@@ -319,18 +319,18 @@ bool ReadSTTableHeader(const std::string &filename, Header *header) {
   int32 file_version = 0;
   ReadType(strm, &file_version);
   if (magic_number != kSTTableMagicNumber) {
-    LOG(ERROR) << "ReadSTTableHeader: Wrong file type: " << filename;
+    LOG(ERROR) << "ReadSTTableHeader: Wrong file type: " << source;
     return false;
   }
   if (file_version != kSTTableFileVersion) {
-    LOG(ERROR) << "ReadSTTableHeader: Wrong file version: " << filename;
+    LOG(ERROR) << "ReadSTTableHeader: Wrong file version: " << source;
     return false;
   }
   int64 i = -1;
   strm.seekg(-static_cast<int>(sizeof(int64)), std::ios_base::end);
   ReadType(strm, &i);  // Reads number of entries
   if (strm.fail()) {
-    LOG(ERROR) << "ReadSTTableHeader: Error reading file: " << filename;
+    LOG(ERROR) << "ReadSTTableHeader: Error reading file: " << source;
     return false;
   }
   if (i == 0) return true;  // No entry header to read.
@@ -339,15 +339,15 @@ bool ReadSTTableHeader(const std::string &filename, Header *header) {
   strm.seekg(i);
   std::string key;
   ReadType(strm, &key);
-  header->Read(strm, filename + ":" + key);
+  header->Read(strm, source + ":" + key);
   if (strm.fail()) {
-    LOG(ERROR) << "ReadSTTableHeader: Error reading file: " << filename;
+    LOG(ERROR) << "ReadSTTableHeader: Error reading file: " << source;
     return false;
   }
   return true;
 }
 
-bool IsSTTable(const std::string &filename);
+bool IsSTTable(const std::string &source);
 
 }  // namespace fst
 

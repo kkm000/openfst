@@ -764,7 +764,7 @@ class ReplaceFstImpl
   // If acpp is null, only returns true if a final arcp is required, but does
   // not actually compute it.
   bool ComputeFinalArc(const StateTuple &tuple, Arc *arcp,
-                       uint32 flags = kArcValueFlags) {
+                       uint8 flags = kArcValueFlags) {
     const auto fst_state = tuple.fst_state;
     if (fst_state == kNoStateId) return false;
     // If state is final, pops the stack.
@@ -795,7 +795,7 @@ class ReplaceFstImpl
   // Returns false if the underlying arc corresponds to no arc in the resulting
   // FST.
   bool ComputeArc(const StateTuple &tuple, const Arc &arc, Arc *arcp,
-                  uint32 flags = kArcValueFlags) {
+                  uint8 flags = kArcValueFlags) {
     if (!EpsilonOnInput(call_label_type_) &&
         (flags == (flags & (kArcILabelValue | kArcWeightValue)))) {
       *arcp = arc;
@@ -849,8 +849,8 @@ class ReplaceFstImpl
   }
 
   // Returns the arc iterator flags supported by this FST.
-  uint32 ArcIteratorFlags() const {
-    uint32 flags = kArcValueFlags;
+  uint8 ArcIteratorFlags() const {
+    uint8 flags = kArcValueFlags;
     if (!always_cache_) flags |= kArcNoCache;
     return flags;
   }
@@ -1194,9 +1194,9 @@ class ArcIterator<ReplaceFst<Arc, StateTable, CacheStore>> {
 
   void Seek(size_t pos) { pos_ = pos; }
 
-  uint32 Flags() const { return flags_; }
+  uint8 Flags() const { return flags_; }
 
-  void SetFlags(uint32 flags, uint32 mask) {
+  void SetFlags(uint8 flags, uint8 mask) {
     // Updates the flags taking into account what flags are supported
     // by the FST.
     flags_ &= ~mask;
@@ -1220,16 +1220,16 @@ class ArcIterator<ReplaceFst<Arc, StateTable, CacheStore>> {
   ssize_t pos_;             // Current position.
   mutable ssize_t offset_;  // Offset between position in iterator and in arcs_.
   ssize_t num_arcs_;        // Number of arcs at state_.
-  uint32 flags_;            // Behavorial flags for the arc iterator
+  uint8 flags_;             // Behavorial flags for the arc iterator
   mutable Arc arc_;         // Memory to temporarily store computed arcs.
 
   mutable ArcIteratorData<Arc> cache_data_;  // Arc iterator data in cache.
   mutable ArcIteratorData<Arc> local_data_;  // Arc iterator data in local FST.
 
-  mutable const Arc *arcs_;     // Array of arcs.
-  mutable uint32 data_flags_;   // Arc value flags valid for data in arcs_.
-  mutable Arc final_arc_;       // Final arc (when required).
-  mutable uint32 final_flags_;  // Arc value flags valid for final_arc_.
+  mutable const Arc *arcs_;    // Array of arcs.
+  mutable uint8 data_flags_;   // Arc value flags valid for data in arcs_.
+  mutable Arc final_arc_;      // Final arc (when required).
+  mutable uint8 final_flags_;  // Arc value flags valid for final_arc_.
 
   ArcIterator(const ArcIterator &) = delete;
   ArcIterator &operator=(const ArcIterator &) = delete;

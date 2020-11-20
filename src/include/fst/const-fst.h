@@ -273,10 +273,10 @@ class ConstFst : public ImplToExpandedFst<internal::ConstFstImpl<A, Unsigned>> {
                 : nullptr;
   }
 
-  // Read a ConstFst from a file; return nullptr on error; empty filename reads
+  // Read a ConstFst from a file; return nullptr on error; empty source reads
   // from standard input.
-  static ConstFst<A, Unsigned> *Read(const std::string &filename) {
-    auto *impl = ImplToExpandedFst<Impl>::Read(filename);
+  static ConstFst<A, Unsigned> *Read(const std::string &source) {
+    auto *impl = ImplToExpandedFst<Impl>::Read(source);
     return impl ? new ConstFst<A, Unsigned>(std::shared_ptr<Impl>(impl))
                 : nullptr;
   }
@@ -285,8 +285,8 @@ class ConstFst : public ImplToExpandedFst<internal::ConstFstImpl<A, Unsigned>> {
     return WriteFst(*this, strm, opts);
   }
 
-  bool Write(const std::string &filename) const override {
-    return Fst<Arc>::WriteFile(filename);
+  bool Write(const std::string &source) const override {
+    return Fst<Arc>::WriteFile(source);
   }
 
   template <class FST>
@@ -467,9 +467,9 @@ class ArcIterator<ConstFst<Arc, Unsigned>> {
 
   void Seek(size_t a) { i_ = a; }
 
-  constexpr uint32 Flags() const { return kArcValueFlags; }
+  constexpr uint8 Flags() const { return kArcValueFlags; }
 
-  void SetFlags(uint32, uint32) {}
+  void SetFlags(uint8, uint8) {}
 
  private:
   const Arc *arcs_;

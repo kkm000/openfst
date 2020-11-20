@@ -530,7 +530,7 @@ class LabelLookAheadMatcher
 
   const MatcherData *GetData() const {
     return label_reachable_ ? label_reachable_->GetData() : nullptr;
-  };
+  }
 
   std::shared_ptr<MatcherData> GetSharedData() const {
     return label_reachable_ ? label_reachable_->GetSharedData()

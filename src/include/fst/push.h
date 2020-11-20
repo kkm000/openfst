@@ -64,17 +64,16 @@ void RemoveWeight(MutableFst<Arc> *fst, const typename Arc::Weight &weight,
   }
 }
 
-// Pushes the weights in FST in the direction defined by TYPE. If
-// pushing towards the initial state, the sum of the weight of the
-// outgoing transitions and final weight at a non-initial state is
-// equal to One() in the resulting machine. If pushing towards the
-// final state, the same property holds on the reverse machine.
+// Pushes the weights in FST in the direction defined by TYPE. If pushing
+// towards the initial state, the sum of the weight of the outgoing transitions
+// and final weight at a non-initial state is equal to One() in the resulting
+// machine. If pushing towards the final state, the same property holds on the
+// reverse machine.
 //
-// Weight needs to be left distributive when pushing towards the
-// initial state and right distributive when pushing towards the final
-// states.
+// Weight needs to be left distributive when pushing towards the initial state
+// and right distributive when pushing towards the final states.
 template <class Arc>
-void Push(MutableFst<Arc> *fst, ReweightType type, float delta = kDelta,
+void Push(MutableFst<Arc> *fst, ReweightType type, float delta = kShortestDelta,
           bool remove_total_weight = false) {
   using Weight = typename Arc::Weight;
   std::vector<Weight> distance;
@@ -90,20 +89,20 @@ void Push(MutableFst<Arc> *fst, ReweightType type, float delta = kDelta,
   }
 }
 
-constexpr uint32 kPushWeights = 0x0001;
-constexpr uint32 kPushLabels = 0x0002;
-constexpr uint32 kPushRemoveTotalWeight = 0x0004;
-constexpr uint32 kPushRemoveCommonAffix = 0x0008;
+constexpr uint8 kPushWeights = 0x01;
+constexpr uint8 kPushLabels = 0x02;
+constexpr uint8 kPushRemoveTotalWeight = 0x04;
+constexpr uint8 kPushRemoveCommonAffix = 0x08;
 
-// Pushes the weights and/or labels of the input FST into the output
-// mutable FST by pushing weights and/or labels (as determined by the
-// ptype argument) towards the initial state or final states (as
-// determined by the rtype template parameter). The weight type must
-// be left distributive when pushing weights towards the initial state, and
-// right distribution when pushing weights towards the final states.
+// Pushes the weights and/or labels of the input FST into the output mutable FST
+// by pushing weights and/or labels (as determined by the ptype argument)
+// towards the initial state or final states (as determined by the rtype
+// template parameter). The weight type must be left distributive when pushing
+// weights towards the initial state, and right distribution when pushing
+// weights towards the final states.
 template <class Arc, ReweightType rtype>
-void Push(const Fst<Arc> &ifst, MutableFst<Arc> *ofst, uint32 ptype,
-          float delta = kDelta) {
+void Push(const Fst<Arc> &ifst, MutableFst<Arc> *ofst, uint8 ptype,
+          float delta = kShortestDelta) {
   using Label = typename Arc::Label;
   using Weight = typename Arc::Weight;
   if ((ptype & (kPushWeights | kPushLabels)) == kPushWeights) {

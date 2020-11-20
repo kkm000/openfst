@@ -11,6 +11,7 @@ DEFINE_string(key_separator, ",", "Separator for individual keys");
 DEFINE_string(range_delimiter, "-", "Delimiter for ranges of keys");
 
 int farextract_main(int argc, char **argv);
+
 int main(int argc, char **argv) {
   return farextract_main(argc, argv);
 }

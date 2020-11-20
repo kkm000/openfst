@@ -714,11 +714,14 @@ class DeterminizeFsaImpl : public DeterminizeFstImplBase<Arc> {
   const std::vector<Weight> *in_dist_;  // Distance to final NFA states.
   std::vector<Weight> *out_dist_;       // Distance to final DFA states.
 
-  // FIXME(kbg): Ought to be static const?
-  CommonDivisor common_divisor_;
+  static const CommonDivisor common_divisor_;
   std::unique_ptr<Filter> filter_;
   std::unique_ptr<StateTable> state_table_;
 };
+
+template <class Arc, class CommonDivisor, class Filter, class StateTable>
+const CommonDivisor DeterminizeFsaImpl<Arc, CommonDivisor, Filter,
+                                       StateTable>::common_divisor_{};
 
 // Implementation of delayed determinization for transducers. Transducer
 // determinization is implemented by mapping the input to the Gallic semiring as
@@ -864,7 +867,7 @@ class DeterminizeFst : public ImplToFst<internal::DeterminizeFstImplBase<A>> {
       : ImplToFst<Impl>(CreateImpl(fst)) {}
 
   template <class CommonDivisor, class Filter, class StateTable>
-  DeterminizeFst(
+  explicit DeterminizeFst(
       const Fst<Arc> &fst,
       const DeterminizeFstOptions<Arc, CommonDivisor, Filter, StateTable>
           &opts =

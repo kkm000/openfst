@@ -1,9 +1,8 @@
 // See www.openfst.org for extensive documentation on this weighted
 // finite-state transducer library.
 
-#include <fst/extensions/linear/linearscript.h>
-
 #include <fst/flags.h>
+#include <fst/extensions/linear/linearscript.h>
 
 DECLARE_string(arc_type);
 DECLARE_string(epsilon_symbol);

@@ -25,13 +25,14 @@ DECLARE_bool(classifier);
 
 namespace fst {
 namespace script {
-typedef std::tuple<const std::string &, const std::string &,
-                   const std::string &, char **, int, const std::string &,
-                   const std::string &, const std::string &,
-                   const std::string &>
-    LinearCompileArgs;
+
+using LinearCompileArgs =
+    std::tuple<const std::string &, const std::string &, const std::string &,
+               char **, int, const std::string &, const std::string &,
+               const std::string &, const std::string &>;
 
 bool ValidateDelimiter();
+
 bool ValidateEmptySymbol();
 
 // Returns the proper label given the symbol. For symbols other than
@@ -42,13 +43,14 @@ bool ValidateEmptySymbol();
 // right away.
 template <class Arc>
 inline typename Arc::Label LookUp(const std::string &str, SymbolTable *syms) {
-  if (str == FLAGS_start_symbol)
+  if (str == FLAGS_start_symbol) {
     return str == FLAGS_end_symbol ? kNoLabel
                                    : LinearFstData<Arc>::kStartOfSentence;
-  else if (str == FLAGS_end_symbol)
+  } else if (str == FLAGS_end_symbol) {
     return LinearFstData<Arc>::kEndOfSentence;
-  else
+  } else {
     return syms->AddSymbol(str);
+  }
 }
 
 // Splits `str` with `delim` as the delimiter and stores the labels in
@@ -59,8 +61,9 @@ void SplitAndPush(const std::string &str, const char delim, SymbolTable *syms,
   if (str == FLAGS_empty_symbol) return;
   std::istringstream strm(str);
   std::string buf;
-  while (std::getline(strm, buf, delim))
+  while (std::getline(strm, buf, delim)) {
     output->push_back(LookUp<Arc>(buf, syms));
+  }
 }
 
 // Like `std::replace_copy` but returns the number of modifications
@@ -118,10 +121,11 @@ void AddVocab(const std::string &vocab, SymbolTable *isyms, SymbolTable *fsyms,
       LOG(WARNING) << "Ignored: boundary word: " << fields[0];
       continue;
     }
-    if (possible_labels.empty())
+    if (possible_labels.empty()) {
       num_added += builder->AddWord(word, feature_labels);
-    else
+    } else {
       num_added += builder->AddWord(word, feature_labels, possible_labels);
+    }
   }
   VLOG(1) << "Read " << num_added << " words in " << num_line << " lines from "
           << vocab;
@@ -139,9 +143,10 @@ void AddVocab(const std::string &vocab, SymbolTable *isyms, SymbolTable *fsyms,
   typename Arc::Label word;
   while (GetVocabRecord<Arc>(vocab, in, isyms, fsyms, osyms, &word,
                              &feature_labels, &possible_labels, &num_line)) {
-    if (!possible_labels.empty())
+    if (!possible_labels.empty()) {
       LOG(FATAL)
           << "Classifier vocabulary should not have possible output constraint";
+    }
     if (word == kNoLabel) {
       LOG(WARNING) << "Ignored: boundary word: " << fields[0];
       continue;
@@ -187,9 +192,10 @@ void AddModel(const std::string &model, SymbolTable *fsyms, SymbolTable *osyms,
   typename Arc::Weight weight;
   while (GetModelRecord<Arc>(model, in, fsyms, osyms, &input_labels,
                              &output_labels, &weight, &num_line)) {
-    if (output_labels.empty())
+    if (output_labels.empty()) {
       LOG(FATAL) << "Empty output sequence in source " << model << ", line "
                  << num_line;
+    }
 
     const typename Arc::Label marks[] = {LinearFstData<Arc>::kStartOfSentence,
                                          LinearFstData<Arc>::kEndOfSentence};
@@ -205,9 +211,10 @@ void AddModel(const std::string &model, SymbolTable *fsyms, SymbolTable *osyms,
             ReplaceCopy(output_labels.begin(), output_labels.end(),
                         copy_output.begin(), kNoLabel, marks[j]);
         if ((num_input_changes > 0 || i == 0) &&
-            (num_output_changes > 0 || j == 0))
+            (num_output_changes > 0 || j == 0)) {
           num_added +=
               builder->AddWeight(group, copy_input, copy_output, weight);
+        }
       }
     }
   }
@@ -229,9 +236,10 @@ void AddModel(const std::string &model, SymbolTable *fsyms, SymbolTable *osyms,
     strm >> future_size;
     if (!strm) LOG(FATAL) << "Can't read future size: " << model;
   }
-  if (future_size != 0)
+  if (future_size != 0) {
     LOG(FATAL) << "Classifier model must have future size = 0; got "
                << future_size << " from " << model;
+  }
   size_t num_line = 1, num_added = 0;
   const int group = builder->AddGroup();
   VLOG(1) << "Group " << group << ": from " << model << "; future size is "
@@ -242,9 +250,10 @@ void AddModel(const std::string &model, SymbolTable *fsyms, SymbolTable *osyms,
   typename Arc::Weight weight;
   while (GetModelRecord<Arc>(model, in, fsyms, osyms, &input_labels,
                              &output_labels, &weight, &num_line)) {
-    if (output_labels.size() != 1)
+    if (output_labels.size() != 1) {
       LOG(FATAL) << "Output not a single label in source " << model << ", line "
                  << num_line;
+    }
 
     const typename Arc::Label marks[] = {LinearFstData<Arc>::kStartOfSentence,
                                          LinearFstData<Arc>::kEndOfSentence};
@@ -256,8 +265,9 @@ void AddModel(const std::string &model, SymbolTable *fsyms, SymbolTable *osyms,
       size_t num_input_changes =
           ReplaceCopy(input_labels.begin(), input_labels.end(),
                       copy_input.begin(), kNoLabel, marks[i]);
-      if (num_input_changes > 0 || i == 0)
+      if (num_input_changes > 0 || i == 0) {
         num_added += builder->AddWeight(group, copy_input, pred, weight);
+      }
     }
   }
   VLOG(1) << "Group " << group << ": read " << num_added << " weight(s) in "
@@ -297,18 +307,17 @@ void LinearCompileTpl(LinearCompileArgs *args) {
                                                 &osyms);
 
     AddVocab(vocab, &isyms, &fsyms, &osyms, &builder);
-    for (int i = 0; i < models_length; ++i)
+    for (int i = 0; i < models_length; ++i) {
       AddModel(models[i], &fsyms, &osyms, &builder);
-
+    }
     LinearClassifierFst<Arc> fst(builder.Dump(), num_classes, &isyms, &osyms);
     fst.Write(out);
   } else {
     LinearFstDataBuilder<Arc> builder(&isyms, &fsyms, &osyms);
-
     AddVocab(vocab, &isyms, &fsyms, &osyms, &builder);
-    for (int i = 0; i < models_length; ++i)
+    for (int i = 0; i < models_length; ++i) {
       AddModel(models[i], &fsyms, &osyms, &builder);
-
+    }
     LinearTaggerFst<Arc> fst(builder.Dump(), &isyms, &osyms);
     fst.Write(out);
   }
@@ -339,9 +348,10 @@ bool GetVocabRecord(const std::string &vocab, std::istream &strm,  // NOLINT
 
   std::vector<std::string> fields;
   SplitByWhitespace(line, &fields);
-  if (fields.size() != 3)
+  if (fields.size() != 3) {
     LOG(FATAL) << "Wrong number of fields in source " << vocab << ", line "
                << num_line;
+  }
 
   feature_labels->clear();
   possible_labels->clear();
@@ -367,9 +377,10 @@ bool GetModelRecord(const std::string &model, std::istream &strm,  // NOLINT
 
   std::vector<std::string> fields;
   SplitByWhitespace(line, &fields);
-  if (fields.size() != 3)
+  if (fields.size() != 3) {
     LOG(FATAL) << "Wrong number of fields in source " << model << ", line "
                << num_line;
+  }
 
   input_labels->clear();
   output_labels->clear();
@@ -385,10 +396,8 @@ bool GetModelRecord(const std::string &model, std::istream &strm,  // NOLINT
 
   return true;
 }
+
 }  // namespace script
 }  // namespace fst
-
-#define REGISTER_FST_LINEAR_OPERATIONS(Arc) \
-  REGISTER_FST_OPERATION(LinearCompileTpl, Arc, LinearCompileArgs);
 
 #endif  // FST_EXTENSIONS_LINEAR_LINEARSCRIPT_H_

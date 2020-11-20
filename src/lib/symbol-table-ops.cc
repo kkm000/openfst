@@ -72,36 +72,36 @@ SymbolTable *CompactSymbolTable(const SymbolTable &syms) {
   return compact;
 }
 
-SymbolTable *FstReadSymbols(const std::string &filename, bool input_symbols) {
-  std::ifstream in(filename, std::ios_base::in | std::ios_base::binary);
+SymbolTable *FstReadSymbols(const std::string &source, bool input_symbols) {
+  std::ifstream in(source, std::ios_base::in | std::ios_base::binary);
   if (!in) {
-    LOG(ERROR) << "FstReadSymbols: Can't open file " << filename;
+    LOG(ERROR) << "FstReadSymbols: Can't open file " << source;
     return nullptr;
   }
   FstHeader hdr;
-  if (!hdr.Read(in, filename)) {
-    LOG(ERROR) << "FstReadSymbols: Couldn't read header from " << filename;
+  if (!hdr.Read(in, source)) {
+    LOG(ERROR) << "FstReadSymbols: Couldn't read header from " << source;
     return nullptr;
   }
   if (hdr.GetFlags() & FstHeader::HAS_ISYMBOLS) {
-    std::unique_ptr<SymbolTable> isymbols(SymbolTable::Read(in, filename));
+    std::unique_ptr<SymbolTable> isymbols(SymbolTable::Read(in, source));
     if (isymbols == nullptr) {
       LOG(ERROR) << "FstReadSymbols: Couldn't read input symbols from "
-                 << filename;
+                 << source;
       return nullptr;
     }
     if (input_symbols) return isymbols.release();
   }
   if (hdr.GetFlags() & FstHeader::HAS_OSYMBOLS) {
-    std::unique_ptr<SymbolTable> osymbols(SymbolTable::Read(in, filename));
+    std::unique_ptr<SymbolTable> osymbols(SymbolTable::Read(in, source));
     if (osymbols == nullptr) {
       LOG(ERROR) << "FstReadSymbols: Couldn't read output symbols from "
-                 << filename;
+                 << source;
       return nullptr;
     }
     if (!input_symbols) return osymbols.release();
   }
-  LOG(ERROR) << "FstReadSymbols: The file " << filename
+  LOG(ERROR) << "FstReadSymbols: The file " << source
              << " doesn't contain the requested symbols";
   return nullptr;
 }

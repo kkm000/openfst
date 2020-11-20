@@ -143,10 +143,10 @@ class ComposeFstImplBase
   using CacheImpl::SetFinal;
   using CacheImpl::SetStart;
 
-  ComposeFstImplBase(const CacheImplOptions<CacheStore> &opts)
+  explicit ComposeFstImplBase(const CacheImplOptions<CacheStore> &opts)
       : CacheImpl(opts) {}
 
-  ComposeFstImplBase(const CacheOptions &opts) : CacheImpl(opts) {}
+  explicit ComposeFstImplBase(const CacheOptions &opts) : CacheImpl(opts) {}
 
   ComposeFstImplBase(const ComposeFstImplBase &impl) : CacheImpl(impl, true) {
     SetType(impl.Type());

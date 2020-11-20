@@ -556,10 +556,10 @@ class VectorFst : public ImplToMutableFst<internal::VectorFstImpl<S>> {
                 : nullptr;
   }
 
-  // Read a VectorFst from a file, returning nullptr on error; empty filename
+  // Read a VectorFst from a file, returning nullptr on error; empty source
   // reads from standard input.
-  static VectorFst<Arc, State> *Read(const std::string &filename) {
-    auto *impl = ImplToExpandedFst<Impl, MutableFst<Arc>>::Read(filename);
+  static VectorFst<Arc, State> *Read(const std::string &source) {
+    auto *impl = ImplToExpandedFst<Impl, MutableFst<Arc>>::Read(source);
     return impl ? new VectorFst<Arc, State>(std::shared_ptr<Impl>(impl))
                 : nullptr;
   }
@@ -568,8 +568,8 @@ class VectorFst : public ImplToMutableFst<internal::VectorFstImpl<S>> {
     return WriteFst(*this, strm, opts);
   }
 
-  bool Write(const std::string &filename) const override {
-    return Fst<Arc>::WriteFile(filename);
+  bool Write(const std::string &source) const override {
+    return Fst<Arc>::WriteFile(source);
   }
 
   template <class FST>
@@ -710,9 +710,9 @@ class ArcIterator<VectorFst<Arc, State>> {
 
   size_t Position() const { return i_; }
 
-  constexpr uint32 Flags() const { return kArcValueFlags; }
+  constexpr uint8 Flags() const { return kArcValueFlags; }
 
-  void SetFlags(uint32, uint32) {}
+  void SetFlags(uint8, uint8) {}
 
  private:
   const Arc *arcs_;
@@ -784,9 +784,9 @@ class MutableArcIterator<VectorFst<Arc, State>>
                     kNoOEpsilons | kWeighted | kUnweighted;
   }
 
-  uint32 Flags() const final { return kArcValueFlags; }
+  uint8 Flags() const final { return kArcValueFlags; }
 
-  void SetFlags(uint32, uint32) final {}
+  void SetFlags(uint8, uint8) final {}
 
  private:
   State *state_;

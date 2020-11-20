@@ -3,7 +3,6 @@
 
 #include <fst/script/epsnormalize.h>
 
-#include <fst/script/fst-class.h>
 #include <fst/script/script-impl.h>
 
 namespace fst {
@@ -19,9 +18,7 @@ void EpsNormalize(const FstClass &ifst, MutableFstClass *ofst,
   Apply<Operation<EpsNormalizeArgs>>("EpsNormalize", ifst.ArcType(), &args);
 }
 
-REGISTER_FST_OPERATION(EpsNormalize, StdArc, EpsNormalizeArgs);
-REGISTER_FST_OPERATION(EpsNormalize, LogArc, EpsNormalizeArgs);
-REGISTER_FST_OPERATION(EpsNormalize, Log64Arc, EpsNormalizeArgs);
+REGISTER_FST_OPERATION_3ARCS(EpsNormalize, EpsNormalizeArgs);
 
 }  // namespace script
 }  // namespace fst

@@ -128,48 +128,28 @@ extern const char sigma_fst_type[];
 extern const char input_sigma_fst_type[];
 extern const char output_sigma_fst_type[];
 
-using StdSigmaFst = MatcherFst<ConstFst<StdArc>,
-                               SigmaFstMatcher<SortedMatcher<ConstFst<StdArc>>>,
-                               sigma_fst_type>;
+template <class Arc>
+using SigmaFst =
+    MatcherFst<ConstFst<Arc>, SigmaFstMatcher<SortedMatcher<ConstFst<Arc>>>,
+               sigma_fst_type>;
 
-using LogSigmaFst = MatcherFst<ConstFst<LogArc>,
-                               SigmaFstMatcher<SortedMatcher<ConstFst<LogArc>>>,
-                               sigma_fst_type>;
+using StdSigmaFst = SigmaFst<StdArc>;
 
-using Log64SigmaFst =
-    MatcherFst<ConstFst<Log64Arc>,
-               SigmaFstMatcher<SortedMatcher<ConstFst<Log64Arc>>>,
-               input_sigma_fst_type>;
-
-using StdInputSigmaFst = MatcherFst<
-    ConstFst<StdArc>,
-    SigmaFstMatcher<SortedMatcher<ConstFst<StdArc>>, kSigmaFstMatchInput>,
+template <class Arc>
+using InputSigmaFst = MatcherFst<
+    ConstFst<Arc>,
+    SigmaFstMatcher<SortedMatcher<ConstFst<Arc>>, kSigmaFstMatchInput>,
     input_sigma_fst_type>;
 
-using LogInputSigmaFst = MatcherFst<
-    ConstFst<LogArc>,
-    SigmaFstMatcher<SortedMatcher<ConstFst<LogArc>>, kSigmaFstMatchInput>,
-    input_sigma_fst_type>;
+using StdInputSigmaFst = InputSigmaFst<StdArc>;
 
-using Log64InputSigmaFst = MatcherFst<
-    ConstFst<Log64Arc>,
-    SigmaFstMatcher<SortedMatcher<ConstFst<Log64Arc>>, kSigmaFstMatchInput>,
-    input_sigma_fst_type>;
-
-using StdOutputSigmaFst = MatcherFst<
-    ConstFst<StdArc>,
-    SigmaFstMatcher<SortedMatcher<ConstFst<StdArc>>, kSigmaFstMatchOutput>,
+template <class Arc>
+using OutputSigmaFst = MatcherFst<
+    ConstFst<Arc>,
+    SigmaFstMatcher<SortedMatcher<ConstFst<Arc>>, kSigmaFstMatchOutput>,
     output_sigma_fst_type>;
 
-using LogOutputSigmaFst = MatcherFst<
-    ConstFst<LogArc>,
-    SigmaFstMatcher<SortedMatcher<ConstFst<LogArc>>, kSigmaFstMatchOutput>,
-    output_sigma_fst_type>;
-
-using Log64OutputSigmaFst = MatcherFst<
-    ConstFst<Log64Arc>,
-    SigmaFstMatcher<SortedMatcher<ConstFst<Log64Arc>>, kSigmaFstMatchOutput>,
-    output_sigma_fst_type>;
+using StdOutputSigmaFst = OutputSigmaFst<StdArc>;
 
 }  // namespace fst
 

@@ -3,7 +3,6 @@
 
 #include <fst/script/union.h>
 
-#include <fst/script/fst-class.h>
 #include <fst/script/script-impl.h>
 
 namespace fst {
@@ -14,13 +13,23 @@ void Union(MutableFstClass *fst1, const FstClass &fst2) {
     fst1->SetProperties(kError, kError);
     return;
   }
-  UnionArgs args(fst1, fst2);
-  Apply<Operation<UnionArgs>>("Union", fst1->ArcType(), &args);
+  UnionArgs1 args(fst1, fst2);
+  Apply<Operation<UnionArgs1>>("Union", fst1->ArcType(), &args);
 }
 
-REGISTER_FST_OPERATION(Union, StdArc, UnionArgs);
-REGISTER_FST_OPERATION(Union, LogArc, UnionArgs);
-REGISTER_FST_OPERATION(Union, Log64Arc, UnionArgs);
+void Union(MutableFstClass *fst1, const std::vector<const FstClass *> &fsts2) {
+  for (const auto *fst2 : fsts2) {
+    if (!internal::ArcTypesMatch(*fst1, *fst2, "Union")) {
+      fst1->SetProperties(kError, kError);
+      return;
+    }
+  }
+  UnionArgs2 args(fst1, fsts2);
+  Apply<Operation<UnionArgs2>>("Union", fst1->ArcType(), &args);
+}
+
+REGISTER_FST_OPERATION_3ARCS(Union, UnionArgs1);
+REGISTER_FST_OPERATION_3ARCS(Union, UnionArgs2);
 
 }  // namespace script
 }  // namespace fst

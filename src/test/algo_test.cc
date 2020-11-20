@@ -6,7 +6,6 @@
 #include <fst/test/algo_test.h>
 
 #include <cstdlib>
-
 #include <vector>
 
 #include <fst/flags.h>

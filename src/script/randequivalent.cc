@@ -3,7 +3,6 @@
 
 #include <fst/script/randequivalent.h>
 
-#include <fst/script/fst-class.h>
 #include <fst/script/script-impl.h>
 
 namespace fst {
@@ -19,9 +18,7 @@ bool RandEquivalent(const FstClass &fst1, const FstClass &fst2, int32 npath,
   return args.retval;
 }
 
-REGISTER_FST_OPERATION(RandEquivalent, StdArc, RandEquivalentArgs);
-REGISTER_FST_OPERATION(RandEquivalent, LogArc, RandEquivalentArgs);
-REGISTER_FST_OPERATION(RandEquivalent, Log64Arc, RandEquivalentArgs);
+REGISTER_FST_OPERATION_3ARCS(RandEquivalent, RandEquivalentArgs);
 
 }  // namespace script
 }  // namespace fst

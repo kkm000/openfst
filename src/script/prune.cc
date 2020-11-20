@@ -3,7 +3,6 @@
 
 #include <fst/script/prune.h>
 
-#include <fst/script/fst-class.h>
 #include <fst/script/script-impl.h>
 
 namespace fst {
@@ -31,13 +30,8 @@ void Prune(MutableFstClass *fst, const WeightClass &weight_threshold,
   Apply<Operation<PruneArgs2>>("Prune", fst->ArcType(), &args);
 }
 
-REGISTER_FST_OPERATION(Prune, StdArc, PruneArgs1);
-REGISTER_FST_OPERATION(Prune, LogArc, PruneArgs1);
-REGISTER_FST_OPERATION(Prune, Log64Arc, PruneArgs1);
-
-REGISTER_FST_OPERATION(Prune, StdArc, PruneArgs2);
-REGISTER_FST_OPERATION(Prune, LogArc, PruneArgs2);
-REGISTER_FST_OPERATION(Prune, Log64Arc, PruneArgs2);
+REGISTER_FST_OPERATION_3ARCS(Prune, PruneArgs1);
+REGISTER_FST_OPERATION_3ARCS(Prune, PruneArgs2);
 
 }  // namespace script
 }  // namespace fst

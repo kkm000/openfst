@@ -3,7 +3,6 @@
 
 #include <fst/script/equivalent.h>
 
-#include <fst/script/fst-class.h>
 #include <fst/script/script-impl.h>
 
 namespace fst {
@@ -17,9 +16,7 @@ bool Equivalent(const FstClass &fst1, const FstClass &fst2, float delta) {
   return args.retval;
 }
 
-REGISTER_FST_OPERATION(Equivalent, StdArc, EquivalentArgs);
-REGISTER_FST_OPERATION(Equivalent, LogArc, EquivalentArgs);
-REGISTER_FST_OPERATION(Equivalent, Log64Arc, EquivalentArgs);
+REGISTER_FST_OPERATION_3ARCS(Equivalent, EquivalentArgs);
 
 }  // namespace script
 }  // namespace fst

@@ -1,12 +1,11 @@
 // See www.openfst.org for extensive documentation on this weighted
 // finite-state transducer library.
 
+#include <fst/flags.h>
+#include <fst/log.h>
 #include <fst/extensions/linear/linear-fst.h>
 #include <fst/extensions/linear/loglinear-apply.h>
 #include <fst/vector-fst.h>
-
-#include <fst/flags.h>
-#include <fst/log.h>
 
 DECLARE_bool(normalize);
 

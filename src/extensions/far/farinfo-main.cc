@@ -27,14 +27,14 @@ int farinfo_main(int argc, char **argv) {
   SET_FLAGS(usage.c_str(), &argc, &argv, true);
   s::ExpandArgs(argc, argv, &argc, &argv);
 
-  std::vector<std::string> in_fnames;
-  for (int i = 1; i < argc; ++i) in_fnames.push_back(argv[i]);
-  if (in_fnames.empty()) in_fnames.push_back("");
+  std::vector<std::string> in_sources;
+  for (int i = 1; i < argc; ++i) in_sources.push_back(argv[i]);
+  if (in_sources.empty()) in_sources.push_back("");
 
-  const auto arc_type = s::LoadArcTypeFromFar(in_fnames[0]);
+  const auto arc_type = s::LoadArcTypeFromFar(in_sources[0]);
   if (arc_type.empty()) return 1;
 
-  s::FarInfo(in_fnames, arc_type, FLAGS_begin_key, FLAGS_end_key,
+  s::FarInfo(in_sources, arc_type, FLAGS_begin_key, FLAGS_end_key,
              FLAGS_list_fsts);
 
   return 0;

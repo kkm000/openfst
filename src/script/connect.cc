@@ -3,7 +3,6 @@
 
 #include <fst/script/connect.h>
 
-#include <fst/script/fst-class.h>
 #include <fst/script/script-impl.h>
 
 namespace fst {
@@ -13,9 +12,7 @@ void Connect(MutableFstClass *fst) {
   Apply<Operation<MutableFstClass>>("Connect", fst->ArcType(), fst);
 }
 
-REGISTER_FST_OPERATION(Connect, StdArc, MutableFstClass);
-REGISTER_FST_OPERATION(Connect, LogArc, MutableFstClass);
-REGISTER_FST_OPERATION(Connect, Log64Arc, MutableFstClass);
+REGISTER_FST_OPERATION_3ARCS(Connect, MutableFstClass);
 
 }  // namespace script
 }  // namespace fst

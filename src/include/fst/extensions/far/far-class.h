@@ -40,11 +40,11 @@ class FarReaderImplBase {
 template <class Arc>
 class FarReaderClassImpl : public FarReaderImplBase {
  public:
-  explicit FarReaderClassImpl(const std::string &filename)
-      : impl_(FarReader<Arc>::Open(filename)) {}
+  explicit FarReaderClassImpl(const std::string &source)
+      : impl_(FarReader<Arc>::Open(source)) {}
 
-  explicit FarReaderClassImpl(const std::vector<std::string> &filenames)
-      : impl_(FarReader<Arc>::Open(filenames)) {}
+  explicit FarReaderClassImpl(const std::vector<std::string> &sources)
+      : impl_(FarReader<Arc>::Open(sources)) {}
 
   const std::string &ArcType() const final { return Arc::Type(); }
 
@@ -126,9 +126,9 @@ class FarReaderClass {
 
   // Defined in the CC.
 
-  static FarReaderClass *Open(const std::string &filename);
+  static FarReaderClass *Open(const std::string &source);
 
-  static FarReaderClass *Open(const std::vector<std::string> &filenames);
+  static FarReaderClass *Open(const std::vector<std::string> &sources);
 
  private:
   template <class Arc>
@@ -164,9 +164,9 @@ class FarWriterImplBase {
 template <class Arc>
 class FarWriterClassImpl : public FarWriterImplBase {
  public:
-  explicit FarWriterClassImpl(const std::string &filename,
+  explicit FarWriterClassImpl(const std::string &source,
                               FarType type = FAR_DEFAULT)
-      : impl_(FarWriter<Arc>::Create(filename, type)) {}
+      : impl_(FarWriter<Arc>::Create(source, type)) {}
 
   bool Add(const std::string &key, const FstClass &fst) final {
     if (ArcType() != fst.ArcType()) {
@@ -203,7 +203,7 @@ using CreateFarWriterClassArgs =
 // Untemplated user-facing class holding a templated pimpl.
 class FarWriterClass {
  public:
-  static FarWriterClass *Create(const std::string &filename,
+  static FarWriterClass *Create(const std::string &source,
                                 const std::string &arc_type,
                                 FarType type = FAR_DEFAULT);
 

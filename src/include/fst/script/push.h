@@ -20,7 +20,7 @@ void Push(PushArgs1 *args) {
   Push(fst, std::get<1>(*args), std::get<2>(*args), std::get<3>(*args));
 }
 
-using PushArgs2 = std::tuple<const FstClass &, MutableFstClass *, uint32,
+using PushArgs2 = std::tuple<const FstClass &, MutableFstClass *, uint8,
                              ReweightType, float>;
 
 template <class Arc>
@@ -41,11 +41,11 @@ void Push(PushArgs2 *args) {
   }
 }
 
-void Push(MutableFstClass *fst, ReweightType rew_type, float delta = kDelta,
-          bool remove_total_weight = false);
+void Push(MutableFstClass *fst, ReweightType rew_type,
+          float delta = kShortestDelta, bool remove_total_weight = false);
 
-void Push(const FstClass &ifst, MutableFstClass *ofst, uint32 flags,
-          ReweightType rew_type, float delta = kDelta);
+void Push(const FstClass &ifst, MutableFstClass *ofst, uint8 flags,
+          ReweightType rew_type, float delta = kShortestDelta);
 
 }  // namespace script
 }  // namespace fst

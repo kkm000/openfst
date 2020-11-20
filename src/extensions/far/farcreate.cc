@@ -11,6 +11,7 @@ DEFINE_bool(file_list_input, false,
             "Each input file contains a list of files to be processed");
 
 int farcreate_main(int argc, char **argv);
+
 int main(int argc, char **argv) {
   return farcreate_main(argc, argv);
 }

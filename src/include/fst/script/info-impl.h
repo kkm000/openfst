@@ -29,8 +29,6 @@ namespace fst {
 // Fst<Arc>::NumArcs, TestProperties, etc.
 class FstInfo {
  public:
-  FstInfo() {}
-
   // When info_type is "short" (or "auto" and not an ExpandedFst) then only
   // minimal info is computed and can be requested.
   template <typename Arc>
@@ -274,6 +272,8 @@ class FstInfo {
     return properties_;
   }
 
+  void Info() const;
+
  private:
   void CheckLong() const {
     if (!long_info_)
@@ -307,7 +307,7 @@ class FstInfo {
   std::string arc_type_;
 };
 
-void PrintFstInfoImpl(const FstInfo &fstinfo, bool pipe = false);
+void InfoImpl(const FstInfo &fstinfo);
 
 }  // namespace fst
 

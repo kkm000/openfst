@@ -87,16 +87,15 @@ fst/script/intersect.h fst/script/invert.h fst/script/isomorphic.h \
 fst/script/map.h fst/script/minimize.h fst/script/print-impl.h \
 fst/script/print.h fst/script/project.h fst/script/prune.h \
 fst/script/push.h fst/script/randequivalent.h fst/script/randgen.h \
-fst/script/register.h fst/script/relabel.h fst/script/replace.h \
-fst/script/reverse.h fst/script/reweight.h fst/script/rmepsilon.h \
-fst/script/script-impl.h fst/script/shortest-distance.h \
-fst/script/shortest-path.h fst/script/stateiterator-class.h \
-fst/script/synchronize.h fst/script/text-io.h fst/script/topsort.h \
-fst/script/union.h fst/script/weight-class.h fst/script/fstscript-decl.h \
-fst/script/verify.h
+fst/script/relabel.h fst/script/replace.h fst/script/reverse.h \
+fst/script/reweight.h fst/script/rmepsilon.h fst/script/script-impl.h \
+fst/script/shortest-distance.h fst/script/shortest-path.h \
+fst/script/stateiterator-class.h fst/script/synchronize.h \
+fst/script/text-io.h fst/script/topsort.h fst/script/union.h \
+fst/script/weight-class.h fst/script/fstscript-decl.h fst/script/verify.h
 
-test_include_headers = fst/test/algo_test.h fst/test/fst_test.h \
-fst/test/rand-fst.h fst/test/weight-tester.h
+test_include_headers = fst/test/algo_test.h fst/test/compactors.h \
+fst/test/fst_test.h fst/test/rand-fst.h fst/test/weight-tester.h
 
 nobase_include_HEADERS = fst/accumulator.h fst/add-on.h fst/arc-arena.h \
 fst/arc-map.h fst/arc.h fst/arcfilter.h fst/arcsort.h fst/bi-table.h \

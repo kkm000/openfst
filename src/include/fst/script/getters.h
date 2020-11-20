@@ -35,7 +35,7 @@ bool GetComposeFilter(const std::string &str, ComposeFilter *compose_filter);
 
 bool GetDeterminizeType(const std::string &str, DeterminizeType *det_type);
 
-inline uint32 GetEncodeFlags(bool encode_labels, bool encode_weights) {
+inline uint8 GetEncodeFlags(bool encode_labels, bool encode_weights) {
   return (encode_labels ? kEncodeLabels : 0) |
          (encode_weights ? kEncodeWeights : 0);
 }
@@ -50,8 +50,8 @@ inline ProjectType GetProjectType(bool project_output) {
   return project_output ? PROJECT_OUTPUT : PROJECT_INPUT;
 }
 
-inline uint32 GetPushFlags(bool push_weights, bool push_labels,
-                           bool remove_total_weight, bool remove_common_affix) {
+inline uint8 GetPushFlags(bool push_weights, bool push_labels,
+                          bool remove_total_weight, bool remove_common_affix) {
   return ((push_weights ? kPushWeights : 0) |
           (push_labels ? kPushLabels : 0) |
           (remove_total_weight ? kPushRemoveTotalWeight : 0) |

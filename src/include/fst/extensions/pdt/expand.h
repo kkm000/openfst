@@ -74,8 +74,8 @@ class PdtExpandFstImpl : public CacheImpl<Arc> {
         stack_(opts.stack ? opts.stack : new PdtStack<StateId, Label>(parens)),
         state_table_(opts.state_table ? opts.state_table
                                       : new PdtStateTable<StateId, StackId>()),
-        own_stack_(opts.stack == 0),
-        own_state_table_(opts.state_table == 0),
+        own_stack_(opts.stack == nullptr),
+        own_state_table_(opts.state_table == nullptr),
         keep_parentheses_(opts.keep_parentheses) {
     SetType("expand");
     const auto props = fst.Properties(kFstProperties, false);
@@ -881,8 +881,8 @@ struct PdtExpandOptions {
   bool keep_parentheses;
   Weight weight_threshold;
 
-  PdtExpandOptions(bool connect = true, bool keep_parentheses = false,
-                   Weight weight_threshold = Weight::Zero())
+  explicit PdtExpandOptions(bool connect = true, bool keep_parentheses = false,
+                            Weight weight_threshold = Weight::Zero())
       : connect(connect),
         keep_parentheses(keep_parentheses),
         weight_threshold(std::move(weight_threshold)) {}

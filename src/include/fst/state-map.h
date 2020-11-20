@@ -26,31 +26,31 @@ namespace fst {
 //
 // class StateMapper {
 //  public:
-//   using FromArc = A;
-//   using ToArc = B;
+//   using FromArc = ...;
+//   using ToArc = ...;
 //
 //   // Typical constructor.
-//   StateMapper(const Fst<A> &fst);
+//   StateMapper(const Fst<FromArc> &fst);
 //
 //   // Required copy constructor that allows updating FST argument;
 //   // pass only if relevant and changed.
-//   StateMapper(const StateMapper &mapper, const Fst<A> *fst = 0);
+//   StateMapper(const StateMapper &mapper, const Fst<FromArc> *fst = 0);
 //
 //   // Specifies initial state of result.
-//   B::StateId Start() const;
+//   ToArc::StateId Start() const;
 //   // Specifies state's final weight in result.
-//   B::Weight Final(B::StateId state) const;
+//   ToArc::Weight Final(ToArc::StateId state) const;
 //
 //   // These methods iterate through a state's arcs in result.
 //
 //   // Specifies state to iterate over.
-//   void SetState(B::StateId state);
+//   void SetState(ToArc::StateId state);
 //
 //   // End of arcs?
 //   bool Done() const;
 //
 //   // Current arc.
-//   const B &Value() const;
+//   const ToArc &Value() const;
 //
 //   // Advances to next arc (when !Done)
 //   void Next();

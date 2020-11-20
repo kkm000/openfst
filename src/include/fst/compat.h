@@ -20,7 +20,10 @@
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
+#include <memory>
 #include <string>
+#include <type_traits>
+#include <utility>
 #include <vector>
 
 #if defined(__GNUC__) || defined(__clang__)
@@ -43,8 +46,10 @@ void FailedNewHandler();
 namespace fst {
 
 // Downcasting.
-template<typename To, typename From>
-inline To down_cast(From* f) { return static_cast<To>(f); }
+template <typename To, typename From>
+inline To down_cast(From *f) {
+  return static_cast<To>(f);
+}
 
 // Bitcasting.
 template <class Dest, class Source>
@@ -56,41 +61,79 @@ inline Dest bit_cast(const Source &source) {
   return dest;
 }
 
-// Check sums
+// Checksums.
 class CheckSummer {
  public:
-  CheckSummer() : count_(0) {
-    check_sum_.resize(kCheckSumLength, '\0');
-  }
+  CheckSummer();
 
-  void Reset() {
-    count_ = 0;
-    for (int i = 0; i < kCheckSumLength; ++i) check_sum_[i] = '\0';
-  }
+  void Reset();
 
-  void Update(void const *data, int size) {
-    const char *p = reinterpret_cast<const char *>(data);
-    for (int i = 0; i < size; ++i) {
-      check_sum_[(count_++) % kCheckSumLength] ^= p[i];
-    }
-  }
+  void Update(void const *data, int size);
 
-  void Update(std::string const &data) {
-    for (int i = 0; i < data.size(); ++i) {
-      check_sum_[(count_++) % kCheckSumLength] ^= data[i];
-    }
-  }
+  void Update(std::string const &data);
 
   std::string Digest() { return check_sum_; }
 
  private:
-  static const int kCheckSumLength = 32;
+  constexpr static int kCheckSumLength = 32;
   int count_;
   std::string check_sum_;
 
   CheckSummer(const CheckSummer &) = delete;
   CheckSummer &operator=(const CheckSummer &) = delete;
 };
+
+// Defines make_unique and make_unique_default_init using a standard definition
+// that should be compatible with the C++14 and C++20 (respectively)
+// definitions.
+// TODO(kbg): Remove these once we migrate to C++14 and C++20.
+
+template <typename T, typename... Args>
+std::unique_ptr<T> make_unique(Args &&... args) {
+  return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
+}
+
+template <typename T>
+std::unique_ptr<T[]> make_unique(size_t n) {
+  return std::unique_ptr<T>(new typename std::remove_extent<T>::type[n]());
+}
+
+template <typename T>
+std::unique_ptr<T> make_unique_default_init() {
+  return std::unique_ptr<T>(new T);
+}
+
+template <typename T>
+std::unique_ptr<T[]> make_unique_default_init(size_t n) {
+  return std::unique_ptr<T>(new typename std::remove_extent<T>::type[n]);
+}
+
+template <typename T>
+std::unique_ptr<T> WrapUnique(T *ptr) {
+  return std::unique_ptr<T>(ptr);
+}
+
+// String munging.
+
+std::string StringJoin(const std::vector<std::string> &elements,
+                       const std::string &delim);
+
+std::string StringJoin(const std::vector<std::string> &elements,
+                       const char *delim);
+
+std::string StringJoin(const std::vector<std::string> &elements, char delim);
+
+std::vector<std::string> StringSplit(const std::string &full,
+                                     const std::string &delim);
+
+std::vector<std::string> StringSplit(const std::string &full,
+                                     const char *delim);
+
+std::vector<std::string> StringSplit(const std::string &full, char delim);
+
+void StripTrailingAsciiWhitespace(std::string *full);
+
+std::string StripTrailingAsciiWhitespace(const std::string &full);
 
 }  // namespace fst
 

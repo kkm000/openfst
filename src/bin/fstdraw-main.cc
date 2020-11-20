@@ -4,13 +4,13 @@
 // Draws a binary FSTs in the Graphviz dot text format.
 
 #include <cstring>
-#include <fstream>
 #include <memory>
 #include <ostream>
 #include <string>
 
 #include <fst/flags.h>
 #include <fst/log.h>
+#include <fstream>
 #include <fst/script/draw.h>
 
 DECLARE_bool(acceptor);
@@ -96,11 +96,11 @@ int fstdraw_main(int argc, char **argv) {
 
   // "dest" is only used for the name of the file in error messages.
   const std::string dest = out_name.empty() ? "stdout" : out_name;
-  s::DrawFst(*fst, isyms.get(), osyms.get(), ssyms.get(), FLAGS_acceptor,
-             FLAGS_title, FLAGS_width, FLAGS_height, FLAGS_portrait,
-             FLAGS_vertical, FLAGS_ranksep, FLAGS_nodesep, FLAGS_fontsize,
-             FLAGS_precision, FLAGS_float_format, FLAGS_show_weight_one,
-             &ostrm, dest);
+  s::Draw(*fst, isyms.get(), osyms.get(), ssyms.get(), FLAGS_acceptor,
+          FLAGS_title, FLAGS_width, FLAGS_height, FLAGS_portrait,
+          FLAGS_vertical, FLAGS_ranksep, FLAGS_nodesep, FLAGS_fontsize,
+          FLAGS_precision, FLAGS_float_format, FLAGS_show_weight_one, ostrm,
+          dest);
 
   return 0;
 }

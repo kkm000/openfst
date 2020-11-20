@@ -670,11 +670,11 @@ class EditFst : public ImplToMutableFst<
     return impl ? new EditFst<Arc>(std::shared_ptr<Impl>(impl)) : nullptr;
   }
 
-  // Reads an EditFst from a file, returning nullptr on error. If the filename
+  // Reads an EditFst from a file, returning nullptr on error. If the source
   // argument is an empty string, it reads from standard input.
   static EditFst<Arc, WrappedFstT, MutableFstT> *Read(
-      const std::string &filename) {
-    auto *impl = ImplToExpandedFst<Impl, MutableFst<Arc>>::Read(filename);
+      const std::string &source) {
+    auto *impl = ImplToExpandedFst<Impl, MutableFst<Arc>>::Read(source);
     return impl ? new EditFst<Arc, WrappedFstT, MutableFstT>(
                       std::shared_ptr<Impl>(impl))
                 : nullptr;
@@ -684,8 +684,8 @@ class EditFst : public ImplToMutableFst<
     return GetImpl()->Write(strm, opts);
   }
 
-  bool Write(const std::string &filename) const override {
-    return Fst<Arc>::WriteFile(filename);
+  bool Write(const std::string &source) const override {
+    return Fst<Arc>::WriteFile(source);
   }
 
   void InitStateIterator(StateIteratorData<Arc> *data) const override {

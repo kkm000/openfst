@@ -16,10 +16,11 @@ namespace fst {
 // Computes the minimal length required to encode each line number as a decimal
 // number, or zero if the number of lines could not be determined because the
 // file was not seekable.
-int KeySize(const char *filename) {
-  std::ifstream istrm(filename);
+int KeySize(const char *source) {
+  std::ifstream istrm(source);
   istrm.seekg(0);
-  // TODO(jrosenstock): Change this to is_regular_file when we can use C++17.
+  // TODO(jrosenstock): Change this to is_regular_file when <filesystem> is
+  // no longer banned.
   // Stream not seekable. This is really a hack to approximate is_regular_file.
   // What we really want is that opening and reading the file twice gives the
   // same result, which is only true for regular files. There may be devices

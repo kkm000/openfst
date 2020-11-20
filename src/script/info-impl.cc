@@ -1,96 +1,97 @@
+// See www.openfst.org for extensive documentation on this weighted
+// finite-state transducer library.
+
 #include <fst/script/info-impl.h>
 
 namespace fst {
 
-void PrintFstInfoImpl(const FstInfo &fstinfo, bool pipe) {
-  std::ostream &ostrm = pipe ? std::cerr : std::cout;
+void FstInfo::Info() const {
+  std::ostream &ostrm = std::cout;
   const auto old = ostrm.setf(std::ios::left);
   ostrm.width(50);
-  ostrm << "fst type" << fstinfo.FstType() << std::endl;
+  ostrm << "fst type" << FstType() << std::endl;
   ostrm.width(50);
-  ostrm << "arc type" << fstinfo.ArcType() << std::endl;
+  ostrm << "arc type" << ArcType() << std::endl;
   ostrm.width(50);
-  ostrm << "input symbol table" << fstinfo.InputSymbols() << std::endl;
+  ostrm << "input symbol table" << InputSymbols() << std::endl;
   ostrm.width(50);
-  ostrm << "output symbol table" << fstinfo.OutputSymbols() << std::endl;
-  if (!fstinfo.LongInfo()) {
+  ostrm << "output symbol table" << OutputSymbols() << std::endl;
+  if (!LongInfo()) {
     ostrm.setf(old);
     return;
   }
   ostrm.width(50);
-  ostrm << "# of states" << fstinfo.NumStates() << std::endl;
+  ostrm << "# of states" << NumStates() << std::endl;
   ostrm.width(50);
-  ostrm << "# of arcs" << fstinfo.NumArcs() << std::endl;
+  ostrm << "# of arcs" << NumArcs() << std::endl;
   ostrm.width(50);
-  ostrm << "initial state" << fstinfo.Start() << std::endl;
+  ostrm << "initial state" << Start() << std::endl;
   ostrm.width(50);
-  ostrm << "# of final states" << fstinfo.NumFinal() << std::endl;
+  ostrm << "# of final states" << NumFinal() << std::endl;
   ostrm.width(50);
-  ostrm << "# of input/output epsilons" << fstinfo.NumEpsilons() << std::endl;
+  ostrm << "# of input/output epsilons" << NumEpsilons() << std::endl;
   ostrm.width(50);
-  ostrm << "# of input epsilons" << fstinfo.NumInputEpsilons() << std::endl;
+  ostrm << "# of input epsilons" << NumInputEpsilons() << std::endl;
   ostrm.width(50);
-  ostrm << "# of output epsilons" << fstinfo.NumOutputEpsilons() << std::endl;
+  ostrm << "# of output epsilons" << NumOutputEpsilons() << std::endl;
   ostrm.width(50);
-  ostrm << "input label multiplicity" << fstinfo.InputLabelMultiplicity()
-        << std::endl;
+  ostrm << "input label multiplicity" << InputLabelMultiplicity() << std::endl;
   ostrm.width(50);
-  ostrm << "output label multiplicity" << fstinfo.OutputLabelMultiplicity()
+  ostrm << "output label multiplicity" << OutputLabelMultiplicity()
         << std::endl;
   ostrm.width(50);
   std::string arc_type = "";
-  if (fstinfo.ArcFilterType() == "epsilon")
+  if (ArcFilterType() == "epsilon")
     arc_type = "epsilon ";
-  else if (fstinfo.ArcFilterType() == "iepsilon")
+  else if (ArcFilterType() == "iepsilon")
     arc_type = "input-epsilon ";
-  else if (fstinfo.ArcFilterType() == "oepsilon")
+  else if (ArcFilterType() == "oepsilon")
     arc_type = "output-epsilon ";
   const auto accessible_label = "# of " + arc_type + "accessible states";
   ostrm.width(50);
-  ostrm << accessible_label << fstinfo.NumAccessible() << std::endl;
+  ostrm << accessible_label << NumAccessible() << std::endl;
   const auto coaccessible_label = "# of " + arc_type + "coaccessible states";
   ostrm.width(50);
-  ostrm << coaccessible_label << fstinfo.NumCoAccessible() << std::endl;
+  ostrm << coaccessible_label << NumCoAccessible() << std::endl;
   const auto connected_label = "# of " + arc_type + "connected states";
   ostrm.width(50);
-  ostrm << connected_label << fstinfo.NumConnected() << std::endl;
+  ostrm << connected_label << NumConnected() << std::endl;
   const auto numcc_label = "# of " + arc_type + "connected components";
   ostrm.width(50);
-  ostrm << numcc_label << fstinfo.NumCc() << std::endl;
+  ostrm << numcc_label << NumCc() << std::endl;
   const auto numscc_label = "# of " + arc_type + "strongly conn components";
   ostrm.width(50);
-  ostrm << numscc_label << fstinfo.NumScc() << std::endl;
+  ostrm << numscc_label << NumScc() << std::endl;
   ostrm.width(50);
   ostrm << "input matcher"
-        << (fstinfo.InputMatchType() == MATCH_INPUT
+        << (InputMatchType() == MATCH_INPUT
                 ? 'y'
-                : fstinfo.InputMatchType() == MATCH_NONE ? 'n' : '?')
+                : InputMatchType() == MATCH_NONE ? 'n' : '?')
         << std::endl;
   ostrm.width(50);
   ostrm << "output matcher"
-        << (fstinfo.OutputMatchType() == MATCH_OUTPUT
+        << (OutputMatchType() == MATCH_OUTPUT
                 ? 'y'
-                : fstinfo.OutputMatchType() == MATCH_NONE ? 'n' : '?')
+                : OutputMatchType() == MATCH_NONE ? 'n' : '?')
         << std::endl;
   ostrm.width(50);
-  ostrm << "input lookahead" << (fstinfo.InputLookAhead() ? 'y' : 'n')
-        << std::endl;
+  ostrm << "input lookahead" << (InputLookAhead() ? 'y' : 'n') << std::endl;
   ostrm.width(50);
-  ostrm << "output lookahead" << (fstinfo.OutputLookAhead() ? 'y' : 'n')
-        << std::endl;
+  ostrm << "output lookahead" << (OutputLookAhead() ? 'y' : 'n') << std::endl;
   uint64 prop = 1;
   for (auto i = 0; i < 64; ++i, prop <<= 1) {
     if (prop & kBinaryProperties) {
       char value = 'n';
-      if (fstinfo.Properties() & prop) value = 'y';
+      if (Properties() & prop) value = 'y';
       ostrm.width(50);
       ostrm << PropertyNames[i] << value << std::endl;
     } else if (prop & kPosTrinaryProperties) {
       char value = '?';
-      if (fstinfo.Properties() & prop)
+      if (Properties() & prop) {
         value = 'y';
-      else if (fstinfo.Properties() & prop << 1)
+      } else if (Properties() & prop << 1) {
         value = 'n';
+      }
       ostrm.width(50);
       ostrm << PropertyNames[i] << value << std::endl;
     }

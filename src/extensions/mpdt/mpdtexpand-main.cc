@@ -6,6 +6,7 @@
 #include <cstring>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include <fst/flags.h>
@@ -49,7 +50,7 @@ int mpdtexpand_main(int argc, char **argv) {
     return 1;
   }
 
-  std::vector<s::LabelPair> parens;
+  std::vector<std::pair<int64, int64>> parens;
   std::vector<int64> assignments;
   if (!ReadLabelTriples(FLAGS_mpdt_parentheses, &parens, &assignments, false)) {
     return 1;

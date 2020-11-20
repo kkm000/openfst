@@ -22,13 +22,12 @@ using CompressArgs = WithReturnValue<bool, CompressInnerArgs>;
 template <class Arc>
 void Compress(CompressArgs *args) {
   const Fst<Arc> &fst = *std::get<0>(args->args).GetFst<Arc>();
-  const auto &filename = std::get<1>(args->args);
+  const auto &source = std::get<1>(args->args);
   const auto gzip = std::get<2>(args->args);
-  args->retval = Compress(fst, filename, gzip);
+  args->retval = Compress(fst, source, gzip);
 }
 
-bool Compress(const FstClass &fst, const std::string &filename,
-              const bool gzip);
+bool Compress(const FstClass &fst, const std::string &source, const bool gzip);
 
 using DecompressInnerArgs =
     std::tuple<const std::string &, MutableFstClass *, const bool>;
@@ -37,13 +36,13 @@ using DecompressArgs = WithReturnValue<bool, DecompressInnerArgs>;
 
 template <class Arc>
 void Decompress(DecompressArgs *args) {
-  const auto &filename = std::get<0>(args->args);
+  const auto &source = std::get<0>(args->args);
   MutableFst<Arc> *fst = std::get<1>(args->args)->GetMutableFst<Arc>();
   const auto gzip = std::get<2>(args->args);
-  args->retval = Decompress(filename, fst, gzip);
+  args->retval = Decompress(source, fst, gzip);
 }
 
-bool Decompress(const std::string &filename, MutableFstClass *fst,
+bool Decompress(const std::string &source, MutableFstClass *fst,
                 const bool gzip);
 
 }  // namespace script

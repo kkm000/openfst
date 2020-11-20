@@ -28,6 +28,7 @@ DEFINE_bool(initial_symbols, true,
             " FST in archive.");
 
 int farcompilestrings_main(int argc, char **argv);
+
 int main(int argc, char **argv) {
   return farcompilestrings_main(argc, argv);
 }

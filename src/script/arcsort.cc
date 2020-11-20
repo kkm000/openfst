@@ -3,7 +3,6 @@
 
 #include <fst/script/arcsort.h>
 
-#include <fst/script/fst-class.h>
 #include <fst/script/script-impl.h>
 
 namespace fst {
@@ -14,9 +13,7 @@ void ArcSort(MutableFstClass *fst, ArcSortType sort_type) {
   Apply<Operation<ArcSortArgs>>("ArcSort", fst->ArcType(), &args);
 }
 
-REGISTER_FST_OPERATION(ArcSort, StdArc, ArcSortArgs);
-REGISTER_FST_OPERATION(ArcSort, LogArc, ArcSortArgs);
-REGISTER_FST_OPERATION(ArcSort, Log64Arc, ArcSortArgs);
+REGISTER_FST_OPERATION_3ARCS(ArcSort, ArcSortArgs);
 
 }  // namespace script
 }  // namespace fst

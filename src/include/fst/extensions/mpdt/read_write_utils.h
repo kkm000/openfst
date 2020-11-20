@@ -18,13 +18,13 @@ namespace fst {
 
 // Returns true on success.
 template <typename Label>
-bool ReadLabelTriples(const std::string &filename,
+bool ReadLabelTriples(const std::string &source,
                       std::vector<std::pair<Label, Label>> *pairs,
                       std::vector<Label> *assignments,
                       bool allow_negative = false) {
-  std::ifstream fstrm(filename);
+  std::ifstream fstrm(source);
   if (!fstrm) {
-    LOG(ERROR) << "ReadIntTriples: Can't open file: " << filename;
+    LOG(ERROR) << "ReadIntTriples: Can't open file: " << source;
     return false;
   }
   static constexpr auto kLineLen = 8096;
@@ -39,16 +39,16 @@ bool ReadLabelTriples(const std::string &filename,
     if (col.empty() || col[0][0] == '\0' || col[0][0] == '#') continue;
     if (col.size() != 3) {
       LOG(ERROR) << "ReadLabelTriples: Bad number of columns, "
-                 << "file = " << filename << ", line = " << nline;
+                 << "file = " << source << ", line = " << nline;
       return false;
     }
     bool err;
-    const Label i1 = StrToInt64(col[0], filename, nline, allow_negative, &err);
+    const Label i1 = StrToInt64(col[0], source, nline, allow_negative, &err);
     if (err) return false;
-    const Label i2 = StrToInt64(col[1], filename, nline, allow_negative, &err);
+    const Label i2 = StrToInt64(col[1], source, nline, allow_negative, &err);
     if (err) return false;
     using Level = Label;
-    const Level i3 = StrToInt64(col[2], filename, nline, allow_negative, &err);
+    const Level i3 = StrToInt64(col[2], source, nline, allow_negative, &err);
     if (err) return false;
     pairs->push_back(std::make_pair(i1, i2));
     assignments->push_back(i3);
@@ -58,16 +58,16 @@ bool ReadLabelTriples(const std::string &filename,
 
 // Returns true on success.
 template <typename Label>
-bool WriteLabelTriples(const std::string &filename,
+bool WriteLabelTriples(const std::string &source,
                        const std::vector<std::pair<Label, Label>> &pairs,
                        const std::vector<Label> &assignments) {
   if (pairs.size() != assignments.size()) {
     LOG(ERROR) << "WriteLabelTriples: Pairs and assignments of different sizes";
     return false;
   }
-  std::ofstream fstrm(filename);
+  std::ofstream fstrm(source);
   if (!fstrm) {
-    LOG(ERROR) << "WriteLabelTriples: Can't open file: " << filename;
+    LOG(ERROR) << "WriteLabelTriples: Can't open file: " << source;
     return false;
   }
   for (size_t n = 0; n < pairs.size(); ++n)
@@ -75,7 +75,7 @@ bool WriteLabelTriples(const std::string &filename,
           << "\n";
   if (!fstrm) {
     LOG(ERROR) << "WriteLabelTriples: Write failed: "
-               << (filename.empty() ? "standard output" : filename);
+               << (source.empty() ? "standard output" : source);
     return false;
   }
   return true;

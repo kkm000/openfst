@@ -3,7 +3,6 @@
 
 #include <fst/script/closure.h>
 
-#include <fst/script/fst-class.h>
 #include <fst/script/script-impl.h>
 
 namespace fst {
@@ -14,9 +13,7 @@ void Closure(MutableFstClass *fst, ClosureType closure_type) {
   Apply<Operation<ClosureArgs>>("Closure", fst->ArcType(), &args);
 }
 
-REGISTER_FST_OPERATION(Closure, StdArc, ClosureArgs);
-REGISTER_FST_OPERATION(Closure, LogArc, ClosureArgs);
-REGISTER_FST_OPERATION(Closure, Log64Arc, ClosureArgs);
+REGISTER_FST_OPERATION_3ARCS(Closure, ClosureArgs);
 
 }  // namespace script
 }  // namespace fst

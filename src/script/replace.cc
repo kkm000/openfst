@@ -3,22 +3,15 @@
 
 #include <fst/script/replace.h>
 
-#include <fst/script/fst-class.h>
 #include <fst/script/script-impl.h>
 
 namespace fst {
 namespace script {
 
-void Replace(const std::vector<LabelFstClassPair> &pairs, MutableFstClass *ofst,
-             const ReplaceOptions &opts) {
-  if (!pairs.empty()) {
-    for (auto it = pairs.begin(); it != pairs.end() - 1; ++it) {
-      if (!internal::ArcTypesMatch(*it->second, *(it + 1)->second, "Replace")) {
-        ofst->SetProperties(kError, kError);
-        return;
-      }
-    }
-    if (!internal::ArcTypesMatch(*pairs[0].second, *ofst, "Replace")) {
+void Replace(const std::vector<std::pair<int64, const FstClass *>> &pairs,
+             MutableFstClass *ofst, const ReplaceOptions &opts) {
+  for (const auto &pair : pairs) {
+    if (!internal::ArcTypesMatch(*pair.second, *ofst, "Replace")) {
       ofst->SetProperties(kError, kError);
       return;
     }
@@ -27,9 +20,7 @@ void Replace(const std::vector<LabelFstClassPair> &pairs, MutableFstClass *ofst,
   Apply<Operation<ReplaceArgs>>("Replace", ofst->ArcType(), &args);
 }
 
-REGISTER_FST_OPERATION(Replace, StdArc, ReplaceArgs);
-REGISTER_FST_OPERATION(Replace, LogArc, ReplaceArgs);
-REGISTER_FST_OPERATION(Replace, Log64Arc, ReplaceArgs);
+REGISTER_FST_OPERATION_3ARCS(Replace, ReplaceArgs);
 
 }  // namespace script
 }  // namespace fst

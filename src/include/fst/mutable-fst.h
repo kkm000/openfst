@@ -129,26 +129,25 @@ class MutableFst : public ExpandedFst<A> {
   }
 
   // Reads a MutableFst from a file; returns nullptr on error. An empty
-  // filename results in reading from standard input. If convert is true,
+  // source results in reading from standard input. If convert is true,
   // convert to a mutable FST subclass (given by convert_type) in the case
   // that the input FST is non-mutable.
-  static MutableFst<Arc> *Read(const std::string &filename,
-                               bool convert = false,
+  static MutableFst<Arc> *Read(const std::string &source, bool convert = false,
                                const std::string &convert_type = "vector") {
     if (convert == false) {
-      if (!filename.empty()) {
-        std::ifstream strm(filename,
+      if (!source.empty()) {
+        std::ifstream strm(source,
                                 std::ios_base::in | std::ios_base::binary);
         if (!strm) {
-          LOG(ERROR) << "MutableFst::Read: Can't open file: " << filename;
+          LOG(ERROR) << "MutableFst::Read: Can't open file: " << source;
           return nullptr;
         }
-        return Read(strm, FstReadOptions(filename));
+        return Read(strm, FstReadOptions(source));
       } else {
         return Read(std::cin, FstReadOptions("standard input"));
       }
     } else {  // Converts to 'convert_type' if not mutable.
-      std::unique_ptr<Fst<Arc>> ifst(Fst<Arc>::Read(filename));
+      std::unique_ptr<Fst<Arc>> ifst(Fst<Arc>::Read(source));
       if (!ifst) return nullptr;
       if (ifst->Properties(kMutable, false)) {
         return static_cast<MutableFst<Arc> *>(ifst.release());
@@ -226,9 +225,9 @@ class MutableArcIterator {
 
   void SetValue(const Arc &arc) { data_.base->SetValue(arc); }
 
-  uint32 Flags() const { return data_.base->Flags(); }
+  uint8 Flags() const { return data_.base->Flags(); }
 
-  void SetFlags(uint32 flags, uint32 mask) {
+  void SetFlags(uint8 flags, uint8 mask) {
     return data_.base->SetFlags(flags, mask);
   }
 

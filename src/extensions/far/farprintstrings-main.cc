@@ -34,11 +34,11 @@ int farprintstrings_main(int argc, char **argv) {
   SET_FLAGS(usage.c_str(), &argc, &argv, true);
   s::ExpandArgs(argc, argv, &argc, &argv);
 
-  std::vector<std::string> in_fnames;
-  for (int i = 1; i < argc; ++i) in_fnames.push_back(argv[i]);
-  if (in_fnames.empty()) in_fnames.push_back("");
+  std::vector<std::string> in_sources;
+  for (int i = 1; i < argc; ++i) in_sources.push_back(argv[i]);
+  if (in_sources.empty()) in_sources.push_back("");
 
-  const auto arc_type = s::LoadArcTypeFromFar(in_fnames[0]);
+  const auto arc_type = s::LoadArcTypeFromFar(in_sources[0]);
   if (arc_type.empty()) return 1;
 
   fst::FarEntryType entry_type;
@@ -53,7 +53,7 @@ int farprintstrings_main(int argc, char **argv) {
     return 1;
   }
 
-  s::FarPrintStrings(in_fnames, arc_type, entry_type, token_type,
+  s::FarPrintStrings(in_sources, arc_type, entry_type, token_type,
                      FLAGS_begin_key, FLAGS_end_key, FLAGS_print_key,
                      FLAGS_print_weight, FLAGS_symbols, FLAGS_initial_symbols,
                      FLAGS_generate_filenames, FLAGS_filename_prefix,

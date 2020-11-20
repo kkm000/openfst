@@ -59,12 +59,25 @@ class DefaultCompactStore;
 template <class Arc>
 class DefaultCacheStore;
 
+// Compactors.
+
+template <class AC, class U,
+          class S = DefaultCompactStore<typename AC::Element, U>>
+class DefaultCompactor;
+
 // FST templates.
 
-template <class Arc, class Compactor, class U = uint32,
-    class CompactStore = DefaultCompactStore<typename Compactor::Element, U>,
-    class CacheStore = DefaultCacheStore<Arc>>
+template <class Arc, class Compactor, class CacheStore = DefaultCacheStore<Arc>>
 class CompactFst;
+
+// The Unsigned type is used to represent indices into the compact arc array.
+template <class Arc, class ArcCompactor, class Unsigned = uint32,
+          class CompactStore =
+              DefaultCompactStore<typename ArcCompactor::Element, Unsigned>,
+          class CacheStore = DefaultCacheStore<Arc>>
+using CompactArcFst =
+    CompactFst<Arc, DefaultCompactor<ArcCompactor, Unsigned, CompactStore>,
+               CacheStore>;
 
 template <class Arc, class U = uint32>
 class ConstFst;
@@ -143,7 +156,7 @@ class UnionFst;
 template <class T, class Compare>
 class Heap;
 
-// Compactors.
+// ArcCompactors.
 
 template <class Arc>
 class AcceptorCompactor;
@@ -160,24 +173,24 @@ class UnweightedCompactor;
 template <class Arc>
 class WeightedStringCompactor;
 
-// Compact FSTs.
+// Compact Arc FSTs.
 
 template <class Arc, class U = uint32>
-using CompactStringFst = CompactFst<Arc, StringCompactor<Arc>, U>;
+using CompactStringFst = CompactArcFst<Arc, StringCompactor<Arc>, U>;
 
 template <class Arc, class U = uint32>
 using CompactWeightedStringFst =
-    CompactFst<Arc, WeightedStringCompactor<Arc>, U>;
+    CompactArcFst<Arc, WeightedStringCompactor<Arc>, U>;
 
 template <class Arc, class U = uint32>
-using CompactAcceptorFst = CompactFst<Arc, AcceptorCompactor<Arc>, U>;
+using CompactAcceptorFst = CompactArcFst<Arc, AcceptorCompactor<Arc>, U>;
 
 template <class Arc, class U = uint32>
-using CompactUnweightedFst = CompactFst<Arc, UnweightedCompactor<Arc>, U>;
+using CompactUnweightedFst = CompactArcFst<Arc, UnweightedCompactor<Arc>, U>;
 
 template <class Arc, class U = uint32>
 using CompactUnweightedAcceptorFst =
-    CompactFst<Arc, UnweightedAcceptorCompactor<Arc>, U>;
+    CompactArcFst<Arc, UnweightedAcceptorCompactor<Arc>, U>;
 
 // StdArc aliases for FSTs.
 

@@ -14,11 +14,10 @@
 
 #include <fst/compat.h>
 #include <fst/log.h>
+#include <fst/extensions/linear/linear-fst-data.h>
 #include <fst/fst.h>
 #include <fst/symbol-table.h>
 #include <fst/util.h>
-
-#include <fst/extensions/linear/linear-fst-data.h>
 
 namespace fst {
 

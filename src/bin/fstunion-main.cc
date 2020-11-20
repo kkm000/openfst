@@ -32,7 +32,7 @@ int fstunion_main(int argc, char **argv) {
   const std::string out_name =
       argc > 3 && strcmp(argv[3], "-") != 0 ? argv[3] : "";
 
-  if (in1_name == "" && in2_name == "") {
+  if (in1_name.empty() && in2_name.empty()) {
     LOG(ERROR) << argv[0] << ": Can't take both inputs from standard input";
     return 1;
   }

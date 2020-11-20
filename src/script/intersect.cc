@@ -3,7 +3,6 @@
 
 #include <fst/script/intersect.h>
 
-#include <fst/script/fst-class.h>
 #include <fst/script/script-impl.h>
 
 namespace fst {
@@ -20,9 +19,7 @@ void Intersect(const FstClass &ifst1, const FstClass &ifst2,
   Apply<Operation<IntersectArgs>>("Intersect", ifst1.ArcType(), &args);
 }
 
-REGISTER_FST_OPERATION(Intersect, StdArc, IntersectArgs);
-REGISTER_FST_OPERATION(Intersect, LogArc, IntersectArgs);
-REGISTER_FST_OPERATION(Intersect, Log64Arc, IntersectArgs);
+REGISTER_FST_OPERATION_3ARCS(Intersect, IntersectArgs);
 
 }  // namespace script
 }  // namespace fst

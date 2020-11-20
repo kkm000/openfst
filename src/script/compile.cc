@@ -3,10 +3,6 @@
 
 #include <fst/script/compile.h>
 
-#include <istream>
-#include <string>
-
-#include <fst/script/fst-class.h>
 #include <fst/script/script-impl.h>
 
 namespace fst {
@@ -38,10 +34,8 @@ FstClass *CompileFstInternal(std::istream &istrm, const std::string &source,
   return args.retval;
 }
 
-// This registers 2; 1 does not require registration.
-REGISTER_FST_OPERATION(CompileFstInternal, StdArc, CompileFstArgs);
-REGISTER_FST_OPERATION(CompileFstInternal, LogArc, CompileFstArgs);
-REGISTER_FST_OPERATION(CompileFstInternal, Log64Arc, CompileFstArgs);
+// This registers form 2; 1 does not require registration.
+REGISTER_FST_OPERATION_3ARCS(CompileFstInternal, CompileFstArgs);
 
 }  // namespace script
 }  // namespace fst

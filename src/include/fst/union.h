@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include <fst/expanded-fst.h>
 #include <fst/mutable-fst.h>
 #include <fst/rational.h>
 
@@ -39,7 +40,8 @@ void Union(MutableFst<Arc> *fst1, const Fst<Arc> &fst2) {
     return;
   }
   const auto numstates1 = fst1->NumStates();
-  const bool initial_acyclic1 = fst1->Properties(kInitialAcyclic, true);
+  const bool initial_acyclic1 =
+      fst1->Properties(kInitialAcyclic, false) == kInitialAcyclic;
   const auto props1 = fst1->Properties(kFstProperties, false);
   const auto props2 = fst2.Properties(kFstProperties, false);
   const auto start2 = fst2.Start();
@@ -77,6 +79,15 @@ void Union(MutableFst<Arc> *fst1, const Fst<Arc> &fst2) {
     fst1->AddArc(nstart1, Arc(0, 0, start2 + numstates1));
   }
   fst1->SetProperties(UnionProperties(props1, props2), kFstProperties);
+}
+
+// Same as the above but can handle arbitrarily many right-hand-side FSTs,
+// preallocating the states.
+template <class Arc>
+void Union(MutableFst<Arc> *fst1, const std::vector<const Fst<Arc> *> &fsts2) {
+  // We add 1 just in case fst1 has an initial cycle.
+  fst1->ReserveStates(1 + fst1->NumStates() + CountStates(fsts2));
+  for (const auto *fst2 : fsts2) Union(fst1, *fst2);
 }
 
 // Computes the union of two FSTs, modifying the RationalFst argument.

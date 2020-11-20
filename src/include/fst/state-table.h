@@ -195,7 +195,7 @@ class ErasableStateTable : public ErasableBiTable<typename T::StateId, T, H> {
 //   // Looks up a tuple by state ID.
 //   const ComposeStateTuple<StateId> &Tuple(StateId s) const;
 //
-//   // The number of of stored tuples.
+//   // The number of stored tuples.
 //   StateId Size() const;
 //
 //   // Return true if error was encountered.
@@ -262,7 +262,7 @@ class DefaultComposeStateTuple {
   FilterState fs_;  // State of composition filter.
 };
 
-// Specialization for TrivialFilterState that does not explicitely store the
+// Specialization for TrivialFilterState that does not explicitly store the
 // filter state since it is always the unique non-blocking state.
 template <typename S>
 class DefaultComposeStateTuple<S, TrivialFilterState> {
@@ -270,8 +270,7 @@ class DefaultComposeStateTuple<S, TrivialFilterState> {
   using StateId = S;
   using FilterState = TrivialFilterState;
 
-  DefaultComposeStateTuple()
-      : state_pair_(kNoStateId, kNoStateId) {}
+  DefaultComposeStateTuple() : state_pair_(kNoStateId, kNoStateId) {}
 
   DefaultComposeStateTuple(StateId s1, StateId s2, const FilterState &)
       : state_pair_(s1, s2) {}
@@ -289,7 +288,7 @@ class DefaultComposeStateTuple<S, TrivialFilterState> {
     return (&x == &y) || (x.state_pair_ == y.state_pair_);
   }
 
-  size_t Hash() const { return StateId1() + StateId2() * 7853; }
+  size_t Hash() const { return StateId1() + StateId2() * size_t{7853}; }
 
  private:
   std::pair<StateId, StateId> state_pair_;

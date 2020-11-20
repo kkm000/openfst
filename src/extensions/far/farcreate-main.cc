@@ -29,35 +29,35 @@ int farcreate_main(int argc, char **argv) {
   SET_FLAGS(usage.c_str(), &argc, &argv, true);
   s::ExpandArgs(argc, argv, &argc, &argv);
 
-  std::vector<std::string> in_fnames;
+  std::vector<std::string> in_sources;
   if (FLAGS_file_list_input) {
     for (int i = 1; i < argc - 1; ++i) {
       std::ifstream istrm(argv[i]);
       std::string str;
-      while (getline(istrm, str)) in_fnames.push_back(str);
+      while (getline(istrm, str)) in_sources.push_back(str);
     }
   } else {
     for (int i = 1; i < argc - 1; ++i)
-      in_fnames.push_back(strcmp(argv[i], "-") != 0 ? argv[i] : "");
+      in_sources.push_back(strcmp(argv[i], "-") != 0 ? argv[i] : "");
   }
-  if (in_fnames.empty()) {
+  if (in_sources.empty()) {
     // argc == 1 || argc == 2.  This cleverly handles both the no-file case
     // and the one (input) file case together.
     // TODO(jrosenstock): This probably shouldn't happen for the
     // --file_list_input case.
-    in_fnames.push_back(argc == 2 && strcmp(argv[1], "-") != 0 ? argv[1] : "");
+    in_sources.push_back(argc == 2 && strcmp(argv[1], "-") != 0 ? argv[1] : "");
   }
 
   // argc <= 2 means the file (if any) is an input file, so write to stdout.
-  const std::string out_fname =
+  const std::string out_source =
       argc > 2 && strcmp(argv[argc - 1], "-") != 0 ? argv[argc - 1] : "";
 
-  const auto arc_type = s::LoadArcTypeFromFst(in_fnames[0]);
+  const auto arc_type = s::LoadArcTypeFromFst(in_sources[0]);
   if (arc_type.empty()) return 1;
 
   const auto far_type = s::GetFarType(FLAGS_far_type);
 
-  s::FarCreate(in_fnames, out_fname, arc_type, FLAGS_generate_keys, far_type,
+  s::FarCreate(in_sources, out_source, arc_type, FLAGS_generate_keys, far_type,
                FLAGS_key_prefix, FLAGS_key_suffix);
 
   return 0;

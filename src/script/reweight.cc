@@ -3,7 +3,6 @@
 
 #include <fst/script/reweight.h>
 
-#include <fst/script/fst-class.h>
 #include <fst/script/script-impl.h>
 
 namespace fst {
@@ -15,9 +14,7 @@ void Reweight(MutableFstClass *fst, const std::vector<WeightClass> &potential,
   Apply<Operation<ReweightArgs>>("Reweight", fst->ArcType(), &args);
 }
 
-REGISTER_FST_OPERATION(Reweight, StdArc, ReweightArgs);
-REGISTER_FST_OPERATION(Reweight, LogArc, ReweightArgs);
-REGISTER_FST_OPERATION(Reweight, Log64Arc, ReweightArgs);
+REGISTER_FST_OPERATION_3ARCS(Reweight, ReweightArgs);
 
 }  // namespace script
 }  // namespace fst

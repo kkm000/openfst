@@ -112,10 +112,10 @@ class MatcherFst : public ImplToExpandedFst<internal::AddOnImpl<F, Data>> {
   }
 
   // Read a MatcherFst from a file; return nullptr on error
-  // Empty filename reads from standard input
+  // Empty source reads from standard input
   static MatcherFst<FST, FstMatcher, Name, Init, Data> *Read(
-      const std::string &filename) {
-    auto *impl = ImplToExpandedFst<Impl>::Read(filename);
+      const std::string &source) {
+    auto *impl = ImplToExpandedFst<Impl>::Read(source);
     return impl ? new MatcherFst<FST, FstMatcher, Name, Init, Data>(
                       std::shared_ptr<Impl>(impl))
                 : nullptr;
@@ -125,8 +125,8 @@ class MatcherFst : public ImplToExpandedFst<internal::AddOnImpl<F, Data>> {
     return GetImpl()->Write(strm, opts);
   }
 
-  bool Write(const std::string &filename) const override {
-    return Fst<Arc>::WriteFile(filename);
+  bool Write(const std::string &source) const override {
+    return Fst<Arc>::WriteFile(source);
   }
 
   void InitStateIterator(StateIteratorData<Arc> *data) const override {

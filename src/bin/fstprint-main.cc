@@ -4,13 +4,13 @@
 // Prints out binary FSTs in simple text format used by AT&T.
 
 #include <cstring>
-#include <fstream>
 #include <memory>
 #include <ostream>
 #include <string>
 
 #include <fst/flags.h>
 #include <fst/log.h>
+#include <fstream>
 #include <fst/script/print.h>
 
 DECLARE_bool(acceptor);
@@ -91,8 +91,8 @@ int fstprint_main(int argc, char **argv) {
     osyms.reset(fst->OutputSymbols()->Copy());
   }
 
-  s::PrintFst(*fst, ostrm, dest, isyms.get(), osyms.get(), ssyms.get(),
-              FLAGS_acceptor, FLAGS_show_weight_one, FLAGS_missing_symbol);
+  s::Print(*fst, ostrm, dest, isyms.get(), osyms.get(), ssyms.get(),
+           FLAGS_acceptor, FLAGS_show_weight_one, FLAGS_missing_symbol);
 
   if (isyms && !FLAGS_save_isymbols.empty()) {
     if (!isyms->WriteText(FLAGS_save_isymbols)) return 1;

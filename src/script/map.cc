@@ -3,7 +3,6 @@
 
 #include <fst/script/map.h>
 
-#include <fst/script/fst-class.h>
 #include <fst/script/script-impl.h>
 
 namespace fst {
@@ -18,9 +17,7 @@ FstClass *Map(const FstClass &ifst, MapType map_type, float delta, double power,
   return args.retval;
 }
 
-REGISTER_FST_OPERATION(Map, StdArc, MapArgs);
-REGISTER_FST_OPERATION(Map, LogArc, MapArgs);
-REGISTER_FST_OPERATION(Map, Log64Arc, MapArgs);
+REGISTER_FST_OPERATION_3ARCS(Map, MapArgs);
 
 }  // namespace script
 }  // namespace fst

@@ -16,23 +16,40 @@ using ConcatArgs1 = std::pair<MutableFstClass *, const FstClass &>;
 
 template <class Arc>
 void Concat(ConcatArgs1 *args) {
-  MutableFst<Arc> *ofst = std::get<0>(*args)->GetMutableFst<Arc>();
-  const Fst<Arc> &ifst = *std::get<1>(*args).GetFst<Arc>();
-  Concat(ofst, ifst);
+  MutableFst<Arc> *fst1 = std::get<0>(*args)->GetMutableFst<Arc>();
+  const Fst<Arc> &fst2 = *std::get<1>(*args).GetFst<Arc>();
+  Concat(fst1, fst2);
 }
 
 using ConcatArgs2 = std::pair<const FstClass &, MutableFstClass *>;
 
 template <class Arc>
 void Concat(ConcatArgs2 *args) {
-  const Fst<Arc> &ifst = *std::get<0>(*args).GetFst<Arc>();
-  MutableFst<Arc> *ofst = std::get<1>(*args)->GetMutableFst<Arc>();
-  Concat(ifst, ofst);
+  const Fst<Arc> &fst1 = *std::get<0>(*args).GetFst<Arc>();
+  MutableFst<Arc> *fst2 = std::get<1>(*args)->GetMutableFst<Arc>();
+  Concat(fst1, fst2);
 }
 
-void Concat(MutableFstClass *ofst, const FstClass &ifst);
+using ConcatArgs3 =
+    std::pair<const std::vector<FstClass *> &, MutableFstClass *>;
 
-void Concat(const FstClass &ifst, MutableFstClass *ofst);
+template <class Arc>
+void Concat(ConcatArgs3 *args) {
+  const auto &untyped_fsts1 = std::get<0>(*args);
+  std::vector<const Fst<Arc> *> typed_fsts1;
+  typed_fsts1.reserve(untyped_fsts1.size());
+  for (const auto &untyped_fst1 : untyped_fsts1) {
+    typed_fsts1.emplace_back(untyped_fst1->GetFst<Arc>());
+  }
+  MutableFst<Arc> *fst2 = std::get<1>(*args)->GetMutableFst<Arc>();
+  Concat(typed_fsts1, fst2);
+}
+
+void Concat(MutableFstClass *fst1, const FstClass &fst2);
+
+void Concat(const FstClass &fst1, MutableFstClass *fst2);
+
+void Concat(const std::vector<FstClass *> &fsts1, MutableFstClass *fst2);
 
 }  // namespace script
 }  // namespace fst

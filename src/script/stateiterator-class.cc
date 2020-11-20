@@ -14,12 +14,8 @@ StateIteratorClass::StateIteratorClass(const FstClass &fst) : impl_(nullptr) {
                                                fst.ArcType(), &args);
 }
 
-REGISTER_FST_OPERATION(InitStateIteratorClass, StdArc,
-                       InitStateIteratorClassArgs);
-REGISTER_FST_OPERATION(InitStateIteratorClass, LogArc,
-                       InitStateIteratorClassArgs);
-REGISTER_FST_OPERATION(InitStateIteratorClass, Log64Arc,
-                       InitStateIteratorClassArgs);
+REGISTER_FST_OPERATION_3ARCS(InitStateIteratorClass,
+                             InitStateIteratorClassArgs);
 
 }  // namespace script
 }  // namespace fst

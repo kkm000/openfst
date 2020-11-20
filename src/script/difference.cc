@@ -3,7 +3,6 @@
 
 #include <fst/script/difference.h>
 
-#include <fst/script/fst-class.h>
 #include <fst/script/script-impl.h>
 
 namespace fst {
@@ -20,9 +19,7 @@ void Difference(const FstClass &ifst1, const FstClass &ifst2,
   Apply<Operation<DifferenceArgs>>("Difference", ifst1.ArcType(), &args);
 }
 
-REGISTER_FST_OPERATION(Difference, StdArc, DifferenceArgs);
-REGISTER_FST_OPERATION(Difference, LogArc, DifferenceArgs);
-REGISTER_FST_OPERATION(Difference, Log64Arc, DifferenceArgs);
+REGISTER_FST_OPERATION_3ARCS(Difference, DifferenceArgs);
 
 }  // namespace script
 }  // namespace fst

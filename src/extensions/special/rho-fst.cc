@@ -3,7 +3,9 @@
 
 #include <fst/extensions/special/rho-fst.h>
 
+#include <fst/arc.h>
 #include <fst/fst.h>
+#include <fst/register.h>
 
 DEFINE_int64(rho_fst_rho_label, 0,
              "Label of transitions to be interpreted as rho ('rest') "
@@ -18,16 +20,16 @@ const char rho_fst_type[] = "rho";
 const char input_rho_fst_type[] = "input_rho";
 const char output_rho_fst_type[] = "output_rho";
 
-static FstRegisterer<StdRhoFst> RhoFst_StdArc_registerer;
-static FstRegisterer<LogRhoFst> RhoFst_LogArc_registerer;
-static FstRegisterer<Log64RhoFst> RhoFst_Log64Arc_registerer;
+REGISTER_FST(RhoFst, StdArc);
+REGISTER_FST(RhoFst, LogArc);
+REGISTER_FST(RhoFst, Log64Arc);
 
-static FstRegisterer<StdInputRhoFst> InputRhoFst_StdArc_registerer;
-static FstRegisterer<LogInputRhoFst> InputRhoFst_LogArc_registerer;
-static FstRegisterer<Log64InputRhoFst> InputRhoFst_Log64Arc_registerer;
+REGISTER_FST(InputRhoFst, StdArc);
+REGISTER_FST(InputRhoFst, LogArc);
+REGISTER_FST(InputRhoFst, Log64Arc);
 
-static FstRegisterer<StdOutputRhoFst> OutputRhoFst_StdArc_registerer;
-static FstRegisterer<LogOutputRhoFst> OutputRhoFst_LogArc_registerer;
-static FstRegisterer<Log64OutputRhoFst> OutputRhoFst_Log64Arc_registerer;
+REGISTER_FST(OutputRhoFst, StdArc);
+REGISTER_FST(OutputRhoFst, LogArc);
+REGISTER_FST(OutputRhoFst, Log64Arc);
 
 }  // namespace fst

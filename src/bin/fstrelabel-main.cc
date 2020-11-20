@@ -6,6 +6,7 @@
 #include <cstring>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include <fst/flags.h>
@@ -85,13 +86,13 @@ int fstrelabel_main(int argc, char **argv) {
                attach_new_osymbols);
   } else {
     // Reads in relabeling pairs.
-    std::vector<s::LabelPair> ipairs;
-    std::vector<s::LabelPair> opairs;
+    std::vector<std::pair<int64, int64>> ipairs;
     if (!FLAGS_relabel_ipairs.empty()) {
       if (!fst::ReadLabelPairs(FLAGS_relabel_ipairs, &ipairs,
                                    FLAGS_allow_negative_labels))
         return 1;
     }
+    std::vector<std::pair<int64, int64>> opairs;
     if (!FLAGS_relabel_opairs.empty()) {
       if (!fst::ReadLabelPairs(FLAGS_relabel_opairs, &opairs,
                                    FLAGS_allow_negative_labels))

@@ -6,8 +6,9 @@
 #ifndef FST_QUEUE_H_
 #define FST_QUEUE_H_
 
-#include <deque>
 #include <memory>
+#include <queue>
+#include <stack>
 #include <type_traits>
 #include <utility>
 #include <vector>
@@ -138,20 +139,20 @@ class FifoQueue : public QueueBase<S> {
 
   virtual ~FifoQueue() = default;
 
-  StateId Head() const override { return queue_.back(); }
+  StateId Head() const override { return queue_.front(); }
 
-  void Enqueue(StateId s) override { queue_.push_front(s); }
+  void Enqueue(StateId s) override { queue_.push(s); }
 
-  void Dequeue() override { queue_.pop_back(); }
+  void Dequeue() override { queue_.pop(); }
 
   void Update(StateId) override {}
 
   bool Empty() const override { return queue_.empty(); }
 
-  void Clear() override { queue_.clear(); }
+  void Clear() override { queue_ = std::queue<StateId>(); }
 
  private:
-  std::deque<StateId> queue_;
+  std::queue<StateId> queue_;
 };
 
 // Last-in, first-out queue discipline.
@@ -164,20 +165,20 @@ class LifoQueue : public QueueBase<S> {
 
   virtual ~LifoQueue() = default;
 
-  StateId Head() const final { return queue_.front(); }
+  StateId Head() const final { return stack_.top(); }
 
-  void Enqueue(StateId s) final { queue_.push_front(s); }
+  void Enqueue(StateId s) final { stack_.push(s); }
 
-  void Dequeue() final { queue_.pop_front(); }
+  void Dequeue() final { stack_.pop(); }
 
   void Update(StateId) final {}
 
-  bool Empty() const final { return queue_.empty(); }
+  bool Empty() const final { return stack_.empty(); }
 
-  void Clear() final { queue_.clear(); }
+  void Clear() final { stack_ = std::stack<StateId>(); }
 
  private:
-  std::deque<StateId> queue_;
+  std::stack<StateId> stack_;
 };
 
 // Shortest-first queue discipline, templated on the StateId and as well as a

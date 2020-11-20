@@ -4,13 +4,13 @@
 // Creates binary FSTs from simple text format used by AT&T.
 
 #include <cstring>
-#include <fstream>
 #include <istream>
 #include <memory>
 #include <string>
 
 #include <fst/flags.h>
 #include <fst/log.h>
+#include <fstream>
 #include <fst/script/compile.h>
 
 DECLARE_bool(acceptor);

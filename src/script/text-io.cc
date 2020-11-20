@@ -4,7 +4,6 @@
 #include <fst/script/text-io.h>
 
 #include <cstring>
-#include <fstream>
 #include <ostream>
 #include <sstream>
 #include <utility>
@@ -17,11 +16,11 @@ namespace fst {
 namespace script {
 
 // Reads vector of weights; returns true on success.
-bool ReadPotentials(const std::string &weight_type, const std::string &filename,
+bool ReadPotentials(const std::string &weight_type, const std::string &source,
                     std::vector<WeightClass> *potentials) {
-  std::ifstream istrm(filename);
-  if (!istrm.good()) {
-    LOG(ERROR) << "ReadPotentials: Can't open file: " << filename;
+  std::ifstream istrm(source);
+  if (!istrm) {
+    LOG(ERROR) << "ReadPotentials: Can't open file: " << source;
     return false;
   }
   static constexpr int kLineLen = 8096;
@@ -35,10 +34,10 @@ bool ReadPotentials(const std::string &weight_type, const std::string &filename,
     if (col.empty() || col[0][0] == '\0') continue;
     if (col.size() != 2) {
       FSTERROR() << "ReadPotentials: Bad number of columns, "
-                 << "file = " << filename << ", line = " << nline;
+                 << "file = " << source << ", line = " << nline;
       return false;
     }
-    const ssize_t s = StrToInt64(col[0], filename, nline, false);
+    const ssize_t s = StrToInt64(col[0], source, nline, false);
     const WeightClass weight(weight_type, col[1]);
     while (potentials->size() <= s) {
       potentials->push_back(WeightClass::Zero(weight_type));
@@ -49,13 +48,13 @@ bool ReadPotentials(const std::string &weight_type, const std::string &filename,
 }
 
 // Writes vector of weights; returns true on success.
-bool WritePotentials(const std::string &filename,
+bool WritePotentials(const std::string &source,
                      const std::vector<WeightClass> &potentials) {
   std::ofstream ostrm;
-  if (!filename.empty()) {
-    ostrm.open(filename);
-    if (!ostrm.good()) {
-      LOG(ERROR) << "WritePotentials: Can't open file: " << filename;
+  if (!source.empty()) {
+    ostrm.open(source);
+    if (!ostrm) {
+      LOG(ERROR) << "WritePotentials: Can't open file: " << source;
       return false;
     }
   }
@@ -66,7 +65,7 @@ bool WritePotentials(const std::string &filename,
   }
   if (strm.fail()) {
     LOG(ERROR) << "WritePotentials: Write failed: "
-               << (filename.empty() ? "standard output" : filename);
+               << (source.empty() ? "standard output" : source);
     return false;
   }
   return true;

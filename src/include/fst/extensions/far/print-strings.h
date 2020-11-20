@@ -21,14 +21,13 @@ DECLARE_string(far_field_separator);
 namespace fst {
 
 template <class Arc>
-void FarPrintStrings(const std::vector<std::string> &ifilenames,
+void FarPrintStrings(const std::vector<std::string> &isources,
                      FarEntryType entry_type, FarTokenType far_token_type,
                      const std::string &begin_key, const std::string &end_key,
                      bool print_key, bool print_weight,
-                     const std::string &symbols_fname, bool initial_symbols,
-                     int32 generate_filenames,
-                     const std::string &filename_prefix,
-                     const std::string &filename_suffix) {
+                     const std::string &symbols_source, bool initial_symbols,
+                     int32 generate_sources, const std::string &source_prefix,
+                     const std::string &source_suffix) {
   StringTokenType token_type;
   if (far_token_type == FTT_SYMBOL) {
     token_type = StringTokenType::SYMBOL;
@@ -41,17 +40,17 @@ void FarPrintStrings(const std::vector<std::string> &ifilenames,
     return;
   }
   std::unique_ptr<const SymbolTable> syms;
-  if (!symbols_fname.empty()) {
+  if (!symbols_source.empty()) {
     // TODO(kbg): Allow negative flag?
     const SymbolTableTextOptions opts(true);
-    syms.reset(SymbolTable::ReadText(symbols_fname, opts));
+    syms.reset(SymbolTable::ReadText(symbols_source, opts));
     if (!syms) {
       LOG(ERROR) << "FarPrintStrings: Error reading symbol table "
-                 << symbols_fname;
+                 << symbols_source;
       return;
     }
   }
-  std::unique_ptr<FarReader<Arc>> far_reader(FarReader<Arc>::Open(ifilenames));
+  std::unique_ptr<FarReader<Arc>> far_reader(FarReader<Arc>::Open(isources));
   if (!far_reader) return;
   if (!begin_key.empty()) far_reader->Find(begin_key);
   std::string okey;
@@ -81,18 +80,18 @@ void FarPrintStrings(const std::vector<std::string> &ifilenames,
       std::cout << std::endl;
     } else if (entry_type == FET_FILE) {
       std::stringstream sstrm;
-      if (generate_filenames) {
+      if (generate_sources) {
         sstrm.fill('0');
-        sstrm << std::right << std::setw(generate_filenames) << i;
+        sstrm << std::right << std::setw(generate_sources) << i;
       } else {
         sstrm << key;
         if (nrep > 0) sstrm << "." << nrep;
       }
-      std::string filename;
-      filename = filename_prefix + sstrm.str() + filename_suffix;
-      std::ofstream ostrm(filename);
+      std::string source;
+      source = source_prefix + sstrm.str() + source_suffix;
+      std::ofstream ostrm(source);
       if (!ostrm) {
-        LOG(ERROR) << "FarPrintStrings: Can't open file: " << filename;
+        LOG(ERROR) << "FarPrintStrings: Can't open file: " << source;
         return;
       }
       ostrm << str;

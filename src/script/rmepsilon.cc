@@ -3,7 +3,6 @@
 
 #include <fst/script/rmepsilon.h>
 
-#include <fst/script/fst-class.h>
 #include <fst/script/script-impl.h>
 
 namespace fst {
@@ -18,9 +17,7 @@ void RmEpsilon(MutableFstClass *fst, const RmEpsilonOptions &opts) {
   Apply<Operation<RmEpsilonArgs>>("RmEpsilon", fst->ArcType(), &args);
 }
 
-REGISTER_FST_OPERATION(RmEpsilon, StdArc, RmEpsilonArgs);
-REGISTER_FST_OPERATION(RmEpsilon, LogArc, RmEpsilonArgs);
-REGISTER_FST_OPERATION(RmEpsilon, Log64Arc, RmEpsilonArgs);
+REGISTER_FST_OPERATION_3ARCS(RmEpsilon, RmEpsilonArgs);
 
 }  // namespace script
 }  // namespace fst

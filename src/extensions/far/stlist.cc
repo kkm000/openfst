@@ -8,8 +8,8 @@
 
 namespace fst {
 
-bool IsSTList(const std::string &filename) {
-  std::ifstream strm(filename, std::ios_base::in | std::ios_base::binary);
+bool IsSTList(const std::string &source) {
+  std::ifstream strm(source, std::ios_base::in | std::ios_base::binary);
   if (!strm) return false;
   int32 magic_number = 0;
   ReadType(strm, &magic_number);
