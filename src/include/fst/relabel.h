@@ -165,13 +165,10 @@ void Relabel(MutableFst<Arc> *fst, const SymbolTable *old_isymbols,
              const SymbolTable *new_isymbols, bool attach_new_isymbols,
              const SymbolTable *old_osymbols, const SymbolTable *new_osymbols,
              bool attach_new_osymbols) {
-  Relabel(fst,
-          old_isymbols, new_isymbols, "" /* no unknown isymbol */,
-          attach_new_isymbols,
-          old_osymbols, new_osymbols, "" /* no unknown ioymbol */,
-          attach_new_osymbols);
+  Relabel(fst, old_isymbols, new_isymbols, "" /* no unknown isymbol */,
+          attach_new_isymbols, old_osymbols, new_osymbols,
+          "" /* no unknown ioymbol */, attach_new_osymbols);
 }
-
 
 // Relabels either the input labels or output labels. The old to
 // new labels are specified using symbol tables. Any label associations not
@@ -234,12 +231,10 @@ class RelabelFstImpl : public CacheImpl<Arc> {
     SetType("relabel");
   }
 
-  RelabelFstImpl(const Fst<Arc> &fst,
-                 const SymbolTable *old_isymbols,
+  RelabelFstImpl(const Fst<Arc> &fst, const SymbolTable *old_isymbols,
                  const SymbolTable *new_isymbols,
                  const SymbolTable *old_osymbols,
-                 const SymbolTable *new_osymbols,
-                 const RelabelFstOptions &opts)
+                 const SymbolTable *new_osymbols, const RelabelFstOptions &opts)
       : CacheImpl<Arc>(opts),
         fst_(fst.Copy()),
         relabel_input_(false),
@@ -434,7 +429,7 @@ class StateIterator<RelabelFst<Arc>> : public StateIteratorBase<Arc> {
   }
 
  private:
-  const internal::RelabelFstImpl<Arc>* impl_;
+  const internal::RelabelFstImpl<Arc> *impl_;
   StateIterator<Fst<Arc>> siter_;
   StateId s_;
 

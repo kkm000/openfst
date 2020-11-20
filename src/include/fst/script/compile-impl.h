@@ -43,8 +43,8 @@ class FstCompiler {
     std::unique_ptr<SymbolTable> misyms(isyms ? isyms->Copy() : nullptr);
     std::unique_ptr<SymbolTable> mosyms(osyms ? osyms->Copy() : nullptr);
     std::unique_ptr<SymbolTable> mssyms(ssyms ? ssyms->Copy() : nullptr);
-    Init(istrm, source, misyms.get(), mosyms.get(), mssyms.get(), accep,
-         ikeep, okeep, nkeep, allow_negative_labels, false);
+    Init(istrm, source, misyms.get(), mosyms.get(), mssyms.get(), accep, ikeep,
+         okeep, nkeep, allow_negative_labels, false);
   }
 
   FstCompiler(std::istream &istrm, const std::string &source,  // NOLINT
@@ -75,8 +75,7 @@ class FstCompiler {
       ++nline_;
       std::vector<char *> col;
       SplitString(line, separator.c_str(), &col, true);
-      if (col.empty() || col[0][0] == '\0')
-        continue;
+      if (col.empty() || col[0][0] == '\0') continue;
       if (col.size() > 5 || (col.size() > 4 && accep) ||
           (col.size() == 3 && !accep)) {
         FSTERROR() << "FstCompiler: Bad number of columns, source = " << source_
@@ -153,7 +152,7 @@ class FstCompiler {
     } else {
       char *p;
       n = strtoll(s, &p, 10);
-      if (p < s + strlen(s) || (!allow_negative && n < 0)) {
+      if (*p != '\0' || (!allow_negative && n < 0)) {
         FSTERROR() << "FstCompiler: Bad " << name << " integer = \"" << s
                    << "\", source = " << source_ << ", line = " << nline_;
         fst_.SetProperties(kError, kError);
@@ -203,7 +202,7 @@ class FstCompiler {
   SymbolTable *osyms_;  // olabel symbol table (not owned).
   SymbolTable *ssyms_;  // slabel symbol table (not owned).
   std::unordered_map<StateId, StateId> states_;  // State ID map.
-  StateId nstates_;                              // Number of seen states.
+  StateId nstates_;                               // Number of seen states.
   bool keep_state_numbering_;
   bool allow_negative_labels_;  // Not recommended; may cause conflicts.
   bool add_symbols_;            // Add to symbol tables on-the fly.

@@ -63,8 +63,8 @@ bool RandEquivalent(const Fst<Arc> &fst1, const Fst<Arc> &fst2, int32 npath,
     RandGen(fst, &path, opts);
     VectorFst<Arc> ipath(path);
     VectorFst<Arc> opath(path);
-    Project(&ipath, PROJECT_INPUT);
-    Project(&opath, PROJECT_OUTPUT);
+    Project(&ipath, ProjectType::INPUT);
+    Project(&opath, ProjectType::OUTPUT);
     VectorFst<Arc> cfst1, pfst1;
     Compose(ipath, sfst1, &cfst1);
     ArcSort(&cfst1, ocomp);

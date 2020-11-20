@@ -39,7 +39,7 @@ int fstdeterminize_main(int argc, char **argv) {
   DeterminizeType det_type;
   if (!s::GetDeterminizeType(FLAGS_det_type, &det_type)) {
     LOG(ERROR) << argv[0] << ": Unknown or unsupported determinization type: "
-                          << FLAGS_det_type;
+               << FLAGS_det_type;
     return 1;
   }
 

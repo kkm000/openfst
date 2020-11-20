@@ -61,7 +61,7 @@ void Reverse(const Fst<FromArc> &ifst, MutableFst<ToArc> *ofst,
       std::vector<StateId> scc;
       SccVisitor<FromArc> scc_visitor(&scc, nullptr, nullptr, &dfs_iprops);
       DfsVisit(ifst, &scc_visitor);
-      if (count(scc.begin(), scc.end(), scc[ostart]) > 1) {
+      if (std::count(scc.begin(), scc.end(), scc[ostart]) > 1) {
         ostart = kNoStateId;
       } else {
         for (ArcIterator<Fst<FromArc>> aiter(ifst, ostart); !aiter.Done();

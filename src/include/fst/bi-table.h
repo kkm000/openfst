@@ -18,6 +18,7 @@
 #include <fst/types.h>
 #include <fst/log.h>
 #include <fst/memory.h>
+#include <fst/windows_defs.inc>
 #include <unordered_set>
 
 namespace fst {

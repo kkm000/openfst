@@ -22,10 +22,10 @@ DECLARE_bool(keep_parentheses);
 
 int mpdtexpand_main(int argc, char **argv) {
   namespace s = fst::script;
+  using fst::MPdtExpandOptions;
+  using fst::ReadLabelTriples;
   using fst::script::FstClass;
   using fst::script::VectorFstClass;
-  using fst::ReadLabelTriples;
-  using fst::MPdtExpandOptions;
 
   std::string usage = "Expand a (bounded-stack) MPDT as an FST.\n\n  Usage: ";
   usage += argv[0];

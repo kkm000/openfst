@@ -4,11 +4,15 @@
 #ifndef FST_MAPPED_FILE_H_
 #define FST_MAPPED_FILE_H_
 
+#ifdef _WIN32
+#include <windows.h>
+#include <fst/compat.h>
+#endif
+
 #include <cstddef>
 #include <istream>
 #include <string>
 
-#include <fst/compat.h>
 #include <fst/flags.h>
 
 namespace fst {
@@ -25,6 +29,9 @@ struct MemoryRegion {
   void *mmap;
   size_t size;
   size_t offset;
+#ifdef _WIN32
+  HANDLE file_mapping;
+#endif
 };
 
 class MappedFile {

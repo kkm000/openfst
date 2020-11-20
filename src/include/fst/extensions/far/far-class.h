@@ -17,7 +17,6 @@
 namespace fst {
 namespace script {
 
-
 // FarReader API.
 
 // Virtual interface implemented by each concrete FarReaderImpl<A>.
@@ -75,7 +74,6 @@ class FarReaderClassImpl : public FarReaderImplBase {
   std::unique_ptr<FarReader<Arc>> impl_;
   mutable std::unique_ptr<FstClass> fstc_;
 };
-
 
 class FarReaderClass;
 
@@ -159,13 +157,12 @@ class FarWriterImplBase {
   virtual ~FarWriterImplBase() {}
 };
 
-
 // Templated implementation.
 template <class Arc>
 class FarWriterClassImpl : public FarWriterImplBase {
  public:
   explicit FarWriterClassImpl(const std::string &source,
-                              FarType type = FAR_DEFAULT)
+                              FarType type = FarType::DEFAULT)
       : impl_(FarWriter<Arc>::Create(source, type)) {}
 
   bool Add(const std::string &key, const FstClass &fst) final {
@@ -192,7 +189,6 @@ class FarWriterClassImpl : public FarWriterImplBase {
   std::unique_ptr<FarWriter<Arc>> impl_;
 };
 
-
 class FarWriterClass;
 
 using CreateFarWriterClassInnerArgs = std::pair<const std::string &, FarType>;
@@ -205,7 +201,7 @@ class FarWriterClass {
  public:
   static FarWriterClass *Create(const std::string &source,
                                 const std::string &arc_type,
-                                FarType type = FAR_DEFAULT);
+                                FarType type = FarType::DEFAULT);
 
   bool Add(const std::string &key, const FstClass &fst) {
     return impl_->Add(key, fst);

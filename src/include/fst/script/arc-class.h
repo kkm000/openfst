@@ -15,7 +15,9 @@ namespace script {
 struct ArcClass {
   template <class Arc>
   explicit ArcClass(const Arc &arc)
-      : ilabel(arc.ilabel), olabel(arc.olabel), weight(arc.weight),
+      : ilabel(arc.ilabel),
+        olabel(arc.olabel),
+        weight(arc.weight),
         nextstate(arc.nextstate) {}
 
   ArcClass(int64 ilabel, int64 olabel, const WeightClass &weight,

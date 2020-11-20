@@ -21,15 +21,15 @@ template <class Label>
 class SigmaFstMatcherData {
  public:
   explicit SigmaFstMatcherData(Label sigma_label = FLAGS_sigma_fst_sigma_label,
-      MatcherRewriteMode rewrite_mode =
-                          RewriteMode(FLAGS_sigma_fst_rewrite_mode))
+                               MatcherRewriteMode rewrite_mode =
+                                   RewriteMode(FLAGS_sigma_fst_rewrite_mode))
       : sigma_label_(sigma_label), rewrite_mode_(rewrite_mode) {}
 
   SigmaFstMatcherData(const SigmaFstMatcherData &data)
       : sigma_label_(data.sigma_label_), rewrite_mode_(data.rewrite_mode_) {}
 
   static SigmaFstMatcherData<Label> *Read(std::istream &istrm,
-                                      const FstReadOptions &read) {
+                                          const FstReadOptions &read) {
     auto *data = new SigmaFstMatcherData<Label>();
     ReadType(istrm, &data->sigma_label_);
     int32 rewrite_mode;

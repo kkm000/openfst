@@ -72,8 +72,7 @@ class TupleWeight {
   }
 
   bool Member() const {
-    return std::all_of(values_.begin(), values_.end(),
-                       std::mem_fn(&W::Member));
+    return std::all_of(values_.begin(), values_.end(), std::mem_fn(&W::Member));
   }
 
   size_t Hash() const {

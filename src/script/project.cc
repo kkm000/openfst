@@ -8,7 +8,6 @@
 namespace fst {
 namespace script {
 
-
 void Project(MutableFstClass *ofst, ProjectType project_type) {
   ProjectArgs args(ofst, project_type);
   Apply<Operation<ProjectArgs>>("Project", ofst->ArcType(), &args);

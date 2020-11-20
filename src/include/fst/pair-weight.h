@@ -7,7 +7,7 @@
 #ifndef FST_PAIR_WEIGHT_H_
 #define FST_PAIR_WEIGHT_H_
 
-#include <climits>
+#include <random>
 #include <stack>
 #include <string>
 #include <utility>
@@ -140,14 +140,15 @@ class WeightGenerate<PairWeight<W1, W2>> {
   using Generate1 = WeightGenerate<W1>;
   using Generate2 = WeightGenerate<W2>;
 
-  explicit WeightGenerate(bool allow_zero = true)
-      : generate1_(allow_zero), generate2_(allow_zero) {}
+  explicit WeightGenerate(uint64 seed = std::random_device()(),
+                          bool allow_zero = true)
+      : generate1_(seed, allow_zero), generate2_(seed, allow_zero) {}
 
   Weight operator()() const { return Weight(generate1_(), generate2_()); }
 
  private:
-  Generate1 generate1_;
-  Generate2 generate2_;
+  const Generate1 generate1_;
+  const Generate2 generate2_;
 };
 
 }  // namespace fst

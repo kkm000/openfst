@@ -866,8 +866,9 @@ class CacheBaseImpl : public FstImpl<typename State::Arc> {
         max_expanded_state_id_(-1),
         cache_gc_(opts.gc),
         cache_limit_(opts.gc_limit),
-        cache_store_(opts.store ? opts.store : new CacheStore(CacheOptions(
-                                                   opts.gc, opts.gc_limit))),
+        cache_store_(
+            opts.store ? opts.store
+                       : new CacheStore(CacheOptions(opts.gc, opts.gc_limit))),
         new_cache_store_(!opts.store),
         own_cache_store_(opts.store ? opts.own_store : true) {}
 
@@ -897,7 +898,9 @@ class CacheBaseImpl : public FstImpl<typename State::Arc> {
     }
   }
 
-  ~CacheBaseImpl() override { if (own_cache_store_) delete cache_store_; }
+  ~CacheBaseImpl() override {
+    if (own_cache_store_) delete cache_store_;
+  }
 
   void SetStart(StateId s) {
     cache_start_ = s;

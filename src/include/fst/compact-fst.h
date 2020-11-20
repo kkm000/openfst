@@ -266,7 +266,7 @@ class CompactArcStore {
   Unsigned *states_ = nullptr;
   // Unowned pointer into compacts_region_.
   Element *compacts_ = nullptr;
-  size_t nstates_  = 0;
+  size_t nstates_ = 0;
   size_t ncompacts_ = 0;
   size_t narcs_ = 0;
   ssize_t start_ = kNoStateId;
@@ -711,8 +711,8 @@ class CompactArcState {
     s_ = s;
     range_ = compactor->CompactsRange(s);
     if (range_.second != 0 &&
-        compactor->ComputeArc(s, range_.first, kArcILabelValue).ilabel
-        == kNoLabel) {
+        compactor->ComputeArc(s, range_.first, kArcILabelValue).ilabel ==
+            kNoLabel) {
       has_final_ = true;
       ++range_.first;
       --range_.second;
@@ -792,8 +792,8 @@ class CompactArcState<ArcCompactor, U,
     }
     if (num_arcs_ > 0) {
       compacts_ = &(store->Compacts(offset));
-      if (arc_compactor_->Expand(s_, *compacts_, kArcILabelValue).ilabel
-          == kNoStateId) {
+      if (arc_compactor_->Expand(s_, *compacts_, kArcILabelValue).ilabel ==
+          kNoStateId) {
         ++compacts_;
         --num_arcs_;
         has_final_ = true;
@@ -840,17 +840,15 @@ class CompactFstImpl
   using FstImpl<Arc>::WriteHeader;
 
   using ImplBase = CacheBaseImpl<typename CacheStore::State, CacheStore>;
-  using ImplBase::PushArc;
   using ImplBase::HasArcs;
   using ImplBase::HasFinal;
   using ImplBase::HasStart;
+  using ImplBase::PushArc;
   using ImplBase::SetArcs;
   using ImplBase::SetFinal;
   using ImplBase::SetStart;
 
-  CompactFstImpl()
-      : ImplBase(CompactFstOptions()),
-        compactor_() {
+  CompactFstImpl() : ImplBase(CompactFstOptions()), compactor_() {
     SetType(Compactor::Type());
     SetProperties(kNullProperties | kStaticProperties);
   }
@@ -867,11 +865,12 @@ class CompactFstImpl
     SetInputSymbols(fst.InputSymbols());
     SetOutputSymbols(fst.OutputSymbols());
     if (compactor_->Error()) SetProperties(kError, kError);
-    uint64 copy_properties = fst.Properties(kMutable, false) ?
-        fst.Properties(kCopyProperties, true):
-        CheckProperties(fst,
-                        kCopyProperties & ~kWeightedCycles & ~kUnweightedCycles,
-                        kCopyProperties);
+    uint64 copy_properties =
+        fst.Properties(kMutable, false)
+            ? fst.Properties(kCopyProperties, true)
+            : CheckProperties(
+                  fst, kCopyProperties & ~kWeightedCycles & ~kUnweightedCycles,
+                  kCopyProperties);
     if ((copy_properties & kError) || !compactor_->IsCompatible(fst)) {
       FSTERROR() << "CompactFstImpl: Input Fst incompatible with compactor";
       SetProperties(kError, kError);
@@ -892,9 +891,9 @@ class CompactFstImpl
   // does so as well.
   CompactFstImpl(const CompactFstImpl &impl)
       : ImplBase(impl),
-        compactor_(impl.compactor_ == nullptr ?
-                   std::make_shared<Compactor>() :
-                   std::make_shared<Compactor>(*impl.compactor_)) {
+        compactor_(impl.compactor_ == nullptr
+                       ? std::make_shared<Compactor>()
+                       : std::make_shared<Compactor>(*impl.compactor_)) {
     SetType(impl.Type());
     SetProperties(impl.Properties());
     SetInputSymbols(impl.InputSymbols());
@@ -976,8 +975,8 @@ class CompactFstImpl
     if (hdr.Version() == kAlignedFileVersion) {
       hdr.SetFlags(hdr.GetFlags() | FstHeader::IS_ALIGNED);
     }
-    impl->compactor_ = std::shared_ptr<Compactor>(
-        Compactor::Read(strm, opts, hdr));
+    impl->compactor_ =
+        std::shared_ptr<Compactor>(Compactor::Read(strm, opts, hdr));
     if (!impl->compactor_) {
       return nullptr;
     }
@@ -1031,8 +1030,8 @@ class CompactFstImpl
  protected:
   template <class OtherArc, class OtherCompactor, class OtherCacheStore>
   explicit CompactFstImpl(
-    const CompactFstImpl<OtherArc, OtherCompactor, OtherCacheStore> &impl)
-    : compactor_(std::make_shared<Compactor>(*impl.GetCompactor())) {
+      const CompactFstImpl<OtherArc, OtherCompactor, OtherCacheStore> &impl)
+      : compactor_(std::make_shared<Compactor>(*impl.GetCompactor())) {
     SetType(impl.Type());
     SetProperties(impl.Properties());
     SetInputSymbols(impl.InputSymbols());

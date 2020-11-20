@@ -15,5 +15,4 @@ static FstRegisterer<CompactUnweightedFst<LogArc, uint16>>
 static FstRegisterer<CompactUnweightedFst<Log64Arc, uint16>>
     CompactUnweightedFst_Log64Arc_uint16_registerer;
 
-
 }  // namespace fst

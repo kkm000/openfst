@@ -133,8 +133,8 @@ constexpr size_t kNumRandomWeights = 5;
 // Weight property boolean constants needed for SFINAE.
 
 template <class W>
-using IsIdempotent = std::integral_constant<bool,
-    (W::Properties() & kIdempotent) != 0>;
+using IsIdempotent =
+    std::integral_constant<bool, (W::Properties() & kIdempotent) != 0>;
 
 template <class W>
 using IsPath = std::integral_constant<bool, (W::Properties() & kPath) != 0>;
@@ -233,8 +233,8 @@ class Adder {
 template <class W1, class W2>
 struct WeightConvert {
   W2 operator()(W1 w1) const {
-    FSTERROR() << "WeightConvert: Can't convert weight from \"" << W1::Type()
-               << "\" to \"" << W2::Type();
+    FSTERROR() << "WeightConvert: Can't convert weight from " << W1::Type()
+               << " to " << W2::Type();
     return W2::NoWeight();
   }
 };
@@ -246,6 +246,21 @@ struct WeightConvert<W, W> {
 };
 
 // General random weight generator: raises error.
+//
+// The standard interface is roughly:
+//
+// class WeightGenerate<MyWeight> {
+//  public:
+//   explicit WeightGenerate(uint64 seed = std::random_device()(),
+//                           bool allow_zero = true,
+//                           ...);
+//
+//   MyWeight operator()() const;
+// };
+//
+// Many weight generators also take trailing constructor arguments specifying
+// the number of random (unique) weights, the length of weights (e.g., for
+// string-based weights), etc. with sensible defaults
 template <class W>
 struct WeightGenerate {
   W operator()() const {

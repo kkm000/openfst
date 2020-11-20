@@ -16,10 +16,11 @@ namespace fst {
 
 // Reverses a pushdown transducer (PDT) encoded as an FST.
 template <class Arc, class RevArc>
-void Reverse(const Fst<Arc> &ifst,
-             const std::vector<
-                 std::pair<typename Arc::Label, typename Arc::Label>> &parens,
-             MutableFst<RevArc> *ofst) {
+void Reverse(
+    const Fst<Arc> &ifst,
+    const std::vector<std::pair<typename Arc::Label, typename Arc::Label>>
+        &parens,
+    MutableFst<RevArc> *ofst) {
   using Label = typename Arc::Label;
   // Reverses FST component.
   Reverse(ifst, ofst);

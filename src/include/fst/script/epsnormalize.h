@@ -12,8 +12,8 @@
 namespace fst {
 namespace script {
 
-using EpsNormalizeArgs = std::tuple<const FstClass &, MutableFstClass *,
-                                    EpsNormalizeType>;
+using EpsNormalizeArgs =
+    std::tuple<const FstClass &, MutableFstClass *, EpsNormalizeType>;
 
 template <class Arc>
 void EpsNormalize(EpsNormalizeArgs *args) {

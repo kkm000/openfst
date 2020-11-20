@@ -213,7 +213,7 @@ class STTableReader {
 
     bool operator()(size_t i, size_t j) const {
       return (*keys)[i] > (*keys)[j];
-    };
+    }
 
    private:
     const std::vector<std::string> *keys;
@@ -290,8 +290,8 @@ class STTableReader {
   std::vector<std::string> sources_;           // Corresponding file names.
   std::vector<std::vector<int64>> positions_;  // Index of positions.
   std::vector<std::string> keys_;  // Lowest unread key for each stream.
-  std::vector<int64> heap_;   // Heap containing ID of streams with unread keys.
-  int64 current_;             // ID of current stream to be read.
+  std::vector<int64> heap_;  // Heap containing ID of streams with unread keys.
+  int64 current_;            // ID of current stream to be read.
   std::unique_ptr<Compare> compare_;  // Functor comparing stream IDs.
   mutable std::unique_ptr<T> entry_;  // The currently read entry.
   bool error_;

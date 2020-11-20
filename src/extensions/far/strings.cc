@@ -31,7 +31,7 @@ int KeySize(const char *source) {
   }
   std::string s;
   int nline = 0;
-  while (getline(istrm, s)) ++nline;
+  while (std::getline(istrm, s)) ++nline;
   return nline ? ceil(log10(nline + 1)) : 1;
 }
 

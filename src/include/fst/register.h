@@ -78,8 +78,7 @@ class FstRegisterer : public GenericRegisterer<FstRegister<typename FST::Arc>> {
                                                           BuildEntry()) {}
 
  private:
-  static Fst<Arc> *ReadGeneric(
-      std::istream &strm, const FstReadOptions &opts) {
+  static Fst<Arc> *ReadGeneric(std::istream &strm, const FstReadOptions &opts) {
     static_assert(std::is_base_of<Fst<Arc>, FST>::value,
                   "FST class does not inherit from Fst<Arc>");
     return FST::Read(strm, opts);

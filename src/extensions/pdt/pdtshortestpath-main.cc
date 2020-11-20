@@ -22,10 +22,10 @@ DECLARE_string(pdt_parentheses);
 
 int pdtshortestpath_main(int argc, char **argv) {
   namespace s = fst::script;
-  using fst::script::FstClass;
-  using fst::script::VectorFstClass;
   using fst::QueueType;
   using fst::ReadLabelPairs;
+  using fst::script::FstClass;
+  using fst::script::VectorFstClass;
 
   std::string usage = "Shortest path in a (bounded-stack) PDT.\n\n  Usage: ";
   usage += argv[0];

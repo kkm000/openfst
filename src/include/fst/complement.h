@@ -266,8 +266,8 @@ inline void ComplementFst<Arc>::InitStateIterator(
 }
 
 template <class Arc>
-inline void ComplementFst<Arc>::InitArcIterator(StateId s,
-    ArcIteratorData<Arc> *data) const {
+inline void ComplementFst<Arc>::InitArcIterator(
+    StateId s, ArcIteratorData<Arc> *data) const {
   data->base = new ArcIterator<ComplementFst<Arc>>(*this, s);
 }
 

@@ -30,7 +30,7 @@ struct DisambiguateOptions {
 };
 
 using DisambiguateArgs = std::tuple<const FstClass &, MutableFstClass *,
-                                     const DisambiguateOptions &>;
+                                    const DisambiguateOptions &>;
 
 template <class Arc>
 void Disambiguate(DisambiguateArgs *args) {

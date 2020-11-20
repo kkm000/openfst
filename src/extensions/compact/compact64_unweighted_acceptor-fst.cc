@@ -6,16 +6,13 @@
 
 namespace fst {
 
-static FstRegisterer<
-    CompactUnweightedAcceptorFst<StdArc, uint64>>
+static FstRegisterer<CompactUnweightedAcceptorFst<StdArc, uint64>>
     CompactUnweightedAcceptorFst_StdArc_uint64_registerer;
 
-static FstRegisterer<
-    CompactUnweightedAcceptorFst<LogArc, uint64>>
+static FstRegisterer<CompactUnweightedAcceptorFst<LogArc, uint64>>
     CompactUnweightedAcceptorFst_LogArc_uint64_registerer;
 
-static FstRegisterer<
-    CompactUnweightedAcceptorFst<Log64Arc, uint64>>
+static FstRegisterer<CompactUnweightedAcceptorFst<Log64Arc, uint64>>
     CompactUnweightedAcceptorFst_Log64Arc_uint64_registerer;
 
 }  // namespace fst

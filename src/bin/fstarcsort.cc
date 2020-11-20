@@ -5,7 +5,7 @@
 #include <fst/flags.h>
 
 DEFINE_string(sort_type, "ilabel",
-              "Comparison method, one of: \"ilabel\", \"olabel\"");
+              "Comparison method: one of \"ilabel\", \"olabel\"");
 
 int fstarcsort_main(int argc, char **argv);
 

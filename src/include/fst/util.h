@@ -44,16 +44,16 @@ namespace fst {
 
 // Generic case.
 template <class T,
-    typename std::enable_if<std::is_class<T>::value, T>::type* = nullptr>
+          typename std::enable_if<std::is_class<T>::value, T>::type * = nullptr>
 inline std::istream &ReadType(std::istream &strm, T *t) {
   return t->Read(strm);
 }
 
 // Numeric (boolean, integral, floating-point) case.
-template <class T,
-    typename std::enable_if<std::is_arithmetic<T>::value, T>::type* = nullptr>
+template <class T, typename std::enable_if<std::is_arithmetic<T>::value,
+                                           T>::type * = nullptr>
 inline std::istream &ReadType(std::istream &strm, T *t) {
-  return strm.read(reinterpret_cast<char *>(t), sizeof(T)); \
+  return strm.read(reinterpret_cast<char *>(t), sizeof(T));
 }
 
 // String case.
@@ -158,15 +158,15 @@ std::istream &ReadType(std::istream &strm, std::unordered_map<T...> *c) {
 
 // Generic case.
 template <class T,
-    typename std::enable_if<std::is_class<T>::value, T>::type* = nullptr>
+          typename std::enable_if<std::is_class<T>::value, T>::type * = nullptr>
 inline std::ostream &WriteType(std::ostream &strm, const T t) {
   t.Write(strm);
   return strm;
 }
 
 // Numeric (boolean, integral, floating-point) case.
-template <class T,
-    typename std::enable_if<std::is_arithmetic<T>::value, T>::type* = nullptr>
+template <class T, typename std::enable_if<std::is_arithmetic<T>::value,
+                                           T>::type * = nullptr>
 inline std::ostream &WriteType(std::ostream &strm, const T t) {
   return strm.write(reinterpret_cast<const char *>(&t), sizeof(T));
 }

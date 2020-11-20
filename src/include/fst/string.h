@@ -22,14 +22,18 @@
 #include <fst/symbol-table.h>
 #include <fst/util.h>
 
-
 DECLARE_string(fst_field_separator);
 
 namespace fst {
 
-enum StringTokenType { SYMBOL = 1, BYTE = 2, UTF8 = 3 };
+enum class TokenType : uint8 { SYMBOL = 1, BYTE = 2, UTF8 = 3 };
 
-enum EpsilonSymbolPrintType { NONEPS_SYMBOLS = 1, SYMBOLS_INCL_EPS = 2 };
+OPENFST_DEPRECATED("Use `TokenType::SYMBOL` instead.")
+static constexpr TokenType SYMBOL = TokenType::SYMBOL;
+OPENFST_DEPRECATED("Use `TokenType::BYTE` instead.")
+static constexpr TokenType BYTE = TokenType::BYTE;
+OPENFST_DEPRECATED("Use `TokenType::UTF8` instead.")
+static constexpr TokenType UTF8 = TokenType::UTF8;
 
 namespace internal {
 
@@ -50,7 +54,7 @@ bool ConvertSymbolToLabel(const char *str, const SymbolTable *syms,
   } else {
     char *p;
     n = strtoll(str, &p, 10);
-    if (p < str + strlen(str) || (!allow_negative && n < 0)) {
+    if (*p != '\0' || (!allow_negative && n < 0)) {
       LOG(ERROR) << "ConvertSymbolToLabel: Bad label integer "
                  << "= \"" << str << "\"";
       return false;
@@ -61,23 +65,27 @@ bool ConvertSymbolToLabel(const char *str, const SymbolTable *syms,
 }
 
 template <class Label>
-bool ConvertStringToLabels(const std::string &str, StringTokenType token_type,
+bool ConvertStringToLabels(const std::string &str, TokenType token_type,
                            const SymbolTable *syms, Label unknown_label,
                            bool allow_negative, std::vector<Label> *labels,
                            const std::string &sep = FLAGS_fst_field_separator) {
   labels->clear();
-  if (token_type == StringTokenType::BYTE) {
+  if (token_type == TokenType::BYTE) {
     labels->reserve(str.size());
     return ByteStringToLabels(str, labels);
-  } else if (token_type == StringTokenType::UTF8) {
+  } else if (token_type == TokenType::UTF8) {
     return UTF8StringToLabels(str, labels);
   } else {
-    std::unique_ptr<char[]> c_str(new char[str.size() + 1]);
-    str.copy(c_str.get(), str.size());
-    c_str[str.size()] = 0;
+    // SplitString modifies its input, so make a copy.
+    // TODO(jrosenstock): Investigate minimal fst::string_view and/or
+    // SplitString returning vector<string_view> if available and
+    // vector<string> otherwise.
+    std::string str_copy = str;
     std::vector<char *> vec;
     const std::string separator = "\n" + sep;
-    SplitString(c_str.get(), separator.c_str(), &vec, true);
+    // This really wants to be data, but non-const data() requires C++17.
+    // str[str.size()] has been guaranteed to be '\0' since C++11,
+    SplitString(&str_copy[0], separator.c_str(), &vec, true);
     for (const char *c : vec) {
       Label label;
       if (!ConvertSymbolToLabel(c, syms, unknown_label, allow_negative,
@@ -91,21 +99,17 @@ bool ConvertStringToLabels(const std::string &str, StringTokenType token_type,
 }
 
 // The last character of 'sep' is used as a separator between symbols.
-// Additionally, epsilon symbols will be printed only if the epsilon symbol
-// print type is set to SYMBOLS_INCL_EPS, and will be ignored (default) if set
-// to NONEPS_SYMBOLS.
+// Additionally, epsilon symbols will be printed only if omit_epsilon
+// is false.
 template <class Label>
 bool LabelsToSymbolString(const std::vector<Label> &labels, std::string *str,
                           const SymbolTable &syms,
                           const std::string &sep = FLAGS_fst_field_separator,
-                          EpsilonSymbolPrintType eps_sym_print_type =
-                              EpsilonSymbolPrintType::NONEPS_SYMBOLS) {
+                          bool omit_epsilon = true) {
   std::stringstream ostrm;
   std::string delim = "";
   for (auto label : labels) {
-    // Don't include epsilon labels in output if in NONEPS_SYMBOLS mode.
-    if (!label && eps_sym_print_type == EpsilonSymbolPrintType::NONEPS_SYMBOLS)
-      continue;
+    if (omit_epsilon && !label) continue;
     ostrm << delim;
     const std::string &symbol = syms.Find(label);
     if (symbol.empty()) {
@@ -122,20 +126,16 @@ bool LabelsToSymbolString(const std::vector<Label> &labels, std::string *str,
 }
 
 // The last character of 'sep' is used as a separator between symbols.
-// Additionally, epsilon symbols will be printed only if the epsilon symbol
-// print type is set to SYMBOLS_INCL_EPS, and will be ignored (default) if set
-// to NONEPS_SYMBOLS.
+// Additionally, epsilon symbols will be printed only if omit_epsilon
+// is false.
 template <class Label>
 bool LabelsToNumericString(const std::vector<Label> &labels, std::string *str,
                            const std::string &sep = FLAGS_fst_field_separator,
-                           EpsilonSymbolPrintType eps_sym_print_type =
-                               EpsilonSymbolPrintType::NONEPS_SYMBOLS) {
+                           bool omit_epsilon = true) {
   std::stringstream ostrm;
   std::string delim = "";
   for (auto label : labels) {
-    // Don't include epsilon labels in output if in NONEPS_SYMBOLS mode.
-    if (!label && eps_sym_print_type == EpsilonSymbolPrintType::NONEPS_SYMBOLS)
-      continue;
+    if (omit_epsilon && !label) continue;
     ostrm << delim;
     ostrm << label;
     delim = std::string(1, sep.back());
@@ -154,7 +154,7 @@ class StringCompiler {
   using StateId = typename Arc::StateId;
   using Weight = typename Arc::Weight;
 
-  explicit StringCompiler(StringTokenType token_type = BYTE,
+  explicit StringCompiler(TokenType token_type = TokenType::BYTE,
                           const SymbolTable *syms = nullptr,
                           Label unknown_label = kNoLabel,
                           bool allow_negative = false)
@@ -233,7 +233,7 @@ class StringCompiler {
         std::make_shared<Compactor>(compacts.begin(), compacts.end()));
   }
 
-  const StringTokenType token_type_;
+  const TokenType token_type_;
   const SymbolTable *syms_;    // Symbol table (used when token type is symbol).
   const Label unknown_label_;  // Label for token missing from symbol table.
   const bool allow_negative_;  // Negative labels allowed?
@@ -285,28 +285,26 @@ bool StringFstToOutputLabels(const Fst<Arc> &fst,
 
 // Converts a list of symbols to a string. If the token type is SYMBOL, the last
 // character of sep is used to separate textual symbols. Additionally, if the
-// token type is SYMBOL, then epsilon symbols will be printed only if the
-// epsilon symbol print type is set to SYMBOLS_INCL_EPS, and will be ignored
-// (default) if set to NONEPS_SYMBOLS. Returns true on success.
+// token type is SYMBOL, epsilon symbols will be printed only if omit_epsilon
+// is false. Returns true on success.
 template <class Label>
 bool LabelsToString(const std::vector<Label> &labels, std::string *str,
-                    StringTokenType ttype = BYTE,
+                    TokenType ttype = TokenType::BYTE,
                     const SymbolTable *syms = nullptr,
                     const std::string &sep = FLAGS_fst_field_separator,
-                    EpsilonSymbolPrintType eps_sym_print_type =
-                        EpsilonSymbolPrintType::NONEPS_SYMBOLS) {
+                    bool omit_epsilon = true) {
   switch (ttype) {
-    case StringTokenType::BYTE: {
+    case TokenType::BYTE: {
       return LabelsToByteString(labels, str);
     }
-    case StringTokenType::UTF8: {
+    case TokenType::UTF8: {
       return LabelsToUTF8String(labels, str);
     }
-    case StringTokenType::SYMBOL: {
+    case TokenType::SYMBOL: {
       return syms ? internal::LabelsToSymbolString(labels, str, *syms, sep,
-                                                   eps_sym_print_type)
+                                                   omit_epsilon)
                   : internal::LabelsToNumericString(labels, str, sep,
-                                                    eps_sym_print_type);
+                                                    omit_epsilon);
     }
   }
   return false;
@@ -318,30 +316,24 @@ class StringPrinter {
  public:
   using Label = typename Arc::Label;
 
-  explicit StringPrinter(StringTokenType token_type = BYTE,
+  explicit StringPrinter(TokenType token_type = TokenType::BYTE,
                          const SymbolTable *syms = nullptr,
-                         EpsilonSymbolPrintType eps_sym_print_type =
-                             EpsilonSymbolPrintType::NONEPS_SYMBOLS)
-      : token_type_(token_type),
-        syms_(syms),
-        eps_sym_print_type_(eps_sym_print_type) {}
+                         bool omit_epsilon = true)
+      : token_type_(token_type), syms_(syms), omit_epsilon_(omit_epsilon) {}
 
   // Converts the FST into a string. With SYMBOL token type, the last character
   // of sep is used as a separator between symbols. Returns true on success.
   bool operator()(const Fst<Arc> &fst, std::string *str,
                   const std::string &sep = FLAGS_fst_field_separator) const {
     std::vector<Label> labels;
-    return (StringFstToOutputLabels(fst, &labels) &&
-            LabelsToString(labels, str, token_type_, syms_, sep,
-                           eps_sym_print_type_));
+    return StringFstToOutputLabels(fst, &labels) &&
+           LabelsToString(labels, str, token_type_, syms_, sep, omit_epsilon_);
   }
 
  private:
-  const StringTokenType token_type_;
+  const TokenType token_type_;
   const SymbolTable *syms_;
-  const EpsilonSymbolPrintType
-      eps_sym_print_type_;  // Whether to print epsilons in
-                            // StringTokenType::SYMBOL mode.
+  const bool omit_epsilon_;
 
   StringPrinter(const StringPrinter &) = delete;
   StringPrinter &operator=(const StringPrinter &) = delete;

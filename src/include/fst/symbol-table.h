@@ -22,6 +22,7 @@
 #include <fst/types.h>
 #include <fst/log.h>
 #include <fstream>
+#include <fst/windows_defs.inc>
 #include <map>
 #include <functional>
 
@@ -222,7 +223,7 @@ class SymbolTableImpl final : public MutableSymbolTableImpl {
       std::istream &strm, const std::string &name,
       const SymbolTableTextOptions &opts = SymbolTableTextOptions());
 
-  static SymbolTableImpl* Read(std::istream &strm,
+  static SymbolTableImpl *Read(std::istream &strm,
                                const SymbolTableReadOptions &opts);
 
   bool Write(std::ostream &strm) const override;
@@ -240,8 +241,11 @@ class SymbolTableImpl final : public MutableSymbolTableImpl {
   }
 
   int64 GetNthKey(ssize_t pos) const override {
-    if (pos < 0 || pos >= symbols_.Size()) return kNoSymbol;
-    if (pos < dense_key_limit_) return pos;
+    if (pos < 0 || static_cast<size_t>(pos) >= symbols_.Size()) {
+      return kNoSymbol;
+    } else if (pos < dense_key_limit_) {
+      return pos;
+    }
     return Find(symbols_.GetSymbol(pos));
   }
 
@@ -340,7 +344,7 @@ class SymbolTable {
 
     iterator &operator++() {
       ++pos_;
-      if (pos_ < nsymbols_) iter_item_.SetPosition(pos_);
+      if (static_cast<size_t>(pos_) < nsymbols_) iter_item_.SetPosition(pos_);
       return *this;
     }
 
@@ -394,7 +398,7 @@ class SymbolTable {
 
   // WARNING: Reading via symbol table read options should not be used. This is
   // a temporary work-around.
-  static SymbolTable* Read(std::istream &strm,
+  static SymbolTable *Read(std::istream &strm,
                            const SymbolTableReadOptions &opts) {
     std::shared_ptr<internal::SymbolTableImpl> impl(
         internal::SymbolTableImpl::Read(strm, opts));
@@ -573,7 +577,8 @@ class OPENFST_DEPRECATED(
 // TODO(allauzen): consider adding options to allow for some form of implicit
 // identity relabeling.
 template <class Label>
-SymbolTable *RelabelSymbolTable(const SymbolTable *table,
+SymbolTable *RelabelSymbolTable(
+    const SymbolTable *table,
     const std::vector<std::pair<Label, Label>> &pairs) {
   auto *new_table = new SymbolTable(
       table->Name().empty() ? std::string()

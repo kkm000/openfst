@@ -84,7 +84,7 @@ class WeightClassImpl : public WeightImplBase {
   }
 
   WeightClassImpl<W> &PowerEq(size_t n) final {
-    weight_ = Power<W>(weight_, n);
+    weight_ = Power(weight_, n);
     return *this;
   }
 
@@ -93,7 +93,6 @@ class WeightClassImpl : public WeightImplBase {
  private:
   W weight_;
 };
-
 
 class WeightClass {
  public:
@@ -117,8 +116,8 @@ class WeightClass {
     return *this;
   }
 
-  static constexpr char __ZERO__[] = "__ZERO__";  // NOLINT
-  static constexpr char __ONE__[] = "__ONE__";    // NOLINT
+  static constexpr char __ZERO__[] = "__ZERO__";          // NOLINT
+  static constexpr char __ONE__[] = "__ONE__";            // NOLINT
   static constexpr char __NOWEIGHT__[] = "__NOWEIGHT__";  // NOLINT
 
   static WeightClass Zero(const std::string &weight_type);
@@ -130,7 +129,7 @@ class WeightClass {
   template <class W>
   const W *GetWeight() const {
     if (W::Type() != impl_->Type()) {
-       return nullptr;
+      return nullptr;
     } else {
       auto *typed_impl = static_cast<WeightClassImpl<W> *>(impl_.get());
       return typed_impl->GetImpl();

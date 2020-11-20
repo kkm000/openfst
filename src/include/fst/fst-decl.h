@@ -11,6 +11,7 @@
 #include <memory>  // for allocator<>
 
 #include <fst/types.h>
+#include <fst/windows_defs.inc>
 
 namespace fst {
 

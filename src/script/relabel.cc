@@ -14,8 +14,8 @@ void Relabel(MutableFstClass *ofst, const SymbolTable *old_isyms,
              const SymbolTable *old_osyms, const SymbolTable *relabel_osyms,
              const std::string &unknown_osymbol, bool attach_new_osyms) {
   RelabelArgs1 args(ofst, old_isyms, relabel_isyms, unknown_isymbol,
-                    attach_new_isyms, old_osyms, relabel_osyms,
-                    unknown_osymbol, attach_new_osyms);
+                    attach_new_isyms, old_osyms, relabel_osyms, unknown_osymbol,
+                    attach_new_osyms);
   Apply<Operation<RelabelArgs1>>("Relabel", ofst->ArcType(), &args);
 }
 

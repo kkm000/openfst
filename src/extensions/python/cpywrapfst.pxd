@@ -1,5 +1,7 @@
+#cython: language_level=3
 # See www.openfst.org for extensive documentation on this weighted
 # finite-state transducer library.
+
 
 from libcpp cimport bool
 from libcpp.string cimport string
@@ -127,9 +129,11 @@ cdef extern from "<fst/fstlib.h>" namespace "fst" nogil:
     EPS_NORM_INPUT
     EPS_NORM_OUTPUT
 
-  enum ProjectType:
-    PROJECT_INPUT
-    PROJECT_OUTPUT
+  # TODO(wolfsonkin): Don't do this hack if Cython gets proper enum class
+  # support: https://github.com/cython/cython/issues/1603
+  ctypedef enum ProjectType:
+    PROJECT_INPUT "fst::ProjectType::INPUT"
+    PROJECT_OUTPUT "fst::ProjectType::OUTPUT"
 
   enum QueueType:
     TRIVIAL_QUEUE
@@ -256,6 +260,13 @@ cdef extern from "<fst/fstlib.h>" namespace "fst" nogil:
                                 bool *)
 
   SymbolTable *FstReadSymbols(const string &, bool)
+
+  # TODO(wolfsonkin): Don't do this hack if Cython gets proper enum class
+  # support: https://github.com/cython/cython/issues/1603.
+  ctypedef enum TokenType:
+    SYMBOL "fst::TokenType::SYMBOL"
+    BYTE "fst::TokenType::BYTE"
+    UTF8 "fst::TokenType::UTF8"
 
 
 cdef extern from "<fst/script/fstscript.h>" namespace "fst::script" nogil:
@@ -613,7 +624,7 @@ cdef extern from "<fst/script/fstscript.h>" namespace "fst::script" nogil:
 
   cdef void Minimize(MutableFstClass *, MutableFstClass *, float, bool)
 
-  cdef ProjectType GetProjectType(bool)
+  cdef bool GetProjectType(const string &, ProjectType *)
 
   cdef void Project(MutableFstClass *, ProjectType)
 
@@ -747,15 +758,19 @@ cdef extern from "<fst/script/getters.h>" namespace "fst::script" nogil:
 
   cdef ReweightType GetReweightType(bool)
 
+  cdef bool GetTokenType(const string &, TokenType *)
+
 
 cdef extern from "<fst/extensions/far/far.h>" namespace "fst" nogil:
 
-  enum FarType:
-    FAR_DEFAULT
-    FAR_STTABLE
-    FAR_STLIST
-    FAR_FST
-    FAR_SSTABLE
+  # TODO(wolfsonkin): Don't do this hack if Cython gets proper enum class
+  # support: https://github.com/cython/cython/issues/1603
+  ctypedef enum FarType:
+    FAR_DEFAULT "fst::FarType::DEFAULT"
+    FAR_STTABLE "fst::FarType::STTABLE"
+    FAR_STLIST "fst::FarType::STLIST"
+    FAR_FST "fst::FarType::FST"
+    FAR_SSTABLE "fst::FarType::SSTABLE"
 
 cdef extern from "<fst/extensions/far/getters.h>" \
     namespace "fst" nogil:
@@ -766,7 +781,7 @@ cdef extern from "<fst/extensions/far/getters.h>" \
 cdef extern from "<fst/extensions/far/getters.h>" \
     namespace "fst::script" nogil:
 
-  FarType GetFarType(const string &)
+  bool GetFarType(const string &, FarType *)
 
 
 cdef extern from "<fst/extensions/far/far-class.h>" \

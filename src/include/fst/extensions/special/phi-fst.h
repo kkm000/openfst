@@ -91,7 +91,8 @@ class PhiFstMatcher : public PhiMatcher<M> {
   enum : uint8 { kFlags = flags };
 
   // This makes a copy of the FST.
-  PhiFstMatcher(const FST &fst, MatchType match_type,
+  PhiFstMatcher(
+      const FST &fst, MatchType match_type,
       std::shared_ptr<MatcherData> data = std::make_shared<MatcherData>())
       : PhiMatcher<M>(fst, match_type,
                       PhiLabel(match_type, data ? data->PhiLabel()
@@ -101,7 +102,8 @@ class PhiFstMatcher : public PhiMatcher<M> {
         data_(data) {}
 
   // This doesn't copy the FST.
-  PhiFstMatcher(const FST *fst, MatchType match_type,
+  PhiFstMatcher(
+      const FST *fst, MatchType match_type,
       std::shared_ptr<MatcherData> data = std::make_shared<MatcherData>())
       : PhiMatcher<M>(fst, match_type,
                       PhiLabel(match_type, data ? data->PhiLabel()

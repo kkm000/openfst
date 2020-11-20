@@ -698,17 +698,15 @@ bool FeatureGroupBuilder<A>::AddWeight(const std::vector<Label> &input,
     LOG(WARNING) << "\tOutput: " << JoinLabels(output, fsyms_);
     return false;
   }
-  if (num_input_start > 0 &&
-      input.size() - future_size_ - num_input_start <
-          output.size() - num_output_start) {
+  if (num_input_start > 0 && input.size() - future_size_ - num_input_start <
+                                 output.size() - num_output_start) {
     LOG(WARNING) << "Ignored: matching start-of-sentence with actual output!";
     LOG(WARNING) << "\tInput: " << JoinLabels(input, fsyms_);
     LOG(WARNING) << "\tOutput: " << JoinLabels(output, osyms_);
     return false;
   }
-  if (num_output_start > 0 &&
-      input.size() - future_size_ - num_input_start >
-          output.size() - num_output_start) {
+  if (num_output_start > 0 && input.size() - future_size_ - num_input_start >
+                                  output.size() - num_output_start) {
     LOG(WARNING) << "Ignored: matching start-of-sentence with actual input!";
     LOG(WARNING) << "\tInput: " << JoinLabels(input, fsyms_);
     LOG(WARNING) << "\tOutput: " << JoinLabels(output, osyms_);

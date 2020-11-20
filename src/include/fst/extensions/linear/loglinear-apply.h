@@ -49,7 +49,7 @@ void LogLinearApply(const Fst<A> &ifst, const Fst<A> &lfst, MutableFst<A> *ofst,
     Compose(ifst, lfst, &unnormalized_ofst);
     {
       VectorFst<A> tropical_ifsa(unnormalized_ofst);
-      Project(&tropical_ifsa, PROJECT_INPUT);
+      Project(&tropical_ifsa, ProjectType::INPUT);
       {
         VectorFst<B> minimal_log_ifsa;
         {

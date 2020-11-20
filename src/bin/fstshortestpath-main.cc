@@ -22,9 +22,10 @@ DECLARE_string(weight);
 
 int fstshortestpath_main(int argc, char **argv) {
   namespace s = fst::script;
+  using fst::QueueType;
   using fst::script::FstClass;
-  using fst::script::WeightClass;
   using fst::script::VectorFstClass;
+  using fst::script::WeightClass;
 
   std::string usage = "Finds shortest path(s) in an FST.\n\n  Usage: ";
   usage += argv[0];
@@ -51,15 +52,15 @@ int fstshortestpath_main(int argc, char **argv) {
 
   VectorFstClass ofst(ifst->ArcType());
 
-  fst::QueueType queue_type;
+  QueueType queue_type;
   if (!s::GetQueueType(FLAGS_queue_type, &queue_type)) {
     LOG(ERROR) << "Unknown or unsupported queue type: " << FLAGS_queue_type;
     return 1;
   }
 
-  const s::ShortestPathOptions opts(queue_type, FLAGS_nshortest,
-                                    FLAGS_unique, FLAGS_delta,
-                                    weight_threshold, FLAGS_nstate);
+  const s::ShortestPathOptions opts(queue_type, FLAGS_nshortest, FLAGS_unique,
+                                    FLAGS_delta, weight_threshold,
+                                    FLAGS_nstate);
 
   s::ShortestPath(*ifst, &ofst, opts);
 

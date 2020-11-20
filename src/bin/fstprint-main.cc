@@ -26,9 +26,9 @@ DECLARE_string(missing_symbol);
 
 int fstprint_main(int argc, char **argv) {
   namespace s = fst::script;
-  using fst::script::FstClass;
   using fst::SymbolTable;
   using fst::SymbolTableTextOptions;
+  using fst::script::FstClass;
 
   std::string usage =
       "Prints out binary FSTs in simple text format.\n\n  Usage: ";

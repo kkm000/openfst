@@ -3,9 +3,6 @@
 # finite-state transducer library.
 
 
-from libc.time cimport time
-from libc.time cimport time_t
-
 from libcpp cimport bool
 from libcpp.memory cimport shared_ptr
 from libcpp.memory cimport unique_ptr
@@ -13,13 +10,14 @@ from libcpp.string cimport string
 from libcpp.utility cimport pair
 from libcpp.vector cimport vector
 
-from cintegral_types cimport *
+from cintegral_types cimport int32
+from cintegral_types cimport int64
+from cintegral_types cimport uint8
+from cintegral_types cimport uint64
+from cios cimport ostream
+from cios cimport stringstream
 
 cimport cpywrapfst as fst
-
-from cios cimport ostream
-from cios cimport ofstream
-from cios cimport stringstream
 
 
 # Exportable helper functions.
@@ -28,6 +26,8 @@ from cios cimport stringstream
 cdef string tostring(data) except *
 
 cdef string weight_tostring(data) except *
+
+cdef string path_tostring(data) except *
 
 cdef fst.ComposeFilter _get_compose_filter(
     const string &compose_filter) except *
@@ -90,7 +90,7 @@ ctypedef fst.SymbolTable * SymbolTable_ptr
 ctypedef const fst.SymbolTable * const_SymbolTable_ptr
 
 
-cdef class _SymbolTable(object):
+cdef class SymbolTableView(object):
 
   cdef const fst.SymbolTable *_raw(self)
 
@@ -121,7 +121,7 @@ cdef class _SymbolTable(object):
   cpdef bytes write_to_string(self)
 
 
-cdef class _EncodeMapperSymbolTableView(_SymbolTable):
+cdef class _EncodeMapperSymbolTableView(SymbolTableView):
 
   # Indicates whether this view is of an input or output SymbolTable
   cdef bool _input_side
@@ -129,7 +129,7 @@ cdef class _EncodeMapperSymbolTableView(_SymbolTable):
   cdef shared_ptr[fst.EncodeMapperClass] _mapper
 
 
-cdef class _FstSymbolTableView(_SymbolTable):
+cdef class _FstSymbolTableView(SymbolTableView):
 
   # Indicates whether this view is of an input or output SymbolTable
   cdef bool _input_side
@@ -137,7 +137,7 @@ cdef class _FstSymbolTableView(_SymbolTable):
   cdef shared_ptr[fst.FstClass] _fst
 
 
-cdef class _MutableSymbolTable(_SymbolTable):
+cdef class _MutableSymbolTable(SymbolTableView):
 
   cdef fst.SymbolTable *_mutable_raw(self)
 
@@ -145,7 +145,7 @@ cdef class _MutableSymbolTable(_SymbolTable):
 
   cpdef int64 add_symbol(self, symbol, int64 key=?) except *
 
-  cpdef void add_table(self, _SymbolTable syms) except *
+  cpdef void add_table(self, SymbolTableView syms) except *
 
   cpdef void set_name(self, new_name) except *
 
@@ -178,12 +178,12 @@ cdef _MutableFstSymbolTableView _init_MutableFstSymbolTableView(
 cdef SymbolTable _init_SymbolTable(unique_ptr[fst.SymbolTable] table)
 
 
-cpdef _SymbolTable _read_SymbolTable_from_string(state)
+cpdef SymbolTable _read_SymbolTable_from_string(string state)
 
 
 cdef class _SymbolTableIterator(object):
 
-  cdef _SymbolTable _table
+  cdef SymbolTableView _table
   cdef unique_ptr[fst.SymbolTableIterator] _siter
 
 
@@ -213,14 +213,14 @@ cdef class EncodeMapper(object):
 
   cpdef _EncodeMapperSymbolTableView output_symbols(self)
 
-  cdef void _set_input_symbols(self, _SymbolTable syms) except *
+  cdef void _set_input_symbols(self, SymbolTableView syms) except *
 
-  cdef void _set_output_symbols(self, _SymbolTable syms) except *
+  cdef void _set_output_symbols(self, SymbolTableView syms) except *
 
 
 cdef EncodeMapper _init_EncodeMapper(EncodeMapperClass_ptr mapper)
 
-cpdef EncodeMapper _read_EncodeMapper_from_string(state)
+cpdef EncodeMapper _read_EncodeMapper_from_string(string state)
 
 
 # Fst.
@@ -252,9 +252,9 @@ cdef class Fst(object):
 
   cpdef void draw(self,
                   source,
-                  _SymbolTable isymbols=?,
-                  _SymbolTable osymbols=?,
-                  _SymbolTable ssymbols=?,
+                  SymbolTableView isymbols=?,
+                  SymbolTableView osymbols=?,
+                  SymbolTableView ssymbols=?,
                   bool acceptor=?,
                   title=?,
                   double width=?,
@@ -283,9 +283,9 @@ cdef class Fst(object):
   cpdef _FstSymbolTableView output_symbols(self)
 
   cpdef string print(self,
-                    _SymbolTable isymbols=?,
-                    _SymbolTable osymbols=?,
-                    _SymbolTable ssymbols=?,
+                    SymbolTableView isymbols=?,
+                    SymbolTableView osymbols=?,
+                    SymbolTableView ssymbols=?,
                     bool acceptor=?,
                     bool show_weight_one=?,
                     missing_sym=?) except *
@@ -295,14 +295,6 @@ cdef class Fst(object):
   cpdef int64 start(self)
 
   cpdef StateIterator states(self)
-
-  cpdef string text(self,
-                    _SymbolTable isymbols=?,
-                    _SymbolTable osymbols=?,
-                    _SymbolTable ssymbols=?,
-                    bool acceptor=?,
-                    bool show_weight_one=?,
-                    missing_sym=?) except *
 
   cpdef bool verify(self)
 
@@ -349,7 +341,7 @@ cdef class MutableFst(Fst):
 
   cpdef int64 num_states(self)
 
-  cdef void _project(self, bool project_output=?) except *
+  cdef void _project(self, project_type) except *
 
   cdef void _prune(self, float delta=?, int64 nstate=?, weight=?) except *
 
@@ -361,12 +353,12 @@ cdef class MutableFst(Fst):
   cdef void _relabel_pairs(self, ipairs=?, opairs=?) except *
 
   cdef void _relabel_tables(self,
-                            _SymbolTable old_isymbols=?,
-                            _SymbolTable new_isymbols=?,
+                            SymbolTableView old_isymbols=?,
+                            SymbolTableView new_isymbols=?,
                             unknown_isymbol=?,
                             bool attach_new_isymbols=?,
-                            _SymbolTable old_osymbols=?,
-                            _SymbolTable new_osymbols=?,
+                            SymbolTableView old_osymbols=?,
+                            SymbolTableView new_osymbols=?,
                             unknown_osymbol=?,
                             bool attach_new_osymbols=?) except *
 
@@ -389,9 +381,9 @@ cdef class MutableFst(Fst):
 
   cdef void _set_start(self, int64 state) except *
 
-  cdef void _set_input_symbols(self, _SymbolTable syms) except *
+  cdef void _set_input_symbols(self, SymbolTableView syms) except *
 
-  cdef void _set_output_symbols(self, _SymbolTable syms) except *
+  cdef void _set_output_symbols(self, SymbolTableView syms) except *
 
   cdef void _topsort(self)
 
@@ -412,7 +404,7 @@ cdef Fst _init_XFst(FstClass_ptr tfst)
 
 cpdef Fst _read_Fst(source)
 
-cpdef Fst _read_Fst_from_string(state)
+cpdef Fst _read_Fst_from_string(string state)
 
 
 # Iterators.
@@ -571,11 +563,12 @@ cpdef MutableFst replace(pairs,
 
 cpdef MutableFst reverse(Fst ifst, bool require_superinitial=?)
 
-cdef vector[fst.WeightClass] *_shortestdistance(Fst ifst,
-                                                float delta=?,
-                                                int64 nstate=?,
-                                                queue_type=?,
-                                                bool reverse=?) except *
+cdef void _shortestdistance(Fst ifst,
+                            vector[fst.WeightClass] *,
+                            float delta=?,
+                            int64 nstate=?,
+                            queue_type=?,
+                            bool reverse=?) except *
 
 cpdef MutableFst shortestpath(Fst ifst,
                               float delta=?,

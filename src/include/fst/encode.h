@@ -18,6 +18,7 @@
 #include <fst/arc-map.h>
 #include <fstream>
 #include <fst/rmfinalepsilon.h>
+#include <unordered_map>
 
 namespace fst {
 

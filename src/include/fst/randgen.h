@@ -138,8 +138,8 @@ class FastLogProbArcSelector : public LogProbArcSelector<Arc> {
   // Constructs a selector with a non-deterministic seed.
   FastLogProbArcSelector() : LogProbArcSelector<Arc>() {}
   // Constructs a selector with a given seed.
-  explicit FastLogProbArcSelector(uint64 seed) : LogProbArcSelector<Arc>(
-      seed) {}
+  explicit FastLogProbArcSelector(uint64 seed)
+      : LogProbArcSelector<Arc>(seed) {}
 
   size_t operator()(const Fst<Arc> &fst, StateId s,
                     CacheLogAccumulator<Arc> *accumulator) const {
@@ -149,8 +149,8 @@ class FastLogProbArcSelector : public LogProbArcSelector<Arc> {
     const double sum =
         ToLogWeight(accumulator->Sum(fst.Final(s), &aiter, 0, fst.NumArcs(s)))
             .Value();
-    const double r = -log(std::uniform_real_distribution<>(0, 1)(
-        MutableRand()));
+    const double r =
+        -log(std::uniform_real_distribution<>(0, 1)(MutableRand()));
     Weight w = from_log_weight_(r + sum);
     aiter.Reset();
     return accumulator->LowerBound(w, &aiter);

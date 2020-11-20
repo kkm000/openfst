@@ -36,10 +36,10 @@ void Cleanup(std::vector<std::pair<int64, const FstClass *>> *pairs) {
 
 int pdtreplace_main(int argc, char **argv) {
   namespace s = fst::script;
-  using fst::script::FstClass;
-  using fst::script::VectorFstClass;
   using fst::PdtParserType;
   using fst::WriteLabelPairs;
+  using fst::script::FstClass;
+  using fst::script::VectorFstClass;
 
   std::string usage = "Converts an RTN represented by FSTs";
   usage += " and non-terminal labels into PDT.\n\n  Usage: ";
@@ -61,8 +61,8 @@ int pdtreplace_main(int argc, char **argv) {
 
   PdtParserType parser_type;
   if (!s::GetPdtParserType(FLAGS_pdt_parser_type, &parser_type)) {
-    LOG(ERROR) << argv[0] << ": Unknown PDT parser type: "
-               << FLAGS_pdt_parser_type;
+    LOG(ERROR) << argv[0]
+               << ": Unknown PDT parser type: " << FLAGS_pdt_parser_type;
     delete ifst;
     return 1;
   }

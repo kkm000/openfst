@@ -32,10 +32,8 @@ class StringReader {
   using Label = typename Arc::Label;
   using Weight = typename Arc::Weight;
 
-  enum EntryType { LINE = 1, FILE = 2 };
-
   StringReader(std::istream &istrm, const std::string &source,
-               EntryType entry_type, StringTokenType token_type,
+               FarEntryType entry_type, TokenType token_type,
                bool allow_negative_labels, const SymbolTable *syms = nullptr,
                Label unknown_label = kNoStateId)
       : nline_(0),
@@ -57,13 +55,13 @@ class StringReader {
       done_ = true;
       return;
     }
-    if (entry_type_ == LINE) {
-      getline(istrm_, content_);
+    if (entry_type_ == FarEntryType::LINE) {
+      std::getline(istrm_, content_);
       ++nline_;
     } else {
       content_.clear();
       std::string line;
-      while (getline(istrm_, line)) {
+      while (std::getline(istrm_, line)) {
         ++nline_;
         content_.append(line);
         content_.append("\n");
@@ -107,8 +105,8 @@ class StringReader {
   size_t nline_;
   std::istream &istrm_;
   std::string source_;
-  EntryType entry_type_;
-  StringTokenType token_type_;
+  FarEntryType entry_type_;
+  TokenType token_type_;
   const SymbolTable *symbols_;
   bool done_;
   StringCompiler<Arc> compiler_;
@@ -126,32 +124,12 @@ template <class Arc>
 void FarCompileStrings(const std::vector<std::string> &in_sources,
                        const std::string &out_source,
                        const std::string &fst_type, const FarType &far_type,
-                       int32 generate_keys, FarEntryType fet, FarTokenType tt,
-                       const std::string &symbols_source,
+                       int32 generate_keys, FarEntryType entry_type,
+                       TokenType token_type, const std::string &symbols_source,
                        const std::string &unknown_symbol, bool keep_symbols,
                        bool initial_symbols, bool allow_negative_labels,
                        const std::string &key_prefix,
                        const std::string &key_suffix) {
-  typename StringReader<Arc>::EntryType entry_type;
-  if (fet == FET_LINE) {
-    entry_type = StringReader<Arc>::LINE;
-  } else if (fet == FET_FILE) {
-    entry_type = StringReader<Arc>::FILE;
-  } else {
-    FSTERROR() << "FarCompileStrings: Unknown entry type";
-    return;
-  }
-  StringTokenType token_type;
-  if (tt == FTT_SYMBOL) {
-    token_type = StringTokenType::SYMBOL;
-  } else if (tt == FTT_BYTE) {
-    token_type = StringTokenType::BYTE;
-  } else if (tt == FTT_UTF8) {
-    token_type = StringTokenType::UTF8;
-  } else {
-    FSTERROR() << "FarCompileStrings: Unknown token type";
-    return;
-  }
   bool compact;
   if (fst_type.empty() || (fst_type == "vector")) {
     compact = false;
@@ -192,7 +170,7 @@ void FarCompileStrings(const std::vector<std::string> &in_sources,
       return;
     }
     const int key_size = generate_keys ? generate_keys
-                                       : (entry_type == StringReader<Arc>::FILE
+                                       : (entry_type == FarEntryType::FILE
                                               ? 1
                                               : KeySize(in_source.c_str()));
     if (key_size == 0) {
@@ -223,17 +201,19 @@ void FarCompileStrings(const std::vector<std::string> &in_sources,
       }
       if (initial_symbols) keep_syms = false;
       if (!fst) {
-        FSTERROR() << "FarCompileStrings: Compiling string number " << n
-                   << " in file " << in_source << " failed with token_type = "
-                   << (tt == FTT_BYTE
-                           ? "byte"
-                           : (tt == FTT_UTF8
-                                  ? "utf8"
-                                  : (tt == FTT_SYMBOL ? "symbol" : "unknown")))
-                   << " and entry_type = "
-                   << (fet == FET_LINE
-                           ? "line"
-                           : (fet == FET_FILE ? "file" : "unknown"));
+        FSTERROR()
+            << "FarCompileStrings: Compiling string number " << n << " in file "
+            << in_source << " failed with token_type = "
+            << (token_type == TokenType::BYTE
+                    ? "byte"
+                    : (token_type == TokenType::UTF8
+                           ? "utf8"
+                           : (token_type == TokenType::SYMBOL ? "symbol"
+                                                              : "unknown")))
+            << " and entry_type = "
+            << (entry_type == FarEntryType::LINE
+                    ? "line"
+                    : (entry_type == FarEntryType::FILE ? "file" : "unknown"));
         return;
       }
       std::ostringstream keybuf;
@@ -247,7 +227,7 @@ void FarCompileStrings(const std::vector<std::string> &in_sources,
         auto *source = new char[in_source.size() + 1];
         strcpy(source, in_source.c_str());  // NOLINT
         key = basename(source);
-        if (entry_type != StringReader<Arc>::FILE) {
+        if (entry_type != FarEntryType::FILE) {
           key += "-";
           key += keybuf.str();
         }

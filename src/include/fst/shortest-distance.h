@@ -44,8 +44,7 @@ struct ShortestDistanceOptions {
 
   ShortestDistanceOptions(Queue *state_queue, ArcFilter arc_filter,
                           StateId source = kNoStateId,
-                          float delta = kShortestDelta,
-                          bool first_path = false)
+                          float delta = kShortestDelta, bool first_path = false)
       : state_queue(state_queue),
         arc_filter(arc_filter),
         source(source),
@@ -117,7 +116,7 @@ class ShortestDistanceState {
   std::vector<Weight> *distance_;
   Queue *state_queue_;
   ArcFilter arc_filter_;
-  WeightEqual weight_equal_;           // Determines when relaxation stops.
+  WeightEqual weight_equal_;  // Determines when relaxation stops.
   const bool first_path_;
   const bool retain_;  // Retain and reuse information across calls.
 
@@ -133,8 +132,8 @@ class ShortestDistanceState {
 // Compute the shortest distance; if source is kNoStateId, uses the initial
 // state of the FST.
 template <class Arc, class Queue, class ArcFilter, class WeightEqual>
-    void ShortestDistanceState<Arc, Queue, ArcFilter,
-                               WeightEqual>::ShortestDistance(StateId source) {
+void ShortestDistanceState<Arc, Queue, ArcFilter,
+                           WeightEqual>::ShortestDistance(StateId source) {
   if (fst_.Start() == kNoStateId) {
     if (fst_.Properties(kError, false)) error_ = true;
     return;

@@ -439,8 +439,7 @@ class PushLabelsComposeFilter {
     }
     const auto &fs1 = filter_.FilterArc(arc1, arc2);
     if (fs1 == FilterState1::NoState()) return FilterState::NoState();
-    if (!LookAheadArc())
-      return FilterState(fs1, FilterState2(kNoLabel));
+    if (!LookAheadArc()) return FilterState(fs1, FilterState2(kNoLabel));
     return LookAheadOutput() ? PushLabelFilterArc(arc1, arc2, fs1)
                              : PushLabelFilterArc(arc2, arc1, fs1);
   }

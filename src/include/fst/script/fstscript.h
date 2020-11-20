@@ -104,8 +104,7 @@ class AllFstOperationsRegisterer {
     REGISTER_FST_OPERATION(EpsNormalize, Arc, EpsNormalizeArgs);
     REGISTER_FST_OPERATION(Equal, Arc, EqualArgs);
     REGISTER_FST_OPERATION(Equivalent, Arc, EquivalentArgs);
-    REGISTER_FST_OPERATION(InitArcIteratorClass, Arc,
-                           InitArcIteratorClassArgs);
+    REGISTER_FST_OPERATION(InitArcIteratorClass, Arc, InitArcIteratorClassArgs);
     REGISTER_FST_OPERATION(InitMutableArcIteratorClass, Arc,
                            InitMutableArcIteratorClassArgs);
     REGISTER_FST_OPERATION(InitStateIteratorClass, Arc,
@@ -135,6 +134,7 @@ class AllFstOperationsRegisterer {
     REGISTER_FST_OPERATION(RmEpsilon, Arc, RmEpsilonArgs);
     REGISTER_FST_OPERATION(ShortestDistance, Arc, ShortestDistanceArgs1);
     REGISTER_FST_OPERATION(ShortestDistance, Arc, ShortestDistanceArgs2);
+    REGISTER_FST_OPERATION(ShortestDistance, Arc, ShortestDistanceArgs3);
     REGISTER_FST_OPERATION(ShortestPath, Arc, ShortestPathArgs);
     REGISTER_FST_OPERATION(Synchronize, Arc, SynchronizeArgs);
     REGISTER_FST_OPERATION(TopSort, Arc, TopSortArgs);

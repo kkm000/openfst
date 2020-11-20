@@ -140,9 +140,8 @@ class NestedTrieTopology {
   const_iterator end() const { return const_iterator(this, NumNodes()); }
 
  private:
-  std::vector<NextMap *>
-      nodes_;  // Use pointers to avoid copying the maps when the
-               // vector grows
+  std::vector<NextMap *> nodes_;  // Use pointers to avoid copying the maps when
+                                  // the vector grows
 };
 
 template <class L, class H>
@@ -234,8 +233,8 @@ inline std::ostream &NestedTrieTopology<L, H>::Write(
 }
 
 template <class L, class H>
-inline typename NestedTrieTopology<L, H>::const_iterator
-    &NestedTrieTopology<L, H>::const_iterator::operator++() {
+inline typename NestedTrieTopology<L, H>::const_iterator &
+NestedTrieTopology<L, H>::const_iterator::operator++() {
   ++cur_edge_;
   if (cur_edge_ == ptr_->nodes_[cur_node_]->end()) {
     ++cur_node_;
@@ -247,8 +246,8 @@ inline typename NestedTrieTopology<L, H>::const_iterator
 }
 
 template <class L, class H>
-inline typename NestedTrieTopology<L, H>::const_iterator
-    &NestedTrieTopology<L, H>::const_iterator::operator++(int) {  // NOLINT
+inline typename NestedTrieTopology<L, H>::const_iterator &
+NestedTrieTopology<L, H>::const_iterator::operator++(int) {  // NOLINT
   const_iterator save(*this);
   ++(*this);
   return save;

@@ -34,8 +34,8 @@ int farisomorphic_main(int argc, char **argv) {
   const auto arc_type = s::LoadArcTypeFromFar(argv[1]);
   if (arc_type.empty()) return 1;
 
-  bool result = s::FarIsomorphic(argv[1], argv[2], arc_type,
-                                 FLAGS_delta, FLAGS_begin_key, FLAGS_end_key);
+  bool result = s::FarIsomorphic(argv[1], argv[2], arc_type, FLAGS_delta,
+                                 FLAGS_begin_key, FLAGS_end_key);
 
   if (!result) VLOG(1) << "FARs are not isomorphic.";
 

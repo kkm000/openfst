@@ -9,6 +9,4 @@ DEFINE_bool(list_fsts, false, "Display FST information for each key");
 
 int farinfo_main(int argc, char **argv);
 
-int main(int argc, char **argv) {
-  return farinfo_main(argc, argv);
-}
+int main(int argc, char **argv) { return farinfo_main(argc, argv); }

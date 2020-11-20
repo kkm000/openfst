@@ -12,6 +12,4 @@ DEFINE_bool(file_list_input, false,
 
 int farcreate_main(int argc, char **argv);
 
-int main(int argc, char **argv) {
-  return farcreate_main(argc, argv);
-}
+int main(int argc, char **argv) { return farcreate_main(argc, argv); }

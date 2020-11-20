@@ -3,14 +3,14 @@
 //
 // Union weight set and associated semiring operation definitions.
 //
-// TODO(riley): add in normalizer functor
+// TODO(riley): add in normalizer functor.
 
 #ifndef FST_UNION_WEIGHT_H_
 #define FST_UNION_WEIGHT_H_
 
-#include <cstdlib>
 #include <iostream>
 #include <list>
+#include <random>
 #include <sstream>
 #include <string>
 #include <utility>
@@ -478,16 +478,20 @@ class WeightGenerate<UnionWeight<W, O>> {
   using Weight = UnionWeight<W, O>;
   using Generate = WeightGenerate<W>;
 
-  explicit WeightGenerate(bool allow_zero = true,
+  explicit WeightGenerate(uint64 seed = std::random_device()(),
+                          bool allow_zero = true,
                           size_t num_random_weights = kNumRandomWeights)
-      : generate_(false), allow_zero_(allow_zero),
-        num_random_weights_(num_random_weights) {}
+      : rand_(seed),
+        allow_zero_(allow_zero),
+        num_random_weights_(num_random_weights),
+        generate_(seed, false) {}
 
   Weight operator()() const {
-    const int n = rand() % (num_random_weights_ + 1);  // NOLINT
-    if (allow_zero_ && n == num_random_weights_) {
+    const int sample = std::uniform_int_distribution<>(
+        0, num_random_weights_ + allow_zero_ - 1)(rand_);
+    if (allow_zero_ && sample == num_random_weights_) {
       return Weight::Zero();
-    } else if (n % 2 == 0) {
+    } else if (std::bernoulli_distribution(.5)(rand_)) {
       return Weight(generate_());
     } else {
       return Plus(Weight(generate_()), Weight(generate_()));
@@ -495,11 +499,10 @@ class WeightGenerate<UnionWeight<W, O>> {
   }
 
  private:
-  Generate generate_;
-  // Permits Zero() and zero divisors.
-  bool allow_zero_;
-  // The number of alternative random weights.
+  mutable std::mt19937_64 rand_;
+  const bool allow_zero_;
   const size_t num_random_weights_;
+  const Generate generate_;
 };
 
 }  // namespace fst

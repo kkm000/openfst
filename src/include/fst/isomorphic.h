@@ -129,19 +129,25 @@ class Isomorphism {
 
   std::unique_ptr<Fst<Arc>> fst1_;
   std::unique_ptr<Fst<Arc>> fst2_;
-  float delta_;                          // Weight equality delta.
-  std::vector<Arc> arcs1_;               // For sorting arcs on FST1.
-  std::vector<Arc> arcs2_;               // For sorting arcs on FST2.
-  std::vector<StateId> state_pairs_;     // Maintains state correspondences.
+  float delta_;                       // Weight equality delta.
+  std::vector<Arc> arcs1_;            // For sorting arcs on FST1.
+  std::vector<Arc> arcs2_;            // For sorting arcs on FST2.
+  std::vector<StateId> state_pairs_;  // Maintains state correspondences.
   std::queue<std::pair<StateId, StateId>> queue_;  // Queue of state pairs.
-  bool error_;                           // Error flag.
-  bool nondet_;                          // Nondeterminism detected.
+  bool error_;                                     // Error flag.
+  bool nondet_;                                    // Nondeterminism detected.
   ArcCompare comp_;
 };
 
 template <class Arc>
 bool Isomorphism<Arc>::IsIsomorphicState(StateId s1, StateId s2) {
-  if (!ApproxEqual(fst1_->Final(s1), fst2_->Final(s2), delta_)) return false;
+  if (!ApproxEqual(fst1_->Final(s1), fst2_->Final(s2), delta_)) {
+    VLOG(1) << "Isomorphic: Final weights not equal to within delta="
+            << delta_ << ": "  //
+            << "fst1.Final(" << s1 << ") = " << fst1_->Final(s1) << ", "
+            << "fst2.Final(" << s2 << ") = " << fst2_->Final(s2);
+    return false;
+  }
   const auto narcs1 = fst1_->NumArcs(s1);
   const auto narcs2 = fst2_->NumArcs(s2);
   if (narcs1 != narcs2) {
@@ -167,34 +173,34 @@ bool Isomorphism<Arc>::IsIsomorphicState(StateId s1, StateId s2) {
     const auto &arc2 = arcs2_[i];
     if (arc1.ilabel != arc2.ilabel) {
       VLOG(1) << "Isomorphic: ilabels not equal. "
-              << "arc1: *" << arc1.ilabel << "* " << arc1.olabel
-              << " " << arc1.weight << " " << arc1.nextstate
-              << "arc2: *" << arc2.ilabel << "* " << arc2.olabel
-              << " " << arc2.weight << " " << arc2.nextstate;
+              << "arc1: *" << arc1.ilabel << "* " << arc1.olabel << " "
+              << arc1.weight << " " << arc1.nextstate << "arc2: *"
+              << arc2.ilabel << "* " << arc2.olabel << " " << arc2.weight << " "
+              << arc2.nextstate;
       return false;
     }
     if (arc1.olabel != arc2.olabel) {
       VLOG(1) << "Isomorphic: olabels not equal. "
-              << "arc1: " << arc1.ilabel << " *" << arc1.olabel
-              << "* " << arc1.weight << " " << arc1.nextstate
-              << "arc2: " << arc2.ilabel << " *" << arc2.olabel
-              << "* " << arc2.weight << " " << arc2.nextstate;
+              << "arc1: " << arc1.ilabel << " *" << arc1.olabel << "* "
+              << arc1.weight << " " << arc1.nextstate << "arc2: " << arc2.ilabel
+              << " *" << arc2.olabel << "* " << arc2.weight << " "
+              << arc2.nextstate;
       return false;
     }
     if (!ApproxEqual(arc1.weight, arc2.weight, delta_)) {
       VLOG(1) << "Isomorphic: weights not ApproxEqual. "
-              << "arc1: " << arc1.ilabel << " " << arc1.olabel
-              << " *" << arc1.weight << "* " << arc1.nextstate
-              << "arc2: " << arc2.ilabel << " " << arc2.olabel
-              << " *" << arc2.weight << "* " << arc2.nextstate;
+              << "arc1: " << arc1.ilabel << " " << arc1.olabel << " *"
+              << arc1.weight << "* " << arc1.nextstate
+              << "arc2: " << arc2.ilabel << " " << arc2.olabel << " *"
+              << arc2.weight << "* " << arc2.nextstate;
       return false;
     }
     if (!PairState(arc1.nextstate, arc2.nextstate)) {
       VLOG(1) << "Isomorphic: nextstates could not be paired. "
-              << "arc1: " << arc1.ilabel << " " << arc1.olabel
-              << " " << arc1.weight << " *" << arc1.nextstate
-              << "* arc2: " << arc2.ilabel << " " << arc2.olabel
-              << " " << arc2.weight << " *" << arc2.nextstate << "*";
+              << "arc1: " << arc1.ilabel << " " << arc1.olabel << " "
+              << arc1.weight << " *" << arc1.nextstate
+              << "* arc2: " << arc2.ilabel << " " << arc2.olabel << " "
+              << arc2.weight << " *" << arc2.nextstate << "*";
       return false;
     }
     if (i > 0) {  // Checks for non-determinism.
@@ -206,10 +212,10 @@ bool Isomorphism<Arc>::IsIsomorphicState(StateId s1, StateId s2) {
         // states of nondeterministic transitions.
         VLOG(1) << "Isomorphic: Detected non-determinism as an unweighted "
                 << "automaton; deferring error. "
-                << "arc1: " << arc1.ilabel << " " << arc1.olabel
-                << " " << arc1.weight << " " << arc1.nextstate
-                << "arc2: " << arc2.ilabel << " " << arc2.olabel
-                << " " << arc2.weight << " " << arc2.nextstate;
+                << "arc1: " << arc1.ilabel << " " << arc1.olabel << " "
+                << arc1.weight << " " << arc1.nextstate
+                << "arc2: " << arc2.ilabel << " " << arc2.olabel << " "
+                << arc2.weight << " " << arc2.nextstate;
         nondet_ = true;
       }
     }

@@ -21,8 +21,8 @@ DECLARE_string(mpdt_parentheses);
 
 int mpdtinfo_main(int argc, char **argv) {
   namespace s = fst::script;
-  using fst::script::FstClass;
   using fst::ReadLabelTriples;
+  using fst::script::FstClass;
 
   std::string usage = "Prints out information about an MPDT.\n\n  Usage: ";
   usage += argv[0];

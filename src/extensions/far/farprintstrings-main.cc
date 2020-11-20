@@ -8,7 +8,7 @@
 
 #include <fst/flags.h>
 #include <fst/extensions/far/farscript.h>
-#include <fst/extensions/far/getters.h>
+#include <fst/script/getters.h>
 
 DECLARE_string(filename_prefix);
 DECLARE_string(filename_suffix);
@@ -47,8 +47,8 @@ int farprintstrings_main(int argc, char **argv) {
     return 1;
   }
 
-  fst::FarTokenType token_type;
-  if (!s::GetFarTokenType(FLAGS_token_type, &token_type)) {
+  fst::TokenType token_type;
+  if (!s::GetTokenType(FLAGS_token_type, &token_type)) {
     LOG(ERROR) << "Unknown or unsupported FAR token type: " << FLAGS_token_type;
     return 1;
   }

@@ -18,9 +18,7 @@
 
 namespace fst {
 
-enum FarEntryType { FET_LINE, FET_FILE };
-
-enum FarTokenType { FTT_SYMBOL, FTT_BYTE, FTT_UTF8 };
+enum class FarEntryType { LINE, FILE };
 
 inline bool IsFst(const std::string &source) {
   std::ifstream strm(source, std::ios_base::in | std::ios_base::binary);
@@ -68,11 +66,11 @@ class FarHeader {
   std::string arctype_;
 };
 
-enum FarType {
-  FAR_DEFAULT = 0,
-  FAR_STTABLE = 1,
-  FAR_STLIST = 2,
-  FAR_FST = 3,
+enum class FarType {
+  DEFAULT = 0,
+  STTABLE = 1,
+  STLIST = 2,
+  FST = 3,
 };
 
 // This class creates an archive of FSTs.
@@ -83,7 +81,7 @@ class FarWriter {
 
   // Creates a new (empty) FST archive; returns null on error.
   static FarWriter *Create(const std::string &source,
-                           FarType type = FAR_DEFAULT);
+                           FarType type = FarType::DEFAULT);
 
   // Adds an FST to the end of an archive. Keys must be non-empty and
   // in lexicographic order. FSTs must have a suitable write method.
@@ -165,7 +163,7 @@ class STTableFarWriter : public FarWriter<A> {
     writer_->Add(key, fst);
   }
 
-  FarType Type() const final { return FAR_STTABLE; }
+  FarType Type() const final { return FarType::STTABLE; }
 
   bool Error() const final { return writer_->Error(); }
 
@@ -190,7 +188,7 @@ class STListFarWriter : public FarWriter<A> {
     writer_->Add(key, fst);
   }
 
-  FarType Type() const final { return FAR_STLIST; }
+  FarType Type() const final { return FarType::STLIST; }
 
   bool Error() const final { return writer_->Error(); }
 
@@ -223,7 +221,7 @@ class FstFarWriter final : public FarWriter<A> {
     }
   }
 
-  FarType Type() const final { return FAR_FST; }
+  FarType Type() const final { return FarType::FST; }
 
   bool Error() const final { return error_; }
 
@@ -239,13 +237,13 @@ template <class Arc>
 FarWriter<Arc> *FarWriter<Arc>::Create(const std::string &source,
                                        FarType type) {
   switch (type) {
-    case FAR_DEFAULT:
+    case FarType::DEFAULT:
       if (source.empty()) return STListFarWriter<Arc>::Create(source);
-    case FAR_STTABLE:
+    case FarType::STTABLE:
       return STTableFarWriter<Arc>::Create(source);
-    case FAR_STLIST:
+    case FarType::STLIST:
       return STListFarWriter<Arc>::Create(source);
-    case FAR_FST:
+    case FarType::FST:
       return FstFarWriter<Arc>::Create(source);
     default:
       LOG(ERROR) << "FarWriter::Create: Unknown FAR type";
@@ -291,7 +289,7 @@ class STTableFarReader : public FarReader<A> {
 
   const Fst<Arc> *GetFst() const final { return reader_->GetEntry(); }
 
-  FarType Type() const final { return FAR_STTABLE; }
+  FarType Type() const final { return FarType::STTABLE; }
 
   bool Error() const final { return reader_->Error(); }
 
@@ -331,7 +329,7 @@ class STListFarReader : public FarReader<A> {
 
   const Fst<Arc> *GetFst() const final { return reader_->GetEntry(); }
 
-  FarType Type() const final { return FAR_STLIST; }
+  FarType Type() const final { return FarType::STLIST; }
 
   bool Error() const final { return reader_->Error(); }
 
@@ -421,7 +419,7 @@ class FstFarReader final : public FarReader<A> {
 
   const Fst<Arc> *GetFst() const final { return fst_.get(); }
 
-  FarType Type() const final { return FAR_FST; }
+  FarType Type() const final { return FarType::FST; }
 
   bool Error() const final { return error_; }
 

@@ -83,9 +83,7 @@ void DenseSymbolMap::RemoveSymbol(size_t idx) {
   Rehash(buckets_.size());
 }
 
-void DenseSymbolMap::ShrinkToFit() {
-  symbols_.shrink_to_fit();
-}
+void DenseSymbolMap::ShrinkToFit() { symbols_.shrink_to_fit(); }
 
 void MutableSymbolTableImpl::AddTable(const SymbolTable &table) {
   for (const auto &item : table) {
@@ -125,10 +123,10 @@ SymbolTableImpl *SymbolTableImpl::ReadText(std::istream &strm,
   std::unique_ptr<SymbolTableImpl> impl(new SymbolTableImpl(source));
   int64 nline = 0;
   char line[kLineLen];
+  const auto separator = opts.fst_field_separator + "\n";
   while (!strm.getline(line, kLineLen).fail()) {
     ++nline;
     std::vector<char *> col;
-    const auto separator = opts.fst_field_separator + "\n";
     SplitString(line, separator.c_str(), &col, true);
     if (col.empty()) continue;  // Empty line.
     if (col.size() != 2) {
@@ -142,7 +140,7 @@ SymbolTableImpl *SymbolTableImpl::ReadText(std::istream &strm,
     const char *value = col[1];
     char *p;
     const auto key = strtoll(value, &p, 10);
-    if (p < value + strlen(value) || (!opts.allow_negative_labels && key < 0) ||
+    if (*p != '\0' || (!opts.allow_negative_labels && key < 0) ||
         key == kNoSymbol) {
       LOG(ERROR) << "SymbolTable::ReadText: Bad non-negative integer \""
                  << value << "\", "
@@ -325,9 +323,7 @@ bool SymbolTableImpl::Write(std::ostream &strm) const {
   return true;
 }
 
-void SymbolTableImpl::ShrinkToFit() {
-  symbols_.ShrinkToFit();
-}
+void SymbolTableImpl::ShrinkToFit() { symbols_.ShrinkToFit(); }
 
 }  // namespace internal
 

@@ -27,7 +27,8 @@ void MPdtCompose(const FstClass &ifst1, const FstClass &ifst2,
                  const std::vector<int64> &assignments, MutableFstClass *ofst,
                  const MPdtComposeOptions &copts, bool left_pdt) {
   if (!internal::ArcTypesMatch(ifst1, ifst2, "MPdtCompose") ||
-      !internal::ArcTypesMatch(ifst1, *ofst, "MPdtCompose")) return;
+      !internal::ArcTypesMatch(ifst1, *ofst, "MPdtCompose"))
+    return;
   MPdtComposeArgs args(ifst1, ifst2, parens, assignments, ofst, copts,
                        left_pdt);
   Apply<Operation<MPdtComposeArgs>>("MPdtCompose", ifst1.ArcType(), &args);

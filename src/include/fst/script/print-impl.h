@@ -27,9 +27,8 @@ class FstPrinter {
   using Weight = typename Arc::Weight;
 
   explicit FstPrinter(const Fst<Arc> &fst, const SymbolTable *isyms,
-                      const SymbolTable *osyms,
-                      const SymbolTable *ssyms, bool accept,
-                      bool show_weight_one,
+                      const SymbolTable *osyms, const SymbolTable *ssyms,
+                      bool accept, bool show_weight_one,
                       const std::string &field_separator,
                       const std::string &missing_symbol = "")
       : fst_(fst),

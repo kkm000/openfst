@@ -21,6 +21,7 @@ DECLARE_bool(remove_total_weight);
 
 int fstrandgen_main(int argc, char **argv) {
   namespace s = fst::script;
+  using fst::RandGenOptions;
   using fst::script::FstClass;
   using fst::script::VectorFstClass;
 
@@ -55,9 +56,9 @@ int fstrandgen_main(int argc, char **argv) {
   }
 
   s::RandGen(*ifst, &ofst,
-             fst::RandGenOptions<s::RandArcSelection>(
-                 ras, FLAGS_max_length, FLAGS_npath, FLAGS_weighted,
-                 FLAGS_remove_total_weight),
+             RandGenOptions<s::RandArcSelection>(ras, FLAGS_max_length,
+                                                 FLAGS_npath, FLAGS_weighted,
+                                                 FLAGS_remove_total_weight),
              FLAGS_seed);
 
   return !ofst.Write(out_name);

@@ -10,7 +10,7 @@ DEFINE_bool(connect, true, "Trim output");
 DEFINE_double(delta, fst::kShortestDelta, "Comparison/quantization delta");
 DEFINE_int64(nstate, fst::kNoStateId, "State number threshold");
 DEFINE_string(queue_type, "auto",
-              "Queue type: one of: \"auto\", "
+              "Queue type: one of \"auto\", "
               "\"fifo\", \"lifo\", \"shortest\", \"state\", \"top\"");
 DEFINE_string(weight, "", "Weight threshold");
 

@@ -68,7 +68,7 @@ class Heap {
   // Returns the least value.
   Value Pop() {
     Value top = values_.front();
-    Swap(0, size_-1);
+    Swap(0, size_ - 1);
     size_--;
     Heapify(0);
     return top;

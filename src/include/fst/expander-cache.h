@@ -166,7 +166,7 @@ class HashExpanderCache {
 
   template <class Expander>
   State *FindOrExpand(Expander &expander, StateId state_id) {  // NOLINT
-    auto it = cache_.insert(std::pair<StateId, State*>(state_id, nullptr));
+    auto it = cache_.insert(std::pair<StateId, State *>(state_id, nullptr));
     if (!it.second) return it.first->second;
     auto *state = new State;
     it.first->second = state;

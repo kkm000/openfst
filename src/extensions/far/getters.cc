@@ -16,36 +16,26 @@ namespace fst {
 
 namespace script {
 
-FarType GetFarType(const std::string &str) {
+bool GetFarType(const std::string &str, FarType *far_type) {
   if (str == "fst") {
-    return FAR_FST;
+    *far_type = FarType::FST;
   } else if (str == "stlist") {
-    return FAR_STLIST;
+    *far_type = FarType::STLIST;
   } else if (str == "sttable") {
-    return FAR_STTABLE;
-  } else {
-    return FAR_DEFAULT;
-  }
-}
-
-bool GetFarEntryType(const std::string &str, FarEntryType *entry_type) {
-  if (str == "line") {
-    *entry_type = FET_LINE;
-  } else if (str == "file") {
-    *entry_type = FET_FILE;
+    *far_type = FarType::STTABLE;
+  } else if (str == "default") {
+    *far_type = FarType::DEFAULT;
   } else {
     return false;
   }
   return true;
 }
 
-bool GetFarTokenType(const std::string &str, FarTokenType *token_type) {
-  if (str == "symbol") {
-    *token_type = FTT_SYMBOL;
-  } else if (str == "byte") {
-    *token_type = FTT_BYTE;
-  } else if (str == "utf8") {
-    *token_type = FTT_UTF8;
+bool GetFarEntryType(const std::string &str, FarEntryType *entry_type) {
+  if (str == "line") {
+    *entry_type = FarEntryType::LINE;
+  } else if (str == "file") {
+    *entry_type = FarEntryType::FILE;
   } else {
     return false;
   }
@@ -57,15 +47,15 @@ void ExpandArgs(int argc, char **argv, int *argcp, char ***argvp) {
 
 }  // namespace script
 
-std::string GetFarTypeString(FarType type) {
-  switch (type) {
-    case FAR_FST:
+std::string GetFarTypeString(FarType far_type) {
+  switch (far_type) {
+    case FarType::FST:
       return "fst";
-    case FAR_STLIST:
+    case FarType::STLIST:
       return "stlist";
-    case FAR_STTABLE:
+    case FarType::STTABLE:
       return "sttable";
-    case FAR_DEFAULT:
+    case FarType::DEFAULT:
       return "default";
     default:
       return "<unknown>";

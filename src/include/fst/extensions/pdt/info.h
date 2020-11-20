@@ -13,6 +13,8 @@
 #include <fst/types.h>
 #include <fst/extensions/pdt/pdt.h>
 #include <fst/fst.h>
+#include <unordered_map>
+#include <unordered_set>
 
 namespace fst {
 
@@ -94,23 +96,19 @@ PdtInfo<Arc>::PdtInfo(
         const auto close_paren = parens[it->second].second;
         if (arc.ilabel == open_paren) {
           ++nopen_parens_;
-          if (!paren_set.count(open_paren)) {
+          if (paren_set.insert(open_paren).second) {
             ++nuniq_open_parens_;
-            paren_set.insert(open_paren);
           }
-          if (!open_paren_state_set.count(arc.nextstate)) {
+          if (open_paren_state_set.insert(arc.nextstate).second) {
             ++nopen_paren_states_;
-            open_paren_state_set.insert(arc.nextstate);
           }
         } else {
           ++nclose_parens_;
-          if (!paren_set.count(close_paren)) {
+          if (paren_set.insert(close_paren).second) {
             ++nuniq_close_parens_;
-            paren_set.insert(close_paren);
           }
-          if (!close_paren_state_set.count(s)) {
+          if (close_paren_state_set.insert(s).second) {
             ++nclose_paren_states_;
-            close_paren_state_set.insert(s);
           }
         }
       }

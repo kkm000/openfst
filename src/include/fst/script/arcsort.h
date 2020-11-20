@@ -12,10 +12,7 @@
 namespace fst {
 namespace script {
 
-enum ArcSortType {
-  ILABEL_SORT,
-  OLABEL_SORT
-};
+enum ArcSortType { ILABEL_SORT, OLABEL_SORT };
 
 using ArcSortArgs = std::pair<MutableFstClass *, ArcSortType>;
 

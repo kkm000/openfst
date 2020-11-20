@@ -261,8 +261,8 @@ class StateMapFstImpl : public CacheImpl<B> {
   void InitStateIterator(StateIteratorData<B> *datb) const {
     StateIteratorData<A> data;
     fst_->InitStateIterator(&data);
-    datb->base = data.base ? new StateMapStateIteratorBase<A, B>(data.base)
-        : nullptr;
+    datb->base =
+        data.base ? new StateMapStateIteratorBase<A, B>(data.base) : nullptr;
     datb->nstates = data.nstates;
   }
 

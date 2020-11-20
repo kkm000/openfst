@@ -5,18 +5,33 @@
 #include <fst/mapped-file.h>
 
 #include <fcntl.h>
-#include <sys/mman.h>
 #include <sys/types.h>
+
+#ifdef _WIN32
+#include <io.h>         // for _get_osfhandle, _open
+#include <memoryapi.h>  // for CreateFileMapping, UnmapViewOfFile
+#include <windows.h>
+#else
+#include <sys/mman.h>
 #include <unistd.h>
+#endif  // _WIN32
 
 #include <algorithm>
 #include <cerrno>
+#include <cstring>
 #include <ios>
+#include <limits>
 #include <memory>
 
 #include <fst/log.h>
 
 namespace fst {
+
+#ifdef _WIN32
+namespace {
+static constexpr DWORD DWORD_MAX = std::numeric_limits<DWORD>::max();
+}  // namespace
+#endif  // _WIN32
 
 MappedFile::MappedFile(const MemoryRegion &region) : region_(region) {}
 
@@ -24,9 +39,16 @@ MappedFile::~MappedFile() {
   if (region_.size != 0) {
     if (region_.mmap) {
       VLOG(2) << "munmap'ed " << region_.size << " bytes at " << region_.mmap;
+#ifdef _WIN32
+      if (UnmapViewOfFile(region_.mmap) != 0) {
+        LOG(ERROR) << "Failed to unmap region: " << GetLastError();
+      }
+      CloseHandle(region_.file_mapping);
+#else
       if (munmap(region_.mmap, region_.size) != 0) {
         LOG(ERROR) << "Failed to unmap region: " << strerror(errno);
       }
+#endif
     } else {
       if (region_.data) {
         operator delete(static_cast<char *>(region_.data) - region_.offset);
@@ -42,8 +64,12 @@ MappedFile *MappedFile::Map(std::istream *istrm, bool memorymap,
           << source << "\""
           << " size: " << size << " offset: " << spos;
   if (memorymap && spos >= 0 && spos % kArchAlignment == 0) {
-    const size_t pos = spos;
+    const size_t pos = static_cast<size_t>(spos);
+#ifdef _WIN32
+    const int fd = _open(source.c_str(), _O_RDONLY);
+#else
     const int fd = open(source.c_str(), O_RDONLY);
+#endif
     if (fd != -1) {
       std::unique_ptr<MappedFile> mmf(MapFromFileDescriptor(fd, pos, size));
       if (close(fd) == 0 && mmf != nullptr) {
@@ -83,20 +109,62 @@ MappedFile *MappedFile::Map(std::istream *istrm, bool memorymap,
 }
 
 MappedFile *MappedFile::MapFromFileDescriptor(int fd, size_t pos, size_t size) {
+#ifdef _WIN32
+  SYSTEM_INFO sysInfo;
+  GetSystemInfo(&sysInfo);
+  const DWORD pagesize = sysInfo.dwPageSize;
+#else
   const int pagesize = sysconf(_SC_PAGESIZE);
-  const off_t offset = pos % pagesize;
-  const off_t upsize = size + offset;
-  void *map = mmap(nullptr, upsize, PROT_READ, MAP_SHARED, fd, pos - offset);
-  if (map == MAP_FAILED) {
-    LOG(ERROR) << "mmap failed for fd=" << fd << " size=" << upsize
-               << " offset=" << (pos - offset);
+#endif  // _WIN32
+
+  const size_t offset = pos % pagesize;
+  const size_t offset_pos = pos - offset;
+  const size_t upsize = size + offset;
+
+#ifdef _WIN32
+  if (fd == -1) {
+    LOG(ERROR) << "Invalid file descriptor fd=" << fd;
     return nullptr;
   }
+  HANDLE file = reinterpret_cast<HANDLE>(_get_osfhandle(fd));
+  if (file == INVALID_HANDLE_VALUE) {
+    LOG(ERROR) << "Invalid file descriptor fd=" << fd;
+    return nullptr;
+  }
+  HANDLE file_mapping = CreateFileMappingA(file, nullptr, PAGE_READONLY,
+                                           upsize >> (8 * sizeof(DWORD)),
+                                           upsize & DWORD_MAX, nullptr);
+  if (file_mapping == INVALID_HANDLE_VALUE) {
+    LOG(ERROR) << "Can't create mapping for fd=" << fd << " size=" << upsize
+               << ": " << GetLastError();
+    return nullptr;
+  }
+
+  void *map = MapViewOfFile(file_mapping, FILE_MAP_READ,
+                            offset_pos >> (8 * sizeof(DWORD)),
+                            offset_pos & DWORD_MAX, upsize);
+  if (!map) {
+    LOG(ERROR) << "mmap failed for fd=" << fd << " size=" << upsize
+               << " offset=" << offset_pos << ": " << GetLastError();
+    CloseHandle(file_mapping);
+    return nullptr;
+  }
+#else
+  void *map = mmap(nullptr, upsize, PROT_READ, MAP_SHARED, fd, offset_pos);
+  if (map == MAP_FAILED) {
+    LOG(ERROR) << "mmap failed for fd=" << fd << " size=" << upsize
+               << " offset=" << offset_pos;
+    return nullptr;
+  }
+#endif
   MemoryRegion region;
   region.mmap = map;
   region.size = upsize;
   region.data = static_cast<void *>(static_cast<char *>(map) + offset);
   region.offset = offset;
+#ifdef _WIN32
+  region.file_mapping = file_mapping;
+#endif  // _WIN32
   return new MappedFile(region);
 }
 

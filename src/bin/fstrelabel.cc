@@ -10,11 +10,12 @@ DEFINE_string(relabel_osymbols, "", "Output symbol set to relabel to");
 DEFINE_string(relabel_ipairs, "", "Input relabel pairs (numeric)");
 DEFINE_string(relabel_opairs, "", "Output relabel pairs (numeric)");
 DEFINE_string(unknown_isymbol, "",
-    "Input symbol to use to relabel OOVs (default: OOVs are errors)");
-DEFINE_string(unknown_osymbol, "",
+              "Input symbol to use to relabel OOVs (default: OOVs are errors)");
+DEFINE_string(
+    unknown_osymbol, "",
     "Output symbol to use to relabel OOVs (default: OOVs are errors)");
 DEFINE_bool(allow_negative_labels, false,
-    "Allow negative labels (not recommended; may cause conflicts)");
+            "Allow negative labels (not recommended; may cause conflicts)");
 
 int fstrelabel_main(int argc, char **argv);
 

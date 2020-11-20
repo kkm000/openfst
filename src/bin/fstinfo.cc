@@ -4,12 +4,12 @@
 #include <fst/flags.h>
 
 DEFINE_string(arc_filter, "any",
-              "Arc filter: one of:"
+              "Arc filter: one of"
               " \"any\", \"epsilon\", \"iepsilon\", \"oepsilon\"; "
               "this only affects the counts of (co)accessible states, "
               "connected states, and (strongly) connected components");
 DEFINE_string(info_type, "auto",
-              "Info format: one of: \"auto\", \"long\", \"short\"");
+              "Info format: one of \"auto\", \"long\", \"short\"");
 DEFINE_bool(test_properties, true,
             "Compute property values (if unknown to FST)");
 DEFINE_bool(fst_verify, true, "Verify FST sanity");

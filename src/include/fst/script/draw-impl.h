@@ -91,12 +91,12 @@ class FstDrawer {
   }
 
  private:
-  void SetStreamState(std::ostream* strm) const {
+  void SetStreamState(std::ostream *strm) const {
     strm->precision(precision_);
     if (float_format_ == "e")
-        strm->setf(std::ios_base::scientific, std::ios_base::floatfield);
+      strm->setf(std::ios_base::scientific, std::ios_base::floatfield);
     if (float_format_ == "f")
-        strm->setf(std::ios_base::fixed, std::ios_base::floatfield);
+      strm->setf(std::ios_base::fixed, std::ios_base::floatfield);
     // O.w. defaults to "g" per standard lib.
   }
 
@@ -145,7 +145,9 @@ class FstDrawer {
   }
 
   template <class T>
-  void Print(T t) const { *ostrm_ << t; }
+  void Print(T t) const {
+    *ostrm_ << t;
+  }
 
   template <class T>
   std::string ToString(T t) const {

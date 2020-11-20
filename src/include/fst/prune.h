@@ -123,9 +123,9 @@ void Prune(MutableFst<Arc> *fst, const PruneOptions<Arc, ArcFilter> &opts =
   dead.push_back(fst->AddState());
   NaturalLess<Weight> less;
   auto s = fst->Start();
-  const auto limit = opts.threshold_initial ?
-      Times(opts.weight_threshold, (*fdistance)[s]) :
-      Times((*fdistance)[s], opts.weight_threshold);
+  const auto limit = opts.threshold_initial
+                         ? Times(opts.weight_threshold, (*fdistance)[s])
+                         : Times((*fdistance)[s], opts.weight_threshold);
   StateId num_visited = 0;
 
   if (!less(limit, (*fdistance)[s])) {
@@ -145,9 +145,10 @@ void Prune(MutableFst<Arc> *fst, const PruneOptions<Arc, ArcFilter> &opts =
          aiter.Next()) {
       auto arc = aiter.Value();  // Copy intended.
       if (!opts.filter(arc)) continue;
-      const auto weight = Times(Times(idistance[s], arc.weight),
-                                arc.nextstate < fdistance->size() ?
-                                (*fdistance)[arc.nextstate] : Weight::Zero());
+      const auto weight =
+          Times(Times(idistance[s], arc.weight),
+                arc.nextstate < fdistance->size() ? (*fdistance)[arc.nextstate]
+                                                  : Weight::Zero());
       if (less(limit, weight)) {
         arc.nextstate = dead[0];
         aiter.SetValue(arc);
@@ -247,9 +248,9 @@ void Prune(
   std::vector<size_t> enqueued;
   std::vector<bool> visited;
   auto s = ifst.Start();
-  const auto limit = opts.threshold_initial ?
-      Times(opts.weight_threshold, (*fdistance)[s]) :
-      Times((*fdistance)[s], opts.weight_threshold);
+  const auto limit = opts.threshold_initial
+                         ? Times(opts.weight_threshold, (*fdistance)[s])
+                         : Times((*fdistance)[s], opts.weight_threshold);
   while (copy.size() <= s) copy.push_back(kNoStateId);
   copy[s] = ofst->AddState();
   ofst->SetStart(copy[s]);
@@ -271,9 +272,10 @@ void Prune(
     for (ArcIterator<Fst<Arc>> aiter(ifst, s); !aiter.Done(); aiter.Next()) {
       const auto &arc = aiter.Value();
       if (!opts.filter(arc)) continue;
-      const auto weight = Times(Times(idistance[s], arc.weight),
-                                arc.nextstate < fdistance->size() ?
-                                (*fdistance)[arc.nextstate] : Weight::Zero());
+      const auto weight =
+          Times(Times(idistance[s], arc.weight),
+                arc.nextstate < fdistance->size() ? (*fdistance)[arc.nextstate]
+                                                  : Weight::Zero());
       if (less(limit, weight)) continue;
       if ((opts.state_threshold != kNoStateId) &&
           (ofst->NumStates() >= opts.state_threshold)) {

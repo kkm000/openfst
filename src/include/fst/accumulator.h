@@ -22,6 +22,7 @@
 namespace fst {
 
 // This class accumulates arc weights using the semiring Plus().
+// Sum(w, aiter, begin, end) has time complexity O(begin - end).
 template <class A>
 class DefaultAccumulator {
  public:
@@ -56,6 +57,7 @@ class DefaultAccumulator {
 
 // This class accumulates arc weights using the log semiring Plus() assuming an
 // arc weight has a WeightConvert specialization to and from log64 weights.
+// Sum(w, aiter, begin, end) has time complexity O(begin - end).
 template <class A>
 class LogAccumulator {
  public:
@@ -194,6 +196,9 @@ class MutableFastLogAccumulatorData : public FastLogAccumulatorData {
 // arc weight has a WeightConvert specialization to and from log64 weights. The
 // member function Init(fst) has to be called to setup pre-computed weight
 // information.
+// Sum(w, aiter, begin, end) has time complexity O(arc_limit_) or O(arc_period_)
+// depending on whether the state has more than arc_limit_ arcs
+// Space complexity is O(CountStates(fst) + CountArcs(fst) / arc_period_).
 template <class A>
 class FastLogAccumulator {
  public:
@@ -457,7 +462,7 @@ class CacheLogAccumulatorData {
 // WeightConvert specialization to and from log64 weights. It is similar to the
 // FastLogAccumator. However here, the accumulated weights are pre-computed and
 // stored only for the states that are visited. The member function Init(fst)
-// has to be called to setup this accumulator.
+// has to be called to setup this accumulator.  Space complexity is O(gc_limit).
 template <class Arc>
 class CacheLogAccumulator {
  public:
@@ -553,9 +558,9 @@ class CacheLogAccumulator {
     auto pos = aiter->Position();
     if (weights_) {
       Extend(fst_->NumArcs(s_), aiter);
-      return std::lower_bound(weights_->begin() + pos + 1, weights_->end(),
-                              f, std::greater<double>()) -
-          weights_->begin() - 1;
+      return std::lower_bound(weights_->begin() + pos + 1, weights_->end(), f,
+                              std::greater<double>()) -
+             weights_->begin() - 1;
     } else {
       size_t n = 0;
       auto x = FloatLimits<double>::PosInfinity();
@@ -623,7 +628,6 @@ class CacheLogAccumulator {
       }
     }
   }
-
 
   const WeightConvert<Weight, Log64Weight> to_log_weight_{};
   const WeightConvert<Log64Weight, Weight> to_weight_{};

@@ -7,6 +7,7 @@
 #include <cstdint>
 
 #include <fst/types.h>
+#include <fst/log.h>
 
 #if defined(__BMI2__)  // Intel Bit Manipulation Instruction Set 2
 // PDEP requires BMI2; this is present starting with Haswell.
@@ -15,10 +16,14 @@
 
 namespace fst {
 // Returns the position (0-63) of the r-th 1 bit in v.
-// 1 <= r <= CountOnes(v) <= 64.  Therefore, v must not be 0.
+// 0 <= r < CountOnes(v) <= 64.  Therefore, v must not be 0.
 inline uint32 nth_bit(uint64 v, uint32 r) {
+  DCHECK_NE(v, 0);
+  DCHECK_LE(0, r);
+  DCHECK_LT(r, __builtin_popcountll(v));
+
   // PDEP example from https://stackoverflow.com/a/27453505
-  return __builtin_ctzll(_pdep_u64(uint64{1} << (r - 1), v));
+  return __builtin_ctzll(_pdep_u64(uint64{1} << r, v));
 }
 }  // namespace fst
 
@@ -27,7 +32,7 @@ inline uint32 nth_bit(uint64 v, uint32 r) {
 
 namespace fst {
 // Returns the position (0-63) of the r-th 1 bit in v.
-// 1 <= r <= CountOnes(v) <= 64.  Therefore, v must not be 0.
+// 0 <= r < CountOnes(v) <= 64.  Therefore, v must not be 0.
 uint32 nth_bit(uint64 v, uint32 r);
 }  // namespace fst
 
@@ -36,12 +41,12 @@ uint32 nth_bit(uint64 v, uint32 r);
 
 namespace fst {
 namespace internal {
-extern const uint64 kPrefixSumOverflow[65];
+extern const uint64 kPrefixSumOverflow[64];
 extern const uint8 kSelectInByte[2048];
 }  // namespace internal
 
 // Returns the position (0-63) of the r-th 1 bit in v.
-// 1 <= r <= CountOnes(v) <= 64.  Therefore, v must not be 0.
+// 0 <= r < CountOnes(v) <= 64.  Therefore, v must not be 0.
 //
 // This version is based on the paper "Broadword Implementation of
 // Rank/Select Queries" by Sebastiano Vigna, p. 5, Algorithm 2, with
@@ -51,6 +56,10 @@ inline uint32 nth_bit(const uint64 v, const uint32 r) {
   constexpr uint64 kOnesStep4 = 0x1111111111111111;
   constexpr uint64 kOnesStep8 = 0x0101010101010101;
   constexpr uint64 kMSBsStep8 = 0x80 * kOnesStep8;
+
+  DCHECK_NE(v, 0);
+  DCHECK_LE(0, r);
+  DCHECK_LT(r, __builtin_popcountll(v));
 
   uint64 s = v;
   s = s - ((s >> 1) & (0x5 * kOnesStep4));
@@ -62,9 +71,9 @@ inline uint32 nth_bit(const uint64 v, const uint32 r) {
   // That is, byte i contains the popcounts of bytes <= i.
   uint64 byte_sums = s * kOnesStep8;
 
-  // kPrefixSumOverflow[r] == (0x80 - r) * kOnesStep8, so the high bit is
-  // still set if byte_sums - r >= 0, or byte_sums >= r.  The first one set
-  // is in the byte with the sum larger than or equal to r (since r is 1-based),
+  // kPrefixSumOverflow[r] == (0x7F - r) * kOnesStep8, so the high bit is
+  // still set if byte_sums - r > 0, or byte_sums > r.  The first one set
+  // is in the byte with the sum larger than r (since r is 0-based),
   // so this is the byte we need.
   const uint64 b = (byte_sums + internal::kPrefixSumOverflow[r]) & kMSBsStep8;
   // The first bit set is the high bit in the byte, so
@@ -75,8 +84,7 @@ inline uint32 nth_bit(const uint64 v, const uint32 r) {
   // The top byte contains the whole-word popcount; we never need that.
   byte_sums <<= 8;
   // Paper uses reinterpret_cast<uint8 *>; use shift/mask instead.
-  // Adjust for fact that r is 1-based.
-  const int rank_in_byte = r - 1 - (byte_sums >> shift) & 0xFF;
+  const int rank_in_byte = r - (byte_sums >> shift) & 0xFF;
   return shift +
          internal::kSelectInByte[(rank_in_byte << 8) + ((v >> shift) & 0xFF)];
 }

@@ -29,7 +29,7 @@ class RhoFstMatcherData {
       : rho_label_(data.rho_label_), rewrite_mode_(data.rewrite_mode_) {}
 
   static RhoFstMatcherData<Label> *Read(std::istream &istrm,
-                                    const FstReadOptions &read) {
+                                        const FstReadOptions &read) {
     auto *data = new RhoFstMatcherData<Label>();
     ReadType(istrm, &data->rho_label_);
     int32 rewrite_mode;

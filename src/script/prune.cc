@@ -9,8 +9,8 @@ namespace fst {
 namespace script {
 
 void Prune(const FstClass &ifst, MutableFstClass *ofst,
-           const WeightClass &weight_threshold,
-           int64 state_threshold, float delta) {
+           const WeightClass &weight_threshold, int64 state_threshold,
+           float delta) {
   if (!internal::ArcTypesMatch(ifst, *ofst, "Prune") ||
       !ofst->WeightTypesMatch(weight_threshold, "Prune")) {
     ofst->SetProperties(kError, kError);

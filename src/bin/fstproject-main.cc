@@ -11,10 +11,11 @@
 #include <fst/script/getters.h>
 #include <fst/script/project.h>
 
-DECLARE_bool(project_output);
+DECLARE_string(project_type);
 
 int fstproject_main(int argc, char **argv) {
   namespace s = fst::script;
+  using fst::ProjectType;
   using fst::script::MutableFstClass;
 
   std::string usage =
@@ -38,7 +39,14 @@ int fstproject_main(int argc, char **argv) {
   std::unique_ptr<MutableFstClass> fst(MutableFstClass::Read(in_name, true));
   if (!fst) return 1;
 
-  s::Project(fst.get(), s::GetProjectType(FLAGS_project_output));
+  ProjectType project_type;
+  if (!s::GetProjectType(FLAGS_project_type, &project_type)) {
+    LOG(ERROR) << argv[0] << ": Unknown or unsupported project type: "
+               << FLAGS_project_type;
+    return 1;
+  }
+
+  s::Project(fst.get(), project_type);
 
   return !fst->Write(out_name);
 }

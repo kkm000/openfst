@@ -34,7 +34,7 @@ int farcreate_main(int argc, char **argv) {
     for (int i = 1; i < argc - 1; ++i) {
       std::ifstream istrm(argv[i]);
       std::string str;
-      while (getline(istrm, str)) in_sources.push_back(str);
+      while (std::getline(istrm, str)) in_sources.push_back(str);
     }
   } else {
     for (int i = 1; i < argc - 1; ++i)
@@ -55,7 +55,11 @@ int farcreate_main(int argc, char **argv) {
   const auto arc_type = s::LoadArcTypeFromFst(in_sources[0]);
   if (arc_type.empty()) return 1;
 
-  const auto far_type = s::GetFarType(FLAGS_far_type);
+  fst::FarType far_type;
+  if (!s::GetFarType(FLAGS_far_type, &far_type)) {
+    LOG(ERROR) << "Unknown or unsupported FAR type: " << FLAGS_far_type;
+    return 1;
+  }
 
   s::FarCreate(in_sources, out_source, arc_type, FLAGS_generate_keys, far_type,
                FLAGS_key_prefix, FLAGS_key_suffix);

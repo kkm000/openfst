@@ -239,8 +239,8 @@ class SequenceComposeFilter {
 
   FilterState FilterArc(Arc *arc1, Arc *arc2) const {
     if (arc1->olabel == kNoLabel) {
-      return alleps1_ ? FilterState::NoState() : noeps1_ ? FilterState(0)
-                                                         : FilterState(1);
+      return alleps1_ ? FilterState::NoState()
+                      : noeps1_ ? FilterState(0) : FilterState(1);
     } else if (arc2->ilabel == kNoLabel) {
       return fs_ != FilterState(0) ? FilterState::NoState() : FilterState(0);
     } else {
@@ -263,8 +263,8 @@ class SequenceComposeFilter {
   StateId s1_;      // Current fst1_ state.
   StateId s2_;      // Current fst2_ state.
   FilterState fs_;  // Current filter state.
-  bool alleps1_;   // Only epsilons (and non-final) leaving s1_?
-  bool noeps1_;    // No epsilons leaving s1_?
+  bool alleps1_;    // Only epsilons (and non-final) leaving s1_?
+  bool noeps1_;     // No epsilons leaving s1_?
 };
 
 // This filter requires epsilons on FST2 to be read before epsilons on FST1.
@@ -318,8 +318,8 @@ class AltSequenceComposeFilter {
 
   FilterState FilterArc(Arc *arc1, Arc *arc2) const {
     if (arc2->ilabel == kNoLabel) {
-      return alleps2_ ? FilterState::NoState() : noeps2_ ? FilterState(0)
-                                                         : FilterState(1);
+      return alleps2_ ? FilterState::NoState()
+                      : noeps2_ ? FilterState(0) : FilterState(1);
     } else if (arc1->olabel == kNoLabel) {
       return fs_ == FilterState(1) ? FilterState::NoState() : FilterState(0);
     } else {

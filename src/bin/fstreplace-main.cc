@@ -34,9 +34,9 @@ void Cleanup(std::vector<std::pair<int64, const FstClass *>> *pairs) {
 
 int fstreplace_main(int argc, char **argv) {
   namespace s = fst::script;
+  using fst::ReplaceLabelType;
   using fst::script::FstClass;
   using fst::script::VectorFstClass;
-  using fst::ReplaceLabelType;
 
   std::string usage =
       "Recursively replaces FST arcs with other FST(s).\n\n"

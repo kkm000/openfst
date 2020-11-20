@@ -27,9 +27,10 @@ DECLARE_bool(allow_negative_labels);
 
 int fstrelabel_main(int argc, char **argv) {
   namespace s = fst::script;
-  using fst::script::MutableFstClass;
+  using fst::ReadLabelPairs;
   using fst::SymbolTable;
   using fst::SymbolTableTextOptions;
+  using fst::script::MutableFstClass;
 
   std::string usage =
       "Relabels the input and/or the output labels of the FST.\n\n"
@@ -78,25 +79,23 @@ int fstrelabel_main(int argc, char **argv) {
         FLAGS_relabel_osymbols.empty()
             ? nullptr
             : SymbolTable::ReadText(FLAGS_relabel_osymbols, opts));
-    s::Relabel(fst.get(),
-               old_isymbols ? old_isymbols.get() : fst->InputSymbols(),
-               relabel_isymbols.get(), FLAGS_unknown_isymbol,
-               attach_new_isymbols,
-               old_osymbols ? old_osymbols.get() : fst->OutputSymbols(),
-               relabel_osymbols.get(), FLAGS_unknown_osymbol,
-               attach_new_osymbols);
+    s::Relabel(
+        fst.get(), old_isymbols ? old_isymbols.get() : fst->InputSymbols(),
+        relabel_isymbols.get(), FLAGS_unknown_isymbol, attach_new_isymbols,
+        old_osymbols ? old_osymbols.get() : fst->OutputSymbols(),
+        relabel_osymbols.get(), FLAGS_unknown_osymbol, attach_new_osymbols);
   } else {
     // Reads in relabeling pairs.
     std::vector<std::pair<int64, int64>> ipairs;
     if (!FLAGS_relabel_ipairs.empty()) {
-      if (!fst::ReadLabelPairs(FLAGS_relabel_ipairs, &ipairs,
-                                   FLAGS_allow_negative_labels))
+      if (!ReadLabelPairs(FLAGS_relabel_ipairs, &ipairs,
+                          FLAGS_allow_negative_labels))
         return 1;
     }
     std::vector<std::pair<int64, int64>> opairs;
     if (!FLAGS_relabel_opairs.empty()) {
-      if (!fst::ReadLabelPairs(FLAGS_relabel_opairs, &opairs,
-                                   FLAGS_allow_negative_labels))
+      if (!ReadLabelPairs(FLAGS_relabel_opairs, &opairs,
+                          FLAGS_allow_negative_labels))
         return 1;
     }
     s::Relabel(fst.get(), ipairs, opairs);

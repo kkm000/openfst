@@ -22,6 +22,4 @@ DEFINE_bool(initial_symbols, true,
 
 int farprintstrings_main(int argc, char **argv);
 
-int main(int argc, char **argv) {
-  return farprintstrings_main(argc, argv);
-}
+int main(int argc, char **argv) { return farprintstrings_main(argc, argv); }

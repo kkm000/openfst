@@ -21,10 +21,10 @@ DECLARE_string(queue_type);
 
 int fstshortestdistance_main(int argc, char **argv) {
   namespace s = fst::script;
+  using fst::AUTO_QUEUE;
+  using fst::QueueType;
   using fst::script::FstClass;
   using fst::script::WeightClass;
-  using fst::QueueType;
-  using fst::AUTO_QUEUE;
 
   std::string usage = "Finds shortest distance(s) in an FST.\n\n  Usage: ";
   usage += argv[0];

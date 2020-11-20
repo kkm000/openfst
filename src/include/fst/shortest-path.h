@@ -150,7 +150,7 @@ class FirstPathSelect<S, W, NaturalAStarQueue<S, W, Estimate>> {
   using Queue = NaturalAStarQueue<S, W, Estimate>;
 
   FirstPathSelect(const Queue &state_queue)
-    : estimate_(state_queue.GetCompare().GetEstimate()) {}
+      : estimate_(state_queue.GetCompare().GetEstimate()) {}
 
   bool operator()(S s, W d, W f) const {
     return f == Plus(Times(d, estimate_(s)), f);

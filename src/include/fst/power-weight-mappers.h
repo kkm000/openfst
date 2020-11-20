@@ -60,8 +60,9 @@ class ProjectPowerWeightMapper {
   explicit ProjectPowerWeightMapper(
       Index from_index = 0, Index to_index = 0,
       const ComponentWeight &default_weight = ComponentWeight::Zero())
-    : from_index_(from_index), to_index_(to_index),
-      default_weight_(default_weight) {}
+      : from_index_(from_index),
+        to_index_(to_index),
+        default_weight_(default_weight) {}
 
   PowerWeightT operator()(const PowerWeightT &w) const {
     return PowerWeightT(to_index_, w.Value(from_index_), default_weight_);

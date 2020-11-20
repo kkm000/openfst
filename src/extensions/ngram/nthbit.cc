@@ -218,8 +218,10 @@ static const uint8 nth_bit_bit_pos[8][256] = {
     }};
 
 uint32 nth_bit(const uint64 v, uint32 r) {
-  // nth_bit uses 1-origin for r, but code below is more natural with 0-origin.
-  r--;
+  DCHECK_NE(v, 0);
+  DCHECK_LE(0, r);
+  DCHECK_LT(r, __builtin_popcountll(v));
+
   uint32 next_byte = v & 255;
   uint32 byte_popcount = nth_bit_bit_count[next_byte];
   if (r < byte_popcount) return nth_bit_bit_pos[r][next_byte];
@@ -258,9 +260,9 @@ uint32 nth_bit(const uint64 v, uint32 r) {
 // These tables are generated using:
 //
 //  constexpr uint64 kOnesStep8 = 0x0101010101010101;
-//  printf("const uint64 kPrefixSumOverflow[65] = {\n");
-//  for (int k = 0; k <= 64; ++k) {
-//    printf("  0x%" FST_LL_FORMAT "x,\n",  (0x80 - k) * kOnesStep8);
+//  printf("const uint64 kPrefixSumOverflow[64] = {\n");
+//  for (int k = 0; k < 64; ++k) {
+//    printf("  0x%" FST_LL_FORMAT "x,\n",  (0x7F - k) * kOnesStep8);
 //  }
 //  printf("};\n");
 //
@@ -279,8 +281,7 @@ uint32 nth_bit(const uint64 v, uint32 r) {
 namespace internal {
 
 // clang-format off
-const uint64 kPrefixSumOverflow[65] = {
-  0x8080808080808080,
+const uint64 kPrefixSumOverflow[64] = {
   0x7f7f7f7f7f7f7f7f,
   0x7e7e7e7e7e7e7e7e,
   0x7d7d7d7d7d7d7d7d,
@@ -487,7 +488,7 @@ const uint8 kSelectInByte[8 * 256] = {
 // clang-format on
 
 }  // namespace internal
-#endif  // 64-bit, non-BMI2
-#endif  // !defined(__BMI2__)
+#endif                        // 64-bit, non-BMI2
+#endif                        // !defined(__BMI2__)
 
 }  // namespace fst

@@ -21,8 +21,8 @@ struct ReplaceOptions {
   const ReplaceLabelType return_label_type;  // How to label return arc.
   const int64 return_label;                  // Specifies return arc label.
 
-  explicit ReplaceOptions(int64 root,
-      ReplaceLabelType call_label_type = REPLACE_LABEL_INPUT,
+  explicit ReplaceOptions(
+      int64 root, ReplaceLabelType call_label_type = REPLACE_LABEL_INPUT,
       ReplaceLabelType return_label_type = REPLACE_LABEL_NEITHER,
       int64 return_label = 0)
       : root(root),
@@ -57,7 +57,7 @@ void Replace(ReplaceArgs *args) {
     ofst->SetProperties(kError, kError);
     return;
   }
-  typed_opts.gc = true;     // Caching options to speed up batch copy.
+  typed_opts.gc = true;  // Caching options to speed up batch copy.
   typed_opts.gc_limit = 0;
   *ofst = rfst;
 }

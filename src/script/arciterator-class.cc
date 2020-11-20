@@ -15,8 +15,8 @@ ArcIteratorClass::ArcIteratorClass(const FstClass &fst, int64 s)
                                              fst.ArcType(), &args);
 }
 
-MutableArcIteratorClass::MutableArcIteratorClass(MutableFstClass *fst,
-                                                 int64 s) : impl_(nullptr) {
+MutableArcIteratorClass::MutableArcIteratorClass(MutableFstClass *fst, int64 s)
+    : impl_(nullptr) {
   InitMutableArcIteratorClassArgs args(fst, s, this);
   Apply<Operation<InitMutableArcIteratorClassArgs>>(
       "InitMutableArcIteratorClass", fst->ArcType(), &args);

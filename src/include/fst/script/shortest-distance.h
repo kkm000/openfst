@@ -9,6 +9,7 @@
 
 #include <fst/queue.h>
 #include <fst/shortest-distance.h>
+#include <fst/script/arg-packs.h>
 #include <fst/script/fst-class.h>
 #include <fst/script/prune.h>
 #include <fst/script/script-impl.h>
@@ -201,12 +202,26 @@ void ShortestDistance(ShortestDistanceArgs2 *args) {
   internal::CopyWeights(typed_distance, std::get<1>(*args));
 }
 
+using ShortestDistanceInnerArgs3 = std::tuple<const FstClass &, double>;
+
+using ShortestDistanceArgs3 =
+    WithReturnValue<WeightClass, ShortestDistanceInnerArgs3>;
+
+template <class Arc>
+void ShortestDistance(ShortestDistanceArgs3 *args) {
+  const Fst<Arc> &fst = *std::get<0>(args->args).GetFst<Arc>();
+  args->retval = WeightClass(ShortestDistance(fst, std::get<1>(args->args)));
+}
+
 void ShortestDistance(const FstClass &fst, std::vector<WeightClass> *distance,
                       const ShortestDistanceOptions &opts);
 
 void ShortestDistance(const FstClass &ifst, std::vector<WeightClass> *distance,
                       bool reverse = false,
                       double delta = fst::kShortestDelta);
+
+WeightClass ShortestDistance(const FstClass &ifst,
+                             double delta = fst::kShortestDelta);
 
 }  // namespace script
 }  // namespace fst

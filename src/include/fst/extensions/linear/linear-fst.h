@@ -334,8 +334,8 @@ inline void LinearTaggerFstImpl<A>::ExpandArcs(StateId s,
                        next_stub_));
   } else {
     std::pair<typename std::vector<typename A::Label>::const_iterator,
-              typename std::vector<typename A::Label>::const_iterator> range =
-        data_->PossibleOutputLabels(obs_ilabel);
+              typename std::vector<typename A::Label>::const_iterator>
+        range = data_->PossibleOutputLabels(obs_ilabel);
     for (typename std::vector<typename A::Label>::const_iterator it =
              range.first;
          it != range.second; ++it)
@@ -360,8 +360,8 @@ inline void LinearTaggerFstImpl<A>::AppendArcs(StateId /*s*/,
         MakeArc(state, ilabel, LinearFstData<A>::kStartOfSentence, next_stub_));
   } else {
     std::pair<typename std::vector<typename A::Label>::const_iterator,
-              typename std::vector<typename A::Label>::const_iterator> range =
-        data_->PossibleOutputLabels(obs_ilabel);
+              typename std::vector<typename A::Label>::const_iterator>
+        range = data_->PossibleOutputLabels(obs_ilabel);
     for (typename std::vector<typename A::Label>::const_iterator it =
              range.first;
          it != range.second; ++it)
@@ -389,10 +389,12 @@ void LinearTaggerFstImpl<A>::Expand(StateId s) {
 
   // Non-epsilon input when we haven't flushed
   if (delay_ == 0 ||
-      *(BufferEnd(state_stub_) - 1) != LinearFstData<A>::kEndOfSentence)
+      *(BufferEnd(state_stub_) - 1) != LinearFstData<A>::kEndOfSentence) {
     for (Label ilabel = data_->MinInputLabel();
-         ilabel <= data_->MaxInputLabel(); ++ilabel)
+         ilabel <= data_->MaxInputLabel(); ++ilabel) {
       ExpandArcs(s, state_stub_, ilabel, &next_stub_);
+    }
+  }
 
   SetArcs(s);
 }

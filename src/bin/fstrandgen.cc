@@ -8,7 +8,7 @@ DEFINE_int32(max_length, std::numeric_limits<int32>::max(),
 DEFINE_int32(npath, 1, "Number of paths to generate");
 DEFINE_uint64(seed, std::random_device()(), "Random seed");
 DEFINE_string(select, "uniform",
-              "Selection type: one of: "
+              "Selection type: one of "
               " \"uniform\", \"log_prob\" (when appropriate),"
               " \"fast_log_prob\" (when appropriate)");
 DEFINE_bool(weighted, false,

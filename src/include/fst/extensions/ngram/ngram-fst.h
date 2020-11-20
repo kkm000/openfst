@@ -244,15 +244,15 @@ class NGramFstImpl : public FstImpl<A> {
   StateId Transition(const std::vector<Label> &context, Label future) const;
 
   // Properties always true for this Fst class.
-  static const uint64 kStaticProperties =
+  static constexpr uint64 kStaticProperties =
       kAcceptor | kIDeterministic | kODeterministic | kEpsilons | kIEpsilons |
       kOEpsilons | kILabelSorted | kOLabelSorted | kWeighted | kCyclic |
       kInitialAcyclic | kNotTopSorted | kAccessible | kCoAccessible |
       kNotString | kExpanded;
   // Current file format version.
-  static const int kFileVersion = 4;
+  static constexpr int kFileVersion = 4;
   // Minimum file format version supported.
-  static const int kMinFileVersion = 4;
+  static constexpr int kMinFileVersion = 4;
 
   std::unique_ptr<MappedFile> data_region_;
   const char *data_ = nullptr;
@@ -272,8 +272,12 @@ class NGramFstImpl : public FstImpl<A> {
   const Weight *backoff_ = nullptr;
   const Weight *final_probs_ = nullptr;
   const Weight *future_probs_ = nullptr;
+  // Uses all operations.
   BitmapIndex context_index_;
+  // Uses Select0 and Rank1.
   BitmapIndex future_index_;
+  // Uses Get and Rank1.  This wastes space if there are no or few final
+  // states, but it's also small.  TODO(jrosenstock): Look at EliasFanoArray.
   BitmapIndex final_index_;
 };
 
@@ -731,8 +735,12 @@ inline void NGramFstImpl<A>::Init(const char *data, bool owned,
   offset += num_final_ * sizeof(*final_probs_);
   future_probs_ = reinterpret_cast<const Weight *>(data_ + offset);
 
-  context_index_.BuildIndex(context_, context_bits);
-  future_index_.BuildIndex(future_, future_bits);
+  context_index_.BuildIndex(context_, context_bits,
+                            /*enable_select_0_index=*/true,
+                            /*enable_select_1_index=*/true);
+  future_index_.BuildIndex(future_, future_bits,
+                           /*enable_select_0_index=*/true,
+                           /*enable_select_1_index=*/false);
   final_index_.BuildIndex(final_, num_states_);
 
   select_root_ = context_index_.Select0s(0);

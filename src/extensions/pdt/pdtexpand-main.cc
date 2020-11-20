@@ -22,10 +22,10 @@ DECLARE_string(weight);
 
 int pdtexpand_main(int argc, char **argv) {
   namespace s = fst::script;
+  using fst::ReadLabelPairs;
   using fst::script::FstClass;
   using fst::script::VectorFstClass;
   using fst::script::WeightClass;
-  using fst::ReadLabelPairs;
 
   std::string usage = "Expand a (bounded-stack) PDT as an FST.\n\n  Usage: ";
   usage += argv[0];

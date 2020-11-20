@@ -454,11 +454,12 @@ struct PdtComposeOptions {
 // interpreted as a PDT, the parens must balance on a path (see PdtExpand()).
 // The open-close parenthesis label pairs are passed using the parens argument.
 template <class Arc>
-void Compose(const Fst<Arc> &ifst1,
-             const std::vector<
-                 std::pair<typename Arc::Label, typename Arc::Label>> &parens,
-             const Fst<Arc> &ifst2, MutableFst<Arc> *ofst,
-             const PdtComposeOptions &opts = PdtComposeOptions()) {
+void Compose(
+    const Fst<Arc> &ifst1,
+    const std::vector<std::pair<typename Arc::Label, typename Arc::Label>>
+        &parens,
+    const Fst<Arc> &ifst2, MutableFst<Arc> *ofst,
+    const PdtComposeOptions &opts = PdtComposeOptions()) {
   bool expand = opts.filter_type != PAREN_FILTER;
   bool keep_parens = opts.filter_type != EXPAND_FILTER;
   PdtComposeFstOptions<Arc, true> copts(ifst1, parens, ifst2, expand,
@@ -474,11 +475,12 @@ void Compose(const Fst<Arc> &ifst1,
 // interpreted as a PDT, the parens must balance on a path (see ExpandFst()).
 // The open-close parenthesis label pairs are passed using the parens argument.
 template <class Arc>
-void Compose(const Fst<Arc> &ifst1, const Fst<Arc> &ifst2,
-             const std::vector<
-                 std::pair<typename Arc::Label, typename Arc::Label>> &parens,
-             MutableFst<Arc> *ofst,
-             const PdtComposeOptions &opts = PdtComposeOptions()) {
+void Compose(
+    const Fst<Arc> &ifst1, const Fst<Arc> &ifst2,
+    const std::vector<std::pair<typename Arc::Label, typename Arc::Label>>
+        &parens,
+    MutableFst<Arc> *ofst,
+    const PdtComposeOptions &opts = PdtComposeOptions()) {
   bool expand = opts.filter_type != PAREN_FILTER;
   bool keep_parens = opts.filter_type != EXPAND_FILTER;
   PdtComposeFstOptions<Arc, false> copts(ifst1, ifst2, parens, expand,

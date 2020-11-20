@@ -28,10 +28,10 @@ DECLARE_bool(verify);
 
 int fstsymbols_main(int argc, char **argv) {
   namespace s = fst::script;
-  using fst::script::MutableFstClass;
   using fst::ReadLabelPairs;
   using fst::SymbolTable;
   using fst::SymbolTableTextOptions;
+  using fst::script::MutableFstClass;
 
   std::string usage =
       "Performs operations (set, clear, relabel) on the symbol"

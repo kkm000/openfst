@@ -5,8 +5,8 @@
 #include <fst/register.h>
 
 using fst::LinearClassifierFst;
-using fst::StdArc;
 using fst::LogArc;
+using fst::StdArc;
 
 REGISTER_FST(LinearClassifierFst, StdArc);
 REGISTER_FST(LinearClassifierFst, LogArc);

@@ -33,9 +33,9 @@ DECLARE_bool(allow_negative_labels);
 
 int fstdraw_main(int argc, char **argv) {
   namespace s = fst::script;
-  using fst::script::FstClass;
   using fst::SymbolTable;
   using fst::SymbolTableTextOptions;
+  using fst::script::FstClass;
 
   std::string usage = "Prints out binary FSTs in dot text format.\n\n  Usage: ";
   usage += argv[0];

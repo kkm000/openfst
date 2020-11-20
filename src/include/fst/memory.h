@@ -70,7 +70,7 @@ class MemoryArenaImpl : public MemoryArenaBase {
 
  private:
   const size_t block_size_;  // Default block size in bytes.
-  size_t block_pos_;   // Current position in block in bytes.
+  size_t block_pos_;         // Current position in block in bytes.
   std::list<std::unique_ptr<char[]>> blocks_;  // List of allocated blocks.
 };
 

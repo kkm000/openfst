@@ -9,25 +9,68 @@
 
 #include <fst/compat.h>
 #include <fst/types.h>
+#include <fst/log.h>
 
 // This class is a bitstring storage class with an index that allows
-// seeking to the Nth set or clear bit in time O(Log(N)) where N is
-// the length of the bit vector.  In addition, it allows counting set or
-// clear bits over ranges in constant time.
+// seeking to the Nth set or clear bit in time O(Log(N)) (or
+// O(log(1/density) if the relevant select index is enabled) where N is the
+// length of the bit vector, and density is the block density of zeros/ones
+// (for Select0/Select1 respectively).  The block density is for block i is
+// B / span_i, where B is the block size in bits (512); and span_i is
+// Select(B * (i + 1)) - Select(B * i), the range of the bitstring that
+// select index block i indexes.  That is, B 0 (or 1) bits occur over
+// span_i bits of the bit string.
 //
-// This is accomplished by maintaining an "secondary" index of limited
-// size in bits that maintains a running count of the number of bits set
-// in each block of bitmap data.  A block is defined as the number of
-// uint64 values that can fit in the secondary index before an overflow
-// occurs.
+// To turn this into the "standard"constant time select, there would need
+// to be a span size threshold.  Block spanning more than this would need
+// to have the position of each bit explicitly recorded.  8k is a typical
+// value for this threshold, but I saw no spans larger than ~6k.
 //
-// To handle overflows, a "primary" index containing a running count of
-// bits set in each block is created using the type uint32.  Therefore,
+// In addition, this class allows counting set or clear bits over ranges in
+// constant time.
+//
+// This is accomplished by maintaining an index of the running popcounts
+// of the bitstring.  The index is divided into blocks that cover the
+// size of a cache line (8 64-bit words).  Each entry has one absolute count
+// of all the 1s that appear before the block and 7 relative counts since the
+// beginning of the block.
+//
+// The bitstring itself is stored as uint64s:
+// uint64 *bits_;
+//
+// The rank index looks like
+// struct RankIndexEntry {
+//   uint32 absolute_ones_count();
+//   uint32 relative_ones_count_1();
+//   ...
+//   uint32 relative_ones_count_7();
+// };
+// vector<RankIndexEntry> rank_index_;
+//
+// Where rank_index_[i].absolute_ones_count() == Rank1(512 * i), and
+// for k in 1 .. 7:
+// rank_index_[i].relative_ones_count_k() ==
+//     Rank1(512 * i + 64 * k) - Rank1(512 * i).
+//
+// This index is queried directly for Rank0 and Rank1 and binary searched
+// for Select0 and Select1.  If configured in the constructor or via
+// BuildIndex, additional indices for Select0 and Select1 can be built
+// to reduce these operations to O(log(1/density)) as explained above.
+//
+// The select indexes are stored as
+// vector<uint32> select_0_index_;
+// where
+// select_0_index_[i] == Select0(512 * i).
+// Similarly for select_1_index_.
+//
+// To save space, the absolute counts are stored as uint32.  Therefore,
 // only bitstrings with < 2**32 ones are supported.
 //
-// For each 64 bits of input there are 16 bits of secondary index and
-// 32/kSecondaryBlockSize == 32/1023 bits of primary index,
-// for a 25.05% space overhead.
+// For each 64 bytes of input (8 8-byte words) there are 12 bytes of index
+// (4 bytes for the absolute count and 2 * 4 bytes for the relative counts)
+// for a 18.75% space overhead.
+//
+// The select indices have 6.25% overhead together.
 
 namespace fst {
 
@@ -38,16 +81,20 @@ class BitmapIndex {
   }
 
   BitmapIndex() = default;
-  BitmapIndex(BitmapIndex &&) = default;
-  BitmapIndex &operator=(BitmapIndex &&) = default;
+  BitmapIndex(BitmapIndex&&) = default;
+  BitmapIndex& operator=(BitmapIndex&&) = default;
 
   // Convenience constructor to avoid a separate BuildIndex call.
-  BitmapIndex(const uint64 *bits, std::size_t num_bits) {
-    BuildIndex(bits, num_bits);
+  BitmapIndex(const uint64* bits, std::size_t num_bits,
+              bool enable_select_0_index = false,
+              bool enable_select_1_index = false) {
+    BuildIndex(bits, num_bits, enable_select_0_index, enable_select_1_index);
   }
 
-  bool Get(size_t index) const {
-    return (bits_[index >> kStorageLogBitSize] &
+  bool Get(size_t index) const { return Get(bits_, index); }
+
+  static bool Get(const uint64* bits, size_t index) {
+    return (bits[index >> kStorageLogBitSize] &
             (kOne << (index & kStorageBlockMask))) != 0;
   }
 
@@ -64,20 +111,19 @@ class BitmapIndex {
   size_t ArraySize() const { return StorageSize(num_bits_); }
 
   // Number of bytes used to store the bit vector.
-  size_t ArrayBytes() const {
-    return ArraySize() * sizeof(bits_[0]);
-  }
+  size_t ArrayBytes() const { return ArraySize() * sizeof(bits_[0]); }
 
-  // Number of bytes used to store the primary and secondary indices.
+  // Number of bytes used to store the rank index.
   size_t IndexBytes() const {
-    return (primary_index_.size() * sizeof(primary_index_[0]) +
-            secondary_index_.size() * sizeof(secondary_index_[0]));
+    return (rank_index_.size() * sizeof(rank_index_[0]) +
+            select_0_index_.size() * sizeof(select_0_index_[0]) +
+            select_1_index_.size() * sizeof(select_1_index_[0]));
   }
 
   // Returns the number of one bits in the bitmap
   size_t GetOnesCount() const {
-    // Empty bitmaps still have a non-empty primary index.
-    return primary_index_.back();
+    // We keep an extra entry with the total count.
+    return rank_index_.back().absolute_ones_count();
   }
 
   // Returns the number of one bits in positions 0 to limit - 1.
@@ -95,7 +141,7 @@ class BitmapIndex {
   size_t Rank0(size_t end) const { return end - Rank1(end); }
 
   // Returns the number of zero bits in the range start to end - 1.
-  // REQUIRES: limit <= Bits()
+  // REQUIRES: start <= limit <= Bits()
   size_t GetZeroesCountInRange(size_t start, size_t end) const {
     return end - start - GetOnesCountInRange(start, end);
   }
@@ -104,6 +150,8 @@ class BitmapIndex {
   // is set.  0 <= begin <= end <= Bits() is required.
   //
   bool TestRange(size_t start, size_t end) const {
+    // Rank1 will DCHECK the other requirements.
+    DCHECK_LE(start, end);
     return Rank1(end) > Rank1(start);
   }
 
@@ -122,77 +170,160 @@ class BitmapIndex {
   // Rebuilds from index for the associated Bitmap, should be called
   // whenever changes have been made to the Bitmap or else behavior
   // of the indexed bitmap methods will be undefined.
-  void BuildIndex(const uint64* bits, size_t num_bits);
+  void BuildIndex(const uint64* bits, size_t num_bits,
+                  bool enable_select_0_index = false,
+                  bool enable_select_1_index = false);
 
-  // the secondary index accumulates counts until it can possibly overflow
-  // this constant computes the number of uint64 units that can fit into
-  // units the size of uint16.
-  static const uint64 kOne = 1;
-  static const uint32 kStorageBitSize = 64;
-  static const uint32 kStorageLogBitSize = 6;
-  // Number of secondary index entries per primary index entry.
-  static const uint32 kSecondaryBlockSize =
-      ((1 << 16) - 1) >> kStorageLogBitSize;
+  static constexpr uint64 kOne = 1;
+  static constexpr uint32 kStorageBitSize = 64;
+  static constexpr uint32 kStorageLogBitSize = 6;
 
  private:
-  static const uint32 kStorageBlockMask = kStorageBitSize - 1;
+  static constexpr uint32 kUnitsPerRankIndexEntry = 8;
+  static constexpr uint32 kBitsPerRankIndexEntry =
+      kUnitsPerRankIndexEntry * kStorageBitSize;
+  static constexpr uint32 kStorageBlockMask = kStorageBitSize - 1;
 
-  // returns, from the index, the count of ones up to array_index
-  size_t get_index_ones_count(size_t array_index) const;
+  // TODO(jrosenstock): benchmark different values here.
+  // It's reasonable that these are the same since density is typically around
+  // 1/2.
+  static constexpr uint32 kBitsPerSelect0Block = 512;
+  static constexpr uint32 kBitsPerSelect1Block = 512;
 
-  // because the indexes, both primary and secondary, contain a running
-  // count of the population of one bits contained in [0,i), there is
-  // no reason to have an element in the zeroth position as this value would
-  // necessarily be zero.  (The bits are indexed in a zero based way.)  Thus
-  // we don't store the 0th element in either index for non-empty bitmaps.
-  // For empty bitmaps, the 0 is stored for the primary index, but not the
-  // secondary index.  Both of the following functions, if greater than 0,
-  // must be decremented by one before retrieving the value from the
-  // corresponding array.
-  // returns the 1 + the block that contains the bitindex in question
-  // the inverted version works the same but looks for zeros using an inverted
-  // view of the index
-  size_t find_primary_block(size_t bit_index) const;
+  // If this many or fewer RankIndexEntry blocks need to be searched by
+  // FindRankIndexEntry use a linear search instead of a binary search.
+  // FindInvertedRankIndexEntry always uses binary search, since linear
+  // search never showed improvements on benchmarks.  The value of 8 was
+  // faster than smaller values on benchmarks, but I do not feel comfortable
+  // raising it because there are very few times a higher value would
+  // make a difference.  Thus, whether a higher value helps or hurts is harder
+  // to measure.  TODO(jrosenstock): Try to measure with low bit density.
+  static constexpr uint32 kMaxLinearSearchBlocks = 8;
 
-  size_t find_inverted_primary_block(size_t bit_index) const;
+  // A RankIndexEntry covers a block of 8 64-bit words (one cache line on
+  // x86_64 and ARM).  It consists of an absolute count of all the 1s that
+  // appear before this block, and 7 relative counts for the 1s within
+  // the block.  relative_ones_count_k = popcount(block[0:k]).
+  // The relative counts are stored in bitfields.
+  // A RankIndexEntry takes 12 bytes, for 12/64 = 18.75% overhead.
+  // See also documentation at the top of the file.
+  class RankIndexEntry {
+   public:
+    RankIndexEntry()
+        : absolute_ones_count_(0),
+          relative_ones_count_1_(0),
+          relative_ones_count_2_(0),
+          relative_ones_count_3_(0),
+          relative_ones_count_4_(0),
+          relative_ones_count_5_(0),
+          relative_ones_count_6_(0),
+          relative_ones_count_7_(0) {}
 
-  // similarly, the secondary index (which resets its count to zero at
-  // the end of every kSecondaryBlockSize entries) does not store the element
-  // at 0.  Note that the rem_bit_index parameter is the number of bits
-  // within the secondary block, after the bits accounted for by the primary
-  // block have been removed (i.e. the remaining bits)  And, because we
-  // reset to zero with each new block, there is no need to store those
-  // actual zeros.
-  // returns 1 + the secondary block that contains the bitindex in question
-  size_t find_secondary_block(size_t block, size_t rem_bit_index) const;
+    uint32 absolute_ones_count() const { return absolute_ones_count_; }
+    uint32 relative_ones_count_1() const { return relative_ones_count_1_; }
+    uint32 relative_ones_count_2() const { return relative_ones_count_2_; }
+    uint32 relative_ones_count_3() const { return relative_ones_count_3_; }
+    uint32 relative_ones_count_4() const { return relative_ones_count_4_; }
+    uint32 relative_ones_count_5() const { return relative_ones_count_5_; }
+    uint32 relative_ones_count_6() const { return relative_ones_count_6_; }
+    uint32 relative_ones_count_7() const { return relative_ones_count_7_; }
 
-  size_t find_inverted_secondary_block(size_t block,
-                                       size_t rem_bit_index) const;
+    void set_absolute_ones_count(uint32 v) { absolute_ones_count_ = v; }
+    void set_relative_ones_count_1(uint32 v) {
+      DCHECK_LE(v, kStorageBitSize);
+      relative_ones_count_1_ = v;
+    }
+    void set_relative_ones_count_2(uint32 v) {
+      DCHECK_LE(v, 2 * kStorageBitSize);
+      relative_ones_count_2_ = v;
+    }
+    void set_relative_ones_count_3(uint32 v) {
+      DCHECK_LE(v, 3 * kStorageBitSize);
+      relative_ones_count_3_ = v;
+    }
+    void set_relative_ones_count_4(uint32 v) {
+      DCHECK_LE(v, 4 * kStorageBitSize);
+      relative_ones_count_4_ = v;
+    }
+    void set_relative_ones_count_5(uint32 v) {
+      DCHECK_LE(v, 5 * kStorageBitSize);
+      relative_ones_count_5_ = v;
+    }
+    void set_relative_ones_count_6(uint32 v) {
+      DCHECK_LE(v, 6 * kStorageBitSize);
+      relative_ones_count_6_ = v;
+    }
+    void set_relative_ones_count_7(uint32 v) {
+      DCHECK_LE(v, 7 * kStorageBitSize);
+      relative_ones_count_7_ = v;
+    }
 
-  // We create a primary index based upon the number of secondary index
-  // blocks.  The primary index uses fields wide enough to accomodate any
-  // index of the bitarray so cannot overflow
-  // The primary index is the actual running
-  // count of one bits set for all blocks (and, thus, all uint64s).
-  size_t primary_index_size() const {
-    // Special-case empty bitmaps to still store the 0 in the primary index.
-    if (ArraySize() == 0) return 1;
-    return (ArraySize() + kSecondaryBlockSize - 1) / kSecondaryBlockSize;
+   private:
+    // Popcount of 1s before this block.
+    // rank_index_[i].absolute_ones_count() == Rank1(512 * i).
+    uint32 absolute_ones_count_;
+
+    // Popcount of 1s since the beginning of the block.
+    // rank_index_[i].relative_ones_count_k() ==
+    //     Rank1(512 * i + 64 * k) - Rank1(512 * i).
+    //
+    // Bitfield widths are set based on the maximum value these relative
+    // counts can have: relative_ones_count_1 stores values up to 64,
+    // so must be 7 bits; relative_ones_count_7 stores values up to
+    // 7 * 64 == 448, so needs 9 bits.
+    //
+    // All fields could just be 9 bits and still fit
+    // in an int64, but by using these values (which are also the minimum
+    // required width), no field spans 2 int32s, which may be helpful on
+    // 32-bit architectures.
+    unsigned int relative_ones_count_1_ : 7;
+    unsigned int relative_ones_count_2_ : 8;
+    unsigned int relative_ones_count_3_ : 8;
+    unsigned int relative_ones_count_4_ : 9;
+    unsigned int relative_ones_count_5_ : 9;
+    unsigned int relative_ones_count_6_ : 9;
+    unsigned int relative_ones_count_7_ : 9;
+  };
+  static_assert(sizeof(RankIndexEntry) == 4 + 8,
+                "RankIndexEntry should be 12 bytes.");
+
+  // Returns, from the index, the count of ones up to array_index.
+  uint32 GetIndexOnesCount(size_t array_index) const;
+
+  // Finds the entry in the rank index for the block containing the
+  // bit_index-th 1 bit.
+  const RankIndexEntry& FindRankIndexEntry(size_t bit_index) const;
+
+  // Finds the entry in the rank index for the block containing the
+  // bit_index-th 0 bit.
+  const RankIndexEntry& FindInvertedRankIndexEntry(size_t bit_index) const;
+
+  // We create a combined primary and secondary index, with one extra entry
+  // to hold the total number of bits.
+  size_t rank_index_size() const {
+    return (ArraySize() + kUnitsPerRankIndexEntry - 1) /
+               kUnitsPerRankIndexEntry +
+           1;
   }
 
   const uint64* bits_ = nullptr;
   size_t num_bits_ = 0;
 
-  // The primary index contains the running popcount of all blocks
-  // which means the nth value contains the popcounts of uint64 elements
-  // [0,n*kSecondaryBlockSize], however, the 0th element is omitted for
-  // non-empty bitmaps.
-  std::vector<uint32> primary_index_;
-  // The secondary index contains the running popcount of the associated
-  // bitmap.  It is the same length (in units of uint16) as the
-  // bitmap's map is in units of uint64s, namely ArraySize() ==
-  // StorageSize(num_bits_).
-  std::vector<uint16> secondary_index_;
+  std::vector<RankIndexEntry> rank_index_;
+
+  // Index of positions for Select0
+  // select_0_index_[i] == Select0(kBitsPerSelect0Block * i).
+  // Empty means there is no index, otherwise, we always add an extra entry
+  // with num_bits_.  Overhead is 4 bytes / 64 bytes of zeros,
+  // so 4/64 times the density of zeros.  This is 6.25% * zeros_density.
+  std::vector<uint32> select_0_index_;
+
+  // Index of positions for Select1
+  // select_1_index_[i] == Select1(kBitsPerSelect1Block * i).
+  // Empty means there is no index, otherwise, we always add an extra entry
+  // with num_bits_.  Overhead is 4 bytes / 64 bytes of ones,
+  // so 4/64 times the density of ones.  This is 6.25% * ones_density.
+  std::vector<uint32> select_1_index_;
 };
 
 }  // end namespace fst

@@ -4,11 +4,11 @@
 #include <fst/flags.h>
 
 DEFINE_string(call_arc_labeling, "input",
-              "Which labels to make non-epsilon on the call arc. "
-              "One of: \"input\" (default), \"output\", \"both\", \"neither\"");
+              "Which labels to make non-epsilon on the call arc: "
+              "one of: \"input\" (default), \"output\", \"both\", \"neither\"");
 DEFINE_string(return_arc_labeling, "neither",
-              "Which labels to make non-epsilon on the return arc. "
-              "One of: \"input\", \"output\", \"both\", \"neither\" (default)");
+              "Which labels to make non-epsilon on the return arc: "
+              "one of: \"input\", \"output\", \"both\", \"neither\" (default)");
 DEFINE_int64(return_label, 0, "Label to put on return arc");
 DEFINE_bool(epsilon_on_replace, false, "Call/return arcs are epsilon arcs?");
 

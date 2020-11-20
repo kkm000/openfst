@@ -11,6 +11,7 @@
 #include <fst/log.h>
 #include <fstream>
 #include <fst/util.h>
+#include <fst/windows_defs.inc>
 
 namespace fst {
 namespace script {

@@ -20,6 +20,7 @@ DECLARE_string(weight);
 
 int fstrmepsilon_main(int argc, char **argv) {
   namespace s = fst::script;
+  using fst::QueueType;
   using fst::script::MutableFstClass;
   using fst::script::WeightClass;
 
@@ -46,7 +47,7 @@ int fstrmepsilon_main(int argc, char **argv) {
       FLAGS_weight.empty() ? WeightClass::Zero(fst->WeightType())
                            : WeightClass(fst->WeightType(), FLAGS_weight);
 
-  fst::QueueType queue_type;
+  QueueType queue_type;
   if (!s::GetQueueType(FLAGS_queue_type, &queue_type)) {
     LOG(ERROR) << argv[0]
                << ": Unknown or unsupported queue type: " << FLAGS_queue_type;

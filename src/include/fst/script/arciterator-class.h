@@ -122,8 +122,7 @@ class MutableArcIteratorImplBase : public ArcIteratorImplBase {
 
 // Templated implementation.
 template <class Arc>
-class MutableArcIteratorClassImpl
-    : public MutableArcIteratorImplBase {
+class MutableArcIteratorClassImpl : public MutableArcIteratorImplBase {
  public:
   explicit MutableArcIteratorClassImpl(MutableFst<Arc> *fst, int64 s)
       : aiter_(fst, s) {}

@@ -20,6 +20,7 @@
 #include <fst/queue.h>
 #include <fst/state-table.h>
 #include <fst/test-properties.h>
+#include <unordered_map>
 
 namespace fst {
 
@@ -920,10 +921,11 @@ void Expand(
 // pairs are passed using the parents argument. Expansion enforces the
 // parenthesis constraints. The PDT must be expandable as an FST.
 template <class Arc>
-void Expand(const Fst<Arc> &ifst,
+void Expand(
+    const Fst<Arc> &ifst,
     const std::vector<std::pair<typename Arc::Label, typename Arc::Label>>
-    &parens, MutableFst<Arc> *ofst, bool connect = true,
-    bool keep_parentheses = false) {
+        &parens,
+    MutableFst<Arc> *ofst, bool connect = true, bool keep_parentheses = false) {
   const PdtExpandOptions<Arc> opts(connect, keep_parentheses);
   Expand(ifst, parens, ofst, opts);
 }

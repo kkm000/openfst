@@ -27,6 +27,6 @@ class StateIteratorClass;
 class WeightClass;
 
 }  // namespace script
-}  // namespace fst;
+}  // namespace fst
 
 #endif  // FST_SCRIPT_FSTSCRIPT_DECL_H_

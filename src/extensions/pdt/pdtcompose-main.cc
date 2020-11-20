@@ -23,9 +23,9 @@ DECLARE_string(compose_filter);
 
 int pdtcompose_main(int argc, char **argv) {
   namespace s = fst::script;
-  using fst::ReadLabelPairs;
   using fst::PdtComposeFilter;
   using fst::PdtComposeOptions;
+  using fst::ReadLabelPairs;
   using fst::script::FstClass;
   using fst::script::VectorFstClass;
 

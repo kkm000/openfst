@@ -8,6 +8,4 @@ DEFINE_double(delta, fst::kDelta, "Comparison/quantization delta");
 
 int farequal_main(int argc, char **argv);
 
-int main(int argc, char **argv) {
-  return farequal_main(argc, argv);
-}
+int main(int argc, char **argv) { return farequal_main(argc, argv); }

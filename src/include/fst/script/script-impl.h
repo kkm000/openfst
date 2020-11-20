@@ -160,8 +160,8 @@ struct Operation {
 template <class OpReg>
 void Apply(const std::string &op_name, const std::string &arc_type,
            typename OpReg::ArgPack *args) {
-  const auto op = OpReg::Register::GetRegister()->GetOperation(op_name,
-                                                               arc_type);
+  const auto op =
+      OpReg::Register::GetRegister()->GetOperation(op_name, arc_type);
   if (!op) {
     FSTERROR() << op_name << ": No operation found on arc type " << arc_type;
     return;

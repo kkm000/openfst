@@ -36,7 +36,7 @@ struct FarCompileStringsArgs {
   const FarType &far_type;
   const int32 generate_keys;
   const FarEntryType fet;
-  const FarTokenType tt;
+  const TokenType tt;
   const std::string &symbols_source;
   const std::string &unknown_symbol;
   const bool keep_symbols;
@@ -48,7 +48,7 @@ struct FarCompileStringsArgs {
   FarCompileStringsArgs(const std::vector<std::string> &in_sources,
                         const std::string &out_source,
                         const std::string &fst_type, const FarType &far_type,
-                        int32 generate_keys, FarEntryType fet, FarTokenType tt,
+                        int32 generate_keys, FarEntryType fet, TokenType tt,
                         const std::string &symbols_source,
                         const std::string &unknown_symbol, bool keep_symbols,
                         bool initial_symbols, bool allow_negative_labels,
@@ -83,7 +83,7 @@ void FarCompileStrings(const std::vector<std::string> &in_sources,
                        const std::string &out_source,
                        const std::string &arc_type, const std::string &fst_type,
                        const FarType &far_type, int32 generate_keys,
-                       FarEntryType fet, FarTokenType tt,
+                       FarEntryType fet, TokenType tt,
                        const std::string &symbols_source,
                        const std::string &unknown_symbol, bool keep_symbols,
                        bool initial_symbols, bool allow_negative_labels,
@@ -213,7 +213,7 @@ bool FarIsomorphic(const std::string &source1, const std::string &source2,
 struct FarPrintStringsArgs {
   const std::vector<std::string> &isources;
   const FarEntryType entry_type;
-  const FarTokenType token_type;
+  const TokenType token_type;
   const std::string &begin_key;
   const std::string &end_key;
   const bool print_key;
@@ -225,8 +225,7 @@ struct FarPrintStringsArgs {
   const std::string &source_suffix;
 
   FarPrintStringsArgs(const std::vector<std::string> &isources,
-                      const FarEntryType entry_type,
-                      const FarTokenType token_type,
+                      const FarEntryType entry_type, const TokenType token_type,
                       const std::string &begin_key, const std::string &end_key,
                       const bool print_key, const bool print_weight,
                       const std::string &symbols_source,
@@ -258,10 +257,9 @@ void FarPrintStrings(FarPrintStringsArgs *args) {
 
 void FarPrintStrings(const std::vector<std::string> &isources,
                      const std::string &arc_type, const FarEntryType entry_type,
-                     const FarTokenType token_type,
-                     const std::string &begin_key, const std::string &end_key,
-                     const bool print_key, const bool print_weight,
-                     const std::string &symbols_source,
+                     const TokenType token_type, const std::string &begin_key,
+                     const std::string &end_key, const bool print_key,
+                     const bool print_weight, const std::string &symbols_source,
                      const bool initial_symbols, const int32 generate_sources,
                      const std::string &source_prefix,
                      const std::string &source_suffix);

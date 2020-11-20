@@ -88,6 +88,17 @@ bool GetMapType(const std::string &str, MapType *map_type) {
   return true;
 }
 
+bool GetProjectType(const std::string &str, ProjectType *project_type) {
+  if (str == "input") {
+    *project_type = ProjectType::INPUT;
+  } else if (str == "output") {
+    *project_type = ProjectType::OUTPUT;
+  } else {
+    return false;
+  }
+  return true;
+}
+
 bool GetRandArcSelection(const std::string &str, RandArcSelection *ras) {
   if (str == "uniform") {
     *ras = UNIFORM_ARC_SELECTOR;
@@ -130,6 +141,19 @@ bool GetReplaceLabelType(const std::string &str, bool epsilon_on_replace,
     *rlt = REPLACE_LABEL_OUTPUT;
   } else if (str == "both") {
     *rlt = REPLACE_LABEL_BOTH;
+  } else {
+    return false;
+  }
+  return true;
+}
+
+bool GetTokenType(const std::string &str, TokenType *token_type) {
+  if (str == "byte") {
+    *token_type = TokenType::BYTE;
+  } else if (str == "utf8") {
+    *token_type = TokenType::UTF8;
+  } else if (str == "symbol") {
+    *token_type = TokenType::SYMBOL;
   } else {
     return false;
   }

@@ -78,8 +78,8 @@ struct ComposeFstImplOptions : public CacheImplOptions<CacheStore> {
   M2 *matcher2;    // FST2 matcher.
   Filter *filter;  // Composition filter (see compose-filter.h).
   StateTable
-    *state_table;        // Composition state table (see compose-state-table.h).
-  bool own_state_table;   // ComposeFstImpl takes ownership of 'state_table'?
+      *state_table;      // Composition state table (see compose-state-table.h).
+  bool own_state_table;  // ComposeFstImpl takes ownership of 'state_table'?
   bool allow_noncommute;  // Allow non-commutative weights
 
   explicit ComposeFstImplOptions(const CacheOptions &opts,
@@ -138,9 +138,9 @@ class ComposeFstImplBase
   using FstImpl<Arc>::SetInputSymbols;
   using FstImpl<Arc>::SetOutputSymbols;
 
-  using CacheImpl::HasStart;
-  using CacheImpl::HasFinal;
   using CacheImpl::HasArcs;
+  using CacheImpl::HasFinal;
+  using CacheImpl::HasStart;
   using CacheImpl::SetFinal;
   using CacheImpl::SetStart;
 
@@ -321,8 +321,8 @@ class ComposeFstImpl
     if ((matcher1_->Type(false) == match_type) &&
         (matcher2_->Type(false) == match_type) &&
         (filter_->Properties(test_props) == test_props)) {
-      return new ComposeFstMatcher<
-        CacheStore, Filter, StateTable>(&fst, match_type);
+      return new ComposeFstMatcher<CacheStore, Filter, StateTable>(&fst,
+                                                                   match_type);
     }
     return nullptr;
   }
@@ -371,9 +371,9 @@ class ComposeFstImpl
   void AddArc(StateId s, const Arc &arc1, const Arc &arc2,
               const FilterState &f) {
     const StateTuple tuple(arc1.nextstate, arc2.nextstate, f);
-    CacheImpl::EmplaceArc(
-        s, arc1.ilabel, arc2.olabel, Times(arc1.weight, arc2.weight),
-        state_table_->FindState(tuple));
+    CacheImpl::EmplaceArc(s, arc1.ilabel, arc2.olabel,
+                          Times(arc1.weight, arc2.weight),
+                          state_table_->FindState(tuple));
   }
 
   StateId ComputeStart() override {
@@ -562,7 +562,8 @@ class ComposeFst
 
   friend class ArcIterator<ComposeFst<Arc, CacheStore>>;
   friend class StateIterator<ComposeFst<Arc, CacheStore>>;
-  template <class, class, class> friend class ComposeFstMatcher;
+  template <class, class, class>
+  friend class ComposeFstMatcher;
 
   // Compose specifying only caching options.
   ComposeFst(const Fst<Arc> &fst1, const Fst<Arc> &fst2,
@@ -797,9 +798,7 @@ class ComposeFstMatcher : public MatcherBase<typename CacheStore::Arc> {
 
   const Fst<Arc> &GetFst() const override { return fst_; }
 
-  uint64 Properties(uint64 inprops) const override {
-    return inprops;
-  }
+  uint64 Properties(uint64 inprops) const override { return inprops; }
 
   void SetState(StateId s) final {
     if (s_ == s) return;
@@ -845,14 +844,13 @@ class ComposeFstMatcher : public MatcherBase<typename CacheStore::Arc> {
 
  private:
   // Processes a match with the filter and creates resulting arc.
-  bool MatchArc(StateId s, Arc arc1,
-                Arc arc2) {  // FIXME(kbg): copy but not assignment.
-    const auto &fs = impl_->filter_->FilterArc(&arc1, &arc2);
+  bool MatchArc(StateId s, Arc *arc1, Arc *arc2) {
+    const auto &fs = impl_->filter_->FilterArc(arc1, arc2);
     if (fs == FilterState::NoState()) return false;
-    const StateTuple tuple(arc1.nextstate, arc2.nextstate, fs);
-    arc_.ilabel = arc1.ilabel;
-    arc_.olabel = arc2.olabel;
-    arc_.weight = Times(arc1.weight, arc2.weight);
+    const StateTuple tuple(arc1->nextstate, arc2->nextstate, fs);
+    arc_.ilabel = arc1->ilabel;
+    arc_.olabel = arc2->olabel;
+    arc_.weight = Times(arc1->weight, arc2->weight);
     arc_.nextstate = impl_->state_table_->FindState(tuple);
     return true;
   }
@@ -894,16 +892,17 @@ class ComposeFstMatcher : public MatcherBase<typename CacheStore::Arc> {
         // allowed by the filter (hence resulting in an arc x, z') return true.
         // Position 'matcherb' on the next potential match for y' before
         // returning.
-        const auto &arca = matchera->Value();
-        const auto &arcb = matcherb->Value();
+        auto arca = matchera->Value();
+        auto arcb = matcherb->Value();
         // Position 'matcherb' on the next potential match for y'.
         matcherb->Next();
         // Returns true If combining these two arcs is allowed by the filter
         // (hence resulting in an arc x, z'); otherwise consider next match
         // for y' on 'matcherb'.
-        if (MatchArc(s_, match_type_ == MATCH_INPUT ? arca : arcb,
-                     match_type_ == MATCH_INPUT ? arcb : arca)) {
-          return true;
+        if (match_type_ == MATCH_INPUT) {
+          return MatchArc(s_, &arca, &arcb);
+        } else {
+          return MatchArc(s_, &arcb, &arca);
         }
       }
     }

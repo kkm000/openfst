@@ -13,9 +13,11 @@ DEFINE_int64(start_paren_labels, fst::kNoLabel,
              "Index to use for the first inserted parentheses; if not "
              "specified, the next available label beyond the highest output "
              "label is used");
-DEFINE_string(left_paren_prefix, "(_", "Prefix to attach to SymbolTable "
+DEFINE_string(left_paren_prefix, "(_",
+              "Prefix to attach to SymbolTable "
               "labels for inserted left parentheses");
-DEFINE_string(right_paren_prefix, ")_", "Prefix to attach to SymbolTable "
+DEFINE_string(right_paren_prefix, ")_",
+              "Prefix to attach to SymbolTable "
               "labels for inserted right parentheses");
 
 int pdtreplace_main(int argc, char **argv);

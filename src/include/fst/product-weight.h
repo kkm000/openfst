@@ -6,6 +6,7 @@
 #ifndef FST_PRODUCT_WEIGHT_H_
 #define FST_PRODUCT_WEIGHT_H_
 
+#include <random>
 #include <string>
 #include <utility>
 
@@ -97,9 +98,7 @@ class Adder<ProductWeight<W1, W2>> {
 
   Adder() {}
 
-  explicit Adder(Weight w)
-      : adder1_(w.Value1()),
-        adder2_(w.Value2()) {}
+  explicit Adder(Weight w) : adder1_(w.Value1()), adder2_(w.Value2()) {}
 
   Weight Add(const Weight &w) {
     adder1_.Add(w.Value1());
@@ -119,20 +118,23 @@ class Adder<ProductWeight<W1, W2>> {
   Adder<W2> adder2_;
 };
 
-
 // This function object generates weights by calling the underlying generators
 // for the template weight types, like all other pair weight types. This is
 // intended primarily for testing.
 template <class W1, class W2>
-class WeightGenerate<ProductWeight<W1, W2>> :
-    public WeightGenerate<PairWeight<W1, W2>> {
+class WeightGenerate<ProductWeight<W1, W2>> {
  public:
   using Weight = ProductWeight<W1, W2>;
   using Generate = WeightGenerate<PairWeight<W1, W2>>;
 
-  explicit WeightGenerate(bool allow_zero = true) : Generate(allow_zero) {}
+  explicit WeightGenerate(uint64 seed = std::random_device()(),
+                          bool allow_zero = true)
+      : generate_(seed, allow_zero) {}
 
-  Weight operator()() const { return Weight(Generate::operator()()); }
+  Weight operator()() const { return Weight(generate_()); }
+
+ private:
+  const Generate generate_;
 };
 
 }  // namespace fst

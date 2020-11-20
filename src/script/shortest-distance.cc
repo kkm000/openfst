@@ -15,15 +15,24 @@ void ShortestDistance(const FstClass &fst, std::vector<WeightClass> *distance,
                                           &args);
 }
 
-void ShortestDistance(const FstClass &ifst, std::vector<WeightClass> *distance,
+void ShortestDistance(const FstClass &fst, std::vector<WeightClass> *distance,
                       bool reverse, double delta) {
-  ShortestDistanceArgs2 args(ifst, distance, reverse, delta);
-  Apply<Operation<ShortestDistanceArgs2>>("ShortestDistance", ifst.ArcType(),
+  ShortestDistanceArgs2 args(fst, distance, reverse, delta);
+  Apply<Operation<ShortestDistanceArgs2>>("ShortestDistance", fst.ArcType(),
                                           &args);
+}
+
+WeightClass ShortestDistance(const FstClass &fst, double delta) {
+  ShortestDistanceInnerArgs3 iargs(fst, delta);
+  ShortestDistanceArgs3 args(iargs);
+  Apply<Operation<ShortestDistanceArgs3>>("ShortestDistance", fst.ArcType(),
+                                          &args);
+  return args.retval;
 }
 
 REGISTER_FST_OPERATION_3ARCS(ShortestDistance, ShortestDistanceArgs1);
 REGISTER_FST_OPERATION_3ARCS(ShortestDistance, ShortestDistanceArgs2);
+REGISTER_FST_OPERATION_3ARCS(ShortestDistance, ShortestDistanceArgs3);
 
 }  // namespace script
 }  // namespace fst

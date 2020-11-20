@@ -119,10 +119,9 @@ class MPdtExpandFstImpl : public CacheImpl<Arc> {
     if (!HasFinal(s)) {
       const auto &tuple = state_table_->Tuple(s);
       const auto weight = fst_->Final(tuple.state_id);
-      SetFinal(s,
-               (weight != Weight::Zero() && tuple.stack_id == 0)
-                   ? weight
-                   : Weight::Zero());
+      SetFinal(s, (weight != Weight::Zero() && tuple.stack_id == 0)
+                      ? weight
+                      : Weight::Zero());
     }
     return CacheImpl<Arc>::Final(s);
   }
@@ -300,11 +299,12 @@ struct MPdtExpandOptions {
 // The expansion enforces the parenthesis constraints. The MPDT must be
 // expandable as an FST.
 template <class Arc>
-void Expand(const Fst<Arc> &ifst,
-            const std::vector<
-            std::pair<typename Arc::Label, typename Arc::Label>> &parens,
-            const std::vector<typename Arc::Label> &assignments,
-            MutableFst<Arc> *ofst, const MPdtExpandOptions &opts) {
+void Expand(
+    const Fst<Arc> &ifst,
+    const std::vector<std::pair<typename Arc::Label, typename Arc::Label>>
+        &parens,
+    const std::vector<typename Arc::Label> &assignments, MutableFst<Arc> *ofst,
+    const MPdtExpandOptions &opts) {
   MPdtExpandFstOptions<Arc> eopts;
   eopts.gc_limit = 0;
   eopts.keep_parentheses = opts.keep_parentheses;
@@ -321,12 +321,12 @@ void Expand(const Fst<Arc> &ifst,
 // The expansion enforces the parenthesis constraints. The MPDT must be
 // expandable as an FST.
 template <class Arc>
-void Expand(const Fst<Arc> &ifst,
-            const std::vector<std::pair<typename Arc::Label,
-            typename Arc::Label>> &parens,
-            const std::vector<typename Arc::Label> &assignments,
-            MutableFst<Arc> *ofst, bool connect = true,
-            bool keep_parentheses = false) {
+void Expand(
+    const Fst<Arc> &ifst,
+    const std::vector<std::pair<typename Arc::Label, typename Arc::Label>>
+        &parens,
+    const std::vector<typename Arc::Label> &assignments, MutableFst<Arc> *ofst,
+    bool connect = true, bool keep_parentheses = false) {
   const MPdtExpandOptions opts(connect, keep_parentheses);
   Expand(ifst, parens, assignments, ofst, opts);
 }

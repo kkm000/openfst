@@ -115,8 +115,13 @@ class FstHeader {
     IS_ALIGNED = 0x4,    // Memory-aligned (where appropriate).
   };
 
-  FstHeader() : version_(0), flags_(0), properties_(0), start_(-1),
-      numstates_(0), numarcs_(0) {}
+  FstHeader()
+      : version_(0),
+        flags_(0),
+        properties_(0),
+        start_(-1),
+        numstates_(0),
+        numarcs_(0) {}
 
   const std::string &FstType() const { return fsttype_; }
 
@@ -766,8 +771,8 @@ class FstImpl {
   // Writes header and symbols to output stream. If opts.header is false, skips
   // writing header. If opts.[io]symbols is false, skips writing those symbols.
   // This method is needed for implementations that implement Write methods.
-  void WriteHeader(std::ostream &strm, const FstWriteOptions &opts,
-                   int version, FstHeader *hdr) const {
+  void WriteHeader(std::ostream &strm, const FstWriteOptions &opts, int version,
+                   FstHeader *hdr) const {
     if (opts.write_header) {
       hdr->SetFstType(type_);
       hdr->SetArcType(Arc::Type());
@@ -863,8 +868,8 @@ template <class Arc>
 inline FstImpl<Arc>::FstImpl(FstImpl<Arc> &&) noexcept = default;
 
 template <class Arc>
-inline FstImpl<Arc> &FstImpl<Arc>::operator=(
-    FstImpl<Arc> &&) noexcept = default;
+inline FstImpl<Arc> &FstImpl<Arc>::operator=(FstImpl<Arc> &&) noexcept =
+    default;
 
 template <class Arc>
 bool FstImpl<Arc>::ReadHeader(std::istream &strm, const FstReadOptions &opts,
@@ -875,27 +880,22 @@ bool FstImpl<Arc>::ReadHeader(std::istream &strm, const FstReadOptions &opts,
     return false;
   }
   VLOG(2) << "FstImpl::ReadHeader: source: " << opts.source
-          << ", fst_type: " << hdr->FstType()
-          << ", arc_type: " << Arc::Type()
-          << ", version: " << hdr->Version()
-          << ", flags: " << hdr->GetFlags();
+          << ", fst_type: " << hdr->FstType() << ", arc_type: " << Arc::Type()
+          << ", version: " << hdr->Version() << ", flags: " << hdr->GetFlags();
   if (hdr->FstType() != type_) {
-    LOG(ERROR) << "FstImpl::ReadHeader: FST not of type " << type_
-               << ", found " << hdr->FstType()
-               << ": " << opts.source;
+    LOG(ERROR) << "FstImpl::ReadHeader: FST not of type " << type_ << ", found "
+               << hdr->FstType() << ": " << opts.source;
     return false;
   }
   if (hdr->ArcType() != Arc::Type()) {
     LOG(ERROR) << "FstImpl::ReadHeader: Arc not of type " << Arc::Type()
-               << ", found " << hdr->ArcType()
-               << ": " << opts.source;
+               << ", found " << hdr->ArcType() << ": " << opts.source;
     return false;
   }
   if (hdr->Version() < min_version) {
-    LOG(ERROR) << "FstImpl::ReadHeader: Obsolete " << type_
-               << " FST version " << hdr->Version()
-               << ", min_version=" << min_version
-               << ": " << opts.source;
+    LOG(ERROR) << "FstImpl::ReadHeader: Obsolete " << type_ << " FST version "
+               << hdr->Version() << ", min_version=" << min_version << ": "
+               << opts.source;
     return false;
   }
   properties_.store(hdr->Properties(), std::memory_order_relaxed);
@@ -1039,8 +1039,8 @@ class ImplToFst : public FST {
 template <class IFST, class OFST>
 void Cast(const IFST &ifst, OFST *ofst) {
   using OImpl = typename OFST::Impl;
-  ofst->impl_ = std::shared_ptr<OImpl>(ifst.impl_,
-      reinterpret_cast<OImpl *>(ifst.impl_.get()));
+  ofst->impl_ = std::shared_ptr<OImpl>(
+      ifst.impl_, reinterpret_cast<OImpl *>(ifst.impl_.get()));
 }
 
 // FST serialization.

@@ -9,7 +9,6 @@
 namespace fst {
 namespace script {
 
-
 // FarReaderClass.
 
 FarReaderClass *FarReaderClass::Open(const std::string &source) {
@@ -27,7 +26,7 @@ FarReaderClass *FarReaderClass::Open(const std::vector<std::string> &sources) {
   OpenFarReaderClassArgs args(sources);
   args.retval = nullptr;
   Apply<Operation<OpenFarReaderClassArgs>>("OpenFarReaderClass", arc_type,
-                                            &args);
+                                           &args);
   return args.retval;
 }
 

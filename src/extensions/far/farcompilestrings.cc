@@ -29,6 +29,4 @@ DEFINE_bool(initial_symbols, true,
 
 int farcompilestrings_main(int argc, char **argv);
 
-int main(int argc, char **argv) {
-  return farcompilestrings_main(argc, argv);
-}
+int main(int argc, char **argv) { return farcompilestrings_main(argc, argv); }

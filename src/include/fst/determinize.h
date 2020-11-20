@@ -702,9 +702,9 @@ class DeterminizeFsaImpl : public DeterminizeFstImplBase<Arc> {
   // Adds an arc from state S to the destination state associated with state
   // tuple in det_arc as created by GetLabelMap.
   void AddArc(StateId s, DetArc &&det_arc) {
-    CacheImpl<Arc>::EmplaceArc(
-        s, det_arc.label, det_arc.label, std::move(det_arc.weight),
-        FindState(det_arc.dest_tuple));
+    CacheImpl<Arc>::EmplaceArc(s, det_arc.label, det_arc.label,
+                               std::move(det_arc.weight),
+                               FindState(det_arc.dest_tuple));
   }
 
   float delta_;                         // Quantization delta for weights.

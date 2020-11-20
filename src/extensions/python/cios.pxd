@@ -1,8 +1,10 @@
+#cython: language_level=3
 # See www.openfst.org for extensive documentation on this weighted
 # finite-state transducer library.
 
 
 from libcpp.string cimport string
+
 from cintegral_types cimport int8
 from cintegral_types cimport int16
 from cintegral_types cimport int32

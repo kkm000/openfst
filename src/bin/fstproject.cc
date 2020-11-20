@@ -3,7 +3,8 @@
 
 #include <fst/flags.h>
 
-DEFINE_bool(project_output, false, "Project on output (vs. input)");
+DEFINE_string(project_type, "input",
+              "Side to project from, one of: \"input\", \"output\"");
 
 int fstproject_main(int argc, char **argv);
 

@@ -8,8 +8,8 @@
 
 #include <fst/flags.h>
 #include <fst/extensions/far/farscript.h>
-#include <fst/extensions/far/getters.h>
 #include <fstream>
+#include <fst/script/getters.h>
 
 DECLARE_string(key_prefix);
 DECLARE_string(key_suffix);
@@ -43,7 +43,7 @@ int farcompilestrings_main(int argc, char **argv) {
     for (int i = 1; i < argc - 1; ++i) {
       std::ifstream istrm(argv[i]);
       std::string str;
-      while (getline(istrm, str)) in_sources.push_back(str);
+      while (std::getline(istrm, str)) in_sources.push_back(str);
     }
   } else {
     for (int i = 1; i < argc - 1; ++i)
@@ -67,13 +67,17 @@ int farcompilestrings_main(int argc, char **argv) {
     return 1;
   }
 
-  fst::FarTokenType token_type;
-  if (!s::GetFarTokenType(FLAGS_token_type, &token_type)) {
-    LOG(ERROR) << "Unkonwn or unsupported FAR token type: " << FLAGS_token_type;
+  fst::TokenType token_type;
+  if (!s::GetTokenType(FLAGS_token_type, &token_type)) {
+    LOG(ERROR) << "Unknown or unsupported FAR token type: " << FLAGS_token_type;
     return 1;
   }
 
-  const auto far_type = s::GetFarType(FLAGS_far_type);
+  fst::FarType far_type;
+  if (!s::GetFarType(FLAGS_far_type, &far_type)) {
+    LOG(ERROR) << "Unknown or unsupported FAR type: " << FLAGS_far_type;
+    return 1;
+  }
 
   s::FarCompileStrings(in_sources, out_source, FLAGS_arc_type, FLAGS_fst_type,
                        far_type, FLAGS_generate_keys, entry_type, token_type,

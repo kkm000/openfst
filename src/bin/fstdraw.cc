@@ -10,7 +10,7 @@ DEFINE_string(ssymbols, "", "State label symbol table");
 DEFINE_bool(numeric, false, "Print numeric labels");
 DEFINE_int32(precision, 5, "Set precision (number of char/float)");
 DEFINE_string(float_format, "g",
-              "Floating-point format, one of: \"e\", \"f\", or \"g\"");
+              "Floating-point format: one of \"e\", \"f\", or \"g\"");
 DEFINE_bool(show_weight_one, false,
             "Print/draw arc weights and final weights equal to Weight::One()");
 DEFINE_string(title, "", "Set figure title");

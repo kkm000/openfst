@@ -1,6 +1,9 @@
 #ifndef FST_TEST_RAND_FST_H_
 #define FST_TEST_RAND_FST_H_
 
+#include <random>
+
+#include <fst/types.h>
 #include <fst/log.h>
 #include <fst/mutable-fst.h>
 #include <fst/verify.h>
@@ -8,10 +11,10 @@
 namespace fst {
 
 // Generates a random FST.
-template <class Arc, class WeightGenerator>
+template <class Arc, class Generate>
 void RandFst(const int num_random_states, const int num_random_arcs,
              const int num_random_labels, const float acyclic_prob,
-             WeightGenerator *weight_generator, MutableFst<Arc> *fst) {
+             Generate generate, uint64 seed, MutableFst<Arc> *fst) {
   using Label = typename Arc::Label;
   using StateId = typename Arc::StateId;
   using Weight = typename Arc::Weight;
@@ -25,32 +28,39 @@ void RandFst(const int num_random_states, const int num_random_arcs,
     NUM_DIRECTIONS = 3
   };
 
+  std::mt19937_64 rand(seed);
+  const StateId ns =
+      std::uniform_int_distribution<>(0, num_random_states - 1)(rand);
+  std::uniform_int_distribution<size_t> arc_dist(0, num_random_arcs - 1);
+  std::uniform_int_distribution<Label> label_dist(0, num_random_labels - 1);
+  std::uniform_int_distribution<StateId> ns_dist(0, ns - 1);
+
   ArcDirection arc_direction = ANY_DIRECTION;
-  if (rand() / (RAND_MAX + 1.0) < acyclic_prob)
-    arc_direction = rand() % 2 ? FORWARD_DIRECTION : REVERSE_DIRECTION;
+  if (!std::bernoulli_distribution(acyclic_prob)(rand)) {
+    arc_direction = std::bernoulli_distribution(.5)(rand) ? FORWARD_DIRECTION
+                                                          : REVERSE_DIRECTION;
+  }
 
   fst->DeleteStates();
-  StateId ns = rand() % num_random_states;
 
   if (ns == 0) return;
-  for (StateId s = 0; s < ns; ++s) fst->AddState();
+  fst->AddStates(ns);
 
-  StateId start = rand() % ns;
+  const StateId start = ns_dist(rand);
   fst->SetStart(start);
 
-  size_t na = rand() % num_random_arcs;
+  const size_t na = arc_dist(rand);
   for (size_t n = 0; n < na; ++n) {
-    StateId s = rand() % ns;
+    StateId s = ns_dist(rand);
     Arc arc;
-    arc.ilabel = rand() % num_random_labels;
-    arc.olabel = rand() % num_random_labels;
-    arc.weight = (*weight_generator)();
-    arc.nextstate = rand() % ns;
-
+    arc.ilabel = label_dist(rand);
+    arc.olabel = label_dist(rand);
+    arc.weight = generate();
+    arc.nextstate = ns_dist(rand);
     if ((arc_direction == FORWARD_DIRECTION ||
          arc_direction == REVERSE_DIRECTION) &&
         s == arc.nextstate) {
-      continue;  // skips self-loops
+      continue;  // Skips self-loops.
     }
 
     if ((arc_direction == FORWARD_DIRECTION && s > arc.nextstate) ||
@@ -63,22 +73,21 @@ void RandFst(const int num_random_states, const int num_random_arcs,
     fst->AddArc(s, arc);
   }
 
-  StateId nf = rand() % (ns + 1);
+  const StateId nf = std::uniform_int_distribution<>(0, ns)(rand);
   for (StateId n = 0; n < nf; ++n) {
-    StateId s = rand() % ns;
-    Weight final = (*weight_generator)();
-    fst->SetFinal(s, final);
+    const StateId s = ns_dist(rand);
+    fst->SetFinal(s, generate());
   }
   VLOG(1) << "Check FST for sanity (including property bits).";
   CHECK(Verify(*fst));
 
   // Get/compute all properties.
-  uint64 props = fst->Properties(kFstProperties, true);
+  const uint64 props = fst->Properties(kFstProperties, true);
 
   // Select random set of properties to be unknown.
   uint64 mask = 0;
   for (int n = 0; n < 8; ++n) {
-    mask |= rand() & 0xff;
+    mask |= std::uniform_int_distribution<>(0, 0xff)(rand);
     mask <<= 8;
   }
   mask &= ~kTrinaryProperties;

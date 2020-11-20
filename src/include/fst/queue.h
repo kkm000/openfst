@@ -783,7 +783,7 @@ class NaturalAStarEstimate {
   NaturalAStarEstimate(const std::vector<Weight> &beta) : beta_(beta) {}
 
   const Weight &operator()(StateId s) const {
-     return (s < beta_.size()) ? beta_[s] : kZero;
+    return (s < beta_.size()) ? beta_[s] : kZero;
   }
 
  private:
@@ -825,7 +825,8 @@ class AStarWeightCompare {
 
 // A* queue discipline templated on StateId, Weight, and Estimate.
 template <typename S, typename Weight, typename Estimate>
-class NaturalAStarQueue : public ShortestFirstQueue<
+class NaturalAStarQueue
+    : public ShortestFirstQueue<
           S, AStarWeightCompare<S, NaturalLess<Weight>, Estimate>> {
  public:
   using StateId = S;

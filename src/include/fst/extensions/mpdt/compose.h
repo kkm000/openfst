@@ -155,9 +155,9 @@ class MPdtParenFilter {
 // the MPDT as the first composition argument.
 template <class Arc, bool left_pdt = true>
 class MPdtComposeFstOptions
-    : public ComposeFstOptions<Arc, ParenMatcher<Fst<Arc>>,
-                               MPdtParenFilter<AltSequenceComposeFilter<
-                                   ParenMatcher<Fst<Arc>> >> > {
+    : public ComposeFstOptions<
+          Arc, ParenMatcher<Fst<Arc>>,
+          MPdtParenFilter<AltSequenceComposeFilter<ParenMatcher<Fst<Arc>>>>> {
  public:
   using Label = typename Arc::Label;
   using MPdtMatcher = ParenMatcher<Fst<Arc>>;
@@ -185,7 +185,7 @@ template <class Arc>
 class MPdtComposeFstOptions<Arc, false>
     : public ComposeFstOptions<
           Arc, ParenMatcher<Fst<Arc>>,
-          MPdtParenFilter<SequenceComposeFilter<ParenMatcher<Fst<Arc>> >> > {
+          MPdtParenFilter<SequenceComposeFilter<ParenMatcher<Fst<Arc>>>>> {
  public:
   using Label = typename Arc::Label;
   using MPdtMatcher = ParenMatcher<Fst<Arc>>;

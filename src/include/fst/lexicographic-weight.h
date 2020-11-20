@@ -13,7 +13,7 @@
 #ifndef FST_LEXICOGRAPHIC_WEIGHT_H_
 #define FST_LEXICOGRAPHIC_WEIGHT_H_
 
-#include <cstdlib>
+#include <random>
 #include <string>
 
 #include <fst/types.h>
@@ -145,27 +145,30 @@ class WeightGenerate<LexicographicWeight<W1, W2>> {
   using Generate1 = WeightGenerate<W1>;
   using Generate2 = WeightGenerate<W2>;
 
-  explicit WeightGenerate(bool allow_zero = true,
+  explicit WeightGenerate(uint64 seed = std::random_device()(),
+                          bool allow_zero = true,
                           size_t num_random_weights = kNumRandomWeights)
-      : generator1_(false, num_random_weights),
-        generator2_(false, num_random_weights), allow_zero_(allow_zero),
-        num_random_weights_(num_random_weights) {}
+      : rand_(seed),
+        allow_zero_(allow_zero),
+        num_random_weights_(num_random_weights),
+        generator1_(seed, false, num_random_weights),
+        generator2_(seed, false, num_random_weights) {}
 
   Weight operator()() const {
     if (allow_zero_) {
-      const int n = rand() % (num_random_weights_ + 1);  // NOLINT
-      if (n == num_random_weights_) return Weight(W1::Zero(), W2::Zero());
+      const int sample =
+          std::uniform_int_distribution<>(0, num_random_weights_)(rand_);
+      if (sample == num_random_weights_) return Weight(W1::Zero(), W2::Zero());
     }
     return Weight(generator1_(), generator2_());
   }
 
  private:
+  mutable std::mt19937_64 rand_;
+  const bool allow_zero_;
+  const size_t num_random_weights_;
   const Generate1 generator1_;
   const Generate2 generator2_;
-  // Permits Zero() and zero divisors.
-  const bool allow_zero_;
-  // The number of alternative random weights.
-  const size_t num_random_weights_;
 };
 
 }  // namespace fst

@@ -60,7 +60,7 @@ int fstequivalent_main(int argc, char **argv) {
     s::RandArcSelection ras;
     if (!s::GetRandArcSelection(FLAGS_select, &ras)) {
       LOG(ERROR) << argv[0] << ": Unknown or unsupported select type "
-                            << FLAGS_select;
+                 << FLAGS_select;
       return 1;
     }
     const RandGenOptions<s::RandArcSelection> opts(ras, FLAGS_max_length);

@@ -6,6 +6,7 @@
 #ifndef FST_POWER_WEIGHT_H_
 #define FST_POWER_WEIGHT_H_
 
+#include <random>
 #include <string>
 
 #include <fst/types.h>
@@ -153,7 +154,9 @@ class WeightGenerate<PowerWeight<W, n>> {
   using Weight = PowerWeight<W, n>;
   using Generate = WeightGenerate<W>;
 
-  explicit WeightGenerate(bool allow_zero = true) : generate_(allow_zero) {}
+  explicit WeightGenerate(uint64 seed = std::random_device()(),
+                          bool allow_zero = true)
+      : generate_(seed, allow_zero) {}
 
   Weight operator()() const {
     Weight result;
@@ -162,7 +165,7 @@ class WeightGenerate<PowerWeight<W, n>> {
   }
 
  private:
-  Generate generate_;
+  const Generate generate_;
 };
 
 }  // namespace fst

@@ -1,4 +1,8 @@
 OpenFst: Release 1.7
+   * TokenType is now a scoped enum (1.7.8)
+   * pywrapfst is now Python 3-only (1.7.8)
+   * fstproject now has --project_type flag (1.7.8)
+   * BitmapIndex is now 2x faster for Select0/Select1 (1.7.8)
    * Property testing is now thread-safe (1.7.7)
    * Modernizes random generation (1.7.7)
    * Adds MakeArcMapFst (1.7.6)

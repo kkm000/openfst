@@ -228,22 +228,22 @@ class EditFstData {
   // Returns the iterator of the map from external to internal state IDs
   // of edits_ for the specified external state IDs.
   typename std::unordered_map<StateId, StateId>::const_iterator
-      GetEditedIdMapIterator(StateId s) const {
+  GetEditedIdMapIterator(StateId s) const {
     return external_to_internal_ids_.find(s);
   }
 
-  typename std::unordered_map<StateId, StateId>::const_iterator
-      NotInEditedMap() const {
+  typename std::unordered_map<StateId, StateId>::const_iterator NotInEditedMap()
+      const {
     return external_to_internal_ids_.end();
   }
 
   typename std::unordered_map<StateId, Weight>::const_iterator
-      GetFinalWeightIterator(StateId s) const {
+  GetFinalWeightIterator(StateId s) const {
     return edited_final_weights_.find(s);
   }
 
   typename std::unordered_map<StateId, Weight>::const_iterator
-      NotInFinalWeightMap() const {
+  NotInFinalWeightMap() const {
     return edited_final_weights_.end();
   }
 

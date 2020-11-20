@@ -5,8 +5,8 @@
 #include <fst/register.h>
 
 using fst::LinearTaggerFst;
-using fst::StdArc;
 using fst::LogArc;
+using fst::StdArc;
 
 REGISTER_FST(LinearTaggerFst, StdArc);
 REGISTER_FST(LinearTaggerFst, LogArc);

@@ -13,8 +13,8 @@
 namespace fst {
 namespace script {
 
-using EquivalentInnerArgs = std::tuple<const FstClass &, const FstClass &,
-                                       float>;
+using EquivalentInnerArgs =
+    std::tuple<const FstClass &, const FstClass &, float>;
 
 using EquivalentArgs = WithReturnValue<bool, EquivalentInnerArgs>;
 

@@ -268,7 +268,7 @@ class Disambiguator {
       // Ensures composition is between acceptors.
       const bool trans = ifst.Properties(kNotAcceptor, true);
       const auto *fsa =
-          trans ? new ProjectFst<Arc>(ifst, PROJECT_INPUT) : &ifst;
+          trans ? new ProjectFst<Arc>(ifst, ProjectType::INPUT) : &ifst;
       opts.state_table = new StateTable(*fsa, *fsa);
       const ComposeFst<Arc> cfst(*fsa, *fsa, opts);
       std::vector<bool> coaccess;
@@ -394,7 +394,8 @@ void Disambiguator<Arc>::PreDisambiguate(const ExpandedFst<Arc> &ifst,
                                                    AnyArcFilter<Arc>(),
                                                    &odistance);
       Prune(dfst, ofst, popts);
-      } else */ {
+      } else */
+    {
       *ofst = DeterminizeFst<Arc>(ifst, nopts);
       Prune(ofst, opts.weight_threshold, opts.state_threshold);
     }

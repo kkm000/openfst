@@ -19,6 +19,7 @@
 #include <fst/push.h>            // For kPushWeights (etc.).
 #include <fst/queue.h>           // For QueueType.
 #include <fst/rational.h>        // For ClosureType.
+#include <fst/string.h>          // For TokenType.
 #include <fst/script/arcsort.h>      // For ArcSortType.
 #include <fst/script/map.h>          // For MapType.
 #include <fst/script/script-impl.h>  // For RandArcSelection.
@@ -47,14 +48,11 @@ inline EpsNormalizeType GetEpsNormalizeType(bool eps_norm_output) {
 
 bool GetMapType(const std::string &str, MapType *map_type);
 
-inline ProjectType GetProjectType(bool project_output) {
-  return project_output ? PROJECT_OUTPUT : PROJECT_INPUT;
-}
+bool GetProjectType(const std::string &str, ProjectType *project_type);
 
 inline uint8 GetPushFlags(bool push_weights, bool push_labels,
                           bool remove_total_weight, bool remove_common_affix) {
-  return ((push_weights ? kPushWeights : 0) |
-          (push_labels ? kPushLabels : 0) |
+  return ((push_weights ? kPushWeights : 0) | (push_labels ? kPushLabels : 0) |
           (remove_total_weight ? kPushRemoveTotalWeight : 0) |
           (remove_common_affix ? kPushRemoveCommonAffix : 0));
 }
@@ -69,6 +67,8 @@ bool GetReplaceLabelType(const std::string &str, bool epsilon_on_replace,
 inline ReweightType GetReweightType(bool to_final) {
   return to_final ? REWEIGHT_TO_FINAL : REWEIGHT_TO_INITIAL;
 }
+
+bool GetTokenType(const std::string &str, TokenType *token_type);
 
 }  // namespace script
 }  // namespace fst

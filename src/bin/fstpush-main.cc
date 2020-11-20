@@ -50,8 +50,7 @@ int fstpush_main(int argc, char **argv) {
 
   VectorFstClass ofst(ifst->ArcType());
 
-  s::Push(*ifst, &ofst, flags, s::GetReweightType(FLAGS_to_final),
-          FLAGS_delta);
+  s::Push(*ifst, &ofst, flags, s::GetReweightType(FLAGS_to_final), FLAGS_delta);
 
   return !ofst.Write(out_name);
 }

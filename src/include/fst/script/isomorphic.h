@@ -13,8 +13,8 @@
 namespace fst {
 namespace script {
 
-using IsomorphicInnerArgs = std::tuple<const FstClass &, const FstClass &,
-                                       float>;
+using IsomorphicInnerArgs =
+    std::tuple<const FstClass &, const FstClass &, float>;
 
 using IsomorphicArgs = WithReturnValue<bool, IsomorphicInnerArgs>;
 

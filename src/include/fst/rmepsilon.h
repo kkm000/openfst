@@ -140,7 +140,9 @@ void RmEpsilonState<Arc, Queue>::Expand(typename Arc::StateId source) {
   while (!eps_queue_.empty()) {
     const auto state = eps_queue_.top();
     eps_queue_.pop();
-    while (visited_.size() <= state) visited_.push_back(false);
+    if (static_cast<decltype(state)>(visited_.size()) <= state) {
+      visited_.resize(state + 1, false);
+    }
     if (visited_[state]) continue;
     visited_[state] = true;
     visited_states_.push_front(state);
@@ -149,7 +151,10 @@ void RmEpsilonState<Arc, Queue>::Expand(typename Arc::StateId source) {
       auto arc = aiter.Value();
       arc.weight = Times((*distance_)[state], arc.weight);
       if (eps_filter_(arc)) {
-        while (visited_.size() <= arc.nextstate) visited_.push_back(false);
+        if (static_cast<decltype(arc.nextstate)>(visited_.size()) <=
+            arc.nextstate) {
+          visited_.resize(arc.nextstate + 1, false);
+        }
         if (!visited_[arc.nextstate]) eps_queue_.push(arc.nextstate);
       } else {
         const Element element(arc.ilabel, arc.olabel, arc.nextstate);

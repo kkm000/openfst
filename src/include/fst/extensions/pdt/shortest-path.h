@@ -16,6 +16,7 @@
 #include <fst/extensions/pdt/paren.h>
 #include <fst/extensions/pdt/pdt.h>
 #include <fst/shortest-path.h>
+#include <unordered_map>
 
 namespace fst {
 

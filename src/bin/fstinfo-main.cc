@@ -40,5 +40,5 @@ int fstinfo_main(int argc, char **argv) {
   s::Info(*ifst, FLAGS_test_properties, FLAGS_arc_filter, FLAGS_info_type,
           FLAGS_fst_verify);
 
-      return 0;
+  return 0;
 }

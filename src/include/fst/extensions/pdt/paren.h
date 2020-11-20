@@ -9,7 +9,7 @@
 #include <algorithm>
 #include <set>
 #include <unordered_map>
-#include <unordered_set>
+#include <vector>
 
 #include <fst/log.h>
 
@@ -17,6 +17,8 @@
 #include <fst/extensions/pdt/pdt.h>
 #include <fst/dfs-visit.h>
 #include <fst/fst.h>
+#include <unordered_map>
+#include <unordered_set>
 
 
 namespace fst {
@@ -306,10 +308,11 @@ class PdtBalanceData {
   using OpenParenSet = std::unordered_set<State, StateHash>;
 
   // Maps from open paren destination state to parenthesis ID.
-  using OpenParenMap = std::unordered_multimap<StateId, Label>;
+  using OpenParenMap = std::unordered_map<StateId, std::vector<Label>>;
 
   // Maps from open paren state to source states of matching close parens
-  using CloseParenMap = std::unordered_multimap<State, StateId, StateHash>;
+  using CloseParenMap =
+      std::unordered_map<State, std::vector<StateId>, StateHash>;
 
   // Maps from open paren state to close source set ID.
   using CloseSourceMap = std::unordered_map<State, ssize_t, StateHash>;
@@ -326,9 +329,8 @@ class PdtBalanceData {
   // Adds an open parenthesis with destination state open_dest.
   void OpenInsert(Label paren_id, StateId open_dest) {
     const State key(paren_id, open_dest);
-    if (!open_paren_set_.count(key)) {
-      open_paren_set_.insert(key);
-      open_paren_map_.emplace(open_dest, paren_id);
+    if (open_paren_set_.insert(key).second) {
+      open_paren_map_[open_dest].push_back(paren_id);
     }
   }
 
@@ -338,7 +340,7 @@ class PdtBalanceData {
   void CloseInsert(Label paren_id, StateId open_dest, StateId close_source) {
     const State key(paren_id, open_dest);
     if (open_paren_set_.count(key)) {
-      close_paren_map_.emplace(key, close_source);
+      close_paren_map_[key].push_back(close_source);
     }
   }
 
@@ -359,25 +361,24 @@ class PdtBalanceData {
   // parentheses entering state open_dest) are finished. Must be called before
   // Find(open_dest).
   void FinishInsert(StateId open_dest) {
-    std::vector<StateId> close_sources;
-    for (auto oit = open_paren_map_.find(open_dest);
-         oit != open_paren_map_.end() && oit->first == open_dest;) {
-      const auto paren_id = oit->second;
-      close_sources.clear();
-      const State key(paren_id, open_dest);
-      open_paren_set_.erase(open_paren_set_.find(key));
-      for (auto cit = close_paren_map_.find(key);
-           cit != close_paren_map_.end() && cit->first == key;) {
-        close_sources.push_back(cit->second);
-        close_paren_map_.erase(cit++);
+    const auto open_parens = open_paren_map_.find(open_dest);
+    if (open_parens != open_paren_map_.end()) {
+      for (const Label paren_id : open_parens->second) {
+        const State key(paren_id, open_dest);
+        open_paren_set_.erase(key);
+        const auto close_paren_it = close_paren_map_.find(key);
+        CHECK(close_paren_it != close_paren_map_.end());
+        std::vector<StateId> &close_sources = close_paren_it->second;
+        std::sort(close_sources.begin(), close_sources.end());
+        auto unique_end =
+            std::unique(close_sources.begin(), close_sources.end());
+        close_sources.resize(unique_end - close_sources.begin());
+        if (!close_sources.empty()) {
+          close_source_map_[key] = close_source_sets_.FindId(close_sources);
+        }
+        close_paren_map_.erase(close_paren_it);
       }
-      std::sort(close_sources.begin(), close_sources.end());
-      auto unique_end = std::unique(close_sources.begin(), close_sources.end());
-      close_sources.resize(unique_end - close_sources.begin());
-      if (!close_sources.empty()) {
-        close_source_map_[key] = close_source_sets_.FindId(close_sources);
-      }
-      open_paren_map_.erase(oit++);
+      open_paren_map_.erase(open_parens);
     }
   }
 

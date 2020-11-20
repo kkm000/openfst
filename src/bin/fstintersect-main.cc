@@ -18,6 +18,7 @@ DECLARE_bool(connect);
 int fstintersect_main(int argc, char **argv) {
   namespace s = fst::script;
   using fst::ComposeFilter;
+  using fst::IntersectOptions;
   using fst::script::FstClass;
   using fst::script::VectorFstClass;
 
@@ -57,7 +58,7 @@ int fstintersect_main(int argc, char **argv) {
     return 1;
   }
 
-  const fst::IntersectOptions opts(FLAGS_connect, compose_filter);
+  const IntersectOptions opts(FLAGS_connect, compose_filter);
 
   s::Intersect(*ifst1, *ifst2, &ofst, opts);
 

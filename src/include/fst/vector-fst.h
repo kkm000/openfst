@@ -93,7 +93,7 @@ class VectorState {
   }
 
   template <class... T>
-  void EmplaceArc(T&&... ctor_args) {
+  void EmplaceArc(T &&... ctor_args) {
     arcs_.emplace_back(std::forward<T>(ctor_args)...);
     IncrementNumEpsilons(arcs_.back());
   }
@@ -230,7 +230,7 @@ class VectorFstBaseImpl : public FstImpl<typename S::Arc> {
   }
 
   template <class... T>
-  void EmplaceArc(StateId state, T&&... ctor_args) {
+  void EmplaceArc(StateId state, T &&... ctor_args) {
     states_[state]->EmplaceArc(std::forward<T>(ctor_args)...);
   }
 
@@ -386,7 +386,7 @@ class VectorFstImpl : public VectorFstBaseImpl<S> {
   }
 
   template <class... T>
-  void EmplaceArc(StateId state, T&&... ctor_args) {
+  void EmplaceArc(StateId state, T &&... ctor_args) {
     BaseImpl::EmplaceArc(state, std::forward<T>(ctor_args)...);
     UpdatePropertiesAfterAddArc(state);
   }
@@ -420,9 +420,8 @@ class VectorFstImpl : public VectorFstBaseImpl<S> {
     const size_t num_arcs{vstate->NumArcs()};
     if (num_arcs) {
       const auto &arc = vstate->GetArc(num_arcs - 1);
-      const auto *parc = (num_arcs < 2)
-                         ? nullptr
-                         : &(vstate->GetArc(num_arcs - 2));
+      const auto *parc =
+          (num_arcs < 2) ? nullptr : &(vstate->GetArc(num_arcs - 2));
       SetProperties(AddArcProperties(Properties(), state, arc, parc));
     }
   }
@@ -550,7 +549,7 @@ class VectorFst : public ImplToMutableFst<internal::VectorFstImpl<S>> {
   }
 
   template <class... T>
-  void EmplaceArc(StateId state, T&&... ctor_args) {
+  void EmplaceArc(StateId state, T &&... ctor_args) {
     MutateCheck();
     GetMutableImpl()->EmplaceArc(state, std::forward<T>(ctor_args)...);
   }

@@ -9,7 +9,7 @@
 
 DEFINE_int64(phi_fst_phi_label, 0,
              "Label of transitions to be interpreted as phi ('failure') "
-              "transitions");
+             "transitions");
 DEFINE_bool(phi_fst_phi_loop, true,
             "When true, a phi self loop consumes a symbol");
 DEFINE_string(phi_fst_rewrite_mode, "auto",

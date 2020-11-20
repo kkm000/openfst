@@ -12,6 +12,7 @@
 #include <fst/types.h>
 #include <fst/extensions/mpdt/mpdt.h>
 #include <fst/fst.h>
+#include <unordered_set>
 
 namespace fst {
 
@@ -124,23 +125,19 @@ MPdtInfo<Arc, nlevels>::MPdtInfo(
         const auto level = paren_levels[arc.ilabel];
         if (arc.ilabel == open_paren) {
           ++nopen_parens_[level];
-          if (!paren_set.count(open_paren)) {
+          if (paren_set.insert(open_paren).second) {
             ++nuniq_open_parens_[level];
-            paren_set.insert(open_paren);
           }
-          if (!open_paren_state_set.count(arc.nextstate)) {
+          if (open_paren_state_set.insert(arc.nextstate).second) {
             ++nopen_paren_states_[level];
-            open_paren_state_set.insert(arc.nextstate);
           }
         } else {
           ++nclose_parens_[level];
-          if (!paren_set.count(close_paren)) {
+          if (paren_set.insert(close_paren).second) {
             ++nuniq_close_parens_[level];
-            paren_set.insert(close_paren);
           }
-          if (!close_paren_state_set.count(s)) {
+          if (close_paren_state_set.insert(s).second) {
             ++nclose_paren_states_[level];
-            close_paren_state_set.insert(s);
           }
         }
       }

@@ -51,7 +51,14 @@ class LabelReachableData {
 
   int NumIntervalSets() const { return interval_sets_.size(); }
 
-  std::unordered_map<Label, Label> *Label2Index() {
+  std::unordered_map<Label, Label> *MutableLabel2Index() {
+    if (!have_relabel_data_) {
+      FSTERROR() << "LabelReachableData: No relabeling data";
+    }
+    return &label2index_;
+  }
+
+  const std::unordered_map<Label, Label> *Label2Index() const {
     if (!have_relabel_data_) {
       FSTERROR() << "LabelReachableData: No relabeling data";
     }
@@ -479,7 +486,7 @@ class LabelReachable {
     auto &interval_sets = *data_->MutableIntervalSets();
     interval_sets = state_reachable.IntervalSets();
     interval_sets.resize(ins);
-    auto &label2index = *data_->Label2Index();
+    auto &label2index = *data_->MutableLabel2Index();
     for (const auto &kv : label2state_) {
       Label i = state2index[kv.second];
       label2index[kv.first] = i;

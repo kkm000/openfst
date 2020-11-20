@@ -65,28 +65,27 @@ void RemoveWeight(MutableFst<Arc> *fst, const typename Arc::Weight &weight,
   }
 }
 
-// Pushes the weights in FST in the direction defined by TYPE. If pushing
-// towards the initial state, the sum of the weight of the outgoing transitions
-// and final weight at a non-initial state is equal to One() in the resulting
-// machine. If pushing towards the final state, the same property holds on the
-// reverse machine.
+// Pushes the weights in FST in the requested direction. If pushing towards the
+// initial state, the sum of the weight of the outgoing transitions and final
+// weight at a non-initial state is equal to One() in the resulting machine. If
+// pushing towards the final state, the same property holds on the reverse
+// machine.
 //
 // Weight needs to be left distributive when pushing towards the initial state
 // and right distributive when pushing towards the final states.
 template <class Arc>
-void Push(MutableFst<Arc> *fst, ReweightType type, float delta = kShortestDelta,
-          bool remove_total_weight = false) {
+void Push(MutableFst<Arc> *fst, ReweightType type = REWEIGHT_TO_INITIAL,
+          float delta = kShortestDelta, bool remove_total_weight = false) {
   using Weight = typename Arc::Weight;
   std::vector<Weight> distance;
-  ShortestDistance(*fst, &distance, type == REWEIGHT_TO_INITIAL, delta);
-  auto total_weight = Weight::One();
+  const bool reverse = type == REWEIGHT_TO_INITIAL;
+  ShortestDistance(*fst, &distance, reverse, delta);
   if (remove_total_weight) {
-    total_weight =
-        ComputeTotalWeight(*fst, distance, type == REWEIGHT_TO_INITIAL);
-  }
-  Reweight(fst, distance, type);
-  if (remove_total_weight) {
-    RemoveWeight(fst, total_weight, type == REWEIGHT_TO_FINAL);
+    const auto total_weight = ComputeTotalWeight(*fst, distance, reverse);
+    Reweight(fst, distance, type);
+    RemoveWeight(fst, total_weight, !reverse);
+  } else {
+    Reweight(fst, distance, type);
   }
 }
 

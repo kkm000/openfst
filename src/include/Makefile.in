@@ -154,7 +154,7 @@ am__nobase_include_HEADERS_DIST = fst/accumulator.h fst/add-on.h \
 	fst/symbol-table.h fst/synchronize.h fst/test-properties.h \
 	fst/topsort.h fst/tuple-weight.h fst/types.h fst/union-find.h \
 	fst/union-weight.h fst/union.h fst/util.h fst/vector-fst.h \
-	fst/verify.h fst/visit.h fst/weight.h \
+	fst/verify.h fst/visit.h fst/windows_defs.inc fst/weight.h \
 	fst/extensions/compress/compress.h \
 	fst/extensions/compress/compressscript.h \
 	fst/extensions/compress/elias.h \
@@ -513,7 +513,7 @@ fst/state-table.h fst/statesort.h fst/string-weight.h fst/string.h \
 fst/symbol-table-ops.h fst/symbol-table.h fst/synchronize.h \
 fst/test-properties.h fst/topsort.h fst/tuple-weight.h fst/types.h \
 fst/union-find.h fst/union-weight.h fst/union.h fst/util.h fst/vector-fst.h \
-fst/verify.h fst/visit.h fst/weight.h \
+fst/verify.h fst/visit.h fst/windows_defs.inc fst/weight.h \
 $(compress_include_headers) \
 $(far_include_headers) \
 $(linear_include_headers) \
