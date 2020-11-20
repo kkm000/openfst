@@ -82,8 +82,8 @@ FstClass *FstClass::Read(std::istream &istrm, const std::string &source) {
 bool FstClass::WeightTypesMatch(const WeightClass &weight,
                                 const std::string &op_name) const {
   if (WeightType() != weight.Type()) {
-    FSTERROR() << "FST and weight with non-matching weight types passed to "
-               << op_name << ": " << WeightType() << " and " << weight.Type();
+    FSTERROR() << op_name << ": FST and weight with non-matching weight types: "
+               << WeightType() << " and " << weight.Type();
     return false;
   }
   return true;

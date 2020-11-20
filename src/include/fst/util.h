@@ -6,6 +6,7 @@
 #ifndef FST_UTIL_H_
 #define FST_UTIL_H_
 
+#include <array>
 #include <iostream>
 #include <iterator>
 #include <list>
@@ -59,7 +60,7 @@ inline std::istream &ReadType(std::istream &strm, T *t) {
 inline std::istream &ReadType(std::istream &strm, std::string *s) {  // NOLINT
   s->clear();
   int32 ns = 0;
-  strm.read(reinterpret_cast<char *>(&ns), sizeof(ns));
+  ReadType(strm, &ns);
   for (int32 i = 0; i < ns; ++i) {
     char c;
     strm.read(&c, 1);
@@ -113,6 +114,12 @@ std::istream &ReadContainerType(std::istream &strm, C *c, ReserveFn reserve) {
   return strm;
 }
 }  // namespace internal
+
+template <class T, size_t N>
+std::istream &ReadType(std::istream &strm, std::array<T, N> *c) {
+  for (auto &v : *c) ReadType(strm, &v);
+  return strm;
+}
 
 template <class... T>
 std::istream &ReadType(std::istream &strm, std::vector<T...> *c) {
@@ -168,7 +175,7 @@ inline std::ostream &WriteType(std::ostream &strm, const T t) {
 inline std::ostream &WriteType(std::ostream &strm,  // NOLINT
                                const std::string &s) {
   int32 ns = s.size();
-  strm.write(reinterpret_cast<const char *>(&ns), sizeof(ns));
+  WriteType(strm, ns);
   return strm.write(s.data(), ns);
 }
 
@@ -203,16 +210,26 @@ inline std::ostream &WriteType(std::ostream &strm,
 
 namespace internal {
 template <class C>
-std::ostream &WriteContainer(std::ostream &strm, const C &c) {
-  const int64 n = c.size();
-  WriteType(strm, n);
+std::ostream &WriteSequence(std::ostream &strm, const C &c) {
   for (const auto &e : c) {
     WriteType(strm, e);
   }
   return strm;
 }
 
+template <class C>
+std::ostream &WriteContainer(std::ostream &strm, const C &c) {
+  const int64 n = c.size();
+  WriteType(strm, n);
+  WriteSequence(strm, c);
+  return strm;
+}
 }  // namespace internal
+
+template <class T, size_t N>
+std::ostream &WriteType(std::ostream &strm, const std::array<T, N> &c) {
+  return internal::WriteSequence(strm, c);
+}
 
 template <typename... T>
 std::ostream &WriteType(std::ostream &strm, const std::vector<T...> &c) {
@@ -250,14 +267,12 @@ int64 StrToInt64(const std::string &s, const std::string &source, size_t nline,
                  bool allow_negative, bool *error = nullptr);
 
 template <typename Weight>
-Weight StrToWeight(const std::string &s, const std::string &source,
-                   size_t nline) {
+Weight StrToWeight(const std::string &s) {
   Weight w;
   std::istringstream strm(s);
   strm >> w;
   if (!strm) {
-    FSTERROR() << "StrToWeight: Bad weight = \"" << s
-               << "\", source = " << source << ", line = " << nline;
+    FSTERROR() << "StrToWeight: Bad weight: " << s;
     return Weight::NoWeight();
   }
   return w;

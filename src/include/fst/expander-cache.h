@@ -51,13 +51,13 @@ class SimpleVectorCacheState {
   using StateId = typename Arc::StateId;
 
   void Reset() {
-    final_ = Weight::Zero();
+    final_weight_ = Weight::Zero();
     niepsilons_ = 0;
     noepsilons_ = 0;
     arcs_.clear();
   }
 
-  Weight Final() const { return final_; }
+  Weight Final() const { return final_weight_; }
 
   size_t NumInputEpsilons() const { return niepsilons_; }
 
@@ -69,7 +69,7 @@ class SimpleVectorCacheState {
 
   const Arc *Arcs() const { return arcs_.empty() ? nullptr : &arcs_[0]; }
 
-  void SetFinal(Weight final) { final_ = final; }
+  void SetFinal(Weight weight) { final_weight_ = weight; }
 
   void ReserveArcs(size_t n) { arcs_.reserve(n); }
 
@@ -88,7 +88,7 @@ class SimpleVectorCacheState {
   int *MutableRefCount() const { return nullptr; }
 
  private:
-  Weight final_ = Weight::Zero();
+  Weight final_weight_ = Weight::Zero();
   size_t niepsilons_ = 0;  // Number of input epsilons.
   size_t noepsilons_ = 0;  // Number of output epsilons.
   std::vector<Arc> arcs_;

@@ -10,6 +10,7 @@
 #include <memory>
 #include <utility>
 
+#include <fst/types.h>
 #include <fst/log.h>
 
 #include <fst/cache.h>
@@ -589,13 +590,13 @@ class ComposeFst
       : ImplToFst<Impl>(CreateBase2(fst1, fst2, opts)) {}
 
   // See Fst<>::Copy() for doc.
-  ComposeFst(const ComposeFst<A, CacheStore> &fst, bool safe = false)
+  ComposeFst(const ComposeFst &fst, bool safe = false)
       : ImplToFst<Impl>(safe ? std::shared_ptr<Impl>(fst.GetImpl()->Copy())
                              : fst.GetSharedImpl()) {}
 
   // Get a copy of this ComposeFst. See Fst<>::Copy() for further doc.
-  ComposeFst<A, CacheStore> *Copy(bool safe = false) const override {
-    return new ComposeFst<A, CacheStore>(*this, safe);
+  ComposeFst *Copy(bool safe = false) const override {
+    return new ComposeFst(*this, safe);
   }
 
   inline void InitStateIterator(StateIteratorData<Arc> *data) const override;
@@ -770,9 +771,8 @@ class ComposeFstMatcher : public MatcherBase<typename CacheStore::Arc> {
     if (match_type_ == MATCH_OUTPUT) std::swap(loop_.ilabel, loop_.olabel);
   }
 
-  ComposeFstMatcher<CacheStore, Filter, StateTable> *Copy(
-      bool safe = false) const override {
-    return new ComposeFstMatcher<CacheStore, Filter, StateTable>(*this, safe);
+  ComposeFstMatcher *Copy(bool safe = false) const override {
+    return new ComposeFstMatcher(*this, safe);
   }
 
   MatchType Type(bool test) const override {

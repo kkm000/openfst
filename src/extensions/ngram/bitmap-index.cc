@@ -168,6 +168,10 @@ size_t BitmapIndex::get_index_ones_count(size_t array_index) const {
 }
 
 void BitmapIndex::BuildIndex(const uint64 *bits, size_t num_bits) {
+  // Primary counts are uint32s, so this is the most *set* bits we support
+  // for now.  Just check the number of *input* bits is less than this
+  // to keep things simple.
+  DCHECK_LT(num_bits, uint64{1} << 32);
   bits_ = bits;
   num_bits_ = num_bits;
   primary_index_.resize(primary_index_size());

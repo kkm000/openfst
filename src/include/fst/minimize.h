@@ -13,6 +13,7 @@
 #include <utility>
 #include <vector>
 
+#include <fst/types.h>
 #include <fst/log.h>
 
 #include <fst/arcsort.h>
@@ -129,7 +130,7 @@ class CyclicMinimizer {
       size_t result = p2;
       size_t current_ilabel = kNoLabel;
       for (ArcIterator<Fst<Arc>> aiter(fst_, s); !aiter.Done(); aiter.Next()) {
-        Label this_ilabel = aiter.Value().ilabel;
+        const Label this_ilabel = aiter.Value().ilabel;
         if (this_ilabel != current_ilabel) {  // Ignores repeats.
           result = p1 * result + this_ilabel;
           current_ilabel = this_ilabel;
@@ -215,8 +216,8 @@ class CyclicMinimizer {
   void Initialize(const ExpandedFst<Arc> &fst) {
     // Constructs Tr.
     Reverse(fst, &Tr_);
-    ILabelCompare<RevArc> ilabel_comp;
-    ArcSort(&Tr_, ilabel_comp);
+    static const ILabelCompare<RevArc> icomp;
+    ArcSort(&Tr_, icomp);
     // Tells the partition how many elements to allocate. The first state in
     // Tr_ is super-final state.
     P_.Initialize(Tr_.NumStates() - 1);
@@ -231,7 +232,7 @@ class CyclicMinimizer {
     // Prepares priority queue: opens arc iterator for each state in C, and
     // inserts into priority queue.
     for (PartitionIterator<StateId> siter(P_, C); !siter.Done(); siter.Next()) {
-      StateId s = siter.Value();
+      const auto s = siter.Value();
       if (Tr_.NumArcs(s + 1)) {
         aiter_queue_->push(new ArcIterator<Fst<RevArc>>(Tr_, s + 1));
       }
@@ -445,21 +446,19 @@ void MergeStates(const Partition<typename Arc::StateId> &partition,
 }
 
 template <class Arc>
-void AcceptorMinimize(MutableFst<Arc> *fst,
-                      bool allow_acyclic_minimization = true) {
-  if (!(fst->Properties(kAcceptor | kUnweighted, true) ==
-        (kAcceptor | kUnweighted))) {
-    FSTERROR() << "FST is not an unweighted acceptor";
-    fst->SetProperties(kError, kError);
-    return;
-  }
+void AcceptorMinimize(MutableFst<Arc> *fst) {
   // Connects FST before minimization, handles disconnected states.
   Connect(fst);
-  if (fst->NumStates() == 0) return;
-  if (allow_acyclic_minimization && fst->Properties(kAcyclic, true)) {
+  if (fst->Start() == kNoStateId) return;
+  // The Revuz acyclic algorithm won't work for nondeterministic inputs, so if
+  // the input is nondeterministic, we force the use of the Hopcroft cyclic
+  // algorithm instead.
+  static constexpr auto revuz_props = kAcyclic | kIDeterministic;
+  if (fst->Properties(revuz_props, true) == revuz_props) {
     // Acyclic minimization (Revuz).
     VLOG(2) << "Acyclic minimization";
-    ArcSort(fst, ILabelCompare<Arc>());
+    static const ILabelCompare<Arc> comp;
+    ArcSort(fst, comp);
     AcyclicMinimizer<Arc> minimizer(*fst);
     MergeStates(minimizer.GetPartition(), fst);
   } else {
@@ -474,31 +473,27 @@ void AcceptorMinimize(MutableFst<Arc> *fst,
   ArcUniqueMapper<Arc> mapper(*fst);
   StateMap(fst, mapper);
 }
-
 }  // namespace internal
 
-// In place minimization of deterministic weighted automata and transducers,
-// and also non-deterministic ones if they use an idempotent semiring.
-// For transducers, if the 'sfst' argument is not null, the algorithm
-// produces a compact factorization of the minimal transducer.
+// In place minimization of deterministic weighted automata and transducers, and
+// also non-deterministic ones if they use an idempotent semiring. For
+// transducers, if the 'sfst' argument is not null, the algorithm produces a
+// compact factorization of the minimal transducer.
 //
-// In the acyclic deterministic case, we use an algorithm from Revuz that is
-// linear in the number of arcs (edges) in the machine.
+// In the acyclic deterministic case, we use an algorithm from Revuz; this has
+// complexity O(e).
 //
-// In the cyclic or non-deterministic case, we use the classical Hopcroft
+// In cyclic and non-deterministic cases, we use the classical Hopcroft
 // minimization (which was presented for the deterministic case but which
 // also works for non-deterministic FSTs); this has complexity O(e log v).
-//
 template <class Arc>
 void Minimize(MutableFst<Arc> *fst, MutableFst<Arc> *sfst = nullptr,
               float delta = kShortestDelta, bool allow_nondet = false) {
   using Weight = typename Arc::Weight;
-  const auto props = fst->Properties(
-      kAcceptor | kIDeterministic | kWeighted | kUnweighted, true);
-  bool allow_acyclic_minimization;
-  if (props & kIDeterministic) {
-    allow_acyclic_minimization = true;
-  } else {
+  static constexpr auto minimize_props =
+      kAcceptor | kIDeterministic | kWeighted | kUnweighted;
+  const auto props = fst->Properties(minimize_props, true);
+  if (!(props & kIDeterministic)) {
     // Our approach to minimization of non-deterministic FSTs will only work in
     // idempotent semirings---for non-deterministic inputs, a state could have
     // multiple transitions to states that will get merged, and we'd have to
@@ -514,26 +509,18 @@ void Minimize(MutableFst<Arc> *fst, MutableFst<Arc> *sfst = nullptr,
                  << "allow_nondet = false";
       return;
     }
-    // The Revuz algorithm won't work for nondeterministic inputs, so if the
-    // input is nondeterministic, we'll have to pass a bool saying not to use
-    // that algorithm. We check at this level rather than in AcceptorMinimize(),
-    // because it's possible that the FST at this level could be deterministic,
-    // but a harmless type of non-determinism could be introduced by Encode()
-    // (thanks to kEncodeWeights, if the FST has epsilons and has a final
-    // weight with weights equal to some epsilon arc.)
-    allow_acyclic_minimization = false;
   }
-  if (!(props & kAcceptor)) {  // Weighted transducer.
+  if ((props & kAcceptor) != kAcceptor) {  // Transducer.
     VectorFst<GallicArc<Arc, GALLIC_LEFT>> gfst;
     ArcMap(*fst, &gfst, ToGallicMapper<Arc, GALLIC_LEFT>());
     fst->DeleteStates();
     gfst.SetProperties(kAcceptor, kAcceptor);
     Push(&gfst, REWEIGHT_TO_INITIAL, delta);
     ArcMap(&gfst, QuantizeMapper<GallicArc<Arc, GALLIC_LEFT>>(delta));
-    EncodeMapper<GallicArc<Arc, GALLIC_LEFT>> encoder(
-        kEncodeLabels | kEncodeWeights, ENCODE);
+    EncodeMapper<GallicArc<Arc, GALLIC_LEFT>> encoder(kEncodeLabels |
+                                                      kEncodeWeights);
     Encode(&gfst, &encoder);
-    internal::AcceptorMinimize(&gfst, allow_acyclic_minimization);
+    internal::AcceptorMinimize(&gfst);
     Decode(&gfst, encoder);
     if (!sfst) {
       FactorWeightFst<GallicArc<Arc, GALLIC_LEFT>,
@@ -549,15 +536,17 @@ void Minimize(MutableFst<Arc> *fst, MutableFst<Arc> *sfst = nullptr,
       ArcMap(gfst, fst, &mapper);
       fst->SetOutputSymbols(sfst->InputSymbols());
     }
-  } else if (props & kWeighted) {  // Weighted acceptor.
+  } else if ((props & kWeighted) == kWeighted) {  // Weighted acceptor.
     Push(fst, REWEIGHT_TO_INITIAL, delta);
     ArcMap(fst, QuantizeMapper<Arc>(delta));
-    EncodeMapper<Arc> encoder(kEncodeLabels | kEncodeWeights, ENCODE);
+    // We encode labels even though this is already an acceptor because weight
+    // encoding gives us a transducer.
+    EncodeMapper<Arc> encoder(kEncodeLabels | kEncodeWeights);
     Encode(fst, &encoder);
-    internal::AcceptorMinimize(fst, allow_acyclic_minimization);
+    internal::AcceptorMinimize(fst);
     Decode(fst, encoder);
   } else {  // Unweighted acceptor.
-    internal::AcceptorMinimize(fst, allow_acyclic_minimization);
+    internal::AcceptorMinimize(fst);
   }
 }
 

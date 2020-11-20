@@ -15,8 +15,8 @@
 #include <fst/extensions/far/create.h>
 #include <fst/extensions/far/equal.h>
 #include <fst/extensions/far/extract.h>
-#include <fst/extensions/far/far.h>
 #include <fst/extensions/far/far-class.h>
+#include <fst/extensions/far/far.h>
 #include <fst/extensions/far/info.h>
 #include <fst/extensions/far/isomorphic.h>
 #include <fst/extensions/far/print-strings.h>

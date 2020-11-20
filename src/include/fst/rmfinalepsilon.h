@@ -9,6 +9,8 @@
 #include <unordered_set>
 #include <vector>
 
+#include <fst/types.h>
+
 #include <fst/connect.h>
 #include <fst/mutable-fst.h>
 

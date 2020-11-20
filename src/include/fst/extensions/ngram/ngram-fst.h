@@ -17,6 +17,7 @@
 #include <vector>
 
 #include <fst/compat.h>
+#include <fst/types.h>
 #include <fst/log.h>
 #include <fst/extensions/ngram/bitmap-index.h>
 #include <fstream>
@@ -109,7 +110,7 @@ class NGramFstImpl : public FstImpl<A> {
     strm.read(reinterpret_cast<char *>(&num_final), sizeof(num_final));
     size_t size = Storage(num_states, num_futures, num_final);
     MappedFile *data_region = MappedFile::Allocate(size);
-    char *data = reinterpret_cast<char *>(data_region->mutable_data());
+    char *data = static_cast<char *>(data_region->mutable_data());
     // Copy num_states, num_futures and num_final back into data.
     memcpy(data, reinterpret_cast<char *>(&num_states), sizeof(num_states));
     memcpy(data + sizeof(num_states), reinterpret_cast<char *>(&num_futures),
@@ -596,7 +597,7 @@ NGramFstImpl<A>::NGramFstImpl(const Fst<A> &fst,
   Label label = kNoLabel;
   const size_t storage = Storage(num_states, num_futures, num_final);
   MappedFile *data_region = MappedFile::Allocate(storage);
-  char *data = reinterpret_cast<char *>(data_region->mutable_data());
+  char *data = static_cast<char *>(data_region->mutable_data());
   memset(data, 0, storage);
   size_t offset = 0;
   memcpy(data + offset, reinterpret_cast<char *>(&num_states),

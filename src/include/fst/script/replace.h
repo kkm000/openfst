@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include <fst/types.h>
 #include <fst/replace.h>
 #include <fst/script/fst-class.h>
 

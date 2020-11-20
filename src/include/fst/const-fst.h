@@ -13,6 +13,7 @@
 
 // Google-only...
 // ...Google-only
+#include <fst/types.h>
 #include <fst/log.h>
 
 #include <fst/expanded-fst.h>
@@ -65,7 +66,7 @@ class ConstFstImpl : public FstImpl<A> {
 
   StateId Start() const { return start_; }
 
-  Weight Final(StateId s) const { return states_[s].weight; }
+  Weight Final(StateId s) const { return states_[s].final_weight; }
 
   StateId NumStates() const { return nstates_; }
 
@@ -75,8 +76,7 @@ class ConstFstImpl : public FstImpl<A> {
 
   size_t NumOutputEpsilons(StateId s) const { return states_[s].noepsilons; }
 
-  static ConstFstImpl<Arc, Unsigned> *Read(std::istream &strm,
-                                           const FstReadOptions &opts);
+  static ConstFstImpl *Read(std::istream &strm, const FstReadOptions &opts);
 
   const Arc *Arcs(StateId s) const { return arcs_ + states_[s].pos; }
 
@@ -100,13 +100,13 @@ class ConstFstImpl : public FstImpl<A> {
 
   // States implemented by array *states_ below, arcs by (single) *arcs_.
   struct ConstState {
-    Weight weight;        // Final weight.
+    Weight final_weight;  // Final weight.
     Unsigned pos;         // Start of state's arcs in *arcs_.
     Unsigned narcs;       // Number of arcs (per state).
     Unsigned niepsilons;  // Number of input epsilons.
     Unsigned noepsilons;  // Number of output epsilons.
 
-    ConstState() : weight(Weight::Zero()) {}
+    ConstState() : final_weight(Weight::Zero()) {}
   };
 
   // Properties always true of this FST class.
@@ -159,13 +159,13 @@ ConstFstImpl<Arc, Unsigned>::ConstFstImpl(const Fst<Arc> &fst)
     ++nstates_;
     narcs_ += fst.NumArcs(siter.Value());
   }
-  states_region_.reset(MappedFile::Allocate(nstates_ * sizeof(*states_)));
-  arcs_region_.reset(MappedFile::Allocate(narcs_ * sizeof(*arcs_)));
-  states_ = reinterpret_cast<ConstState *>(states_region_->mutable_data());
-  arcs_ = reinterpret_cast<Arc *>(arcs_region_->mutable_data());
+  states_region_.reset(MappedFile::AllocateType<ConstState>(nstates_));
+  arcs_region_.reset(MappedFile::AllocateType<Arc>(narcs_));
+  states_ = static_cast<ConstState *>(states_region_->mutable_data());
+  arcs_ = static_cast<Arc *>(arcs_region_->mutable_data());
   size_t pos = 0;
   for (StateId s = 0; s < nstates_; ++s) {
-    states_[s].weight = fst.Final(s);
+    states_[s].final_weight = fst.Final(s);
     states_[s].pos = pos;
     states_[s].narcs = 0;
     states_[s].niepsilons = 0;
@@ -191,9 +191,7 @@ ConstFstImpl<Arc, Unsigned>::ConstFstImpl(const Fst<Arc> &fst)
 template <class Arc, class Unsigned>
 ConstFstImpl<Arc, Unsigned> *ConstFstImpl<Arc, Unsigned>::Read(
     std::istream &strm, const FstReadOptions &opts) {
-  using ConstState = typename ConstFstImpl<Arc, Unsigned>::ConstState;
-  std::unique_ptr<ConstFstImpl<Arc, Unsigned>> impl(
-      new ConstFstImpl<Arc, Unsigned>());
+  std::unique_ptr<ConstFstImpl> impl(new ConstFstImpl());
   FstHeader hdr;
   if (!impl->ReadHeader(strm, opts, kMinFileVersion, &hdr)) return nullptr;
   impl->start_ = hdr.Start();
@@ -215,7 +213,7 @@ ConstFstImpl<Arc, Unsigned> *ConstFstImpl<Arc, Unsigned>::Read(
     return nullptr;
   }
   impl->states_ =
-      reinterpret_cast<ConstState *>(impl->states_region_->mutable_data());
+      static_cast<ConstState *>(impl->states_region_->mutable_data());
   if ((hdr.GetFlags() & FstHeader::IS_ALIGNED) && !AlignInput(strm)) {
     LOG(ERROR) << "ConstFst::Read: Alignment failed: " << opts.source;
     return nullptr;
@@ -227,7 +225,7 @@ ConstFstImpl<Arc, Unsigned> *ConstFstImpl<Arc, Unsigned>::Read(
     LOG(ERROR) << "ConstFst::Read: Read failed: " << opts.source;
     return nullptr;
   }
-  impl->arcs_ = reinterpret_cast<Arc *>(impl->arcs_region_->mutable_data());
+  impl->arcs_ = static_cast<Arc *>(impl->arcs_region_->mutable_data());
   return impl.release();
 }
 
@@ -257,28 +255,25 @@ class ConstFst : public ImplToExpandedFst<internal::ConstFstImpl<A, Unsigned>> {
   explicit ConstFst(const Fst<Arc> &fst)
       : ImplToExpandedFst<Impl>(std::make_shared<Impl>(fst)) {}
 
-  ConstFst(const ConstFst<A, Unsigned> &fst, bool safe = false)
+  ConstFst(const ConstFst &fst, bool safe = false)
       : ImplToExpandedFst<Impl>(fst) {}
 
   // Gets a copy of this ConstFst. See Fst<>::Copy() for further doc.
-  ConstFst<A, Unsigned> *Copy(bool safe = false) const override {
-    return new ConstFst<A, Unsigned>(*this, safe);
+  ConstFst *Copy(bool safe = false) const override {
+    return new ConstFst(*this, safe);
   }
 
   // Reads a ConstFst from an input stream, returning nullptr on error.
-  static ConstFst<A, Unsigned> *Read(std::istream &strm,
-                                     const FstReadOptions &opts) {
+  static ConstFst *Read(std::istream &strm, const FstReadOptions &opts) {
     auto *impl = Impl::Read(strm, opts);
-    return impl ? new ConstFst<A, Unsigned>(std::shared_ptr<Impl>(impl))
-                : nullptr;
+    return impl ? new ConstFst(std::shared_ptr<Impl>(impl)) : nullptr;
   }
 
   // Read a ConstFst from a file; return nullptr on error; empty source reads
   // from standard input.
-  static ConstFst<A, Unsigned> *Read(const std::string &source) {
+  static ConstFst *Read(const std::string &source) {
     auto *impl = ImplToExpandedFst<Impl>::Read(source);
-    return impl ? new ConstFst<A, Unsigned>(std::shared_ptr<Impl>(impl))
-                : nullptr;
+    return impl ? new ConstFst(std::shared_ptr<Impl>(impl)) : nullptr;
   }
 
   bool Write(std::ostream &strm, const FstWriteOptions &opts) const override {
@@ -367,10 +362,10 @@ bool ConstFst<Arc, Unsigned>::WriteFst(const FST &fst, std::ostream &strm,
   }
   size_t pos = 0;
   size_t states = 0;
-  typename ConstFst<Arc, Unsigned>::ConstState state;
+  ConstState state;
   for (StateIterator<FST> siter(fst); !siter.Done(); siter.Next()) {
     const auto s = siter.Value();
-    state.weight = fst.Final(s);
+    state.final_weight = fst.Final(s);
     state.pos = pos;
     state.narcs = fst.NumArcs(s);
     state.niepsilons = fst.NumInputEpsilons(s);

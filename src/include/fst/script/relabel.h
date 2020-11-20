@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include <fst/types.h>
 #include <fst/relabel.h>
 #include <fst/script/fst-class.h>
 

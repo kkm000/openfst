@@ -10,6 +10,7 @@
 #include <unordered_set>
 #include <vector>
 
+#include <fst/types.h>
 #include <fst/extensions/pdt/pdt.h>
 #include <fst/fst.h>
 

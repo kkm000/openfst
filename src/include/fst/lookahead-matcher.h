@@ -12,6 +12,7 @@
 #include <vector>
 
 #include <fst/flags.h>
+#include <fst/types.h>
 #include <fst/log.h>
 
 #include <fst/add-on.h>
@@ -48,7 +49,7 @@ namespace fst {
 //
 //   // If safe = true, the copy is thread-safe (except the lookahead FST is
 //   // preserved). See Fst<>::Copy() for further doc.
-//   LookaheadMatcher<FST> *Copy(bool safe = false) const override;
+//   LookaheadMatcher *Copy(bool safe = false) const override;
 
 //  // Below are methods for looking ahead for a match to a label and more
 //  // generally, to a rational set. Each returns false if there is definitely
@@ -180,12 +181,12 @@ class TrivialLookAheadMatcher
       : matcher_(fst, match_type) {}
 
   // This makes a copy of the FST.
-  TrivialLookAheadMatcher(const TrivialLookAheadMatcher<M> &lmatcher,
+  TrivialLookAheadMatcher(const TrivialLookAheadMatcher &lmatcher,
                           bool safe = false)
       : matcher_(lmatcher.matcher_, safe) {}
 
-  TrivialLookAheadMatcher<M> *Copy(bool safe = false) const override {
-    return new TrivialLookAheadMatcher<M>(*this, safe);
+  TrivialLookAheadMatcher *Copy(bool safe = false) const override {
+    return new TrivialLookAheadMatcher(*this, safe);
   }
 
   MatchType Type(bool test) const override { return matcher_.Type(test); }
@@ -256,7 +257,7 @@ class ArcLookAheadMatcher : public LookAheadMatcherBase<typename M::FST::Arc> {
   // This makes a copy of the FST.
   ArcLookAheadMatcher(
       const FST &fst, MatchType match_type,
-      std::shared_ptr<MatcherData> data = std::shared_ptr<MatcherData>())
+      std::shared_ptr<MatcherData> data = nullptr)
       : matcher_(fst, match_type),
         fst_(matcher_.GetFst()),
         lfst_(nullptr),
@@ -265,23 +266,22 @@ class ArcLookAheadMatcher : public LookAheadMatcherBase<typename M::FST::Arc> {
   // This doesn't copy the FST.
   ArcLookAheadMatcher(
       const FST *fst, MatchType match_type,
-      std::shared_ptr<MatcherData> data = std::shared_ptr<MatcherData>())
+      std::shared_ptr<MatcherData> data = nullptr)
       : matcher_(fst, match_type),
         fst_(matcher_.GetFst()),
         lfst_(nullptr),
         state_(kNoStateId) {}
 
   // This makes a copy of the FST.
-  ArcLookAheadMatcher(const ArcLookAheadMatcher<M, flags> &lmatcher,
-                      bool safe = false)
+  ArcLookAheadMatcher(const ArcLookAheadMatcher &lmatcher, bool safe = false)
       : matcher_(lmatcher.matcher_, safe),
         fst_(matcher_.GetFst()),
         lfst_(lmatcher.lfst_),
         state_(kNoStateId) {}
 
   // General matcher methods.
-  ArcLookAheadMatcher<M, flags> *Copy(bool safe = false) const override {
-    return new ArcLookAheadMatcher<M, flags>(*this, safe);
+  ArcLookAheadMatcher *Copy(bool safe = false) const override {
+    return new ArcLookAheadMatcher(*this, safe);
   }
 
   MatchType Type(bool test) const override { return matcher_.Type(test); }
@@ -316,9 +316,7 @@ class ArcLookAheadMatcher : public LookAheadMatcherBase<typename M::FST::Arc> {
 
   const MatcherData *GetData() const { return nullptr; }
 
-  std::shared_ptr<MatcherData> GetSharedData() const {
-    return std::shared_ptr<MatcherData>();
-  }
+  std::shared_ptr<MatcherData> GetSharedData() const { return nullptr; }
 
   // Look-ahead methods.
 
@@ -442,7 +440,7 @@ class LabelLookAheadMatcher
   // This makes a copy of the FST.
   LabelLookAheadMatcher(
       const FST &fst, MatchType match_type,
-      std::shared_ptr<MatcherData> data = std::shared_ptr<MatcherData>(),
+      std::shared_ptr<MatcherData> data = nullptr,
       Accumulator *accumulator = nullptr)
       : matcher_(fst, match_type),
         lfst_(nullptr),
@@ -454,7 +452,7 @@ class LabelLookAheadMatcher
   // This doesn't copy the FST.
   LabelLookAheadMatcher(
       const FST *fst, MatchType match_type,
-      std::shared_ptr<MatcherData> data = std::shared_ptr<MatcherData>(),
+      std::shared_ptr<MatcherData> data = nullptr,
       Accumulator *accumulator = nullptr)
       : matcher_(fst, match_type),
         lfst_(nullptr),
@@ -464,9 +462,8 @@ class LabelLookAheadMatcher
   }
 
   // This makes a copy of the FST.
-  LabelLookAheadMatcher(
-      const LabelLookAheadMatcher<M, flags, Accumulator, Reachable> &lmatcher,
-      bool safe = false)
+  LabelLookAheadMatcher(const LabelLookAheadMatcher &lmatcher,
+                        bool safe = false)
       : matcher_(lmatcher.matcher_, safe),
         lfst_(lmatcher.lfst_),
         label_reachable_(lmatcher.label_reachable_
@@ -475,10 +472,8 @@ class LabelLookAheadMatcher
         state_(kNoStateId),
         error_(lmatcher.error_) {}
 
-  LabelLookAheadMatcher<M, flags, Accumulator, Reachable> *Copy(
-      bool safe = false) const override {
-    return new LabelLookAheadMatcher<M, flags, Accumulator, Reachable>(*this,
-                                                                       safe);
+  LabelLookAheadMatcher *Copy(bool safe = false) const override {
+    return new LabelLookAheadMatcher(*this, safe);
   }
 
   MatchType Type(bool test) const override { return matcher_.Type(test); }
@@ -534,7 +529,7 @@ class LabelLookAheadMatcher
 
   std::shared_ptr<MatcherData> GetSharedData() const {
     return label_reachable_ ? label_reachable_->GetSharedData()
-                            : std::shared_ptr<MatcherData>();
+                            : nullptr;
   }
   // Checks if there is a matching (possibly super-final) transition at
   // (state_, s).
@@ -749,16 +744,15 @@ class LookAheadMatcher {
   }
 
   // This makes a copy of the FST.
-  LookAheadMatcher(const LookAheadMatcher<FST> &matcher, bool safe = false)
-      : base_(matcher.base_->Copy(safe)),
-        lookahead_(matcher.lookahead_) { }
+  LookAheadMatcher(const LookAheadMatcher &matcher, bool safe = false)
+      : base_(matcher.base_->Copy(safe)), lookahead_(matcher.lookahead_) {}
 
   // Takes ownership of base.
   explicit LookAheadMatcher(MatcherBase<Arc> *base)
       : base_(base), lookahead_(false) {}
 
-  LookAheadMatcher<FST> *Copy(bool safe = false) const {
-    return new LookAheadMatcher<FST>(*this, safe);
+  LookAheadMatcher *Copy(bool safe = false) const {
+    return new LookAheadMatcher(*this, safe);
   }
 
   MatchType Type(bool test) const { return base_->Type(test); }

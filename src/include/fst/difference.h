@@ -73,12 +73,12 @@ class DifferenceFst : public ComposeFst<A> {
   }
 
   // See Fst<>::Copy() for doc.
-  DifferenceFst(const DifferenceFst<Arc> &fst, bool safe = false)
+  DifferenceFst(const DifferenceFst &fst, bool safe = false)
       : ComposeFst<Arc>(fst, safe) {}
 
   // Get a copy of this DifferenceFst. See Fst<>::Copy() for further doc.
-  DifferenceFst<Arc> *Copy(bool safe = false) const override {
-    return new DifferenceFst<Arc>(*this, safe);
+  DifferenceFst *Copy(bool safe = false) const override {
+    return new DifferenceFst(*this, safe);
   }
 
  private:

@@ -12,6 +12,7 @@
 #include <unordered_map>
 #include <utility>
 
+#include <fst/types.h>
 #include <fst/log.h>
 
 #include <fst/cache.h>
@@ -540,12 +541,12 @@ class ArcMapFst : public ImplToFst<internal::ArcMapFstImpl<A, B, C>> {
             std::make_shared<Impl>(fst, mapper, ArcMapFstOptions())) {}
 
   // See Fst<>::Copy() for doc.
-  ArcMapFst(const ArcMapFst<A, B, C> &fst, bool safe = false)
+  ArcMapFst(const ArcMapFst &fst, bool safe = false)
       : ImplToFst<Impl>(fst, safe) {}
 
   // Get a copy of this ArcMapFst. See Fst<>::Copy() for further doc.
-  ArcMapFst<A, B, C> *Copy(bool safe = false) const override {
-    return new ArcMapFst<A, B, C>(*this, safe);
+  ArcMapFst *Copy(bool safe = false) const override {
+    return new ArcMapFst(*this, safe);
   }
 
   inline void InitStateIterator(StateIteratorData<B> *data) const override;

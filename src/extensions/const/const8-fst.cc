@@ -1,8 +1,8 @@
 // See www.openfst.org for extensive documentation on this weighted
 // finite-state transducer library.
 
-#include <fst/fst.h>
 #include <fst/const-fst.h>
+#include <fst/fst.h>
 
 namespace fst {
 

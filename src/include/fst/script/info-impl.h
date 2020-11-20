@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#include <fst/types.h>
 #include <fst/connect.h>
 #include <fst/dfs-visit.h>
 #include <fst/fst.h>
@@ -306,8 +307,6 @@ class FstInfo {
   bool long_info_;
   std::string arc_type_;
 };
-
-void InfoImpl(const FstInfo &fstinfo);
 
 }  // namespace fst
 

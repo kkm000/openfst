@@ -11,6 +11,7 @@
 #include <utility>
 #include <vector>
 
+#include <fst/types.h>
 #include <fst/log.h>
 
 #include <fst/cache.h>
@@ -390,12 +391,12 @@ class RelabelFst : public ImplToFst<internal::RelabelFstImpl<A>> {
                                                opts)) {}
 
   // See Fst<>::Copy() for doc.
-  RelabelFst(const RelabelFst<Arc> &fst, bool safe = false)
+  RelabelFst(const RelabelFst &fst, bool safe = false)
       : ImplToFst<Impl>(fst, safe) {}
 
   // Gets a copy of this RelabelFst. See Fst<>::Copy() for further doc.
-  RelabelFst<Arc> *Copy(bool safe = false) const override {
-    return new RelabelFst<Arc>(*this, safe);
+  RelabelFst *Copy(bool safe = false) const override {
+    return new RelabelFst(*this, safe);
   }
 
   void InitStateIterator(StateIteratorData<Arc> *data) const override;

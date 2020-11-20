@@ -12,6 +12,8 @@
 #include <unordered_set>
 #include <vector>
 
+#include <fst/types.h>
+
 #include <fst/cache.h>
 #include <fst/test-properties.h>
 
@@ -333,12 +335,12 @@ class SynchronizeFst : public ImplToFst<internal::SynchronizeFstImpl<A>> {
       : ImplToFst<Impl>(std::make_shared<Impl>(fst, opts)) {}
 
   // See Fst<>::Copy() for doc.
-  SynchronizeFst(const SynchronizeFst<Arc> &fst, bool safe = false)
+  SynchronizeFst(const SynchronizeFst &fst, bool safe = false)
       : ImplToFst<Impl>(fst, safe) {}
 
   // Gets a copy of this SynchronizeFst. See Fst<>::Copy() for further doc.
-  SynchronizeFst<Arc> *Copy(bool safe = false) const override {
-    return new SynchronizeFst<Arc>(*this, safe);
+  SynchronizeFst *Copy(bool safe = false) const override {
+    return new SynchronizeFst(*this, safe);
   }
 
   inline void InitStateIterator(StateIteratorData<Arc> *data) const override;

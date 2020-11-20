@@ -9,6 +9,7 @@
 #include <forward_list>
 #include <vector>
 
+#include <fst/types.h>
 #include <fst/log.h>
 #include <fst/extensions/pdt/paren.h>
 #include <fst/extensions/pdt/pdt.h>

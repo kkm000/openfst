@@ -8,6 +8,7 @@
 
 #include <vector>
 
+#include <fst/types.h>
 #include <fst/extensions/mpdt/mpdt.h>
 #include <fst/extensions/pdt/paren.h>
 #include <fst/cache.h>

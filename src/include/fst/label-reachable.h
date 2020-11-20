@@ -11,6 +11,7 @@
 #include <utility>
 #include <vector>
 
+#include <fst/types.h>
 #include <fst/log.h>
 
 #include <fst/accumulator.h>
@@ -61,9 +62,9 @@ class LabelReachableData {
 
   Label FinalLabel() const { return final_label_; }
 
-  static LabelReachableData<Label> *Read(std::istream &istrm,
-                                         const FstReadOptions &opts) {
-    auto *data = new LabelReachableData<Label>();
+  static LabelReachableData *Read(std::istream &istrm,
+                                  const FstReadOptions &opts) {
+    auto *data = new LabelReachableData();
     ReadType(istrm, &data->reach_input_);
     ReadType(istrm, &data->keep_relabel_data_);
     data->have_relabel_data_ = data->keep_relabel_data_;

@@ -8,6 +8,8 @@
 
 #include <string>
 
+#include <fst/types.h>
+
 #include <fst/tuple-weight.h>
 #include <fst/weight.h>
 

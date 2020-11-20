@@ -186,13 +186,10 @@ std::ostream &operator<<(std::ostream &o, const WeightClass &c);
 
 // Registration for generic weight types.
 
-using StrToWeightImplBaseT = WeightImplBase *(*)(const std::string &str,
-                                                 const std::string &src,
-                                                 size_t nline);
+using StrToWeightImplBaseT = WeightImplBase *(*)(const std::string &str);
 
 template <class W>
-WeightImplBase *StrToWeightImplBase(const std::string &str,
-                                    const std::string &src, size_t nline) {
+WeightImplBase *StrToWeightImplBase(const std::string &str) {
   if (str == WeightClass::__ZERO__) {
     return new WeightClassImpl<W>(W::Zero());
   } else if (str == WeightClass::__ONE__) {
@@ -200,7 +197,7 @@ WeightImplBase *StrToWeightImplBase(const std::string &str,
   } else if (str == WeightClass::__NOWEIGHT__) {
     return new WeightClassImpl<W>(W::NoWeight());
   }
-  return new WeightClassImpl<W>(StrToWeight<W>(str, src, nline));
+  return new WeightClassImpl<W>(StrToWeight<W>(str));
 }
 
 class WeightClassRegister

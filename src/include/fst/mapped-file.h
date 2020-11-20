@@ -49,11 +49,20 @@ class MappedFile {
   // factory function does not backoff to allocating and reading.
   static MappedFile *MapFromFileDescriptor(int fd, size_t pos, size_t size);
 
-  // Creates a MappedFile object with a new[]'ed block of memory of size. The
+  // Creates a MappedFile object with a new'ed block of memory of size. The
   // align argument can be used to specify a desired block alignment.
   // This is RECOMMENDED FOR INTERNAL USE ONLY as it may change in future
   // releases.
   static MappedFile *Allocate(size_t size, size_t align = kArchAlignment);
+
+  // Creates a MappedFile object with a new'ed block of memory with enough
+  // space for count elements of type T, correctly aligned for the type.
+  // This is RECOMMENDED FOR INTERNAL USE ONLY as it may change in future
+  // releases.
+  template <typename T>
+  static MappedFile *AllocateType(size_t count) {
+    return Allocate(sizeof(T) * count, alignof(T));
+  }
 
   // Creates a MappedFile object pointing to a borrowed reference to data. This
   // block of memory is not owned by the MappedFile object and will not be

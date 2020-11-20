@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include <fst/types.h>
 #include <fst/queue.h>
 #include <fst/rmepsilon.h>
 #include <fst/script/fst-class.h>

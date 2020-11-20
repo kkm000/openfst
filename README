@@ -1,5 +1,3 @@
-OpenFst: Release 1.7.3.
-
 OpenFst is a library for constructing, combining, optimizing, and searching
 weighted finite-state transducers (FSTs).
 

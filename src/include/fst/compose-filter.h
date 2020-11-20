@@ -7,6 +7,8 @@
 #ifndef FST_COMPOSE_FILTER_H_
 #define FST_COMPOSE_FILTER_H_
 
+#include <fst/types.h>
+
 #include <fst/filter-state.h>
 #include <fst/fst-decl.h>  // For optional argument declarations
 #include <fst/fst.h>
@@ -96,7 +98,7 @@ class NullComposeFilter {
         fst1_(matcher1_->GetFst()),
         fst2_(matcher2_->GetFst()) {}
 
-  NullComposeFilter(const NullComposeFilter<M1, M2> &filter, bool safe = false)
+  NullComposeFilter(const NullComposeFilter &filter, bool safe = false)
       : matcher1_(filter.matcher1_->Copy(safe)),
         matcher2_(filter.matcher2_->Copy(safe)),
         fst1_(matcher1_->GetFst()),
@@ -529,7 +531,7 @@ class MultiEpsFilter {
       : filter_(fst1, fst2, matcher1, matcher2),
         keep_multi_eps_(keep_multi_eps) {}
 
-  MultiEpsFilter(const MultiEpsFilter<Filter> &filter, bool safe = false)
+  MultiEpsFilter(const MultiEpsFilter &filter, bool safe = false)
       : filter_(filter.filter_, safe),
         keep_multi_eps_(filter.keep_multi_eps_) {}
 

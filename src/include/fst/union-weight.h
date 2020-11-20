@@ -15,6 +15,8 @@
 #include <string>
 #include <utility>
 
+#include <fst/types.h>
+
 #include <fst/weight.h>
 
 

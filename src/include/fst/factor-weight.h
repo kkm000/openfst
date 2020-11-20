@@ -12,6 +12,7 @@
 #include <utility>
 #include <vector>
 
+#include <fst/types.h>
 #include <fst/log.h>
 
 #include <fst/cache.h>
@@ -460,12 +461,12 @@ class FactorWeightFst
       : ImplToFst<Impl>(std::make_shared<Impl>(fst, opts)) {}
 
   // See Fst<>::Copy() for doc.
-  FactorWeightFst(const FactorWeightFst<Arc, FactorIterator> &fst, bool copy)
+  FactorWeightFst(const FactorWeightFst &fst, bool copy)
       : ImplToFst<Impl>(fst, copy) {}
 
   // Get a copy of this FactorWeightFst. See Fst<>::Copy() for further doc.
-  FactorWeightFst<Arc, FactorIterator> *Copy(bool copy = false) const override {
-    return new FactorWeightFst<Arc, FactorIterator>(*this, copy);
+  FactorWeightFst *Copy(bool copy = false) const override {
+    return new FactorWeightFst(*this, copy);
   }
 
   inline void InitStateIterator(StateIteratorData<Arc> *data) const override;

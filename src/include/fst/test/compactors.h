@@ -8,6 +8,7 @@
 
 #include <type_traits>
 
+#include <fst/types.h>
 #include <fst/arc.h>
 #include <fst/fst.h>
 #include <fst/vector-fst.h>

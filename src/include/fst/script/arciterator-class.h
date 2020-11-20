@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include <fst/types.h>
 #include <fst/fstlib.h>
 #include <fst/script/fst-class.h>
 
@@ -141,9 +142,7 @@ class MutableArcIteratorClassImpl
 
   void SetFlags(uint8 flags, uint8 mask) final { aiter_.SetFlags(flags, mask); }
 
-  void SetValue(const Arc &arc) { aiter_.SetValue(arc); }
-
-  void SetValue(const ArcClass &ac) final { aiter_.SetValue(ac.GetArc<Arc>()); }
+  void SetValue(const ArcClass &ac) final { SetValue(ac.GetArc<Arc>()); }
 
   // This is returned by value because it has not yet been constructed, and
   // is likely to participate in return-value optimization.
@@ -152,6 +151,8 @@ class MutableArcIteratorClassImpl
   ~MutableArcIteratorClassImpl() override {}
 
  private:
+  void SetValue(const Arc &arc) { aiter_.SetValue(arc); }
+
   MutableArcIterator<MutableFst<Arc>> aiter_;
 };
 

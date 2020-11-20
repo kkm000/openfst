@@ -10,6 +10,8 @@
 #include <string>
 #include <vector>
 
+#include <fst/types.h>
+
 namespace fst {
 
 // These functions determine the properties associated with the FST result of

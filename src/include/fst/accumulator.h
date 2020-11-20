@@ -220,7 +220,7 @@ class FastLogAccumulator {
         state_weights_(nullptr),
         error_(false) {}
 
-  FastLogAccumulator(const FastLogAccumulator<Arc> &acc, bool safe = false)
+  FastLogAccumulator(const FastLogAccumulator &acc, bool safe = false)
       : to_log_weight_(),
         to_weight_(),
         arc_limit_(acc.arc_limit_),
@@ -471,7 +471,7 @@ class CacheLogAccumulator {
         s_(kNoStateId),
         error_(false) {}
 
-  CacheLogAccumulator(const CacheLogAccumulator<Arc> &acc, bool safe = false)
+  CacheLogAccumulator(const CacheLogAccumulator &acc, bool safe = false)
       : arc_limit_(acc.arc_limit_),
         fst_(acc.fst_ ? acc.fst_->Copy() : nullptr),
         data_(safe ? std::make_shared<CacheLogAccumulatorData<Arc>>(*acc.data_)

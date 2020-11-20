@@ -6,6 +6,7 @@
 #include <fst/symbol-table.h>
 
 #include <fst/flags.h>
+#include <fst/types.h>
 #include <fst/log.h>
 
 #include <fstream>
@@ -394,6 +395,18 @@ bool SymbolTable::WriteText(const std::string &source) const {
     return WriteText(std::cout, SymbolTableTextOptions());
   }
 }
+
+SymbolTable::const_iterator SymbolTable::begin() const {
+  return SymbolTable::const_iterator(*this, 0);
+}
+
+SymbolTable::const_iterator SymbolTable::end() const {
+  return SymbolTable::const_iterator(*this, this->NumSymbols());
+}
+
+SymbolTable::const_iterator SymbolTable::cbegin() const { return begin(); }
+
+SymbolTable::const_iterator SymbolTable::cend() const { return end(); }
 
 bool CompatSymbols(const SymbolTable *syms1, const SymbolTable *syms2,
                    bool warning) {

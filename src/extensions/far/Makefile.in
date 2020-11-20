@@ -154,10 +154,10 @@ libfstfar_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) \
 @HAVE_SCRIPT_TRUE@	../../script/libfstscript.la \
 @HAVE_SCRIPT_TRUE@	../../lib/libfst.la $(am__DEPENDENCIES_1)
 am__libfstfarscript_la_SOURCES_DIST = far-class.cc farscript.cc \
-	getters.cc script-impl.cc strings.cc
+	getters.cc script-impl.cc strings.cc sttable.cc stlist.cc
 @HAVE_SCRIPT_TRUE@am_libfstfarscript_la_OBJECTS = far-class.lo \
 @HAVE_SCRIPT_TRUE@	farscript.lo getters.lo script-impl.lo \
-@HAVE_SCRIPT_TRUE@	strings.lo
+@HAVE_SCRIPT_TRUE@	strings.lo sttable.lo stlist.lo
 libfstfarscript_la_OBJECTS = $(am_libfstfarscript_la_OBJECTS)
 libfstfarscript_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CXX \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CXXLD) \
@@ -449,12 +449,12 @@ AM_CPPFLAGS = -I$(srcdir)/../../include $(ICU_CPPFLAGS)
 @HAVE_SCRIPT_FALSE@lib_LTLIBRARIES = libfstfar.la
 @HAVE_SCRIPT_TRUE@lib_LTLIBRARIES = libfstfar.la libfstfarscript.la
 libfstfar_la_SOURCES = sttable.cc stlist.cc
-libfstfar_la_LDFLAGS = -version-info 17:0:0
+libfstfar_la_LDFLAGS = -version-info 18:0:0
 libfstfar_la_LIBADD = ../../lib/libfst.la -lm $(DL_LIBS)
 @HAVE_SCRIPT_TRUE@libfstfarscript_la_SOURCES = far-class.cc farscript.cc getters.cc script-impl.cc \
-@HAVE_SCRIPT_TRUE@                             strings.cc
+@HAVE_SCRIPT_TRUE@                             strings.cc sttable.cc stlist.cc
 
-@HAVE_SCRIPT_TRUE@libfstfarscript_la_LDFLAGS = -version-info 17:0:0
+@HAVE_SCRIPT_TRUE@libfstfarscript_la_LDFLAGS = -version-info 18:0:0
 @HAVE_SCRIPT_TRUE@libfstfarscript_la_LIBADD = \
 @HAVE_SCRIPT_TRUE@    libfstfar.la ../../script/libfstscript.la \
 @HAVE_SCRIPT_TRUE@        ../../lib/libfst.la -lm $(DL_LIBS)

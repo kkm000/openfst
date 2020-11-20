@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include <fst/types.h>
 #include <fst/encode.h>
 #include <fst/generic-register.h>
 #include <fst/script/arc-class.h>
@@ -89,7 +90,7 @@ class EncodeMapperClassImpl : public EncodeMapperImplBase {
 
   ~EncodeMapperClassImpl() override {}
 
-  EncodeMapper<Arc> *GetImpl() const { return &mapper_; }
+  const EncodeMapper<Arc> *GetImpl() const { return &mapper_; }
 
   EncodeMapper<Arc> *GetImpl() { return &mapper_; }
 
@@ -261,7 +262,7 @@ struct EncodeMapperClassIORegistration {
 
 #define REGISTER_ENCODEMAPPER_CLASS(Arc)             \
   static EncodeMapperClassIORegistration::Registerer \
-      Class##_##Arc##_registerer(                    \
+      EncodeMapperClass_##Arc##_registerer(          \
           Arc::Type(),                               \
           EncodeMapperClassIORegistration::Entry(    \
               EncodeMapperClass::Read<Arc>, EncodeMapperClass::Create<Arc>));

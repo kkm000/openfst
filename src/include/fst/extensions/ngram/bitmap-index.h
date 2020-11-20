@@ -8,6 +8,7 @@
 #include <vector>
 
 #include <fst/compat.h>
+#include <fst/types.h>
 
 // This class is a bitstring storage class with an index that allows
 // seeking to the Nth set or clear bit in time O(Log(N)) where N is

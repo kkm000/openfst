@@ -10,6 +10,8 @@
 #include <climits>
 #include <string>
 
+#include <fst/types.h>
+
 #include <fst/sparse-tuple-weight.h>
 #include <fst/weight.h>
 

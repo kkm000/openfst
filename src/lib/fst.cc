@@ -8,6 +8,7 @@
 #include <sstream>
 
 #include <fst/flags.h>
+#include <fst/types.h>
 #include <fst/log.h>
 #include <fst/matcher-fst.h>  // declarations of *_lookahead_fst_type
 

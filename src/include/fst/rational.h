@@ -11,6 +11,8 @@
 #include <string>
 #include <vector>
 
+#include <fst/types.h>
+
 #include <fst/mutable-fst.h>
 #include <fst/replace.h>
 #include <fst/test-properties.h>
@@ -277,7 +279,7 @@ class RationalFst : public ImplToFst<internal::RationalFstImpl<A>> {
       : ImplToFst<Impl>(std::make_shared<Impl>(opts)) {}
 
   // See Fst<>::Copy() for doc.
-  RationalFst(const RationalFst<Arc> &fst, bool safe = false)
+  RationalFst(const RationalFst &fst, bool safe = false)
       : ImplToFst<Impl>(fst, safe) {}
 
  private:

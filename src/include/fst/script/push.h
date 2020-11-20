@@ -6,6 +6,7 @@
 
 #include <tuple>
 
+#include <fst/types.h>
 #include <fst/push.h>
 #include <fst/script/fst-class.h>
 

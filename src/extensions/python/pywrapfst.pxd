@@ -15,7 +15,7 @@ from libcpp.vector cimport vector
 
 from basictypes cimport *
 
-cimport fst as fst
+cimport cpywrapfst as fst
 
 from ios cimport ostream
 from ios cimport ofstream

@@ -11,6 +11,7 @@
 #include <utility>
 #include <vector>
 
+#include <fst/types.h>
 #include <fst/log.h>
 
 #include <fst/fst-decl.h>  // For optional argument declarations
@@ -40,22 +41,25 @@ class VectorState {
 
   // Provide STL allocator for arcs.
   explicit VectorState(const ArcAllocator &alloc)
-      : final_(Weight::Zero()), niepsilons_(0), noepsilons_(0), arcs_(alloc) {}
+      : final_weight_(Weight::Zero()),
+        niepsilons_(0),
+        noepsilons_(0),
+        arcs_(alloc) {}
 
   VectorState(const VectorState<A, M> &state, const ArcAllocator &alloc)
-      : final_(state.Final()),
+      : final_weight_(state.Final()),
         niepsilons_(state.NumInputEpsilons()),
         noepsilons_(state.NumOutputEpsilons()),
         arcs_(state.arcs_.begin(), state.arcs_.end(), alloc) {}
 
   void Reset() {
-    final_ = Weight::Zero();
+    final_weight_ = Weight::Zero();
     niepsilons_ = 0;
     noepsilons_ = 0;
     arcs_.clear();
   }
 
-  Weight Final() const { return final_; }
+  Weight Final() const { return final_weight_; }
 
   size_t NumInputEpsilons() const { return niepsilons_; }
 
@@ -71,7 +75,7 @@ class VectorState {
 
   void ReserveArcs(size_t n) { arcs_.reserve(n); }
 
-  void SetFinal(Weight weight) { final_ = std::move(weight); }
+  void SetFinal(Weight weight) { final_weight_ = std::move(weight); }
 
   void SetNumInputEpsilons(size_t n) { niepsilons_ = n; }
 
@@ -134,7 +138,7 @@ class VectorState {
     if (arc.olabel == 0) ++noepsilons_;
   }
 
-  Weight final_;                       // Final weight.
+  Weight final_weight_;                // Final weight.
   size_t niepsilons_;                  // # of input epsilons
   size_t noepsilons_;                  // # of output epsilons
   std::vector<A, ArcAllocator> arcs_;  // Arc container.
@@ -160,10 +164,10 @@ class VectorFstBaseImpl : public FstImpl<typename S::Arc> {
 
   // Copying is not permitted.
   VectorFstBaseImpl(const VectorFstBaseImpl<S> &) = delete;
-  VectorFstBaseImpl<S> &operator=(const VectorFstBaseImpl<S> &) = delete;
+  VectorFstBaseImpl &operator=(const VectorFstBaseImpl &) = delete;
 
   // Moving is permitted.
-  VectorFstBaseImpl(VectorFstBaseImpl<S> &&impl) noexcept
+  VectorFstBaseImpl(VectorFstBaseImpl &&impl) noexcept
       : FstImpl<typename S::Arc>(),
         states_(std::move(impl.states_)),
         start_(impl.start_) {
@@ -171,7 +175,7 @@ class VectorFstBaseImpl : public FstImpl<typename S::Arc> {
     impl.start_ = kNoStateId;
   }
 
-  VectorFstBaseImpl<S> &operator=(VectorFstBaseImpl<S> &&impl) noexcept {
+  VectorFstBaseImpl &operator=(VectorFstBaseImpl &&impl) noexcept {
     for (auto *state : states_) {
       State::Destroy(state, &state_alloc_);
     }
@@ -344,7 +348,7 @@ class VectorFstImpl : public VectorFstBaseImpl<S> {
 
   explicit VectorFstImpl(const Fst<Arc> &fst);
 
-  static VectorFstImpl<S> *Read(std::istream &strm, const FstReadOptions &opts);
+  static VectorFstImpl *Read(std::istream &strm, const FstReadOptions &opts);
 
   void SetStart(StateId state) {
     BaseImpl::SetStart(state);
@@ -457,7 +461,7 @@ VectorFstImpl<S>::VectorFstImpl(const Fst<Arc> &fst) {
 template <class S>
 VectorFstImpl<S> *VectorFstImpl<S>::Read(std::istream &strm,
                                          const FstReadOptions &opts) {
-  std::unique_ptr<VectorFstImpl<S>> impl(new VectorFstImpl());
+  std::unique_ptr<VectorFstImpl> impl(new VectorFstImpl());
   FstHeader hdr;
   if (!impl->ReadHeader(strm, opts, kMinFileVersion, &hdr)) return nullptr;
   impl->BaseImpl::SetStart(hdr.Start());
@@ -523,21 +527,21 @@ class VectorFst : public ImplToMutableFst<internal::VectorFstImpl<S>> {
   explicit VectorFst(const Fst<Arc> &fst)
       : ImplToMutableFst<Impl>(std::make_shared<Impl>(fst)) {}
 
-  VectorFst(const VectorFst<Arc, State> &fst, bool safe = false)
+  VectorFst(const VectorFst &fst, bool safe = false)
       : ImplToMutableFst<Impl>(fst) {}
 
-  VectorFst(VectorFst<Arc, State> &&) noexcept;
+  VectorFst(VectorFst &&) noexcept;
 
   // Get a copy of this VectorFst. See Fst<>::Copy() for further doc.
-  VectorFst<Arc, State> *Copy(bool safe = false) const override {
-    return new VectorFst<Arc, State>(*this, safe);
+  VectorFst *Copy(bool safe = false) const override {
+    return new VectorFst(*this, safe);
   }
 
-  VectorFst<Arc, State> &operator=(const VectorFst<Arc, State> &) = default;
+  VectorFst &operator=(const VectorFst &) = default;
 
-  VectorFst<Arc, State> &operator=(VectorFst<Arc, State> &&) noexcept;
+  VectorFst &operator=(VectorFst &&) noexcept;
 
-  VectorFst<Arc, State> &operator=(const Fst<Arc> &fst) override {
+  VectorFst &operator=(const Fst<Arc> &fst) override {
     if (this != &fst) SetImpl(std::make_shared<Impl>(fst));
     return *this;
   }
@@ -549,19 +553,16 @@ class VectorFst : public ImplToMutableFst<internal::VectorFstImpl<S>> {
   }
 
   // Reads a VectorFst from an input stream, returning nullptr on error.
-  static VectorFst<Arc, State> *Read(std::istream &strm,
-                                     const FstReadOptions &opts) {
+  static VectorFst *Read(std::istream &strm, const FstReadOptions &opts) {
     auto *impl = Impl::Read(strm, opts);
-    return impl ? new VectorFst<Arc, State>(std::shared_ptr<Impl>(impl))
-                : nullptr;
+    return impl ? new VectorFst(std::shared_ptr<Impl>(impl)) : nullptr;
   }
 
   // Read a VectorFst from a file, returning nullptr on error; empty source
   // reads from standard input.
-  static VectorFst<Arc, State> *Read(const std::string &source) {
+  static VectorFst *Read(const std::string &source) {
     auto *impl = ImplToExpandedFst<Impl, MutableFst<Arc>>::Read(source);
-    return impl ? new VectorFst<Arc, State>(std::shared_ptr<Impl>(impl))
-                : nullptr;
+    return impl ? new VectorFst(std::shared_ptr<Impl>(impl)) : nullptr;
   }
 
   bool Write(std::ostream &strm, const FstWriteOptions &opts) const override {
@@ -601,12 +602,11 @@ class VectorFst : public ImplToMutableFst<internal::VectorFstImpl<S>> {
 };
 
 template <class Arc, class State>
-inline VectorFst<Arc, State>::VectorFst(
-    VectorFst<Arc, State> &&fst) noexcept = default;
+inline VectorFst<Arc, State>::VectorFst(VectorFst &&fst) noexcept = default;
 
 template <class Arc, class State>
 inline VectorFst<Arc, State> &VectorFst<Arc, State>::operator=(
-    VectorFst<Arc, State> &&fst) noexcept = default;
+    VectorFst &&fst) noexcept = default;
 
 // Writes FST to file in Vector format, potentially with a pass over the machine
 // before writing to compute number of states.

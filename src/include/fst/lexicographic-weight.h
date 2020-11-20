@@ -16,6 +16,7 @@
 #include <cstdlib>
 #include <string>
 
+#include <fst/types.h>
 #include <fst/log.h>
 
 #include <fst/pair-weight.h>

@@ -9,6 +9,8 @@
 #include <memory>
 #include <string>
 
+#include <fst/types.h>
+
 #include <fst/add-on.h>
 #include <fst/const-fst.h>
 #include <fst/lookahead-matcher.h>
@@ -92,33 +94,25 @@ class MatcherFst : public ImplToExpandedFst<internal::AddOnImpl<F, Data>> {
       : ImplToExpandedFst<Impl>(CreateDataAndImpl(fst, Name)) {}
 
   // See Fst<>::Copy() for doc.
-  MatcherFst(const MatcherFst<FST, FstMatcher, Name, Init, Data> &fst,
-             bool safe = false)
+  MatcherFst(const MatcherFst &fst, bool safe = false)
       : ImplToExpandedFst<Impl>(fst, safe) {}
 
   // Get a copy of this MatcherFst. See Fst<>::Copy() for further doc.
-  MatcherFst<FST, FstMatcher, Name, Init, Data> *Copy(
-      bool safe = false) const override {
-    return new MatcherFst<FST, FstMatcher, Name, Init, Data>(*this, safe);
+  MatcherFst *Copy(bool safe = false) const override {
+    return new MatcherFst(*this, safe);
   }
 
   // Read a MatcherFst from an input stream; return nullptr on error
-  static MatcherFst<FST, M, Name, Init, Data> *Read(
-      std::istream &strm, const FstReadOptions &opts) {
+  static MatcherFst *Read(std::istream &strm, const FstReadOptions &opts) {
     auto *impl = Impl::Read(strm, opts);
-    return impl ? new MatcherFst<FST, FstMatcher, Name, Init, Data>(
-                      std::shared_ptr<Impl>(impl))
-                : nullptr;
+    return impl ? new MatcherFst(std::shared_ptr<Impl>(impl)) : nullptr;
   }
 
   // Read a MatcherFst from a file; return nullptr on error
   // Empty source reads from standard input
-  static MatcherFst<FST, FstMatcher, Name, Init, Data> *Read(
-      const std::string &source) {
+  static MatcherFst *Read(const std::string &source) {
     auto *impl = ImplToExpandedFst<Impl>::Read(source);
-    return impl ? new MatcherFst<FST, FstMatcher, Name, Init, Data>(
-                      std::shared_ptr<Impl>(impl))
-                : nullptr;
+    return impl ? new MatcherFst(std::shared_ptr<Impl>(impl)) : nullptr;
   }
 
   bool Write(std::ostream &strm, const FstWriteOptions &opts) const override {
@@ -226,9 +220,9 @@ class Matcher<MatcherFst<F, M, Name, Init>> {
   Matcher(const FST &fst, MatchType match_type)
       : matcher_(fst.InitMatcher(match_type)) {}
 
-  Matcher(const Matcher<FST> &matcher) : matcher_(matcher.matcher_->Copy()) {}
+  Matcher(const Matcher &matcher) : matcher_(matcher.matcher_->Copy()) {}
 
-  Matcher<FST> *Copy() const { return new Matcher<FST>(*this); }
+  Matcher *Copy() const { return new Matcher(*this); }
 
   MatchType Type(bool test) const { return matcher_->Type(test); }
 
@@ -263,12 +257,12 @@ class LookAheadMatcher<MatcherFst<F, M, Name, Init>> {
   LookAheadMatcher(const FST &fst, MatchType match_type)
       : matcher_(fst.InitMatcher(match_type)) {}
 
-  LookAheadMatcher(const LookAheadMatcher<FST> &matcher, bool safe = false)
+  LookAheadMatcher(const LookAheadMatcher &matcher, bool safe = false)
       : matcher_(matcher.matcher_->Copy(safe)) {}
 
   // General matcher methods.
-  LookAheadMatcher<FST> *Copy(bool safe = false) const {
-    return new LookAheadMatcher<FST>(*this, safe);
+  LookAheadMatcher *Copy(bool safe = false) const {
+    return new LookAheadMatcher(*this, safe);
   }
 
   MatchType Type(bool test) const { return matcher_->Type(test); }

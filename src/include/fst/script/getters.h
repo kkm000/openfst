@@ -9,6 +9,7 @@
 
 #include <string>
 
+#include <fst/types.h>
 #include <fst/log.h>
 #include <fst/compose.h>         // For ComposeFilter.
 #include <fst/determinize.h>     // For DeterminizeType.

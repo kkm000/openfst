@@ -7,6 +7,7 @@
 #include <memory>
 #include <vector>
 
+#include <fst/types.h>
 #include <fst/shortest-path.h>
 #include <fst/script/fst-class.h>
 #include <fst/script/shortest-distance.h>

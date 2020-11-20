@@ -389,7 +389,7 @@ bool GetModelRecord(const std::string &model, std::istream &strm,  // NOLINT
   SplitAndPush<Arc>(fields[0], delim, fsyms, input_labels);
   SplitAndPush<Arc>(fields[1], delim, osyms, output_labels);
 
-  *weight = StrToWeight<typename Arc::Weight>(fields[2], model, *num_line);
+  *weight = StrToWeight<typename Arc::Weight>(fields[2]);
 
   GuessStartOrEnd<Arc>(input_labels, kNoLabel);
   GuessStartOrEnd<Arc>(output_labels, kNoLabel);

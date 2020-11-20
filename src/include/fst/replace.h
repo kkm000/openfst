@@ -12,6 +12,7 @@
 #include <utility>
 #include <vector>
 
+#include <fst/types.h>
 #include <fst/log.h>
 
 #include <fst/cache.h>
@@ -975,14 +976,12 @@ class ReplaceFst
       : ImplToFst<Impl>(std::make_shared<Impl>(fst_array, opts)) {}
 
   // See Fst<>::Copy() for doc.
-  ReplaceFst(const ReplaceFst<Arc, StateTable, CacheStore> &fst,
-             bool safe = false)
+  ReplaceFst(const ReplaceFst &fst, bool safe = false)
       : ImplToFst<Impl>(fst, safe) {}
 
   // Get a copy of this ReplaceFst. See Fst<>::Copy() for further doc.
-  ReplaceFst<Arc, StateTable, CacheStore> *Copy(
-      bool safe = false) const override {
-    return new ReplaceFst<Arc, StateTable, CacheStore>(*this, safe);
+  ReplaceFst *Copy(bool safe = false) const override {
+    return new ReplaceFst(*this, safe);
   }
 
   inline void InitStateIterator(StateIteratorData<Arc> *data) const override;
@@ -1281,9 +1280,7 @@ class ReplaceFstMatcher : public MatcherBase<Arc> {
   }
 
   // This makes a copy of the FST.
-  ReplaceFstMatcher(
-      const ReplaceFstMatcher<Arc, StateTable, CacheStore> &matcher,
-      bool safe = false)
+  ReplaceFstMatcher(const ReplaceFstMatcher &matcher, bool safe = false)
       : owned_fst_(matcher.fst_.Copy(safe)),
         fst_(*owned_fst_),
         impl_(fst_.GetMutableImpl()),
@@ -1317,9 +1314,8 @@ class ReplaceFstMatcher : public MatcherBase<Arc> {
     }
   }
 
-  ReplaceFstMatcher<Arc, StateTable, CacheStore> *Copy(
-      bool safe = false) const override {
-    return new ReplaceFstMatcher<Arc, StateTable, CacheStore>(*this, safe);
+  ReplaceFstMatcher *Copy(bool safe = false) const override {
+    return new ReplaceFstMatcher(*this, safe);
   }
 
   MatchType Type(bool test) const override {

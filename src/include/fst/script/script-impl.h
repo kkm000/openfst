@@ -84,6 +84,7 @@
 #include <string>
 #include <utility>
 
+#include <fst/types.h>
 #include <fst/log.h>
 #include <fst/generic-register.h>
 #include <fst/script/fst-class.h>
@@ -108,11 +109,6 @@ class GenericOperationRegister
                              OperationSignature,
                              GenericOperationRegister<OperationSignature>> {
  public:
-  void RegisterOperation(const std::string &operation_name,
-                         const std::string &arc_type, OperationSignature op) {
-    this->SetEntry(std::make_pair(operation_name, arc_type), op);
-  }
-
   OperationSignature GetOperation(const std::string &operation_name,
                                   const std::string &arc_type) {
     return this->GetEntry(std::make_pair(operation_name, arc_type));
@@ -167,8 +163,7 @@ void Apply(const std::string &op_name, const std::string &arc_type,
   const auto op = OpReg::Register::GetRegister()->GetOperation(op_name,
                                                                arc_type);
   if (!op) {
-    FSTERROR() << "No operation found for " << op_name << " on "
-               << "arc type " << arc_type;
+    FSTERROR() << op_name << ": No operation found on arc type " << arc_type;
     return;
   }
   op(args);
@@ -182,8 +177,8 @@ namespace internal {
 template <class M, class N>
 bool ArcTypesMatch(const M &m, const N &n, const std::string &op_name) {
   if (m.ArcType() != n.ArcType()) {
-    FSTERROR() << "Arguments with non-matching arc types passed to "
-               << op_name << ":\t" << m.ArcType() << " and " << n.ArcType();
+    FSTERROR() << op_name << ": Arguments with non-matching arc types "
+               << m.ArcType() << " and " << n.ArcType();
     return false;
   }
   return true;

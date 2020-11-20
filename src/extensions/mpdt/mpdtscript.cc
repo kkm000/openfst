@@ -13,6 +13,7 @@
 #include <utility>
 #include <vector>
 
+#include <fst/types.h>
 #include <fst/extensions/mpdt/compose.h>
 #include <fst/extensions/mpdt/expand.h>
 #include <fst/extensions/mpdt/reverse.h>

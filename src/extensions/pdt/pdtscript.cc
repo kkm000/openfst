@@ -13,6 +13,7 @@
 #include <utility>
 #include <vector>
 
+#include <fst/types.h>
 #include <fst/extensions/pdt/compose.h>
 #include <fst/extensions/pdt/expand.h>
 #include <fst/extensions/pdt/replace.h>

@@ -13,6 +13,7 @@
 #include <utility>
 #include <vector>
 
+#include <fst/types.h>
 #include <fst/log.h>
 #include <fst/arc-map.h>
 #include <fstream>
@@ -159,13 +160,6 @@ class EncodeTable {
     }
   }
 
-  // Given an arc, looks up its encoded label or returns kNoLabel if not found.
-  Label GetLabel(const Arc &arc) const {
-    const Triple triple(arc, flags_);
-    auto it = triple2label_.find(&triple);
-    return (it == triple2label_.end()) ? kNoLabel : it->second;
-  }
-
   // Given an encoded arc label, decodes back to input/output labels and costs.
   const Triple *Decode(Label label) const {
     if (label < 1 || label > triples_.size()) {
@@ -177,7 +171,7 @@ class EncodeTable {
 
   size_t Size() const { return triples_.size(); }
 
-  static EncodeTable<Arc> *Read(std::istream &strm, const std::string &source);
+  static EncodeTable *Read(std::istream &strm, const std::string &source);
 
   bool Write(std::ostream &strm, const std::string &source) const;
 
@@ -237,11 +231,7 @@ EncodeTable<Arc> *EncodeTable<Arc>::Read(std::istream &strm,
   const auto size = hdr.Size();
   auto table = fst::make_unique<EncodeTable>(flags);
   for (int64 i = 0; i < size; ++i) {
-    auto triple = fst::make_unique<Triple>();
-    ReadType(strm, &triple->ilabel);
-    ReadType(strm, &triple->olabel);
-    ReadType(strm, &triple->weight);
-    table->triples_.emplace_back(std::move(triple));
+    table->triples_.emplace_back(std::move(Triple::Read(strm)));
     table->triple2label_[table->triples_.back().get()] = table->triples_.size();
   }
   if (flags & kEncodeHasISymbols) {
@@ -358,14 +348,14 @@ class EncodeMapper {
 
   EncodeType Type() const { return type_; }
 
-  static EncodeMapper<Arc> *Read(std::istream &strm, const std::string &source,
-                                 EncodeType type = ENCODE) {
+  static EncodeMapper *Read(std::istream &strm, const std::string &source,
+                            EncodeType type = ENCODE) {
     auto *table = internal::EncodeTable<Arc>::Read(strm, source);
     return table ? new EncodeMapper(table->Flags(), type, table) : nullptr;
   }
 
-  static EncodeMapper<Arc> *Read(const std::string &source,
-                                 EncodeType type = ENCODE) {
+  static EncodeMapper *Read(const std::string &source,
+                            EncodeType type = ENCODE) {
     std::ifstream strm(source, std::ios_base::in | std::ios_base::binary);
     if (!strm) {
       LOG(ERROR) << "EncodeMapper: Can't open file: " << source;
@@ -503,11 +493,11 @@ class EncodeFst : public ArcMapFst<Arc, Arc, EncodeMapper<Arc>> {
       : ArcMapFst<Arc, Arc, Mapper>(fst, encoder, ArcMapFstOptions()) {}
 
   // See Fst<>::Copy() for doc.
-  EncodeFst(const EncodeFst<Arc> &fst, bool copy = false)
+  EncodeFst(const EncodeFst &fst, bool copy = false)
       : ArcMapFst<Arc, Arc, Mapper>(fst, copy) {}
 
   // Makes a copy of this EncodeFst. See Fst<>::Copy() for further doc.
-  EncodeFst<Arc> *Copy(bool safe = false) const override {
+  EncodeFst *Copy(bool safe = false) const override {
     if (safe) {
       FSTERROR() << "EncodeFst::Copy(true): Not allowed";
       GetImpl()->SetProperties(kError, kError);
@@ -534,7 +524,6 @@ class DecodeFst : public ArcMapFst<Arc, Arc, EncodeMapper<Arc>> {
  public:
   using Mapper = EncodeMapper<Arc>;
   using Impl = internal::ArcMapFstImpl<Arc, Arc, Mapper>;
-  using ImplToFst<Impl>::GetImpl;
 
   DecodeFst(const Fst<Arc> &fst, const Mapper &encoder)
       : ArcMapFst<Arc, Arc, Mapper>(fst, Mapper(encoder, DECODE),
@@ -544,15 +533,16 @@ class DecodeFst : public ArcMapFst<Arc, Arc, EncodeMapper<Arc>> {
   }
 
   // See Fst<>::Copy() for doc.
-  DecodeFst(const DecodeFst<Arc> &fst, bool safe = false)
+  DecodeFst(const DecodeFst &fst, bool safe = false)
       : ArcMapFst<Arc, Arc, Mapper>(fst, safe) {}
 
   // Makes a copy of this DecodeFst. See Fst<>::Copy() for further doc.
-  DecodeFst<Arc> *Copy(bool safe = false) const override {
+  DecodeFst *Copy(bool safe = false) const override {
     return new DecodeFst(*this, safe);
   }
 
  private:
+  using ImplToFst<Impl>::GetImpl;
   using ImplToFst<Impl>::GetMutableImpl;
 };
 

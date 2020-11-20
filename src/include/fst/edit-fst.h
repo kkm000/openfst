@@ -29,6 +29,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include <fst/types.h>
 #include <fst/log.h>
 
 #include <fst/cache.h>
@@ -69,8 +70,7 @@ class EditFstData {
 
   ~EditFstData() {}
 
-  static EditFstData<Arc, WrappedFstT, MutableFstT> *Read(
-      std::istream &strm, const FstReadOptions &opts);
+  static EditFstData *Read(std::istream &strm, const FstReadOptions &opts);
 
   bool Write(std::ostream &strm, const FstWriteOptions &opts) const {
     // Serializes all private data members of this class.
@@ -299,7 +299,7 @@ template <typename A, typename WrappedFstT, typename MutableFstT>
 EditFstData<A, WrappedFstT, MutableFstT> *
 EditFstData<A, WrappedFstT, MutableFstT>::Read(std::istream &strm,
                                                const FstReadOptions &opts) {
-  auto *data = new EditFstData<A, WrappedFstT, MutableFstT>();
+  auto *data = new EditFstData;
   // Next read in MutabelFstT machine that stores edits
   FstReadOptions edits_opts(opts);
   // Contained header was written out, so read it in.
@@ -423,8 +423,7 @@ class EditFstImpl : public FstImpl<A> {
     return wrapped_->NumStates() + data_->NumNewStates();
   }
 
-  static EditFstImpl<Arc, WrappedFstT, MutableFstT> *Read(
-      std::istream &strm, const FstReadOptions &opts);
+  static EditFstImpl *Read(std::istream &strm, const FstReadOptions &opts);
 
   bool Write(std::ostream &strm, const FstWriteOptions &opts) const {
     FstHeader hdr;
@@ -640,44 +639,37 @@ class EditFst : public ImplToMutableFst<
       : ImplToMutableFst<Impl>(std::make_shared<Impl>(fst)) {}
 
   // See Fst<>::Copy() for doc.
-  EditFst(const EditFst<Arc, WrappedFstT, MutableFstT> &fst, bool safe = false)
+  EditFst(const EditFst &fst, bool safe = false)
       : ImplToMutableFst<Impl>(fst, safe) {}
 
   ~EditFst() override {}
 
   // Gets a copy of this EditFst. See Fst<>::Copy() for further doc.
-  EditFst<Arc, WrappedFstT, MutableFstT> *Copy(
-      bool safe = false) const override {
-    return new EditFst<Arc, WrappedFstT, MutableFstT>(*this, safe);
+  EditFst *Copy(bool safe = false) const override {
+    return new EditFst(*this, safe);
   }
 
-  EditFst<Arc, WrappedFstT, MutableFstT> &operator=(
-      const EditFst<Arc, WrappedFstT, MutableFstT> &fst) {
+  EditFst &operator=(const EditFst &fst) {
     SetImpl(fst.GetSharedImpl());
     return *this;
   }
 
-  EditFst<Arc, WrappedFstT, MutableFstT> &operator=(
-      const Fst<Arc> &fst) override {
+  EditFst &operator=(const Fst<Arc> &fst) override {
     SetImpl(std::make_shared<Impl>(fst));
     return *this;
   }
 
   // Reads an EditFst from an input stream, returning nullptr on error.
-  static EditFst<Arc, WrappedFstT, MutableFstT> *Read(
-      std::istream &strm, const FstReadOptions &opts) {
+  static EditFst *Read(std::istream &strm, const FstReadOptions &opts) {
     auto *impl = Impl::Read(strm, opts);
-    return impl ? new EditFst<Arc>(std::shared_ptr<Impl>(impl)) : nullptr;
+    return impl ? new EditFst(std::shared_ptr<Impl>(impl)) : nullptr;
   }
 
   // Reads an EditFst from a file, returning nullptr on error. If the source
   // argument is an empty string, it reads from standard input.
-  static EditFst<Arc, WrappedFstT, MutableFstT> *Read(
-      const std::string &source) {
+  static EditFst *Read(const std::string &source) {
     auto *impl = ImplToExpandedFst<Impl, MutableFst<Arc>>::Read(source);
-    return impl ? new EditFst<Arc, WrappedFstT, MutableFstT>(
-                      std::shared_ptr<Impl>(impl))
-                : nullptr;
+    return impl ? new EditFst(std::shared_ptr<Impl>(impl)) : nullptr;
   }
 
   bool Write(std::ostream &strm, const FstWriteOptions &opts) const override {

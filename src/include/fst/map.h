@@ -58,11 +58,11 @@ class MapFst : public ArcMapFst<A, B, C> {
   MapFst(const Fst<A> &fst, C *mapper) : ArcMapFst<A, B, C>(fst, mapper) {}
 
   // See Fst<>::Copy() for doc.
-  MapFst(const MapFst<A, B, C> &fst, bool safe = false)
+  MapFst(const MapFst &fst, bool safe = false)
       : ArcMapFst<A, B, C>(fst, safe) {}
 
   // Get a copy of this MapFst. See Fst<>::Copy() for further doc.
-  MapFst<A, B, C> *Copy(bool safe = false) const override {
+  MapFst *Copy(bool safe = false) const override {
     return new MapFst(*this, safe);
   }
 };

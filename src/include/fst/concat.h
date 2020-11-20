@@ -9,6 +9,8 @@
 #include <algorithm>
 #include <vector>
 
+#include <fst/types.h>
+
 #include <fst/expanded-fst.h>
 #include <fst/mutable-fst.h>
 #include <fst/rational.h>
@@ -190,12 +192,12 @@ class ConcatFst : public RationalFst<A> {
   }
 
   // See Fst<>::Copy() for doc.
-  ConcatFst(const ConcatFst<Arc> &fst, bool safe = false)
+  ConcatFst(const ConcatFst &fst, bool safe = false)
       : RationalFst<Arc>(fst, safe) {}
 
   // Get a copy of this ConcatFst. See Fst<>::Copy() for further doc.
-  ConcatFst<Arc> *Copy(bool safe = false) const override {
-    return new ConcatFst<Arc>(*this, safe);
+  ConcatFst *Copy(bool safe = false) const override {
+    return new ConcatFst(*this, safe);
   }
 
  private:

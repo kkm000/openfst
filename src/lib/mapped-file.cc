@@ -109,7 +109,7 @@ MappedFile *MappedFile::Allocate(size_t size, size_t align) {
     // Use std::aligned_alloc() when C++17 is allowed.
     char *buffer = static_cast<char *>(operator new(size + align));
     uintptr_t address = reinterpret_cast<uintptr_t>(buffer);
-    region.offset = kArchAlignment - (address % align);
+    region.offset = align - (address % align);
     region.data = buffer + region.offset;
   }
   region.mmap = nullptr;

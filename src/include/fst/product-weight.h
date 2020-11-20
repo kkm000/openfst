@@ -9,6 +9,8 @@
 #include <string>
 #include <utility>
 
+#include <fst/types.h>
+
 #include <fst/pair-weight.h>
 #include <fst/weight.h>
 

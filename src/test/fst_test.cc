@@ -6,6 +6,7 @@
 #include <fst/test/fst_test.h>
 
 #include <fst/flags.h>
+#include <fst/types.h>
 #include <fst/log.h>
 #include <fst/compact-fst.h>
 #include <fst/const-fst.h>

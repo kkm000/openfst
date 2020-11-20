@@ -11,6 +11,7 @@
 #include <vector>
 
 #include <fst/compat.h>
+#include <fst/types.h>
 
 namespace fst {
 

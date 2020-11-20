@@ -9,6 +9,7 @@
 #include <unordered_set>
 
 #include <fst/flags.h>
+#include <fst/types.h>
 #include <fst/log.h>
 
 #include <fst/connect.h>

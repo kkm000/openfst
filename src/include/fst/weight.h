@@ -14,6 +14,7 @@
 #include <utility>
 
 #include <fst/compat.h>
+#include <fst/types.h>
 #include <fst/log.h>
 
 #include <fst/util.h>

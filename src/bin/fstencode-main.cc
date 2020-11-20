@@ -8,6 +8,7 @@
 #include <string>
 
 #include <fst/flags.h>
+#include <fst/types.h>
 #include <fst/script/decode.h>
 #include <fst/script/encode.h>
 #include <fst/script/getters.h>

@@ -6,6 +6,7 @@
 #ifndef FST_TEST_ALGO_TEST_H_
 #define FST_TEST_ALGO_TEST_H_
 
+#include <fst/types.h>
 #include <fst/log.h>
 #include <fst/fstlib.h>
 #include <fst/test/rand-fst.h>

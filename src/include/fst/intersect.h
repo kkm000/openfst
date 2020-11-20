@@ -79,12 +79,12 @@ class IntersectFst : public ComposeFst<A> {
   }
 
   // See Fst<>::Copy() for doc.
-  IntersectFst(const IntersectFst<Arc> &fst, bool safe = false)
+  IntersectFst(const IntersectFst &fst, bool safe = false)
       : ComposeFst<Arc>(fst, safe) {}
 
   // Get a copy of this IntersectFst. See Fst<>::Copy() for further doc.
-  IntersectFst<Arc> *Copy(bool safe = false) const override {
-    return new IntersectFst<Arc>(*this, safe);
+  IntersectFst *Copy(bool safe = false) const override {
+    return new IntersectFst(*this, safe);
   }
 
  private:

@@ -11,6 +11,8 @@
 #include <string>
 #include <vector>
 
+#include <fst/types.h>
+
 #include <fst/product-weight.h>
 #include <fst/union-weight.h>
 #include <fst/weight.h>

@@ -6,6 +6,8 @@
 #ifndef FST_PROJECT_H_
 #define FST_PROJECT_H_
 
+#include <fst/types.h>
+
 #include <fst/arc-map.h>
 #include <fst/mutable-fst.h>
 
@@ -119,11 +121,11 @@ class ProjectFst : public ArcMapFst<A, A, ProjectMapper<A>> {
   }
 
   // See Fst<>::Copy() for doc.
-  ProjectFst(const ProjectFst<A> &fst, bool safe = false)
+  ProjectFst(const ProjectFst &fst, bool safe = false)
       : ArcMapFst<A, A, ProjectMapper<A>>(fst, safe) {}
 
   // Gets a copy of this ProjectFst. See Fst<>::Copy() for further doc.
-  ProjectFst<A> *Copy(bool safe = false) const override {
+  ProjectFst *Copy(bool safe = false) const override {
     return new ProjectFst(*this, safe);
   }
 

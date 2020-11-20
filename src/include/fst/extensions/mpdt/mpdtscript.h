@@ -11,6 +11,7 @@
 #include <utility>
 #include <vector>
 
+#include <fst/types.h>
 #include <fst/log.h>
 #include <fst/compose.h>  // for ComposeOptions
 #include <fst/util.h>

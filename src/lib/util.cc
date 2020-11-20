@@ -10,6 +10,7 @@
 #include <string>
 
 #include <fst/flags.h>
+#include <fst/types.h>
 #include <fst/log.h>
 #include <fst/mapped-file.h>
 

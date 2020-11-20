@@ -10,6 +10,8 @@
 #include <utility>
 #include <vector>
 
+#include <fst/types.h>
+
 #include <fst/expanded-fst.h>
 #include <fst/mutable-fst.h>
 #include <fst/rational.h>
@@ -129,12 +131,12 @@ class UnionFst : public RationalFst<A> {
   }
 
   // See Fst<>::Copy() for doc.
-  UnionFst(const UnionFst<Arc> &fst, bool safe = false)
+  UnionFst(const UnionFst &fst, bool safe = false)
       : RationalFst<Arc>(fst, safe) {}
 
   // Gets a copy of this UnionFst. See Fst<>::Copy() for further doc.
-  UnionFst<Arc> *Copy(bool safe = false) const override {
-    return new UnionFst<Arc>(*this, safe);
+  UnionFst *Copy(bool safe = false) const override {
+    return new UnionFst(*this, safe);
   }
 
  private:

@@ -10,6 +10,7 @@
 #include <vector>
 
 #include <fst/flags.h>
+#include <fst/types.h>
 #include <fst/util.h>
 #include <fst/script/fst-class.h>
 #include <fst/script/verify.h>

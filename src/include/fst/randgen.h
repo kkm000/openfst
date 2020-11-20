@@ -17,6 +17,7 @@
 #include <utility>
 #include <vector>
 
+#include <fst/types.h>
 #include <fst/log.h>
 
 #include <fst/accumulator.h>
@@ -583,12 +584,12 @@ class RandGenFst
       : ImplToFst<Impl>(std::make_shared<Impl>(fst, opts)) {}
 
   // See Fst<>::Copy() for doc.
-  RandGenFst(const RandGenFst<FromArc, ToArc, Sampler> &fst, bool safe = false)
+  RandGenFst(const RandGenFst &fst, bool safe = false)
       : ImplToFst<Impl>(fst, safe) {}
 
   // Get a copy of this RandGenFst. See Fst<>::Copy() for further doc.
-  RandGenFst<FromArc, ToArc, Sampler> *Copy(bool safe = false) const override {
-    return new RandGenFst<FromArc, ToArc, Sampler>(*this, safe);
+  RandGenFst *Copy(bool safe = false) const override {
+    return new RandGenFst(*this, safe);
   }
 
   inline void InitStateIterator(StateIteratorData<ToArc> *data) const override;

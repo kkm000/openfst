@@ -9,6 +9,8 @@
 #include <algorithm>
 #include <vector>
 
+#include <fst/types.h>
+
 #include <fst/cache.h>
 
 

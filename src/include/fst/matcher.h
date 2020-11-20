@@ -11,6 +11,7 @@
 #include <unordered_map>
 #include <utility>
 
+#include <fst/types.h>
 #include <fst/log.h>
 
 #include <fst/mutable-fst.h>  // for all internal FST accessors.
@@ -631,7 +632,7 @@ class PhiMatcher : public MatcherBase<typename M::Arc> {
 
 
   // This makes a copy of the FST.
-  PhiMatcher(const PhiMatcher<M> &matcher, bool safe = false)
+  PhiMatcher(const PhiMatcher &matcher, bool safe = false)
       : matcher_(new M(*matcher.matcher_, safe)),
         match_type_(matcher.match_type_),
         phi_label_(matcher.phi_label_),
@@ -640,8 +641,8 @@ class PhiMatcher : public MatcherBase<typename M::Arc> {
         phi_loop_(matcher.phi_loop_),
         error_(matcher.error_) {}
 
-  PhiMatcher<M> *Copy(bool safe = false) const override {
-    return new PhiMatcher<M>(*this, safe);
+  PhiMatcher *Copy(bool safe = false) const override {
+    return new PhiMatcher(*this, safe);
   }
 
   MatchType Type(bool test) const override { return matcher_->Type(test); }
@@ -893,7 +894,7 @@ class RhoMatcher : public MatcherBase<typename M::Arc> {
                    matcher ? matcher : new M(fst, match_type)) { }
 
   // This makes a copy of the FST.
-  RhoMatcher(const RhoMatcher<M> &matcher, bool safe = false)
+  RhoMatcher(const RhoMatcher &matcher, bool safe = false)
       : matcher_(new M(*matcher.matcher_, safe)),
         match_type_(matcher.match_type_),
         rho_label_(matcher.rho_label_),
@@ -902,8 +903,8 @@ class RhoMatcher : public MatcherBase<typename M::Arc> {
         state_(kNoStateId),
         has_rho_(false) {}
 
-  RhoMatcher<M> *Copy(bool safe = false) const override {
-    return new RhoMatcher<M>(*this, safe);
+  RhoMatcher *Copy(bool safe = false) const override {
+    return new RhoMatcher(*this, safe);
   }
 
   MatchType Type(bool test) const override { return matcher_->Type(test); }
@@ -1085,7 +1086,7 @@ class SigmaMatcher : public MatcherBase<typename M::Arc> {
                      matcher ? matcher : new M(fst, match_type)) { }
 
   // This makes a copy of the FST.
-  SigmaMatcher(const SigmaMatcher<M> &matcher, bool safe = false)
+  SigmaMatcher(const SigmaMatcher &matcher, bool safe = false)
       : matcher_(new M(*matcher.matcher_, safe)),
         match_type_(matcher.match_type_),
         sigma_label_(matcher.sigma_label_),
@@ -1093,8 +1094,8 @@ class SigmaMatcher : public MatcherBase<typename M::Arc> {
         error_(matcher.error_),
         state_(kNoStateId) {}
 
-  SigmaMatcher<M> *Copy(bool safe = false) const override {
-    return new SigmaMatcher<M>(*this, safe);
+  SigmaMatcher *Copy(bool safe = false) const override {
+    return new SigmaMatcher(*this, safe);
   }
 
   MatchType Type(bool test) const override { return matcher_->Type(test); }
@@ -1264,7 +1265,7 @@ class MultiEpsMatcher {
   }
 
   // This makes a copy of the FST.
-  MultiEpsMatcher(const MultiEpsMatcher<M> &matcher, bool safe = false)
+  MultiEpsMatcher(const MultiEpsMatcher &matcher, bool safe = false)
       : matcher_(new M(*matcher.matcher_, safe)),
         flags_(matcher.flags_),
         own_matcher_(true),
@@ -1277,8 +1278,8 @@ class MultiEpsMatcher {
     if (own_matcher_) delete matcher_;
   }
 
-  MultiEpsMatcher<M> *Copy(bool safe = false) const {
-    return new MultiEpsMatcher<M>(*this, safe);
+  MultiEpsMatcher *Copy(bool safe = false) const {
+    return new MultiEpsMatcher(*this, safe);
   }
 
   MatchType Type(bool test) const { return matcher_->Type(test); }
@@ -1438,13 +1439,13 @@ class ExplicitMatcher : public MatcherBase<typename M::Arc> {
         error_(false) {}
 
   // This makes a copy of the FST.
-  ExplicitMatcher(const ExplicitMatcher<M> &matcher, bool safe = false)
+  ExplicitMatcher(const ExplicitMatcher &matcher, bool safe = false)
       : matcher_(new M(*matcher.matcher_, safe)),
         match_type_(matcher.match_type_),
         error_(matcher.error_) {}
 
-  ExplicitMatcher<M> *Copy(bool safe = false) const override {
-    return new ExplicitMatcher<M>(*this, safe);
+  ExplicitMatcher *Copy(bool safe = false) const override {
+    return new ExplicitMatcher(*this, safe);
   }
 
   MatchType Type(bool test) const override { return matcher_->Type(test); }

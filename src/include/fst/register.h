@@ -15,7 +15,6 @@
 #include <fst/util.h>
 
 
-#include <fst/types.h>
 #include <fst/log.h>
 
 namespace fst {

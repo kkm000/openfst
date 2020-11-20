@@ -13,6 +13,7 @@
 #include <vector>
 
 #include <fst/compat.h>
+#include <fst/types.h>
 #include <fst/log.h>
 #include <fst/extensions/linear/linear-fst-data.h>
 #include <fst/fst.h>

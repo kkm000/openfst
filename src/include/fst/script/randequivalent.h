@@ -8,6 +8,7 @@
 #include <ctime>
 #include <tuple>
 
+#include <fst/types.h>
 #include <fst/randequivalent.h>
 #include <fst/script/arg-packs.h>
 #include <fst/script/fst-class.h>

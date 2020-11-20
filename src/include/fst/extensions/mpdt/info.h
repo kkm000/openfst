@@ -9,6 +9,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include <fst/types.h>
 #include <fst/extensions/mpdt/mpdt.h>
 #include <fst/fst.h>
 

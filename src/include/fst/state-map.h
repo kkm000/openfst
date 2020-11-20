@@ -12,6 +12,7 @@
 #include <string>
 #include <utility>
 
+#include <fst/types.h>
 #include <fst/log.h>
 
 #include <fst/arc-map.h>
@@ -345,12 +346,12 @@ class StateMapFst : public ImplToFst<internal::StateMapFstImpl<A, B, C>> {
             std::make_shared<Impl>(fst, mapper, StateMapFstOptions())) {}
 
   // See Fst<>::Copy() for doc.
-  StateMapFst(const StateMapFst<A, B, C> &fst, bool safe = false)
+  StateMapFst(const StateMapFst &fst, bool safe = false)
       : ImplToFst<Impl>(fst, safe) {}
 
   // Get a copy of this StateMapFst. See Fst<>::Copy() for further doc.
-  StateMapFst<A, B, C> *Copy(bool safe = false) const override {
-    return new StateMapFst<A, B, C>(*this, safe);
+  StateMapFst *Copy(bool safe = false) const override {
+    return new StateMapFst(*this, safe);
   }
 
   void InitStateIterator(StateIteratorData<B> *data) const override {

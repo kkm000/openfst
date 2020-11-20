@@ -12,6 +12,8 @@
 #include <utility>
 #include <vector>
 
+#include <fst/types.h>
+
 #include <fst/arcsort.h>
 #include <fst/compose.h>
 #include <fst/connect.h>

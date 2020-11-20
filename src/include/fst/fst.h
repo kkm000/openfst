@@ -19,6 +19,7 @@
 
 #include <fst/compat.h>
 #include <fst/flags.h>
+#include <fst/types.h>
 #include <fst/log.h>
 #include <fstream>
 
@@ -227,10 +228,10 @@ class Fst {
   // (3) If a MutableFst is copied and then mutated, then the original is
   // unmodified and vice versa (often by a copy-on-write on the initial
   // mutation, which may not be constant time).
-  virtual Fst<Arc> *Copy(bool safe = false) const = 0;
+  virtual Fst *Copy(bool safe = false) const = 0;
 
   // Reads an FST from an input stream; returns nullptr on error.
-  static Fst<Arc> *Read(std::istream &strm, const FstReadOptions &opts) {
+  static Fst *Read(std::istream &strm, const FstReadOptions &opts) {
     FstReadOptions ropts(opts);
     FstHeader hdr;
     if (ropts.header) {
@@ -251,7 +252,7 @@ class Fst {
 
   // Reads an FST from a file; returns nullptr on error. An empty source
   // results in reading from standard input.
-  static Fst<Arc> *Read(const std::string &source) {
+  static Fst *Read(const std::string &source) {
     if (!source.empty()) {
       std::ifstream strm(source,
                               std::ios_base::in | std::ios_base::binary);
@@ -653,7 +654,7 @@ class FstImpl {
 
   virtual ~FstImpl() {}
 
-  FstImpl &operator=(const FstImpl<Arc> &impl) {
+  FstImpl &operator=(const FstImpl &impl) {
     properties_ = impl.properties_;
     type_ = impl.type_;
     isymbols_ = impl.isymbols_ ? impl.isymbols_->Copy() : nullptr;
@@ -661,7 +662,7 @@ class FstImpl {
     return *this;
   }
 
-  FstImpl &operator=(FstImpl<Arc> &&impl) noexcept;
+  FstImpl &operator=(FstImpl &&impl) noexcept;
 
   const std::string &Type() const { return type_; }
 
@@ -918,7 +919,7 @@ class ImplToFst : public FST {
 
   // This constructor presumes there is a copy constructor for the
   // implementation that produces a thread-safe copy.
-  ImplToFst(const ImplToFst<Impl, FST> &fst, bool safe) {
+  ImplToFst(const ImplToFst &fst, bool safe) {
     if (safe) {
       impl_ = std::make_shared<Impl>(*(fst.impl_));
     } else {
@@ -928,19 +929,18 @@ class ImplToFst : public FST {
 
   ImplToFst() = delete;
 
-  ImplToFst(const ImplToFst<Impl, FST> &fst) : impl_(fst.impl_) {}
+  ImplToFst(const ImplToFst &fst) : impl_(fst.impl_) {}
 
-  ImplToFst(ImplToFst<Impl, FST> &&fst) noexcept
-      : impl_(std::move(fst.impl_)) {
+  ImplToFst(ImplToFst &&fst) noexcept : impl_(std::move(fst.impl_)) {
     fst.impl_ = std::make_shared<Impl>();
   }
 
-  ImplToFst<Impl, FST> &operator=(const ImplToFst<Impl, FST> &fst) {
+  ImplToFst &operator=(const ImplToFst &fst) {
     impl_ = fst.impl_;
     return *this;
   }
 
-  ImplToFst<Impl, FST> &operator=(ImplToFst<Impl, FST> &&fst) noexcept {
+  ImplToFst &operator=(ImplToFst &&fst) noexcept {
     if (this != &fst) {
       impl_ = std::move(fst.impl_);
       fst.impl_ = std::make_shared<Impl>();

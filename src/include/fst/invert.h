@@ -6,6 +6,8 @@
 #ifndef FST_INVERT_H_
 #define FST_INVERT_H_
 
+#include <fst/types.h>
+
 #include <fst/arc-map.h>
 #include <fst/mutable-fst.h>
 
@@ -99,11 +101,11 @@ class InvertFst : public ArcMapFst<A, A, InvertMapper<A>> {
   }
 
   // See Fst<>::Copy() for doc.
-  InvertFst(const InvertFst<Arc> &fst, bool safe = false)
+  InvertFst(const InvertFst &fst, bool safe = false)
       : ArcMapFst<Arc, Arc, Mapper>(fst, safe) {}
 
   // Get a copy of this InvertFst. See Fst<>::Copy() for further doc.
-  InvertFst<Arc> *Copy(bool safe = false) const override {
+  InvertFst *Copy(bool safe = false) const override {
     return new InvertFst(*this, safe);
   }
 

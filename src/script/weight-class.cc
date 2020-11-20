@@ -12,14 +12,14 @@ REGISTER_FST_WEIGHT(Log64Arc::Weight);
 
 WeightClass::WeightClass(const std::string &weight_type,
                          const std::string &weight_str) {
-  WeightClassRegister *reg = WeightClassRegister::GetRegister();
-  StrToWeightImplBaseT stw = reg->GetEntry(weight_type);
+  static const auto *reg = WeightClassRegister::GetRegister();
+  const auto stw = reg->GetEntry(weight_type);
   if (!stw) {
-    FSTERROR() << "Unknown weight type: " << weight_type;
+    FSTERROR() << "WeightClass: Unknown weight type: " << weight_type;
     impl_.reset();
     return;
   }
-  impl_.reset(stw(weight_str, "WeightClass", 0));
+  impl_.reset(stw(weight_str));
 }
 
 constexpr char WeightClass::__ZERO__[];
@@ -42,8 +42,8 @@ bool WeightClass::WeightTypesMatch(const WeightClass &lhs,
                                    const WeightClass &rhs,
                                    const std::string &op_name) {
   if (lhs.Type() != rhs.Type()) {
-    FSTERROR() << "Weights with non-matching types passed to " << op_name
-               << ": " << lhs.Type() << " and " << rhs.Type();
+    FSTERROR() << op_name << ": Weights with non-matching types: " << lhs.Type()
+               << " and " << rhs.Type();
     return false;
   }
   return true;

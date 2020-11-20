@@ -19,6 +19,7 @@
 
 #include <string>
 
+#include <fst/types.h>
 #include <fst/log.h>
 
 #include <fst/pair-weight.h>
@@ -76,7 +77,7 @@ class ExpectationWeight : public PairWeight<X1, X2> {
   }
 
   PairWeight<X1, X2> Quantize(float delta = kDelta) const {
-    return ExpectationWeight(PairWeight<X1, X2>::Quantize());
+    return ExpectationWeight(PairWeight<X1, X2>::Quantize(delta));
   }
 
   ReverseWeight Reverse() const {

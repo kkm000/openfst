@@ -12,6 +12,7 @@
 #include <vector>
 
 #include <fst/flags.h>
+#include <fst/types.h>
 #include <fst/log.h>
 
 #include <fst/vector-fst.h>
@@ -74,7 +75,7 @@ class CacheState {
 
   // Provides STL allocator for arcs.
   explicit CacheState(const ArcAllocator &alloc)
-      : final_(Weight::Zero()),
+      : final_weight_(Weight::Zero()),
         niepsilons_(0),
         noepsilons_(0),
         arcs_(alloc),
@@ -82,7 +83,7 @@ class CacheState {
         ref_count_(0) {}
 
   CacheState(const CacheState<A> &state, const ArcAllocator &alloc)
-      : final_(state.Final()),
+      : final_weight_(state.Final()),
         niepsilons_(state.NumInputEpsilons()),
         noepsilons_(state.NumOutputEpsilons()),
         arcs_(state.arcs_.begin(), state.arcs_.end(), alloc),
@@ -90,7 +91,7 @@ class CacheState {
         ref_count_(0) {}
 
   void Reset() {
-    final_ = Weight::Zero();
+    final_weight_ = Weight::Zero();
     niepsilons_ = 0;
     noepsilons_ = 0;
     ref_count_ = 0;
@@ -98,7 +99,7 @@ class CacheState {
     arcs_.clear();
   }
 
-  Weight Final() const { return final_; }
+  Weight Final() const { return final_weight_; }
 
   size_t NumInputEpsilons() const { return niepsilons_; }
 
@@ -117,7 +118,9 @@ class CacheState {
   // Accesses ref count; used by the caller.
   int RefCount() const { return ref_count_; }
 
-  void SetFinal(Weight weight = Weight::One()) { final_ = std::move(weight); }
+  void SetFinal(Weight weight = Weight::One()) {
+    final_weight_ = std::move(weight);
+  }
 
   void ReserveArcs(size_t n) { arcs_.reserve(n); }
 
@@ -209,7 +212,7 @@ class CacheState {
     if (arc.olabel == 0) ++noepsilons_;
   }
 
-  Weight final_;                         // Final weight.
+  Weight final_weight_;                  // Final weight.
   size_t niepsilons_;                    // # of input epsilons.
   size_t noepsilons_;                    // # of output epsilons.
   std::vector<Arc, ArcAllocator> arcs_;  // Arcs representation.
@@ -302,7 +305,7 @@ class VectorCacheStore {
 
   ~VectorCacheStore() { Clear(); }
 
-  VectorCacheStore<State> &operator=(const VectorCacheStore<State> &store) {
+  VectorCacheStore &operator=(const VectorCacheStore &store) {
     if (this != &store) {
       CopyStates(store);
       Reset();
@@ -428,7 +431,7 @@ class HashCacheStore {
 
   ~HashCacheStore() { Clear(); }
 
-  HashCacheStore<State> &operator=(const HashCacheStore<State> &store) {
+  HashCacheStore &operator=(const HashCacheStore &store) {
     if (this != &store) {
       CopyStates(store);
       Reset();

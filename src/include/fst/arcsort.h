@@ -10,6 +10,8 @@
 #include <string>
 #include <vector>
 
+#include <fst/types.h>
+
 #include <fst/cache.h>
 #include <fst/state-map.h>
 #include <fst/test-properties.h>
@@ -124,11 +126,11 @@ class ArcSortFst : public StateMapFst<Arc, Arc, ArcSortMapper<Arc, Compare>> {
       : StateMapFst<Arc, Arc, Mapper>(fst, Mapper(fst, comp), opts) {}
 
   // See Fst<>::Copy() for doc.
-  ArcSortFst(const ArcSortFst<Arc, Compare> &fst, bool safe = false)
+  ArcSortFst(const ArcSortFst &fst, bool safe = false)
       : StateMapFst<Arc, Arc, Mapper>(fst, safe) {}
 
   // Gets a copy of this ArcSortFst. See Fst<>::Copy() for further doc.
-  ArcSortFst<Arc, Compare> *Copy(bool safe = false) const override {
+  ArcSortFst *Copy(bool safe = false) const override {
     return new ArcSortFst(*this, safe);
   }
 

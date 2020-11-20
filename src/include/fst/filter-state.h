@@ -9,6 +9,8 @@
 #include <forward_list>
 #include <utility>
 
+#include <fst/types.h>
+
 #include <fst/fst-decl.h>  // For optional argument declarations
 #include <fst/fst.h>
 #include <fst/matcher.h>

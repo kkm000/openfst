@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include <fst/types.h>
 #include <fst/log.h>
 
 #include <fst/fst.h>
@@ -136,12 +137,12 @@ class ComplementFst : public ImplToFst<internal::ComplementFstImpl<A>> {
   }
 
   // See Fst<>::Copy() for doc.
-  ComplementFst(const ComplementFst<Arc> &fst, bool safe = false)
+  ComplementFst(const ComplementFst &fst, bool safe = false)
       : ImplToFst<Impl>(fst, safe) {}
 
   // Gets a copy of this FST. See Fst<>::Copy() for further doc.
-  ComplementFst<Arc> *Copy(bool safe = false) const override {
-    return new ComplementFst<Arc>(*this, safe);
+  ComplementFst *Copy(bool safe = false) const override {
+    return new ComplementFst(*this, safe);
   }
 
   inline void InitStateIterator(StateIteratorData<Arc> *data) const override;

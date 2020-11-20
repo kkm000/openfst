@@ -15,6 +15,7 @@
 #include <unordered_set>
 #include <vector>
 
+#include <fst/types.h>
 #include <fst/log.h>
 #include <fst/memory.h>
 #include <unordered_set>

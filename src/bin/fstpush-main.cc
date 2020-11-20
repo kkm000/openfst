@@ -9,6 +9,7 @@
 #include <string>
 
 #include <fst/flags.h>
+#include <fst/types.h>
 #include <fst/script/getters.h>
 #include <fst/script/push.h>
 

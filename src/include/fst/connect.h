@@ -10,6 +10,8 @@
 #include <memory>
 #include <vector>
 
+#include <fst/types.h>
+
 #include <fst/dfs-visit.h>
 #include <fst/mutable-fst.h>
 #include <fst/union-find.h>

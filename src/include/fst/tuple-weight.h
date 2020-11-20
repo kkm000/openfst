@@ -13,6 +13,7 @@
 #include <vector>
 
 #include <fst/flags.h>
+#include <fst/types.h>
 #include <fst/log.h>
 
 #include <fst/weight.h>

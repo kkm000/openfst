@@ -16,6 +16,8 @@
 #include <string>
 #include <type_traits>
 
+#include <fst/types.h>
+
 #include <fst/util.h>
 #include <fst/weight.h>
 
@@ -46,11 +48,11 @@ class FloatWeightTpl {
   constexpr FloatWeightTpl(T f) : value_(f) {}  // NOLINT
 
   // TODO(mjansche): Leave implicit once Android NDK r18 is the default.
-  FloatWeightTpl(const FloatWeightTpl<T> &) = default;
-  FloatWeightTpl(FloatWeightTpl<T> &&) noexcept = default;
+  FloatWeightTpl(const FloatWeightTpl &) = default;
+  FloatWeightTpl(FloatWeightTpl &&) noexcept = default;
 
-  FloatWeightTpl<T> &operator=(const FloatWeightTpl<T> &) = default;
-  FloatWeightTpl<T> &operator=(FloatWeightTpl<T> &&) noexcept = default;
+  FloatWeightTpl &operator=(const FloatWeightTpl &) = default;
+  FloatWeightTpl &operator=(FloatWeightTpl &&) noexcept = default;
 
   std::istream &Read(std::istream &strm) { return ReadType(strm, &value_); }
 

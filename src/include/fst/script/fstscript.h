@@ -113,6 +113,7 @@ class AllFstOperationsRegisterer {
     REGISTER_FST_OPERATION(Info, Arc, InfoArgs);
     REGISTER_FST_OPERATION(Intersect, Arc, IntersectArgs);
     REGISTER_FST_OPERATION(Invert, Arc, MutableFstClass);
+    REGISTER_FST_OPERATION(Isomorphic, Arc, IsomorphicArgs);
   }
 
   void RegisterBatch2() {
