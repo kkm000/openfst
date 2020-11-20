@@ -1,4 +1,4 @@
-AC_INIT([OpenFst], [1.7.8], [help@www.openfst.org])
+AC_INIT([OpenFst], [1.7.9], [help@www.openfst.org])
 AM_INIT_AUTOMAKE([foreign nostdinc -Wall -Werror subdir-objects])
 AM_PROG_AR
 
@@ -105,8 +105,8 @@ AC_ARG_ENABLE([python],
               [enable_python=no])
 AM_CONDITIONAL([HAVE_PYTHON], [test "x$enable_python" != xno])
 if test "x$enable_python" != xno; then
-  AM_PATH_PYTHON(2.7)
-  AC_PYTHON_DEVEL([>= '2.7'])
+  AM_PATH_PYTHON(3.6)
+  AC_PYTHON_DEVEL([>= '3.6'])
 fi
 
 AC_ARG_ENABLE([special],

@@ -796,7 +796,7 @@ inline uint64 PhiMatcher<M>::Properties(uint64 inprops) const {
     return outprops;
   } else if (match_type_ == MATCH_INPUT) {
     if (phi_label_ == 0) {
-      outprops &= ~kEpsilons | ~kIEpsilons | ~kOEpsilons;
+      outprops &= ~(kEpsilons | kIEpsilons | kOEpsilons);
       outprops |= kNoEpsilons | kNoIEpsilons;
     }
     if (rewrite_both_) {
@@ -810,7 +810,7 @@ inline uint64 PhiMatcher<M>::Properties(uint64 inprops) const {
     }
   } else if (match_type_ == MATCH_OUTPUT) {
     if (phi_label_ == 0) {
-      outprops &= ~kEpsilons | ~kIEpsilons | ~kOEpsilons;
+      outprops &= ~(kEpsilons | kIEpsilons | kOEpsilons);
       outprops |= kNoEpsilons | kNoOEpsilons;
     }
     if (rewrite_both_) {

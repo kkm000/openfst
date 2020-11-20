@@ -7,6 +7,7 @@
 #define FST_STRING_H_
 
 #include <memory>
+#include <ostream>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -27,6 +28,19 @@ DECLARE_string(fst_field_separator);
 namespace fst {
 
 enum class TokenType : uint8 { SYMBOL = 1, BYTE = 2, UTF8 = 3 };
+
+inline std::ostream &operator<<(std::ostream &strm,
+                                const TokenType &token_type) {
+  switch (token_type) {
+    case TokenType::BYTE:
+      return strm << "byte";
+    case TokenType::UTF8:
+      return strm << "utf8";
+    case TokenType::SYMBOL:
+      return strm << "symbol";
+  }
+  return strm;  // unreachable
+}
 
 OPENFST_DEPRECATED("Use `TokenType::SYMBOL` instead.")
 static constexpr TokenType SYMBOL = TokenType::SYMBOL;
@@ -70,32 +84,37 @@ bool ConvertStringToLabels(const std::string &str, TokenType token_type,
                            bool allow_negative, std::vector<Label> *labels,
                            const std::string &sep = FLAGS_fst_field_separator) {
   labels->clear();
-  if (token_type == TokenType::BYTE) {
-    labels->reserve(str.size());
-    return ByteStringToLabels(str, labels);
-  } else if (token_type == TokenType::UTF8) {
-    return UTF8StringToLabels(str, labels);
-  } else {
-    // SplitString modifies its input, so make a copy.
-    // TODO(jrosenstock): Investigate minimal fst::string_view and/or
-    // SplitString returning vector<string_view> if available and
-    // vector<string> otherwise.
-    std::string str_copy = str;
-    std::vector<char *> vec;
-    const std::string separator = "\n" + sep;
-    // This really wants to be data, but non-const data() requires C++17.
-    // str[str.size()] has been guaranteed to be '\0' since C++11,
-    SplitString(&str_copy[0], separator.c_str(), &vec, true);
-    for (const char *c : vec) {
-      Label label;
-      if (!ConvertSymbolToLabel(c, syms, unknown_label, allow_negative,
-                                &label)) {
-        return false;
+  switch (token_type) {
+    case TokenType::BYTE: {
+      labels->reserve(str.size());
+      return ByteStringToLabels(str, labels);
+    }
+    case TokenType::UTF8: {
+      return UTF8StringToLabels(str, labels);
+    }
+    case TokenType::SYMBOL: {
+      // SplitString modifies its input, so make a copy.
+      // TODO(jrosenstock): Investigate minimal fst::string_view and/or
+      // SplitString returning vector<string_view> if available and
+      // vector<string> otherwise.
+      std::string str_copy = str;
+      std::vector<char *> vec;
+      const std::string separator = "\n" + sep;
+      // This really wants to be data, but non-const data() requires C++17.
+      // str[str.size()] has been guaranteed to be '\0' since C++11,
+      SplitString(&str_copy[0], separator.c_str(), &vec, true);
+      for (const char *c : vec) {
+        Label label;
+        if (!ConvertSymbolToLabel(c, syms, unknown_label, allow_negative,
+                                  &label)) {
+          return false;
+        }
+        labels->push_back(label);
       }
-      labels->push_back(label);
+      return true;
     }
   }
-  return true;
+  return false;  // Unreachable.
 }
 
 // The last character of 'sep' is used as a separator between symbols.

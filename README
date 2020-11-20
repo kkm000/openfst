@@ -33,7 +33,9 @@ INSTALLATION:
 
   Configuring with --enable-python will attempt to install the Python module to
   whichever site-packages (or dist-packages, on Debian or Ubuntu) is found
-  during configuration.
+  during configuration. If `import pywrapfst` fails from a PYthon 3.6 or better 
+  interpreter after installation, relocate pywrapfst.so to a directory in your
+  interpreter's `sys.path` or $PYTHONPATH.
 
   The flag --with-libfstdir specifies where FST extensions should be installed;
   it defaults to ${libdir}/fst.

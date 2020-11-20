@@ -83,6 +83,7 @@ from cutility cimport move
 
 # Python imports.
 import logging
+import enum
 import numbers
 import os
 import subprocess
@@ -456,31 +457,31 @@ cdef class Weight:
   # C++ part out-of-class and then call it from within.
 
   @classmethod
-  def Zero(cls, weight_type):
+  def zero(cls, weight_type):
     """
-    Weight.Zero(weight_type)
+    Weight.zero(weight_type)
 
     Constructs semiring zero.
     """
-    return _Zero(weight_type)
+    return _zero(weight_type)
 
   @classmethod
-  def One(cls, weight_type):
+  def one(cls, weight_type):
     """
-    Weight.One(weight_type)
+    Weight.one(weight_type)
 
     Constructs semiring One.
     """
-    return _One(weight_type)
+    return _one(weight_type)
 
   @classmethod
-  def NoWeight(cls, weight_type):
+  def no_weight(cls, weight_type):
     """
-    Weight.NoWeight(weight_type)
+    Weight.no_weight(weight_type)
 
     Constructs a non-member weight in the semiring.
     """
-    return _NoWeight(weight_type)
+    return _no_weight(weight_type)
 
   def __eq__(Weight w1, Weight w2):
     return fst.Eq(deref(w1._weight), deref(w2._weight))
@@ -628,7 +629,7 @@ def power(Weight w, size_t n):
   return _weight
 
 
-cdef fst.WeightClass _get_WeightClass_or_Zero(const string &weight_type,
+cdef fst.WeightClass _get_WeightClass_or_zero(const string &weight_type,
                                               weight) except *:
   """Converts weight string to a WeightClass.
 
@@ -657,7 +658,7 @@ cdef fst.WeightClass _get_WeightClass_or_Zero(const string &weight_type,
   return _weight
 
 
-cdef fst.WeightClass _get_WeightClass_or_One(const string &weight_type,
+cdef fst.WeightClass _get_WeightClass_or_one(const string &weight_type,
                                              weight) except *:
   """Converts weight string to a WeightClass.
 
@@ -686,7 +687,7 @@ cdef fst.WeightClass _get_WeightClass_or_One(const string &weight_type,
   return _weight
 
 
-cdef Weight _Zero(weight_type):
+cdef Weight _zero(weight_type):
   cdef Weight _weight = Weight.__new__(Weight)
   _weight._weight.reset(
     new fst.WeightClass(fst.WeightClass.Zero(tostring(weight_type))))
@@ -695,7 +696,7 @@ cdef Weight _Zero(weight_type):
   return _weight
 
 
-cdef Weight _One(weight_type):
+cdef Weight _one(weight_type):
   cdef Weight _weight = Weight.__new__(Weight)
   _weight._weight.reset(
     new fst.WeightClass(fst.WeightClass.One(tostring(weight_type))))
@@ -704,7 +705,7 @@ cdef Weight _One(weight_type):
   return _weight
 
 
-cdef Weight _NoWeight(weight_type):
+cdef Weight _no_weight(weight_type):
   cdef Weight _weight = Weight.__new__(Weight)
   _weight._weight.reset(
     new fst.WeightClass(fst.WeightClass.NoWeight(tostring(weight_type))))
@@ -1376,7 +1377,7 @@ cdef class EncodeMapper:
     """
     return self._mapper.get().Flags()
 
-  cpdef uint64 properties(self, uint64 mask):
+  def properties(self, mask):
     """
     properties(self, mask)
 
@@ -1390,7 +1391,8 @@ cdef class EncodeMapper:
     Returns:
       A 64-bit bitmask representing the requested properties.
     """
-    return self._mapper.get().Properties(mask)
+
+    return FstProperties(self._mapper.get().Properties(mask.value))
 
   @classmethod
   def read(cls, source):
@@ -1911,7 +1913,7 @@ cdef class Fst:
               tostring(missing_sym))
     return _sstrm.str()
 
-  cpdef uint64 properties(self, uint64 mask, bool test):
+  def properties(self, mask, bool test):
     """
     properties(self, mask, test)
 
@@ -1927,9 +1929,9 @@ cdef class Fst:
           the mask?
 
     Returns:
-      A 64-bit bitmask representing the requested properties.
+      A FstProperties representing a 64-bit bitmask of the requested properties.
     """
-    return self._fst.get().Properties(mask, test)
+    return FstProperties(self._fst.get().Properties(mask.value, test))
 
   @classmethod
   def read(cls, source):
@@ -2428,7 +2430,7 @@ cdef class MutableFst(Fst):
                    int64 nstate=fst.kNoStateId,
                    weight=None) except *:
     # Threshold is set to semiring Zero (no pruning) if no weight is specified.
-    cdef fst.WeightClass _weight = _get_WeightClass_or_Zero(self.weight_type(),
+    cdef fst.WeightClass _weight = _get_WeightClass_or_zero(self.weight_type(),
                                                             weight)
     fst.Prune(self._mfst.get(), _weight, nstate, delta)
     self._check_mutating_imethod()
@@ -2667,7 +2669,7 @@ cdef class MutableFst(Fst):
     cdef string _weight_type = self.weight_type()
     cdef vector[fst.WeightClass] _potentials
     for weight in potentials:
-      _potentials.push_back(_get_WeightClass_or_One(_weight_type, weight))
+      _potentials.push_back(_get_WeightClass_or_one(_weight_type, weight))
     fst.Reweight(self._mfst.get(), _potentials, fst.GetReweightType(to_final))
     self._check_mutating_imethod()
 
@@ -2702,7 +2704,7 @@ cdef class MutableFst(Fst):
                        weight=None,
                        int64 nstate=fst.kNoStateId,
                        float delta=fst.kShortestDelta) except *:
-    cdef fst.WeightClass _weight = _get_WeightClass_or_Zero(self.weight_type(),
+    cdef fst.WeightClass _weight = _get_WeightClass_or_zero(self.weight_type(),
                                                             weight)
     cdef unique_ptr[fst.RmEpsilonOptions] _opts
     _opts.reset(
@@ -2747,7 +2749,7 @@ cdef class MutableFst(Fst):
   cdef void _set_final(self, int64 state, weight=None) except *:
     if not self._mfst.get().ValidStateId(state):
       raise FstIndexError("State index out of range")
-    cdef fst.WeightClass _weight = _get_WeightClass_or_One(self.weight_type(),
+    cdef fst.WeightClass _weight = _get_WeightClass_or_one(self.weight_type(),
                                                           weight)
     if not self._mfst.get().SetFinal(state, _weight):
       raise FstOpError("Incompatible or invalid weight")
@@ -2820,10 +2822,7 @@ cdef class MutableFst(Fst):
     self._set_output_symbols(symbols)
     return self
 
-  cdef void _set_properties(self, uint64 props, uint64 mask):
-    self._mfst.get().SetProperties(props, mask)
-
-  def set_properties(self, uint64 props, uint64 mask):
+  def set_properties(self, props, mask):
     """
     set_properties(self, props, mask)
 
@@ -2837,7 +2836,7 @@ cdef class MutableFst(Fst):
     Returns:
       self.
     """
-    self._set_properties(props, mask)
+    self._mfst.get().SetProperties(props.value, mask.value)
     return self
 
   cdef void _set_start(self, int64 state) except *:
@@ -3001,65 +3000,71 @@ NO_SYMBOL = fst.kNoSymbol
 
 ## FST properties.
 
+class FstProperties(enum.Flag):
+  EXPANDED = fst.kExpanded
+  MUTABLE = fst.kMutable
+  ERROR = fst.kError
+  ACCEPTOR = fst.kAcceptor
+  NOT_ACCEPTOR = fst.kNotAcceptor
+  I_DETERMINISTIC = fst.kIDeterministic
+  NON_I_DETERMINISTIC = fst.kNonIDeterministic
+  O_DETERMINISTIC = fst.kODeterministic
+  NON_O_DETERMINISTIC = fst.kNonODeterministic
+  EPSILONS = fst.kEpsilons
+  NO_EPSILONS = fst.kNoEpsilons
+  I_EPSILONS = fst.kIEpsilons
+  NO_I_EPSILONS = fst.kNoIEpsilons
+  O_EPSILONS = fst.kOEpsilons
+  NO_O_EPSILONS = fst.kNoOEpsilons
+  I_LABEL_SORTED = fst.kILabelSorted
+  NOT_I_LABEL_SORTED = fst.kNotILabelSorted
+  O_LABEL_SORTED = fst.kOLabelSorted
+  NOT_O_LABEL_SORTED = fst.kNotOLabelSorted
+  WEIGHTED = fst.kWeighted
+  UNWEIGHTED = fst.kUnweighted
+  CYCLIC = fst.kCyclic
+  ACYCLIC = fst.kAcyclic
+  INITIAL_CYCLIC = fst.kInitialCyclic
+  INITIAL_ACYCLIC = fst.kInitialAcyclic
+  TOP_SORTED = fst.kTopSorted
+  NOT_TOP_SORTED = fst.kNotTopSorted
+  ACCESSIBLE = fst.kAccessible
+  NOT_ACCESSIBLE = fst.kNotAccessible
+  COACCESSIBLE = fst.kCoAccessible
+  NOT_COACCESSIBLE = fst.kNotCoAccessible
+  STRING = fst.kString
+  NOT_STRING = fst.kNotString
+  WEIGHTED_CYCLES = fst.kWeightedCycles
+  UNWEIGHTED_CYCLES = fst.kUnweightedCycles
+  # TODO(wolfsonkin): Figure out how to keep the composite properties (all the
+  # below properties) out of the `repr`, but still available as an attribute on
+  # the class. I think this could be done with `property`.
+  NULL_PROPERTIES = fst.kNullProperties
+  COPY_PROPERTIES = fst.kCopyProperties
+  INTRINSIC_PROPERTIES = fst.kIntrinsicProperties
+  EXTRINSIC_PROPERTIES = fst.kExtrinsicProperties
+  SET_START_PROPERTIES = fst.kSetStartProperties
+  SET_FINAL_PROPERTIES = fst.kSetFinalProperties
+  ADD_STATE_PROPERTIES = fst.kAddStateProperties
+  ADD_ARC_PROPERTIES = fst.kAddArcProperties
+  SET_ARC_PROPERTIES = fst.kSetArcProperties
+  DELETE_STATE_PROPERTIES = fst.kDeleteStatesProperties
+  DELETE_ARC_PROPERTIES = fst.kDeleteArcsProperties
+  STATE_SORT_PROPERTIES = fst.kStateSortProperties
+  ARC_SORT_PROPERTIES = fst.kArcSortProperties
+  I_LABEL_INVARIANT_PROPERTIES = fst.kILabelInvariantProperties
+  O_LABEL_INVARIANT_PROPERTIES = fst.kOLabelInvariantProperties
+  WEIGHT_INVARIANT_PROPERTIES = fst.kWeightInvariantProperties
+  ADD_SUPERFINAL_PROPERTIES = fst.kAddSuperFinalProperties
+  RM_SUPERFINAL_PROPERTIES = fst.kRmSuperFinalProperties
+  BINARY_PROPERTIES = fst.kBinaryProperties
+  TRINARY_PROPERTIES = fst.kTrinaryProperties
+  POS_TRINARY_PROPERTIES = fst.kPosTrinaryProperties
+  NEG_TRINARY_PROPERTIES = fst.kNegTrinaryProperties
+  FST_PROPERTIES = fst.kFstProperties
 
-EXPANDED = fst.kExpanded
-MUTABLE = fst.kMutable
-ERROR = fst.kError
-ACCEPTOR = fst.kAcceptor
-NOT_ACCEPTOR = fst.kNotAcceptor
-I_DETERMINISTIC = fst.kIDeterministic
-NON_I_DETERMINISTIC = fst.kNonIDeterministic
-O_DETERMINISTIC = fst.kODeterministic
-NON_O_DETERMINISTIC = fst.kNonODeterministic
-EPSILONS = fst.kEpsilons
-NO_EPSILONS = fst.kNoEpsilons
-I_EPSILONS = fst.kIEpsilons
-NO_I_EPSILONS = fst.kNoIEpsilons
-O_EPSILONS = fst.kOEpsilons
-NO_O_EPSILONS = fst.kNoOEpsilons
-I_LABEL_SORTED = fst.kILabelSorted
-NOT_I_LABEL_SORTED = fst.kNotILabelSorted
-O_LABEL_SORTED = fst.kOLabelSorted
-NOT_O_LABEL_SORTED = fst.kNotOLabelSorted
-WEIGHTED = fst.kWeighted
-UNWEIGHTED = fst.kUnweighted
-CYCLIC = fst.kCyclic
-ACYCLIC = fst.kAcyclic
-INITIAL_CYCLIC = fst.kInitialCyclic
-INITIAL_ACYCLIC = fst.kInitialAcyclic
-TOP_SORTED = fst.kTopSorted
-NOT_TOP_SORTED = fst.kNotTopSorted
-ACCESSIBLE = fst.kAccessible
-NOT_ACCESSIBLE = fst.kNotAccessible
-COACCESSIBLE = fst.kCoAccessible
-NOT_COACCESSIBLE = fst.kNotCoAccessible
-STRING = fst.kString
-NOT_STRING = fst.kNotString
-WEIGHTED_CYCLES = fst.kWeightedCycles
-UNWEIGHTED_CYCLES = fst.kUnweightedCycles
-NULL_PROPERTIES = fst.kNullProperties
-COPY_PROPERTIES = fst.kCopyProperties
-INTRINSIC_PROPERTIES = fst.kIntrinsicProperties
-EXTRINSIC_PROPERTIES = fst.kExtrinsicProperties
-SET_START_PROPERTIES = fst.kSetStartProperties
-SET_FINAL_PROPERTIES = fst.kSetFinalProperties
-ADD_STATE_PROPERTIES = fst.kAddStateProperties
-ADD_ARC_PROPERTIES = fst.kAddArcProperties
-SET_ARC_PROPERTIES = fst.kSetArcProperties
-DELETE_STATE_PROPERTIES = fst.kDeleteStatesProperties
-DELETE_ARC_PROPERTIES = fst.kDeleteArcsProperties
-STATE_SORT_PROPERTIES = fst.kStateSortProperties
-ARC_SORT_PROPERTIES = fst.kArcSortProperties
-I_LABEL_INVARIANT_PROPERTIES = fst.kILabelInvariantProperties
-O_LABEL_INVARIANT_PROPERTIES = fst.kOLabelInvariantProperties
-WEIGHT_INVARIANT_PROPERTIES = fst.kWeightInvariantProperties
-ADD_SUPERFINAL_PROPERTIES = fst.kAddSuperFinalProperties
-RM_SUPERFINAL_PROPERTIES = fst.kRmSuperFinalProperties
-BINARY_PROPERTIES = fst.kBinaryProperties
-TRINARY_PROPERTIES = fst.kTrinaryProperties
-POS_TRINARY_PROPERTIES = fst.kPosTrinaryProperties
-NEG_TRINARY_PROPERTIES = fst.kNegTrinaryProperties
-FST_PROPERTIES = fst.kFstProperties
+for name, member in FstProperties.__members__.items():
+  globals()[name] = member
 
 
 ## Arc iterator properties.
@@ -3105,7 +3110,7 @@ cdef class Arc:
     return f"<Arc at 0x{id(self):x}>"
 
   def __init__(self, int64 ilabel, int64 olabel, weight, int64 nextstate):
-    cdef fst.WeightClass _weight = _get_WeightClass_or_One(b"tropical", weight)
+    cdef fst.WeightClass _weight = _get_WeightClass_or_one(b"tropical", weight)
     self._arc.reset(new fst.ArcClass(ilabel, olabel, _weight, nextstate))
 
   cpdef Arc copy(self):
@@ -3135,7 +3140,7 @@ cdef class Arc:
       return _weight
 
     def __set__(self, weight):
-      deref(self._arc).weight = _get_WeightClass_or_One(b"tropical", weight)
+      deref(self._arc).weight = _get_WeightClass_or_one(b"tropical", weight)
 
   property nextstate:
 
@@ -3460,9 +3465,9 @@ cdef Fst _map(Fst ifst,
     raise FstArgError(f"Unknown map type: {map_type!r}")
   cdef fst.WeightClass _weight
   if _map_type == fst.TIMES_MAPPER:
-      _weight = _get_WeightClass_or_One(ifst.weight_type(), weight)
+      _weight = _get_WeightClass_or_one(ifst.weight_type(), weight)
   else:
-      _weight = _get_WeightClass_or_Zero(ifst.weight_type(), weight)
+      _weight = _get_WeightClass_or_zero(ifst.weight_type(), weight)
   return _init_XFst(fst.Map(deref(ifst._fst), _map_type, delta, power, _weight))
 
 
@@ -3617,7 +3622,7 @@ cpdef MutableFst determinize(Fst ifst,
   cdef unique_ptr[fst.VectorFstClass] _tfst
   _tfst.reset(new fst.VectorFstClass(ifst.arc_type()))
   # Threshold is set to semiring Zero (no pruning) if weight unspecified.
-  cdef fst.WeightClass _weight = _get_WeightClass_or_Zero(ifst.weight_type(),
+  cdef fst.WeightClass _weight = _get_WeightClass_or_zero(ifst.weight_type(),
                                                           weight)
   cdef fst.DeterminizeType _det_type
   if not fst.GetDeterminizeType(tostring(det_type), addr(_det_type)):
@@ -3705,7 +3710,7 @@ cpdef MutableFst disambiguate(Fst ifst,
   cdef unique_ptr[fst.VectorFstClass] _tfst
   _tfst.reset(new fst.VectorFstClass(ifst.arc_type()))
   # Threshold is set to semiring Zero (no pruning) if no weight is specified.
-  cdef fst.WeightClass _weight = _get_WeightClass_or_Zero(ifst.weight_type(),
+  cdef fst.WeightClass _weight = _get_WeightClass_or_zero(ifst.weight_type(),
                                                      weight)
   cdef unique_ptr[fst.DisambiguateOptions] _opts
   _opts.reset(
@@ -3873,7 +3878,7 @@ cpdef MutableFst prune(Fst ifst,
   """
   cdef unique_ptr[fst.VectorFstClass] _tfst
   _tfst.reset(new fst.VectorFstClass(ifst.arc_type()))
-  cdef fst.WeightClass _weight = _get_WeightClass_or_Zero(ifst.weight_type(),
+  cdef fst.WeightClass _weight = _get_WeightClass_or_zero(ifst.weight_type(),
                                                           weight)
   fst.Prune(deref(ifst._fst), _tfst.get(), _weight, nstate, delta)
   return _init_MutableFst(_tfst.release())
@@ -4224,7 +4229,7 @@ cpdef MutableFst shortestpath(Fst ifst,
   cdef unique_ptr[fst.VectorFstClass] _tfst
   _tfst.reset(new fst.VectorFstClass(ifst.arc_type()))
   # Threshold is set to semiring Zero (no pruning) if no weight is specified.
-  cdef fst.WeightClass _weight = _get_WeightClass_or_Zero(ifst.weight_type(),
+  cdef fst.WeightClass _weight = _get_WeightClass_or_zero(ifst.weight_type(),
                                                           weight)
   cdef unique_ptr[fst.ShortestPathOptions] _opts
   _opts.reset(

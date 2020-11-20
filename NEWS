@@ -1,4 +1,5 @@
 OpenFst: Release 1.7
+   * Compatibility release for Thrax and Pynini improvements (1.7.9)
    * TokenType is now a scoped enum (1.7.8)
    * pywrapfst is now Python 3-only (1.7.8)
    * fstproject now has --project_type flag (1.7.8)

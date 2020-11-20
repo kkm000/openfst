@@ -13,7 +13,7 @@ endif
 
 if HAVE_SCRIPT
 libfstcompressscript_la_SOURCES = compressscript.cc
-libfstcompressscript_la_LDFLAGS = -version-info 21:0:0
+libfstcompressscript_la_LDFLAGS = -version-info 22:0:0
 libfstcompressscript_la_LIBADD = ../../script/libfstscript.la \
                                  ../../lib/libfst.la \
                                  -lm $(DL_LIBS)
