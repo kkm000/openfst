@@ -1,16 +1,17 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # This is a port port maintainer's file, and is not part of OpenFST.
 # Licensed under the same Apache 2.0 license (see the file COPYING),
 # or just delete it if in legal doubt; you do not need it anyway.
 # Copyright 2019 SmartAction LLC.
+# Copyright 2020 kkm
 
 set -euo pipefail; shopt -s extglob
 
 LF=$'\n'
 
 say() { echo >&2 "$0: $@"; }
-die() { echo >&2 "$0: error: $@"; exit 1; }
+die() { echo >&2 "$0: ERROR: $@"; exit 1; }
 
 # This is Spar^H^H Windooows!
 miss=(); for tool in gawk git grep gzip tar wget; do
@@ -19,7 +20,7 @@ done
 test ${#miss[@]} -eq 0 || die "missing required program(s): ${miss[@]}"
 unset miss
 
-[[ "$#" == [12] ]] || { 
+[[ "$#" == [12] ]] || {
   echo >&2 -e "Usage: $0 <version> [<revision>=1]${LF} e.g.: $0 1.7.0 1"
   exit 2; }
 
@@ -71,6 +72,14 @@ message="Import v$ver r$rev${LF}${LF}$url"
 say "committing and tagging new version"
 git add -A
 git commit -m "$message"
+
+git status --porcelain=2 | gawk -v me=$0 >&2 '
+  $1$9 == "1_import_release.sh" { next }
+  { modf=1; nextfile }
+  END { exit(modf) }' || {
+    git status --long --ignored
+    die "Some files listed above remain uncommitted"; }
+
 git tag -a "$tag" -m "$message"
 
 say "summary of changes to the previous version, and a NEWS snippet"

@@ -1,9 +1,10 @@
-# Ignore extensionless files
+# Ignore extensionless files, except at the very root.
 *
 !*.*
-!*/
+!/**/
+!/*
 
-# Other patterns
+# Other patterns.
 /config.h
 /config.log
 /config.status
@@ -13,4 +14,3 @@
 *.la
 *.lo
 *.o
-
