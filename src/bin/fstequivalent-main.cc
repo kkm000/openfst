@@ -66,22 +66,22 @@ int fstequivalent_main(int argc, char **argv) {
   std::unique_ptr<FstClass> ifst2(FstClass::Read(in2_name));
   if (!ifst2) return 1;
 
-  if (!FLAGS_random) {
-    bool result = s::Equivalent(*ifst1, *ifst2, FLAGS_delta);
+  if (!FST_FLAGS_random) {
+    bool result = s::Equivalent(*ifst1, *ifst2, FST_FLAGS_delta);
     if (!result) VLOG(1) << "FSTs are not equivalent";
     return result ? 0 : 2;
   } else {
     s::RandArcSelection ras;
-    if (!s::GetRandArcSelection(FLAGS_select, &ras)) {
+    if (!s::GetRandArcSelection(FST_FLAGS_select, &ras)) {
       LOG(ERROR) << argv[0] << ": Unknown or unsupported select type "
-                 << FLAGS_select;
+                 << FST_FLAGS_select;
       return 1;
     }
     const RandGenOptions<s::RandArcSelection> opts(
-        ras, FLAGS_max_length);
-    bool result = s::RandEquivalent(*ifst1, *ifst2, FLAGS_npath,
-                                    opts, FLAGS_delta,
-                                    FLAGS_seed);
+        ras, FST_FLAGS_max_length);
+    bool result = s::RandEquivalent(*ifst1, *ifst2, FST_FLAGS_npath,
+                                    opts, FST_FLAGS_delta,
+                                    FST_FLAGS_seed);
     if (!result) VLOG(1) << "FSTs are not equivalent";
     return result ? 0 : 2;
   }

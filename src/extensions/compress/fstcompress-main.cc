@@ -52,8 +52,8 @@ int fstcompress_main(int argc, char **argv) {
   const std::string out_name =
       (argc > 2 && (strcmp(argv[2], "-") != 0)) ? argv[2] : "";
 
-  if (FLAGS_decode) {
-    VectorFstClass fst(FLAGS_arc_type);
+  if (FST_FLAGS_decode) {
+    VectorFstClass fst(FST_FLAGS_arc_type);
     if (!s::Decompress(in_name, &fst)) {
       FSTERROR() << "Decompression failed";
       return 1;

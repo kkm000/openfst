@@ -35,9 +35,9 @@ template <class Label>
 class SigmaFstMatcherData {
  public:
   explicit SigmaFstMatcherData(
-      Label sigma_label = FLAGS_sigma_fst_sigma_label,
+      Label sigma_label = FST_FLAGS_sigma_fst_sigma_label,
       MatcherRewriteMode rewrite_mode =
-          RewriteMode(FLAGS_sigma_fst_rewrite_mode))
+          RewriteMode(FST_FLAGS_sigma_fst_rewrite_mode))
       : sigma_label_(sigma_label), rewrite_mode_(rewrite_mode) {}
 
   SigmaFstMatcherData(const SigmaFstMatcherData &data)

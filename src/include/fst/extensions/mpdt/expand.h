@@ -293,7 +293,7 @@ class ArcIterator<MPdtExpandFst<Arc>>
 template <class Arc>
 inline void MPdtExpandFst<Arc>::InitStateIterator(
     StateIteratorData<Arc> *data) const {
-  data->base = fst::make_unique<StateIterator<MPdtExpandFst<Arc>>>(*this);
+  data->base = std::make_unique<StateIterator<MPdtExpandFst<Arc>>>(*this);
 }
 
 struct MPdtExpandOptions {

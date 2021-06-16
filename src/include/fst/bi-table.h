@@ -111,7 +111,7 @@ class HashBiTable {
 };
 
 // Enables alternative hash set representations below.
-enum HSType { HS_STL = 0, HS_DENSE = 1, HS_SPARSE = 2, HS_FLAT = 3 };
+enum HSType { HS_STL, HS_FLAT };
 
 // Default hash set is STL hash_set.
 template <class K, class H, class E, HSType HS>
@@ -307,7 +307,7 @@ class VectorBiTable {
 // fingerprinting functor FP returns a unique fingerprint for each entry to be
 // hashed in the vector (these need to be suitable for indexing in a vector).
 // The hash functor H is used when hashing entry into the compact hash table.
-template <class I, class T, class S, class FP, class H, HSType HS = HS_DENSE>
+template <class I, class T, class S, class FP, class H, HSType HS = HS_FLAT>
 class VectorHashBiTable {
  public:
   friend class HashFunc;
@@ -381,7 +381,6 @@ class VectorHashBiTable {
 
  private:
   static constexpr I kCurrentKey = -1;
-  static constexpr I kEmptyKey = -2;
 
   class HashFunc {
    public:
@@ -442,9 +441,6 @@ class VectorHashBiTable {
 
 template <class I, class T, class S, class FP, class H, HSType HS>
 constexpr I VectorHashBiTable<I, T, S, FP, H, HS>::kCurrentKey;
-
-template <class I, class T, class S, class FP, class H, HSType HS>
-constexpr I VectorHashBiTable<I, T, S, FP, H, HS>::kEmptyKey;
 
 // An implementation using a hash map for the entry to ID mapping. This version
 // permits erasing of arbitrary states. The entry T must have == defined and

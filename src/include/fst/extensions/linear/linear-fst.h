@@ -580,7 +580,7 @@ class ArcIterator<LinearTaggerFst<Arc>>
 template <class Arc>
 inline void LinearTaggerFst<Arc>::InitStateIterator(
     StateIteratorData<Arc> *data) const {
-  data->base = fst::make_unique<StateIterator<LinearTaggerFst<Arc>>>(*this);
+  data->base = std::make_unique<StateIterator<LinearTaggerFst<Arc>>>(*this);
 }
 
 namespace internal {
@@ -1040,7 +1040,7 @@ template <class Arc>
 inline void LinearClassifierFst<Arc>::InitStateIterator(
     StateIteratorData<Arc> *data) const {
   data->base =
-      fst::make_unique<StateIterator<LinearClassifierFst<Arc>>>(*this);
+      std::make_unique<StateIterator<LinearClassifierFst<Arc>>>(*this);
 }
 
 // Specialized Matcher for LinearFsts. This matcher only supports

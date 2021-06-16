@@ -23,7 +23,6 @@
 #include <forward_list>
 #include <stack>
 #include <string>
-#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -40,6 +39,7 @@
 #include <fst/shortest-distance.h>
 #include <fst/topsort.h>
 
+#include <unordered_map>
 
 namespace fst {
 
@@ -121,7 +121,7 @@ class RmEpsilonState {
   };
 
   using ElementMap = std::unordered_map<Element, std::pair<StateId, size_t>,
-                                        ElementHash, ElementEqual>;
+                                         ElementHash, ElementEqual>;
 
   const Fst<Arc> &fst_;
   // Distance from state being expanded in epsilon-closure.
@@ -294,7 +294,14 @@ void RmEpsilon(MutableFst<Arc> *fst,
       kFstProperties);
   if (opts.weight_threshold != Weight::Zero() ||
       opts.state_threshold != kNoStateId) {
-    Prune(fst, opts.weight_threshold, opts.state_threshold);
+    if constexpr (IsPath<Weight>::value) {
+      Prune(fst, opts.weight_threshold, opts.state_threshold);
+    } else {
+      FSTERROR() << "RmEpsilon: Weight must have path property: "
+                 << Weight::Type();
+      fst->SetProperties(kError, kError);
+      return;
+    }
   }
   if (opts.connect && opts.weight_threshold == Weight::Zero() &&
       opts.state_threshold == kNoStateId) {
@@ -557,7 +564,7 @@ class ArcIterator<RmEpsilonFst<Arc>>
 template <class Arc>
 inline void RmEpsilonFst<Arc>::InitStateIterator(
     StateIteratorData<Arc> *data) const {
-  data->base = fst::make_unique<StateIterator<RmEpsilonFst<Arc>>>(*this);
+  data->base = std::make_unique<StateIterator<RmEpsilonFst<Arc>>>(*this);
 }
 
 // Useful alias when using StdArc.

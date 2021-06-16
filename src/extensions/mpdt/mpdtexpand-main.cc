@@ -60,20 +60,22 @@ int mpdtexpand_main(int argc, char **argv) {
   std::unique_ptr<FstClass> ifst(FstClass::Read(in_name));
   if (!ifst) return 1;
 
-  if (FLAGS_mpdt_parentheses.empty()) {
+  if (FST_FLAGS_mpdt_parentheses.empty()) {
     LOG(ERROR) << argv[0] << ": No MPDT parenthesis label pairs provided";
     return 1;
   }
 
   std::vector<std::pair<int64, int64>> parens;
   std::vector<int64> assignments;
-  if (!ReadLabelTriples(FLAGS_mpdt_parentheses, &parens, &assignments, false)) {
+  if (!ReadLabelTriples(FST_FLAGS_mpdt_parentheses, &parens,
+                        &assignments, false)) {
     return 1;
   }
 
   VectorFstClass ofst(ifst->ArcType());
 
-  const MPdtExpandOptions opts(FLAGS_connect, FLAGS_keep_parentheses);
+  const MPdtExpandOptions opts(FST_FLAGS_connect,
+                               FST_FLAGS_keep_parentheses);
 
   s::MPdtExpand(*ifst, parens, assignments, &ofst, opts);
 

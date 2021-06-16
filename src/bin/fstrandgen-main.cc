@@ -50,7 +50,7 @@ int fstrandgen_main(int argc, char **argv) {
     return 1;
   }
 
-  VLOG(1) << argv[0] << ": Seed = " << FLAGS_seed;
+  VLOG(1) << argv[0] << ": Seed = " << FST_FLAGS_seed;
 
   const std::string in_name =
       (argc > 1 && strcmp(argv[1], "-") != 0) ? argv[1] : "";
@@ -63,18 +63,18 @@ int fstrandgen_main(int argc, char **argv) {
   VectorFstClass ofst(ifst->ArcType());
 
   s::RandArcSelection ras;
-  if (!s::GetRandArcSelection(FLAGS_select, &ras)) {
+  if (!s::GetRandArcSelection(FST_FLAGS_select, &ras)) {
     LOG(ERROR) << argv[0] << ": Unknown or unsupported select type "
-               << FLAGS_select;
+               << FST_FLAGS_select;
     return 1;
   }
 
   s::RandGen(*ifst, &ofst,
              RandGenOptions<s::RandArcSelection>(
-                 ras, FLAGS_max_length,
-                 FLAGS_npath, FLAGS_weighted,
-                 FLAGS_remove_total_weight),
-             FLAGS_seed);
+                 ras, FST_FLAGS_max_length,
+                 FST_FLAGS_npath, FST_FLAGS_weighted,
+                 FST_FLAGS_remove_total_weight),
+             FST_FLAGS_seed);
 
   return !ofst.Write(out_name);
 }

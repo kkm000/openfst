@@ -474,7 +474,7 @@ VectorFstImpl<S>::VectorFstImpl(const Fst<Arc> &fst) {
 template <class S>
 VectorFstImpl<S> *VectorFstImpl<S>::Read(std::istream &strm,
                                          const FstReadOptions &opts) {
-  auto impl = fst::make_unique<VectorFstImpl>();
+  auto impl = std::make_unique<VectorFstImpl>();
   FstHeader hdr;
   if (!impl->ReadHeader(strm, opts, kMinFileVersion, &hdr)) return nullptr;
   impl->BaseImpl::SetStart(hdr.Start());
@@ -816,7 +816,7 @@ template <class Arc, class State>
 inline void VectorFst<Arc, State>::InitMutableArcIterator(
     StateId s, MutableArcIteratorData<Arc> *data) {
   data->base =
-      fst::make_unique<MutableArcIterator<VectorFst<Arc, State>>>(this, s);
+      std::make_unique<MutableArcIterator<VectorFst<Arc, State>>>(this, s);
 }
 
 // A useful alias when using StdArc.

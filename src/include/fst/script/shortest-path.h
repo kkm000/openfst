@@ -59,13 +59,19 @@ void ShortestPath(const Fst<Arc> &ifst, MutableFst<Arc> *ofst,
                   const ShortestPathOptions &opts) {
   using ArcFilter = AnyArcFilter<Arc>;
   using Weight = typename Arc::Weight;
-  const std::unique_ptr<Queue> queue(
-      QueueConstructor<Arc, Queue, ArcFilter>::Construct(ifst, distance));
-  const fst::ShortestPathOptions<Arc, Queue, ArcFilter> sopts(
-      queue.get(), ArcFilter(), opts.nshortest, opts.unique,
-      /* has_distance=*/false, opts.delta, /* first_path=*/false,
-      *opts.weight_threshold.GetWeight<Weight>(), opts.state_threshold);
-  ShortestPath(ifst, ofst, distance, sopts);
+  if constexpr (IsPath<Weight>::value) {
+    const std::unique_ptr<Queue> queue(
+        QueueConstructor<Arc, Queue, ArcFilter>::Construct(ifst, distance));
+    const fst::ShortestPathOptions<Arc, Queue, ArcFilter> sopts(
+        queue.get(), ArcFilter(), opts.nshortest, opts.unique,
+        /* has_distance=*/false, opts.delta, /* first_path=*/false,
+        *opts.weight_threshold.GetWeight<Weight>(), opts.state_threshold);
+    ShortestPath(ifst, ofst, distance, sopts);
+  } else {
+    FSTERROR() << "ShortestPath: Weight needs to have the path property: "
+               << Arc::Weight::Type();
+    ofst->SetProperties(kError, kError);
+  }
 }
 
 template <class Arc>

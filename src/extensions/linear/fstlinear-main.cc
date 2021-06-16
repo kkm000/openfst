@@ -39,10 +39,11 @@ int fstlinear_main(int argc, char **argv) {
     return 1;
   }
 
-  fst::script::LinearCompile(FLAGS_arc_type, FLAGS_epsilon_symbol,
-                                 FLAGS_unknown_symbol, FLAGS_vocab, argv + 1,
-                                 argc - 1, FLAGS_out, FLAGS_save_isymbols,
-                                 FLAGS_save_fsymbols, FLAGS_save_osymbols);
+  fst::script::LinearCompile(
+      FST_FLAGS_arc_type, FST_FLAGS_epsilon_symbol,
+      FST_FLAGS_unknown_symbol, FST_FLAGS_vocab, argv + 1,
+      argc - 1, FST_FLAGS_out, FST_FLAGS_save_isymbols,
+      FST_FLAGS_save_fsymbols, FST_FLAGS_save_osymbols);
 
   return 0;
 }

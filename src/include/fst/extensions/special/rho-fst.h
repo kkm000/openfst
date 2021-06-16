@@ -35,8 +35,9 @@ template <class Label>
 class RhoFstMatcherData {
  public:
   explicit RhoFstMatcherData(
-      Label rho_label = FLAGS_rho_fst_rho_label,
-      MatcherRewriteMode rewrite_mode = RewriteMode(FLAGS_rho_fst_rewrite_mode))
+      Label rho_label = FST_FLAGS_rho_fst_rho_label,
+      MatcherRewriteMode rewrite_mode =
+          RewriteMode(FST_FLAGS_rho_fst_rewrite_mode))
       : rho_label_(rho_label), rewrite_mode_(rewrite_mode) {}
 
   RhoFstMatcherData(const RhoFstMatcherData &data)

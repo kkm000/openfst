@@ -108,27 +108,12 @@ class LempelZiv {
     }
   }
 
-  ~LempelZiv() {
-    for (auto it = root_.next_number.begin(); it != root_.next_number.end();
-         ++it) {
-      CleanUp(it->second);
-    }
-  }
-
  private:
   struct Node {
     Var current_number;
     Edge current_edge;
-    std::map<Edge, Node *, EdgeLessThan> next_number;
+    std::map<Edge, std::unique_ptr<Node>, EdgeLessThan> next_number;
   };
-
-  void CleanUp(Node *temp) {
-    for (auto it = temp->next_number.begin(); it != temp->next_number.end();
-         ++it) {
-      CleanUp(it->second);
-    }
-    delete temp;
-  }
 
   Node root_;
   Var dict_number_;
@@ -144,7 +129,7 @@ void LempelZiv<Var, Edge, EdgeLessThan, EdgeEquals>::BatchEncode(
     while (it != input.cend()) {
       auto next = temp_node->next_number.find(*it);
       if (next != temp_node->next_number.cend()) {
-        temp_node = next->second;
+        temp_node = next->second.get();
         ++it;
       } else {
         break;
@@ -154,10 +139,10 @@ void LempelZiv<Var, Edge, EdgeLessThan, EdgeEquals>::BatchEncode(
       output->emplace_back(temp_node->current_number, default_edge_);
     } else if (it != input.cend()) {
       output->emplace_back(temp_node->current_number, *it);
-      auto *new_node = new Node();
+      auto new_node = std::make_unique<Node>();
       new_node->current_number = dict_number_++;
       new_node->current_edge = *it;
-      temp_node->next_number[*it] = new_node;
+      temp_node->next_number[*it] = std::move(new_node);
     }
     if (it == input.cend()) break;
   }

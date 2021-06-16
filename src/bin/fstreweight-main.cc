@@ -58,7 +58,7 @@ int fstreweight_main(int argc, char **argv) {
   }
 
   s::Reweight(fst.get(), potential,
-              s::GetReweightType(FLAGS_to_final));
+              s::GetReweightType(FST_FLAGS_to_final));
 
   return !fst->Write(out_name);
 }

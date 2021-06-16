@@ -29,6 +29,7 @@
 #include <fst/generic-register.h>
 #include <fst/util.h>
 #include <fst/weight.h>
+#include <string_view>
 
 namespace fst {
 namespace script {
@@ -120,7 +121,7 @@ class WeightClass {
   explicit WeightClass(const WeightClassImpl<W> &impl)
       : impl_(new WeightClassImpl<W>(impl)) {}
 
-  WeightClass(const std::string &weight_type, const std::string &weight_str);
+  WeightClass(const std::string &weight_type, std::string_view weight_str);
 
   WeightClass(const WeightClass &other)
       : impl_(other.impl_ ? other.impl_->Copy() : nullptr) {}
@@ -199,10 +200,10 @@ std::ostream &operator<<(std::ostream &o, const WeightClass &c);
 
 // Registration for generic weight types.
 
-using StrToWeightImplBaseT = WeightImplBase *(*)(const std::string &str);
+using StrToWeightImplBaseT = WeightImplBase *(*)(std::string_view str);
 
 template <class W>
-WeightImplBase *StrToWeightImplBase(const std::string &str) {
+WeightImplBase *StrToWeightImplBase(std::string_view str) {
   if (str == WeightClass::__ZERO__) {
     return new WeightClassImpl<W>(W::Zero());
   } else if (str == WeightClass::__ONE__) {

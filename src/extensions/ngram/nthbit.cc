@@ -276,7 +276,7 @@ uint32 nth_bit(const uint64 v, uint32 r) {
 //  constexpr uint64 kOnesStep8 = 0x0101010101010101;
 //  printf("const uint64 kPrefixSumOverflow[64] = {\n");
 //  for (int k = 0; k < 64; ++k) {
-//    printf("  0x%" FST_LL_FORMAT "x,\n",  (0x7F - k) * kOnesStep8);
+//    printf("  0x%x,\n",  (0x7F - k) * kOnesStep8);
 //  }
 //  printf("};\n");
 //

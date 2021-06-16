@@ -81,11 +81,11 @@ void SetFlags(const char *usage, int *argc, char ***argv,
     }
     *argc -= index - 1;
   }
-  if (FLAGS_help) {
+  if (FST_FLAGS_help) {
     ShowUsage(true);
     exit(1);
   }
-  if (FLAGS_helpshort) {
+  if (FST_FLAGS_helpshort) {
     ShowUsage(false);
     exit(1);
   }

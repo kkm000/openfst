@@ -106,28 +106,17 @@ class CheckSummer {
   CheckSummer &operator=(const CheckSummer &) = delete;
 };
 
-// Defines make_unique and make_unique_default_init using a standard definition
-// that should be compatible with the C++14 and C++20 (respectively)
-// definitions.
-// TODO(kbg): Remove these once we migrate to C++14 and C++20.
-
-template <typename T, typename... Args>
-std::unique_ptr<T> make_unique(Args &&... args) {
-  return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
-}
+// Defines make_unique_for_overwrite using a standard definition that should be
+// compatible with the C++20 definition.
+// TODO(kbg): Remove these once we migrate to C++20.
 
 template <typename T>
-std::unique_ptr<T[]> make_unique(size_t n) {
-  return std::unique_ptr<T>(new typename std::remove_extent<T>::type[n]());
-}
-
-template <typename T>
-std::unique_ptr<T> make_unique_default_init() {
+std::unique_ptr<T> make_unique_for_overwrite() {
   return std::unique_ptr<T>(new T);
 }
 
 template <typename T>
-std::unique_ptr<T[]> make_unique_default_init(size_t n) {
+std::unique_ptr<T[]> make_unique_for_overwrite(size_t n) {
   return std::unique_ptr<T>(new typename std::remove_extent<T>::type[n]);
 }
 
@@ -191,6 +180,46 @@ std::vector<std::string> StringSplit(const std::string &full, char delim);
 void StripTrailingAsciiWhitespace(std::string *full);
 
 std::string StripTrailingAsciiWhitespace(const std::string &full);
+
+class StringOrInt {
+ public:
+  StringOrInt(const std::string &s) : str_(s) {}  // NOLINT
+
+  StringOrInt(const char *s) : str_(std::string(s)) {}  // NOLINT
+
+  StringOrInt(int i) {  // NOLINT
+    char buf[1024];
+    sprintf(buf, "%d", i);
+    str_ = std::string(buf);
+  }
+
+  const std::string &Get() const { return str_; }
+
+ private:
+  std::string str_;
+};
+
+// TODO(kbg): Make this work with variadic template, maybe.
+
+inline std::string StrCat(const StringOrInt &s1, const StringOrInt &s2) {
+  return s1.Get() + s2.Get();
+}
+
+inline std::string StrCat(const StringOrInt &s1, const StringOrInt &s2,
+                          const StringOrInt &s3) {
+  return s1.Get() + StrCat(s2, s3);
+}
+
+inline std::string StrCat(const StringOrInt &s1, const StringOrInt &s2,
+                          const StringOrInt &s3, const StringOrInt &s4) {
+  return s1.Get() + StrCat(s2, s3, s4);
+}
+
+inline std::string StrCat(const StringOrInt &s1, const StringOrInt &s2,
+                          const StringOrInt &s3, const StringOrInt &s4,
+                          const StringOrInt &s5) {
+  return s1.Get() + StrCat(s2, s3, s4, s5);
+}
 
 }  // namespace fst
 

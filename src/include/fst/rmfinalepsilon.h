@@ -20,7 +20,6 @@
 #ifndef FST_RMFINALEPSILON_H_
 #define FST_RMFINALEPSILON_H_
 
-#include <unordered_set>
 #include <vector>
 
 #include <fst/types.h>
@@ -28,6 +27,7 @@
 #include <fst/connect.h>
 #include <fst/mutable-fst.h>
 
+#include <unordered_set>
 
 namespace fst {
 

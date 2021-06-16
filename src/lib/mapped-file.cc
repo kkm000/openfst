@@ -71,9 +71,9 @@ MappedFile::~MappedFile() {
   }
 }
 
-MappedFile *MappedFile::Map(std::istream *istrm, bool memorymap,
+MappedFile *MappedFile::Map(std::istream &istrm, bool memorymap,
                             const std::string &source, size_t size) {
-  const auto spos = istrm->tellg();
+  const auto spos = istrm.tellg();
   VLOG(2) << "memorymap: " << (memorymap ? "true" : "false") << " source: \""
           << source << "\""
           << " size: " << size << " offset: " << spos;
@@ -87,7 +87,7 @@ MappedFile *MappedFile::Map(std::istream *istrm, bool memorymap,
     if (fd != -1) {
       std::unique_ptr<MappedFile> mmf(MapFromFileDescriptor(fd, pos, size));
       if (close(fd) == 0 && mmf != nullptr) {
-        istrm->seekg(pos + size, std::ios::beg);
+        istrm.seekg(pos + size, std::ios::beg);
         if (istrm) {
           VLOG(2) << "mmap'ed region of " << size << " at offset " << pos
                   << " from " << source << " to addr " << mmf->region_.mmap;
@@ -109,8 +109,8 @@ MappedFile *MappedFile::Map(std::istream *istrm, bool memorymap,
   auto *buffer = static_cast<char *>(mf->mutable_data());
   while (size > 0) {
     const auto next_size = std::min(size, kMaxReadChunk);
-    const auto current_pos = istrm->tellg();
-    if (!istrm->read(buffer, next_size)) {
+    const auto current_pos = istrm.tellg();
+    if (!istrm.read(buffer, next_size)) {
       LOG(ERROR) << "Failed to read " << next_size << " bytes at offset "
                  << current_pos << "from \"" << source << "\"";
       return nullptr;

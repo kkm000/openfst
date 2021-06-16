@@ -49,9 +49,11 @@ int farextract_main(int argc, char **argv) {
   const auto arc_type = s::LoadArcTypeFromFar(in_sources[0]);
   if (arc_type.empty()) return 1;
 
-  s::FarExtract(in_sources, arc_type, FLAGS_generate_filenames, FLAGS_keys,
-                FLAGS_key_separator, FLAGS_range_delimiter,
-                FLAGS_filename_prefix, FLAGS_filename_suffix);
+  s::FarExtract(in_sources, arc_type, FST_FLAGS_generate_filenames,
+                FST_FLAGS_keys, FST_FLAGS_key_separator,
+                FST_FLAGS_range_delimiter,
+                FST_FLAGS_filename_prefix,
+                FST_FLAGS_filename_suffix);
 
   return 0;
 }

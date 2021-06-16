@@ -214,7 +214,7 @@ class ArcIterator<ComplementFst<Arc>> : public ArcIteratorBase<Arc> {
   ArcIterator(const ComplementFst<Arc> &fst, StateId s) : s_(s), pos_(0) {
     if (s_ != 0) {
       aiter_ =
-          fst::make_unique<ArcIterator<Fst<Arc>>>(*fst.GetImpl()->fst_, s - 1);
+          std::make_unique<ArcIterator<Fst<Arc>>>(*fst.GetImpl()->fst_, s - 1);
     }
   }
 
@@ -276,13 +276,13 @@ class ArcIterator<ComplementFst<Arc>> : public ArcIteratorBase<Arc> {
 template <class Arc>
 inline void ComplementFst<Arc>::InitStateIterator(
     StateIteratorData<Arc> *data) const {
-  data->base = fst::make_unique<StateIterator<ComplementFst<Arc>>>(*this);
+  data->base = std::make_unique<StateIterator<ComplementFst<Arc>>>(*this);
 }
 
 template <class Arc>
 inline void ComplementFst<Arc>::InitArcIterator(
     StateId s, ArcIteratorData<Arc> *data) const {
-  data->base = fst::make_unique<ArcIterator<ComplementFst<Arc>>>(*this, s);
+  data->base = std::make_unique<ArcIterator<ComplementFst<Arc>>>(*this, s);
 }
 
 // Useful alias when using StdArc.

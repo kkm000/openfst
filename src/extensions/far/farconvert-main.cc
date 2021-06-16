@@ -53,8 +53,8 @@ int farconvert_main(int argc, char *argv[]) {
       argc > 2 && std::strcmp(argv[2], "-") != 0 ? argv[2] : "";
 
   fst::FarType far_type;
-  if (!s::GetFarType(FLAGS_far_type, &far_type)) {
-    LOG(ERROR) << "Unknown --far_type " << FLAGS_far_type;
+  if (!s::GetFarType(FST_FLAGS_far_type, &far_type)) {
+    LOG(ERROR) << "Unknown --far_type " << FST_FLAGS_far_type;
     return 1;
   }
 
@@ -83,7 +83,8 @@ int farconvert_main(int argc, char *argv[]) {
   }
 
   // Empty fst_type means use input fst type for each fst individually.
-  s::FarConvert(in_far, out_far, arc_type, FLAGS_fst_type, far_type);
+  s::FarConvert(in_far, out_far, arc_type, FST_FLAGS_fst_type,
+                far_type);
 
   return 0;
 }

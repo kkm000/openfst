@@ -73,7 +73,7 @@ void PrintFst(const Fst<Arc> &fst, std::ostream &ostrm,
               const std::string &dest = "", const SymbolTable *isyms = nullptr,
               const SymbolTable *osyms = nullptr,
               const SymbolTable *ssyms = nullptr) {
-  const std::string sep = FLAGS_fst_field_separator.substr(0, 1);
+  const std::string sep = FST_FLAGS_fst_field_separator.substr(0, 1);
   FstPrinter<Arc> fstprinter(fst, isyms, osyms, ssyms, true, true, sep);
   fstprinter.Print(ostrm, dest);
 }

@@ -10,4 +10,4 @@ ngram_fst_la_SOURCES = bitmap-index.cc ngram-fst.cc nthbit.cc
 ngram_fst_la_LDFLAGS = -avoid-version -module
 
 libfstngram_la_SOURCES = bitmap-index.cc ngram-fst.cc nthbit.cc
-libfstngram_la_LDFLAGS = -version-info 23:0:0
+libfstngram_la_LDFLAGS = -version-info 24:0:0

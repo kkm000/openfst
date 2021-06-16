@@ -53,12 +53,12 @@ int fstprune_main(int argc, char **argv) {
   if (!fst) return 1;
 
   const auto weight_threshold =
-      FLAGS_weight.empty()
+      FST_FLAGS_weight.empty()
           ? WeightClass::Zero(fst->WeightType())
-          : WeightClass(fst->WeightType(), FLAGS_weight);
+          : WeightClass(fst->WeightType(), FST_FLAGS_weight);
 
-  s::Prune(fst.get(), weight_threshold, FLAGS_nstate,
-           FLAGS_delta);
+  s::Prune(fst.get(), weight_threshold, FST_FLAGS_nstate,
+           FST_FLAGS_delta);
 
   return !fst->Write(out_name);
 }

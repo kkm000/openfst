@@ -44,20 +44,7 @@
 #include <fst/register.h>
 #include <fst/symbol-table.h>
 #include <fst/util.h>
-
-#ifndef OPENFST_HAVE_STD_STRING_VIEW
-#ifdef __has_include
-#if __has_include(<string_view>) && __cplusplus >= 201703L
-#define OPENFST_HAVE_STD_STRING_VIEW 1
-#endif
-#endif
-#endif
-#ifdef OPENFST_HAVE_STD_STRING_VIEW
 #include <string_view>
-#else
-#include <string>
-#endif
-
 
 
 DECLARE_bool(fst_align);
@@ -122,7 +109,7 @@ struct FstWriteOptions {
   explicit FstWriteOptions(std::string_view source = "<unspecified>",
                            bool write_header = true, bool write_isymbols = true,
                            bool write_osymbols = true,
-                           bool align = FLAGS_fst_align,
+                           bool align = FST_FLAGS_fst_align,
                            bool stream_write = false)
       : source(source),
         write_header(write_header),

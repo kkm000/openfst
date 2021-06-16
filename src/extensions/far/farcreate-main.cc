@@ -45,7 +45,7 @@ int farcreate_main(int argc, char **argv) {
   s::ExpandArgs(argc, argv, &argc, &argv);
 
   std::vector<std::string> in_sources;
-  if (FLAGS_file_list_input) {
+  if (FST_FLAGS_file_list_input) {
     for (int i = 1; i < argc - 1; ++i) {
       std::ifstream istrm(argv[i]);
       std::string str;
@@ -73,13 +73,16 @@ int farcreate_main(int argc, char **argv) {
   }
 
   fst::FarType far_type;
-  if (!s::GetFarType(FLAGS_far_type, &far_type)) {
-    LOG(ERROR) << "Unknown or unsupported FAR type: " << FLAGS_far_type;
+  if (!s::GetFarType(FST_FLAGS_far_type, &far_type)) {
+    LOG(ERROR) << "Unknown or unsupported FAR type: "
+               << FST_FLAGS_far_type;
     return 1;
   }
 
-  s::FarCreate(in_sources, out_source, arc_type, FLAGS_generate_keys, far_type,
-               FLAGS_key_prefix, FLAGS_key_suffix);
+  s::FarCreate(in_sources, out_source, arc_type,
+               FST_FLAGS_generate_keys, far_type,
+               FST_FLAGS_key_prefix,
+               FST_FLAGS_key_suffix);
 
   return 0;
 }

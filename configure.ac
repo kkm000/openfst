@@ -1,4 +1,4 @@
-AC_INIT([OpenFst], [1.8.0], [help@www.openfst.org])
+AC_INIT([OpenFst], [1.8.1], [help@www.openfst.org])
 AM_INIT_AUTOMAKE([foreign nostdinc -Wall -Werror subdir-objects])
 AM_PROG_AR
 

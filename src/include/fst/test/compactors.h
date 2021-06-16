@@ -106,7 +106,7 @@ class TrivialCompactor {
     State(const TrivialCompactor *c, StateId s)
         : c_(c),
           s_(s),
-          i_(fst::make_unique<ArcIterator<Fst<Arc>>>(*c->fst_, s)) {}
+          i_(std::make_unique<ArcIterator<Fst<Arc>>>(*c->fst_, s)) {}
     StateId GetStateId() const { return s_; }
     Weight Final() const { return c_->fst_->Final(s_); }
     size_t NumArcs() const { return c_->fst_->NumArcs(s_); }

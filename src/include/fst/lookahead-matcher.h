@@ -458,23 +458,23 @@ class LabelLookAheadMatcher
   // This makes a copy of the FST.
   LabelLookAheadMatcher(const FST &fst, MatchType match_type,
                         std::shared_ptr<MatcherData> data = nullptr,
-                        Accumulator *accumulator = nullptr)
+                        std::unique_ptr<Accumulator> accumulator = nullptr)
       : matcher_(fst, match_type),
         lfst_(nullptr),
         state_(kNoStateId),
         error_(false) {
-    Init(fst, match_type, data, accumulator);
+    Init(fst, match_type, data, std::move(accumulator));
   }
 
   // This doesn't copy the FST.
   LabelLookAheadMatcher(const FST *fst, MatchType match_type,
                         std::shared_ptr<MatcherData> data = nullptr,
-                        Accumulator *accumulator = nullptr)
+                        std::unique_ptr<Accumulator> accumulator = nullptr)
       : matcher_(fst, match_type),
         lfst_(nullptr),
         state_(kNoStateId),
         error_(false) {
-    Init(*fst, match_type, data, accumulator);
+    Init(*fst, match_type, data, std::move(accumulator));
   }
 
   // This makes a copy of the FST.
@@ -588,16 +588,19 @@ class LabelLookAheadMatcher
 
  private:
   void Init(const FST &fst, MatchType match_type,
-            std::shared_ptr<MatcherData> data, Accumulator *accumulator) {
+            std::shared_ptr<MatcherData> data,
+            std::unique_ptr<Accumulator> accumulator) {
     const bool reach_input = match_type == MATCH_INPUT;
     if (data) {
       if (reach_input == data->ReachInput()) {
-        label_reachable_ = fst::make_unique<Reachable>(data, accumulator);
+        label_reachable_ =
+            std::make_unique<Reachable>(data, std::move(accumulator));
       }
     } else if ((reach_input && (kFlags & kInputLookAheadMatcher)) ||
                (!reach_input && (kFlags & kOutputLookAheadMatcher))) {
-      label_reachable_ = fst::make_unique<Reachable>(
-          fst, reach_input, accumulator, kFlags & kLookAheadKeepRelabelData);
+      label_reachable_ =
+          std::make_unique<Reachable>(fst, reach_input, std::move(accumulator),
+                                       kFlags & kLookAheadKeepRelabelData);
     }
   }
 
@@ -725,11 +728,12 @@ inline LabelLookAheadRelabeler<Arc, Data>::LabelLookAheadRelabeler(
     // do a deep copy when the Fst is modified.
     mfst.reset(fst::down_cast<MutableFst<Arc> *>(&fst));
   } else {
-    mfst = fst::make_unique<VectorFst<Arc>>(fst);
+    mfst = std::make_unique<VectorFst<Arc>>(fst);
   }
 
-  RelabelForReachable<Reachable>(mfst.get(), *data, FLAGS_save_relabel_ipairs,
-                                 FLAGS_save_relabel_opairs);
+  RelabelForReachable<Reachable>(mfst.get(), *data,
+                                 FST_FLAGS_save_relabel_ipairs,
+                                 FST_FLAGS_save_relabel_opairs);
 
   if (is_mutable) {
     // Pointer was just borrowed, don't delete it.
@@ -759,13 +763,13 @@ class LookAheadMatcher {
         lookahead_(false) {
     if (!base_)
       base_ =
-          fst::make_unique<SortedMatcher<FST>>(owned_fst_.get(), match_type);
+          std::make_unique<SortedMatcher<FST>>(owned_fst_.get(), match_type);
   }
 
   // This doesn't copy the FST.
   LookAheadMatcher(const FST *fst, MatchType match_type)
       : base_(fst->InitMatcher(match_type)), lookahead_(false) {
-    if (!base_) base_ = fst::make_unique<SortedMatcher<FST>>(fst, match_type);
+    if (!base_) base_ = std::make_unique<SortedMatcher<FST>>(fst, match_type);
   }
 
   // This makes a copy of the FST.

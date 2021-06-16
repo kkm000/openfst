@@ -25,6 +25,7 @@
 
 #include <fstream>
 #include <fst/util.h>
+#include <string_view>
 
 DEFINE_bool(fst_compat_symbols, true,
             "Require symbol tables to match when appropriate");
@@ -35,7 +36,7 @@ namespace fst {
 
 SymbolTableTextOptions::SymbolTableTextOptions(bool allow_negative_labels)
     : allow_negative_labels(allow_negative_labels),
-      fst_field_separator(FLAGS_fst_field_separator) {}
+      fst_field_separator(FST_FLAGS_fst_field_separator) {}
 
 namespace internal {
 
@@ -52,7 +53,7 @@ DenseSymbolMap::DenseSymbolMap()
       buckets_(1 << 4, kEmptyBucket),
       hash_mask_(buckets_.size() - 1) {}
 
-std::pair<int64, bool> DenseSymbolMap::InsertOrFind(KeyType key) {
+std::pair<int64, bool> DenseSymbolMap::InsertOrFind(std::string_view key) {
   static constexpr float kMaxOccupancyRatio = 0.75;  // Grows when 75% full.
   if (Size() >= kMaxOccupancyRatio * buckets_.size()) {
     Rehash(buckets_.size() * 2);
@@ -69,7 +70,7 @@ std::pair<int64, bool> DenseSymbolMap::InsertOrFind(KeyType key) {
   return {next, true};
 }
 
-int64 DenseSymbolMap::Find(KeyType key) const {
+int64 DenseSymbolMap::Find(std::string_view key) const {
   size_t idx = str_hash_(key) & hash_mask_;
   while (buckets_[idx] != kEmptyBucket) {
     const auto stored_value = buckets_[idx];
@@ -110,12 +111,12 @@ std::unique_ptr<SymbolTableImplBase> ConstSymbolTableImpl::Copy() const {
   return nullptr;
 }
 
-int64 ConstSymbolTableImpl::AddSymbol(SymbolType symbol, int64 key) {
+int64 ConstSymbolTableImpl::AddSymbol(std::string_view symbol, int64 key) {
   LOG(FATAL) << "ConstSymbolTableImpl does not support AddSymbol";
   return kNoSymbol;
 }
 
-int64 ConstSymbolTableImpl::AddSymbol(SymbolType symbol) {
+int64 ConstSymbolTableImpl::AddSymbol(std::string_view symbol) {
   return AddSymbol(symbol, kNoSymbol);
 }
 
@@ -134,14 +135,13 @@ void ConstSymbolTableImpl::AddTable(const SymbolTable &table) {
 SymbolTableImpl *SymbolTableImpl::ReadText(std::istream &strm,
                                            const std::string &source,
                                            const SymbolTableTextOptions &opts) {
-  auto impl = fst::make_unique<SymbolTableImpl>(source);
+  auto impl = std::make_unique<SymbolTableImpl>(source);
   int64 nline = 0;
   char line[kLineLen];
   const auto separator = opts.fst_field_separator + "\n";
   while (!strm.getline(line, kLineLen).fail()) {
     ++nline;
-    std::vector<char *> col;
-    SplitString(line, separator.c_str(), &col, true);
+    std::vector<std::string_view> col = SplitString(line, separator, true);
     if (col.empty()) continue;  // Empty line.
     if (col.size() != 2) {
       LOG(ERROR) << "SymbolTable::ReadText: Bad number of columns ("
@@ -150,18 +150,18 @@ SymbolTableImpl *SymbolTableImpl::ReadText(std::istream &strm,
                  << ">";
       return nullptr;
     }
-    const char *symbol = col[0];
-    const char *value = col[1];
-    char *p;
-    const auto key = strtoll(value, &p, 10);
-    if (*p != '\0' || (!opts.allow_negative_labels && key < 0) ||
-        key == kNoSymbol) {
+    std::string_view symbol = col[0];
+    std::string_view value = col[1];
+    const auto maybe_key = ParseInt64(value);
+    if (!maybe_key.has_value() ||
+        (!opts.allow_negative_labels && *maybe_key < 0) ||
+        *maybe_key == kNoSymbol) {
       LOG(ERROR) << "SymbolTable::ReadText: Bad non-negative integer \""
                  << value << "\", "
                  << "file = " << source << ", line = " << nline;
       return nullptr;
     }
-    impl->AddSymbol(symbol, key);
+    impl->AddSymbol(symbol, *maybe_key);
   }
   impl->ShrinkToFit();
   return impl.release();
@@ -216,7 +216,7 @@ std::string SymbolTableImpl::Find(int64 key) const {
   return symbols_.GetSymbol(idx);
 }
 
-int64 SymbolTableImpl::AddSymbol(SymbolType symbol, int64 key) {
+int64 SymbolTableImpl::AddSymbol(std::string_view symbol, int64 key) {
   if (key == kNoSymbol) return key;
   const auto insert_key = symbols_.InsertOrFind(symbol);
   if (!insert_key.second) {
@@ -282,21 +282,21 @@ void SymbolTableImpl::RemoveSymbol(const int64 key) {
 }
 
 SymbolTableImpl *SymbolTableImpl::Read(std::istream &strm,
-                                       const SymbolTableReadOptions &) {
+                                       std::string_view source) {
   int32 magic_number = 0;
   ReadType(strm, &magic_number);
   if (strm.fail()) {
-    LOG(ERROR) << "SymbolTable::Read: Read failed";
+    LOG(ERROR) << "SymbolTable::Read: Read failed: " << source;
     return nullptr;
   }
   std::string name;
   ReadType(strm, &name);
-  auto impl = fst::make_unique<SymbolTableImpl>(name);
+  auto impl = std::make_unique<SymbolTableImpl>(name);
   ReadType(strm, &impl->available_key_);
   int64 size;
   ReadType(strm, &size);
   if (strm.fail()) {
-    LOG(ERROR) << "SymbolTable::Read: Read failed";
+    LOG(ERROR) << "SymbolTable::Read: Read failed: " << source;
     return nullptr;
   }
   std::string symbol;
@@ -306,7 +306,7 @@ SymbolTableImpl *SymbolTableImpl::Read(std::istream &strm,
     ReadType(strm, &symbol);
     ReadType(strm, &key);
     if (strm.fail()) {
-      LOG(ERROR) << "SymbolTable::Read: Read failed";
+      LOG(ERROR) << "SymbolTable::Read: Read failed: " << source;
       return nullptr;
     }
     impl->AddSymbol(symbol, key);
@@ -409,7 +409,7 @@ bool SymbolTable::WriteText(const std::string &source) const {
 bool CompatSymbols(const SymbolTable *syms1, const SymbolTable *syms2,
                    bool warning) {
   // Flag can explicitly override this check.
-  if (!FLAGS_fst_compat_symbols) return true;
+  if (!FST_FLAGS_fst_compat_symbols) return true;
   if (syms1 && syms2 &&
       (syms1->LabeledCheckSum() != syms2->LabeledCheckSum())) {
     if (warning) {
@@ -431,7 +431,8 @@ void SymbolTableToString(const SymbolTable *table, std::string *result) {
 
 SymbolTable *StringToSymbolTable(const std::string &str) {
   std::istringstream istrm(str);
-  return SymbolTable::Read(istrm, SymbolTableReadOptions());
+  // TODO(jrosenstock): Change to source="string".
+  return SymbolTable::Read(istrm, /*source=*/"");
 }
 
 }  // namespace fst

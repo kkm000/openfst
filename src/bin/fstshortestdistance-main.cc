@@ -62,24 +62,24 @@ int fstshortestdistance_main(int argc, char **argv) {
   std::vector<WeightClass> distance;
 
   QueueType queue_type;
-  if (!s::GetQueueType(FLAGS_queue_type, &queue_type)) {
-    LOG(ERROR) << argv[0]
-               << ": Unknown or unsupported queue type: " << FLAGS_queue_type;
+  if (!s::GetQueueType(FST_FLAGS_queue_type, &queue_type)) {
+    LOG(ERROR) << argv[0] << ": Unknown or unsupported queue type: "
+               << FST_FLAGS_queue_type;
     return 1;
   }
 
-  if (FLAGS_reverse && queue_type != AUTO_QUEUE) {
+  if (FST_FLAGS_reverse && queue_type != AUTO_QUEUE) {
     LOG(ERROR) << argv[0] << ": Can't use non-default queue with reverse";
     return 1;
   }
 
-  if (FLAGS_reverse) {
-    s::ShortestDistance(*ifst, &distance, FLAGS_reverse,
-                        FLAGS_delta);
+  if (FST_FLAGS_reverse) {
+    s::ShortestDistance(*ifst, &distance, FST_FLAGS_reverse,
+                        FST_FLAGS_delta);
   } else {
     const s::ShortestDistanceOptions opts(queue_type, s::ArcFilterType::ANY,
-                                          FLAGS_nstate,
-                                          FLAGS_delta);
+                                          FST_FLAGS_nstate,
+                                          FST_FLAGS_delta);
     s::ShortestDistance(*ifst, &distance, opts);
   }
 

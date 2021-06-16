@@ -68,7 +68,7 @@ class FarReaderClassImpl : public FarReaderImplBase {
   bool Find(const std::string &key) final { return reader_->Find(key); }
 
   const FstClass *GetFstClass() const final {
-    fstc_ = fst::make_unique<FstClass>(*reader_->GetFst());
+    fstc_ = std::make_unique<FstClass>(*reader_->GetFst());
     return fstc_.get();
   }
 
@@ -157,7 +157,7 @@ class FarReaderClass {
 
 template <class Arc>
 void OpenFarReaderClass(OpenFarReaderClassArgs *args) {
-  auto impl = fst::make_unique<FarReaderClassImpl<Arc>>(args->args);
+  auto impl = std::make_unique<FarReaderClassImpl<Arc>>(args->args);
   if (impl->GetFarReader() == nullptr) {
     // Underlying reader failed to open, so return failure here, too.
     args->retval = nullptr;
@@ -271,7 +271,7 @@ class FarWriterClass {
 template <class Arc>
 void CreateFarWriterClass(CreateFarWriterClassArgs *args) {
   args->retval = fst::WrapUnique(
-      new FarWriterClass(fst::make_unique<FarWriterClassImpl<Arc>>(
+      new FarWriterClass(std::make_unique<FarWriterClassImpl<Arc>>(
           std::get<0>(args->args), std::get<1>(args->args))));
 }
 

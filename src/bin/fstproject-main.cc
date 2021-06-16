@@ -54,9 +54,9 @@ int fstproject_main(int argc, char **argv) {
   if (!fst) return 1;
 
   ProjectType project_type;
-  if (!s::GetProjectType(FLAGS_project_type, &project_type)) {
+  if (!s::GetProjectType(FST_FLAGS_project_type, &project_type)) {
     LOG(ERROR) << argv[0] << ": Unknown or unsupported project type: "
-               << FLAGS_project_type;
+               << FST_FLAGS_project_type;
     return 1;
   }
 

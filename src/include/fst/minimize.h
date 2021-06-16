@@ -44,6 +44,8 @@
 #include <fst/shortest-distance.h>
 #include <fst/state-map.h>
 
+#include <unordered_map>
+
 namespace fst {
 namespace internal {
 
@@ -212,7 +214,7 @@ class CyclicMinimizer {
         auto p = this_map.emplace(hash, next_class);
         state_to_initial_class[s] = p.second ? next_class++ : p.first->second;
       }
-      // Lets the unordered_maps go out of scope before we allocate the classes,
+      // Lets the maps go out of scope before we allocate the classes,
       // to reduce the maximum amount of memory used.
     }
     P_.AllocateClasses(next_class);
@@ -238,7 +240,7 @@ class CyclicMinimizer {
     PrePartition(fst);
     // Allocates arc iterator queue.
     ArcIterCompare comp(P_);
-    aiter_queue_ = fst::make_unique<ArcIterQueue>(comp);
+    aiter_queue_ = std::make_unique<ArcIterQueue>(comp);
   }
   // Partitions all classes with destination C.
   void Split(ClassId C) {

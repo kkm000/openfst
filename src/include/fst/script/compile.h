@@ -75,7 +75,7 @@ void CompileFstInternal(CompileFstArgs *args) {
   } else {
     fst = fst::WrapUnique(fstcompiler.Fst().Copy());
   }
-  args->retval = fst ? fst::make_unique<FstClass>(std::move(fst)) : nullptr;
+  args->retval = fst ? std::make_unique<FstClass>(std::move(fst)) : nullptr;
 }
 
 void CompileFst(std::istream &istrm, const std::string &source,

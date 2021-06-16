@@ -650,13 +650,13 @@ class AutoQueue : public QueueBase<S> {
     const auto props =
         fst.Properties(kAcyclic | kCyclic | kTopSorted | kUnweighted, false);
     if ((props & kTopSorted) || fst.Start() == kNoStateId) {
-      queue_ = fst::make_unique<StateOrderQueue<StateId>>();
+      queue_ = std::make_unique<StateOrderQueue<StateId>>();
       VLOG(2) << "AutoQueue: using state-order discipline";
     } else if (props & kAcyclic) {
-      queue_ = fst::make_unique<TopOrderQueue<StateId>>(fst, filter);
+      queue_ = std::make_unique<TopOrderQueue<StateId>>(fst, filter);
       VLOG(2) << "AutoQueue: using top-order discipline";
     } else if ((props & kUnweighted) && (Weight::Properties() & kIdempotent)) {
-      queue_ = fst::make_unique<LifoQueue<StateId>>();
+      queue_ = std::make_unique<LifoQueue<StateId>>();
       VLOG(2) << "AutoQueue: using LIFO discipline";
     } else {
       uint64 properties;
@@ -669,8 +669,8 @@ class AutoQueue : public QueueBase<S> {
       std::unique_ptr<Compare> comp;
       if constexpr (IsPath<Weight>::value) {
         if (distance) {
-          less = fst::make_unique<Less>();
-          comp = fst::make_unique<Compare>(*distance, *less);
+          less = std::make_unique<Less>();
+          comp = std::make_unique<Compare>(*distance, *less);
         }
       }
       // Finds the queue type to use per SCC.
@@ -680,14 +680,14 @@ class AutoQueue : public QueueBase<S> {
                    &unweighted);
       // If unweighted and semiring is idempotent, uses LIFO queue.
       if (unweighted) {
-        queue_ = fst::make_unique<LifoQueue<StateId>>();
+        queue_ = std::make_unique<LifoQueue<StateId>>();
         VLOG(2) << "AutoQueue: using LIFO discipline";
         return;
       }
       // If all the SCC are trivial, the FST is acyclic and the scc number gives
       // the topological order.
       if (all_trivial) {
-        queue_ = fst::make_unique<TopOrderQueue<StateId>>(scc_);
+        queue_ = std::make_unique<TopOrderQueue<StateId>>(scc_);
         VLOG(2) << "AutoQueue: using top-order discipline";
         return;
       }
@@ -715,17 +715,17 @@ class AutoQueue : public QueueBase<S> {
             }
             break;
           case LIFO_QUEUE:
-            queues_[i] = fst::make_unique<LifoQueue<StateId>>();
+            queues_[i] = std::make_unique<LifoQueue<StateId>>();
             VLOG(3) << "AutoQueue: SCC #" << i << ": using LIFO discipline";
             break;
           case FIFO_QUEUE:
           default:
-            queues_[i] = fst::make_unique<FifoQueue<StateId>>();
+            queues_[i] = std::make_unique<FifoQueue<StateId>>();
             VLOG(3) << "AutoQueue: SCC #" << i << ": using FIFO discipine";
             break;
         }
       }
-      queue_ = fst::make_unique<SccQueue<StateId, QueueBase<StateId>>>(
+      queue_ = std::make_unique<SccQueue<StateId, QueueBase<StateId>>>(
           scc_, &queues_);
     }
   }

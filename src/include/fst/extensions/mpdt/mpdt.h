@@ -136,7 +136,7 @@ class MPdtStack {
         next_stack_id_(other.next_stack_id_) {
     std::transform(other.stacks_.begin(), other.stacks_.end(), stacks_.begin(),
                    [](const std::unique_ptr<PdtStack<StackId, Label>> &ptr) {
-                     return fst::make_unique<PdtStack<StackId, Label>>(*ptr);
+                     return std::make_unique<PdtStack<StackId, Label>>(*ptr);
                    });
   }
 
@@ -297,7 +297,7 @@ MPdtStack<StackId, Level, nlevels, restrict>::MPdtStack(
   Config zero;
   for (Level level = 0; level < nlevels; ++level) {
     stacks_[level] =
-        fst::make_unique<PdtStack<StackId, Label>>(vectors[level]);
+        std::make_unique<PdtStack<StackId, Label>>(vectors[level]);
     neg_one[level] = -1;
     zero[level] = 0;
   }

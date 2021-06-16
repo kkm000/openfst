@@ -68,62 +68,62 @@ int fstsymbols_main(int argc, char **argv) {
   std::unique_ptr<MutableFstClass> fst(MutableFstClass::Read(in_name, true));
   if (!fst) return 1;
 
-  if (!FLAGS_save_isymbols.empty()) {
+  if (!FST_FLAGS_save_isymbols.empty()) {
     const auto *isyms = fst->InputSymbols();
     if (isyms) {
-      isyms->WriteText(FLAGS_save_isymbols);
+      isyms->WriteText(FST_FLAGS_save_isymbols);
     } else {
       LOG(ERROR) << argv[0]
                  << ": Saving isymbols but there are no input symbols.";
     }
   }
 
-  if (!FLAGS_save_osymbols.empty()) {
+  if (!FST_FLAGS_save_osymbols.empty()) {
     const auto *osyms = fst->OutputSymbols();
     if (osyms) {
-      osyms->WriteText(FLAGS_save_osymbols);
+      osyms->WriteText(FST_FLAGS_save_osymbols);
     } else {
       LOG(ERROR) << argv[0]
                  << ": Saving osymbols but there are no output symbols.";
     }
   }
 
-  const SymbolTableTextOptions opts(FLAGS_allow_negative_labels);
+  const SymbolTableTextOptions opts(FST_FLAGS_allow_negative_labels);
 
   std::unique_ptr<SymbolTable> isyms;
-  if (!FLAGS_isymbols.empty()) {
-    isyms.reset(SymbolTable::ReadText(FLAGS_isymbols, opts));
+  if (!FST_FLAGS_isymbols.empty()) {
+    isyms.reset(SymbolTable::ReadText(FST_FLAGS_isymbols, opts));
     fst->SetInputSymbols(isyms.get());
-  } else if (FLAGS_clear_isymbols) {
+  } else if (FST_FLAGS_clear_isymbols) {
     fst->SetInputSymbols(nullptr);
   }
   std::unique_ptr<SymbolTable> osyms;
-  if (!FLAGS_osymbols.empty()) {
-    osyms.reset(SymbolTable::ReadText(FLAGS_osymbols, opts));
+  if (!FST_FLAGS_osymbols.empty()) {
+    osyms.reset(SymbolTable::ReadText(FST_FLAGS_osymbols, opts));
     fst->SetOutputSymbols(osyms.get());
-  } else if (FLAGS_clear_osymbols) {
+  } else if (FST_FLAGS_clear_osymbols) {
     fst->SetOutputSymbols(nullptr);
   }
 
   using Label = int64;
-  if (!FLAGS_relabel_ipairs.empty()) {
+  if (!FST_FLAGS_relabel_ipairs.empty()) {
     std::vector<std::pair<Label, Label>> ipairs;
-    ReadLabelPairs(FLAGS_relabel_ipairs, &ipairs,
-                   FLAGS_allow_negative_labels);
+    ReadLabelPairs(FST_FLAGS_relabel_ipairs, &ipairs,
+                   FST_FLAGS_allow_negative_labels);
     std::unique_ptr<SymbolTable> isyms_relabel(
         RelabelSymbolTable(fst->InputSymbols(), ipairs));
     fst->SetInputSymbols(isyms_relabel.get());
   }
-  if (!FLAGS_relabel_opairs.empty()) {
+  if (!FST_FLAGS_relabel_opairs.empty()) {
     std::vector<std::pair<Label, Label>> opairs;
-    ReadLabelPairs(FLAGS_relabel_opairs, &opairs,
-                   FLAGS_allow_negative_labels);
+    ReadLabelPairs(FST_FLAGS_relabel_opairs, &opairs,
+                   FST_FLAGS_allow_negative_labels);
     std::unique_ptr<SymbolTable> osyms_relabel(
         RelabelSymbolTable(fst->OutputSymbols(), opairs));
     fst->SetOutputSymbols(osyms_relabel.get());
   }
 
-  if (FLAGS_verify && !s::Verify(*fst)) return 1;
+  if (FST_FLAGS_verify && !s::Verify(*fst)) return 1;
 
   return !fst->Write(out_name);
 }

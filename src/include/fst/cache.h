@@ -43,8 +43,9 @@ struct CacheOptions {
   bool gc;          // Enables GC.
   size_t gc_limit;  // Number of bytes allowed before GC.
 
-  explicit CacheOptions(bool gc = FLAGS_fst_default_cache_gc,
-                        size_t gc_limit = FLAGS_fst_default_cache_gc_limit)
+  explicit CacheOptions(
+      bool gc = FST_FLAGS_fst_default_cache_gc,
+      size_t gc_limit = FST_FLAGS_fst_default_cache_gc_limit)
       : gc(gc), gc_limit(gc_limit) {}
 };
 
@@ -57,9 +58,10 @@ struct CacheImplOptions {
   CacheStore *store;  // Cache store.
   bool own_store;     // Should CacheImpl takes ownership of the store?
 
-  explicit CacheImplOptions(bool gc = FLAGS_fst_default_cache_gc,
-                            size_t gc_limit = FLAGS_fst_default_cache_gc_limit,
-                            CacheStore *store = nullptr)
+  explicit CacheImplOptions(
+      bool gc = FST_FLAGS_fst_default_cache_gc,
+      size_t gc_limit = FST_FLAGS_fst_default_cache_gc_limit,
+      CacheStore *store = nullptr)
       : gc(gc), gc_limit(gc_limit), store(store), own_store(true) {}
 
   explicit CacheImplOptions(const CacheOptions &opts)

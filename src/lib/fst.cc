@@ -115,7 +115,7 @@ FstReadOptions::FstReadOptions(const std::string_view source,
       osymbols(osymbols),
       read_isymbols(true),
       read_osymbols(true) {
-  mode = ReadMode(FLAGS_fst_read_mode);
+  mode = ReadMode(FST_FLAGS_fst_read_mode);
 }
 
 FstReadOptions::FstReadOptions(const std::string_view source,
@@ -127,7 +127,7 @@ FstReadOptions::FstReadOptions(const std::string_view source,
       osymbols(osymbols),
       read_isymbols(true),
       read_osymbols(true) {
-  mode = ReadMode(FLAGS_fst_read_mode);
+  mode = ReadMode(FST_FLAGS_fst_read_mode);
 }
 
 FstReadOptions::FileReadMode FstReadOptions::ReadMode(const std::string &mode) {

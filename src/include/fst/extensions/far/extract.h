@@ -20,42 +20,41 @@
 #ifndef FST_EXTENSIONS_FAR_EXTRACT_H_
 #define FST_EXTENSIONS_FAR_EXTRACT_H_
 
+#include <iomanip>
 #include <memory>
 #include <string>
 #include <vector>
 
 #include <fst/extensions/far/far.h>
 #include <fst/util.h>
+#include <string_view>
 
 namespace fst {
 
 template <class Arc>
-inline void FarWriteFst(const Fst<Arc> *fst, std::string key, std::string *okey,
-                        int *nrep, int32 generate_sources, int i,
-                        const std::string &source_prefix,
-                        const std::string &source_suffix) {
+inline void FarWriteFst(const Fst<Arc> *fst, std::string_view key,
+                        std::string *okey, int *nrep, int32 generate_sources,
+                        int i, std::string_view source_prefix,
+                        std::string_view source_suffix) {
+  DCHECK_NE(fst, nullptr);
+  DCHECK_NE(okey, nullptr);
+  DCHECK_NE(nrep, nullptr);
   if (key == *okey) {
     ++*nrep;
   } else {
     *nrep = 0;
   }
-  *okey = key;
-  std::string osource;
+  okey->assign(key.data(), key.size());
+  std::ostringstream source_path;
+  source_path << source_prefix;
   if (generate_sources) {
-    std::ostringstream tmp;
-    tmp.width(generate_sources);
-    tmp.fill('0');
-    tmp << i;
-    osource = tmp.str();
+    source_path << std::setw(generate_sources) << std::setfill('0') << i;
   } else {
-    if (*nrep > 0) {
-      std::ostringstream tmp;
-      tmp << '.' << nrep;
-      key.append(tmp.str().data(), tmp.str().size());
-    }
-    osource = key;
+    source_path << key;
+    if (*nrep > 0) source_path << '.' << *nrep;
   }
-  fst->Write(source_prefix + osource + source_suffix);
+  source_path << source_suffix;
+  fst->Write(source_path.str());
 }
 
 template <class Arc>
@@ -69,20 +68,16 @@ void FarExtract(const std::vector<std::string> &isources,
   if (!far_reader) return;
   std::string okey;
   int nrep = 0;
-  std::vector<char *> key_vector;
   // User has specified a set of FSTs to extract, where some of these may in
   // fact be ranges.
   if (!keys.empty()) {
-    auto *keys_cstr = new char[keys.size() + 1];
-    strcpy(keys_cstr, keys.c_str());
-    SplitString(keys_cstr, key_separator.c_str(), &key_vector, true);
+    std::vector<std::string_view> key_vector =
+        SplitString(keys, key_separator, true);
     int i = 0;
     for (size_t k = 0; k < key_vector.size(); ++k, ++i) {
-      std::string key = key_vector[k];
-      auto *key_cstr = new char[key.size() + 1];
-      strcpy(key_cstr, key.c_str());
-      std::vector<char *> range_vector;
-      SplitString(key_cstr, range_delimiter.c_str(), &range_vector, false);
+      std::string_view key = key_vector[k];
+      std::vector<std::string_view> range_vector =
+          SplitString(key, range_delimiter, false);
       if (range_vector.size() == 1) {  // Not a range
         if (!far_reader->Find(key)) {
           LOG(ERROR) << "FarExtract: Cannot find key " << key;
@@ -92,8 +87,8 @@ void FarExtract(const std::vector<std::string> &isources,
         FarWriteFst(fst, key, &okey, &nrep, generate_sources, i, source_prefix,
                     source_suffix);
       } else if (range_vector.size() == 2) {  // A legal range
-        std::string begin_key = range_vector[0];
-        std::string end_key = range_vector[1];
+        std::string_view begin_key = range_vector[0];
+        std::string_view end_key = range_vector[1];
         if (begin_key.empty() || end_key.empty()) {
           LOG(ERROR) << "FarExtract: Illegal range specification " << key;
           return;
@@ -113,9 +108,7 @@ void FarExtract(const std::vector<std::string> &isources,
         LOG(ERROR) << "FarExtract: Illegal range specification " << key;
         return;
       }
-      delete[] key_cstr;
     }
-    delete[] keys_cstr;
     return;
   }
   // Nothing specified, so just extracts everything.

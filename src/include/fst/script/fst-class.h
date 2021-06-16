@@ -301,11 +301,11 @@ class FstClass : public FstClassBase {
 
   template <class Arc>
   explicit FstClass(std::unique_ptr<Fst<Arc>> fst)
-      : impl_(fst::make_unique<FstClassImpl<Arc>>(std::move(fst))) {}
+      : impl_(std::make_unique<FstClassImpl<Arc>>(std::move(fst))) {}
 
   template <class Arc>
   explicit FstClass(const Fst<Arc> &fst)
-      : impl_(fst::make_unique<FstClassImpl<Arc>>(fst)) {}
+      : impl_(std::make_unique<FstClassImpl<Arc>>(fst)) {}
 
   FstClass(const FstClass &other)
       : impl_(other.impl_ == nullptr ? nullptr : other.impl_->Copy()) {}
@@ -567,12 +567,12 @@ class VectorFstClass : public MutableFstClass {
   template <class Arc>
   static FstClassImplBase *Convert(const FstClass &other) {
     return new FstClassImpl<Arc>(
-        fst::make_unique<VectorFst<Arc>>(*other.GetFst<Arc>()));
+        std::make_unique<VectorFst<Arc>>(*other.GetFst<Arc>()));
   }
 
   template <class Arc>
   static FstClassImplBase *Create() {
-    return new FstClassImpl<Arc>(fst::make_unique<VectorFst<Arc>>());
+    return new FstClassImpl<Arc>(std::make_unique<VectorFst<Arc>>());
   }
 };
 

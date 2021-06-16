@@ -61,7 +61,7 @@ class MappedFile {
   // bool is advisory, and Map will default to allocating and reading. The
   // source argument needs to contain the filename that was used to open the
   // input stream.
-  static MappedFile *Map(std::istream *istrm, bool memorymap,
+  static MappedFile *Map(std::istream &istrm, bool memorymap,
                          const std::string &source, size_t size);
 
   // Returns a MappedFile object that contains the contents of the file referred

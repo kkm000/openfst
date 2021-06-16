@@ -32,14 +32,15 @@
 
 #include <fst/union-weight.h>
 #include <fst/weight.h>
+#include <string_view>
 
 
 namespace fst {
 
-constexpr int kSetEmpty = 0;         // Label for the empty set.
-constexpr int kSetUniv = -1;         // Label for the universal set.
-constexpr int kSetBad = -2;          // Label for a non-set.
-constexpr char kSetSeparator = '_';  // Label separator in sets.
+constexpr int kSetEmpty = 0;           // Label for the empty set.
+constexpr int kSetUniv = -1;           // Label for the universal set.
+constexpr int kSetBad = -2;            // Label for a non-set.
+constexpr char kSetSeparator[] = "_";  // Label separator in sets.
 
 // Determines whether to use (intersect, union) or (union, intersect)
 // as (+, *) for the semiring. SET_INTERSECT_UNION_RESTRICTED is a
@@ -365,14 +366,13 @@ inline std::istream &operator>>(std::istream &strm,
     weight = Weight(Label(kSetUniv));
   } else {
     weight.Clear();
-    char *p = nullptr;
-    for (const char *cs = str.c_str(); !p || *p != '\0'; cs = p + 1) {
-      const Label label = strtoll(cs, &p, 10);
-      if (p == cs || (*p != 0 && *p != kSetSeparator)) {
+    for (std::string_view sv : SplitString(str, kSetSeparator, false)) {
+      auto maybe_label = ParseInt64(sv);
+      if (!maybe_label.has_value()) {
         strm.clear(std::ios::badbit);
         break;
       }
-      weight.PushBack(label);
+      weight.PushBack(*maybe_label);
     }
   }
   return strm;

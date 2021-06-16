@@ -27,6 +27,7 @@
 
 #include <fstream>
 #include <fst/test-properties.h>
+#include <string_view>
 
 namespace fst {
 
@@ -47,10 +48,9 @@ bool ReadLabelTriples(const std::string &source,
   pairs->clear();
   while (fstrm.getline(line, kLineLen)) {
     ++nline;
-    std::vector<char *> col;
-    SplitString(line, "\n\t ", &col, true);
+    std::vector<std::string_view> col = SplitString(line, "\n\t ", true);
     // Empty line or comment?
-    if (col.empty() || col[0][0] == '\0' || col[0][0] == '#') continue;
+    if (col.empty() || col[0].empty() || col[0][0] == '#') continue;
     if (col.size() != 3) {
       LOG(ERROR) << "ReadLabelTriples: Bad number of columns, "
                  << "file = " << source << ", line = " << nline;

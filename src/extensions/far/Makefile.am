@@ -9,13 +9,13 @@ lib_LTLIBRARIES = libfstfar.la
 endif
 
 libfstfar_la_SOURCES = sttable.cc stlist.cc
-libfstfar_la_LDFLAGS = -version-info 23:0:0
+libfstfar_la_LDFLAGS = -version-info 24:0:0
 libfstfar_la_LIBADD = ../../lib/libfst.la -lm $(DL_LIBS)
 
 if HAVE_SCRIPT
 libfstfarscript_la_SOURCES = far-class.cc farscript.cc getters.cc script-impl.cc \
                              strings.cc sttable.cc stlist.cc
-libfstfarscript_la_LDFLAGS = -version-info 23:0:0
+libfstfarscript_la_LDFLAGS = -version-info 24:0:0
 libfstfarscript_la_LIBADD = \
     libfstfar.la ../../script/libfstscript.la \
         ../../lib/libfst.la -lm $(DL_LIBS)

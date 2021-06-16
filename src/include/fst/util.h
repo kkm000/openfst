@@ -38,9 +38,12 @@
 #include <fst/types.h>
 #include <fst/log.h>
 #include <fstream>
+#include <fst/mapped-file.h>
 
 #include <fst/flags.h>
 #include <unordered_map>
+#include <string_view>
+#include <optional>
 
 
 // Utility for error handling.
@@ -48,7 +51,7 @@
 DECLARE_bool(fst_error_fatal);
 
 #define FSTERROR() \
-  (FLAGS_fst_error_fatal ? LOG(FATAL) : LOG(ERROR))
+  (FST_FLAGS_fst_error_fatal ? LOG(FATAL) : LOG(ERROR))
 
 namespace fst {
 
@@ -276,13 +279,18 @@ std::ostream &WriteType(std::ostream &strm, const std::unordered_set<T...> &c) {
 
 // Utilities for converting between int64 or Weight and string.
 
-int64 StrToInt64(const std::string &s, const std::string &source, size_t nline,
+// Parses a 64-bit signed integer out of an input string. Returns a value iff
+// the entirety of the string is consumed during integer parsing, otherwise
+// returning `std::nullopt`.
+std::optional<int64> ParseInt64(std::string_view s);
+
+int64 StrToInt64(std::string_view s, std::string_view source, size_t nline,
                  bool allow_negative, bool *error = nullptr);
 
 template <typename Weight>
-Weight StrToWeight(const std::string &s) {
+Weight StrToWeight(std::string_view s) {
   Weight w;
-  std::istringstream strm(s);
+  std::istringstream strm(std::string{s});
   strm >> w;
   if (!strm) {
     FSTERROR() << "StrToWeight: Bad weight: " << s;
@@ -301,9 +309,11 @@ void WeightToStr(Weight w, std::string *s) {
 
 // Utilities for reading/writing integer pairs (typically labels).
 
-// Modifies line using a vector of pointers to a buffer beginning with line.
-void SplitString(char *line, const char *delim, std::vector<char *> *vec,
-                 bool omit_empty_strings);
+// Splits `line` on any of the chars in `delim`, dropping empty spans if
+// `omit_empty_strings` is true.
+std::vector<std::string_view> SplitString(std::string_view line,
+                                           std::string_view delim,
+                                           bool omit_empty_strings);
 
 template <typename I>
 bool ReadIntPairs(const std::string &source,
@@ -320,10 +330,9 @@ bool ReadIntPairs(const std::string &source,
   pairs->clear();
   while (strm.getline(line, kLineLen)) {
     ++nline;
-    std::vector<char *> col;
-    SplitString(line, "\n\t ", &col, true);
+    std::vector<std::string_view> col = SplitString(line, "\n\t ", true);
     // empty line or comment?
-    if (col.empty() || col[0][0] == '\0' || col[0][0] == '#') continue;
+    if (col.empty() || col[0].empty() || col[0][0] == '#') continue;
     if (col.size() != 2) {
       LOG(ERROR) << "ReadIntPairs: Bad number of columns, "
                  << "file = " << source << ", line = " << nline;
@@ -378,8 +387,8 @@ void ConvertToLegalCSymbol(std::string *s);
 
 // Utilities for stream I/O.
 
-bool AlignInput(std::istream &strm);
-bool AlignOutput(std::ostream &strm);
+bool AlignInput(std::istream &strm, size_t align = MappedFile::kArchAlignment);
+bool AlignOutput(std::ostream &strm, size_t align = MappedFile::kArchAlignment);
 
 // An associative container for which testing membership is faster than an STL
 // set if members are restricted to an interval that excludes most non-members.

@@ -49,8 +49,9 @@ int fstconvert_main(int argc, char **argv) {
   std::unique_ptr<FstClass> ifst(FstClass::Read(in_name));
   if (!ifst) return 1;
 
-  if (ifst->FstType() != FLAGS_fst_type) {
-    std::unique_ptr<FstClass> ofst(s::Convert(*ifst, FLAGS_fst_type));
+  if (ifst->FstType() != FST_FLAGS_fst_type) {
+    std::unique_ptr<FstClass> ofst(
+        s::Convert(*ifst, FST_FLAGS_fst_type));
     if (!ofst) return 1;
     return !ofst->Write(out_name);
   } else {

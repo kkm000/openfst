@@ -22,7 +22,6 @@
 
 #include <set>
 #include <string>
-#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -37,6 +36,8 @@
 #include <fst/replace-util.h>
 #include <fst/state-table.h>
 #include <fst/test-properties.h>
+
+#include <unordered_map>
 
 namespace fst {
 
@@ -1445,7 +1446,7 @@ template <class Arc, class StateTable, class CacheStore>
 inline void ReplaceFst<Arc, StateTable, CacheStore>::InitStateIterator(
     StateIteratorData<Arc> *data) const {
   data->base =
-      fst::make_unique<StateIterator<ReplaceFst<Arc, StateTable, CacheStore>>>(
+      std::make_unique<StateIterator<ReplaceFst<Arc, StateTable, CacheStore>>>(
           *this);
 }
 

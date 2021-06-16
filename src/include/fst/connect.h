@@ -21,7 +21,6 @@
 #define FST_CONNECT_H_
 
 #include <algorithm>
-#include <memory>
 #include <vector>
 
 #include <fst/types.h>
@@ -29,6 +28,7 @@
 #include <fst/dfs-visit.h>
 #include <fst/mutable-fst.h>
 #include <fst/union-find.h>
+
 
 namespace fst {
 
@@ -136,7 +136,7 @@ class SccVisitor {
 
   bool BackArc(StateId s, const Arc &arc) {
     const auto t = arc.nextstate;
-    if ((*dfnumber_)[t] < (*lowlink_)[s]) (*lowlink_)[s] = (*dfnumber_)[t];
+    if (dfnumber_[t] < lowlink_[s]) lowlink_[s] = dfnumber_[t];
     if ((*coaccess_)[t]) (*coaccess_)[s] = true;
     *props_ |= kCyclic;
     *props_ &= ~kAcyclic;
@@ -149,9 +149,9 @@ class SccVisitor {
 
   bool ForwardOrCrossArc(StateId s, const Arc &arc) {
     const auto t = arc.nextstate;
-    if ((*dfnumber_)[t] < (*dfnumber_)[s] /* cross edge */ && (*onstack_)[t] &&
-        (*dfnumber_)[t] < (*lowlink_)[s]) {
-      (*lowlink_)[s] = (*dfnumber_)[t];
+    if (dfnumber_[t] < dfnumber_[s] /* cross edge */ && onstack_[t] &&
+        dfnumber_[t] < lowlink_[s]) {
+      lowlink_[s] = dfnumber_[t];
     }
     if ((*coaccess_)[t]) (*coaccess_)[s] = true;
     return true;
@@ -168,10 +168,6 @@ class SccVisitor {
       }
     }
     if (coaccess_internal_) delete coaccess_;
-    dfnumber_.reset();
-    lowlink_.reset();
-    onstack_.reset();
-    scc_stack_.reset();
   }
 
  private:
@@ -184,12 +180,11 @@ class SccVisitor {
   StateId nstates_;  // State count.
   StateId nscc_;     // SCC count.
   bool coaccess_internal_;
-  std::unique_ptr<std::vector<StateId>> dfnumber_;  // State discovery times.
-  std::unique_ptr<std::vector<StateId>>
-      lowlink_;  // lowlink[state] == dfnumber[state] => SCC root
-  std::unique_ptr<std::vector<bool>> onstack_;  // Is a state on the SCC stack?
-  std::unique_ptr<std::vector<StateId>>
-      scc_stack_;  // SCC stack, with random access.
+  std::vector<StateId> dfnumber_;  // State discovery times.
+  std::vector<StateId>
+      lowlink_;                // lowlink[state] == dfnumber[state] => SCC root
+  std::vector<bool> onstack_;  // Is a state on the SCC stack?
+  std::vector<StateId> scc_stack_;  // SCC stack, with random access.
 };
 
 template <class Arc>
@@ -209,26 +204,26 @@ inline void SccVisitor<Arc>::InitVisit(const Fst<Arc> &fst) {
   start_ = fst.Start();
   nstates_ = 0;
   nscc_ = 0;
-  dfnumber_ = fst::make_unique<std::vector<StateId>>();
-  lowlink_ = fst::make_unique<std::vector<StateId>>();
-  onstack_ = fst::make_unique<std::vector<bool>>();
-  scc_stack_ = fst::make_unique<std::vector<StateId>>();
+  dfnumber_.clear();
+  lowlink_.clear();
+  onstack_.clear();
+  scc_stack_.clear();
 }
 
 template <class Arc>
 inline bool SccVisitor<Arc>::InitState(StateId s, StateId root) {
-  scc_stack_->push_back(s);
-  if (static_cast<StateId>(dfnumber_->size()) <= s) {
+  scc_stack_.push_back(s);
+  if (static_cast<StateId>(dfnumber_.size()) <= s) {
     if (scc_) scc_->resize(s + 1, -1);
     if (access_) access_->resize(s + 1, false);
     coaccess_->resize(s + 1, false);
-    dfnumber_->resize(s + 1, -1);
-    lowlink_->resize(s + 1, -1);
-    onstack_->resize(s + 1, false);
+    dfnumber_.resize(s + 1, -1);
+    lowlink_.resize(s + 1, -1);
+    onstack_.resize(s + 1, false);
   }
-  (*dfnumber_)[s] = nstates_;
-  (*lowlink_)[s] = nstates_;
-  (*onstack_)[s] = true;
+  dfnumber_[s] = nstates_;
+  lowlink_[s] = nstates_;
+  onstack_[s] = true;
   if (root == start_) {
     if (access_) (*access_)[s] = true;
   } else {
@@ -243,20 +238,20 @@ inline bool SccVisitor<Arc>::InitState(StateId s, StateId root) {
 template <class Arc>
 inline void SccVisitor<Arc>::FinishState(StateId s, StateId p, const Arc *) {
   if (fst_->Final(s) != Weight::Zero()) (*coaccess_)[s] = true;
-  if ((*dfnumber_)[s] == (*lowlink_)[s]) {  // Root of new SCC.
+  if (dfnumber_[s] == lowlink_[s]) {  // Root of new SCC.
     bool scc_coaccess = false;
-    auto i = scc_stack_->size();
+    auto i = scc_stack_.size();
     StateId t;
     do {
-      t = (*scc_stack_)[--i];
+      t = scc_stack_[--i];
       if ((*coaccess_)[t]) scc_coaccess = true;
     } while (s != t);
     do {
-      t = scc_stack_->back();
+      t = scc_stack_.back();
       if (scc_) (*scc_)[t] = nscc_;
       if (scc_coaccess) (*coaccess_)[t] = true;
-      (*onstack_)[t] = false;
-      scc_stack_->pop_back();
+      onstack_[t] = false;
+      scc_stack_.pop_back();
     } while (s != t);
     if (!scc_coaccess) {
       *props_ |= kNotCoAccessible;
@@ -266,7 +261,7 @@ inline void SccVisitor<Arc>::FinishState(StateId s, StateId p, const Arc *) {
   }
   if (p != kNoStateId) {
     if ((*coaccess_)[s]) (*coaccess_)[p] = true;
-    if ((*lowlink_)[s] < (*lowlink_)[p]) (*lowlink_)[p] = (*lowlink_)[s];
+    if (lowlink_[s] < lowlink_[p]) lowlink_[p] = lowlink_[s];
   }
 }
 

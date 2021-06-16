@@ -318,10 +318,10 @@ class ArcSampler<Arc, FastLogProbArcSelector<Arc>> {
         selector_(sampler.selector_),
         max_length_(sampler.max_length_) {
     if (fst) {
-      accumulator_ = fst::make_unique<Accumulator>();
+      accumulator_ = std::make_unique<Accumulator>();
       accumulator_->Init(*fst);
     } else {  // Shallow copy.
-      accumulator_ = fst::make_unique<Accumulator>(*sampler.accumulator_);
+      accumulator_ = std::make_unique<Accumulator>(*sampler.accumulator_);
     }
   }
 
@@ -646,7 +646,7 @@ template <class FromArc, class ToArc, class Sampler>
 inline void RandGenFst<FromArc, ToArc, Sampler>::InitStateIterator(
     StateIteratorData<ToArc> *data) const {
   data->base =
-      fst::make_unique<StateIterator<RandGenFst<FromArc, ToArc, Sampler>>>(
+      std::make_unique<StateIterator<RandGenFst<FromArc, ToArc, Sampler>>>(
           *this);
 }
 

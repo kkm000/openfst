@@ -30,13 +30,14 @@
 #include <fst/product-weight.h>
 #include <fst/union-weight.h>
 #include <fst/weight.h>
+#include <string_view>
 
 
 namespace fst {
 
-constexpr int kStringInfinity = -1;     // Label for the infinite string.
-constexpr int kStringBad = -2;          // Label for a non-string.
-constexpr char kStringSeparator = '_';  // Label separator in strings.
+constexpr int kStringInfinity = -1;       // Label for the infinite string.
+constexpr int kStringBad = -2;            // Label for a non-string.
+constexpr char kStringSeparator[] = "_";  // Label separator in strings.
 
 // Determines whether to use left or right string semiring. Includes a
 // 'restricted' version that signals an error if proper prefixes/suffixes
@@ -335,14 +336,13 @@ inline std::istream &operator>>(std::istream &strm,
     weight = Weight::One();
   } else {
     weight.Clear();
-    char *p = nullptr;
-    for (const char *cs = str.c_str(); !p || *p != '\0'; cs = p + 1) {
-      const Label label = strtoll(cs, &p, 10);
-      if (p == cs || (*p != 0 && *p != kStringSeparator)) {
+    for (std::string_view sv : SplitString(str, kStringSeparator, false)) {
+      auto maybe_label = ParseInt64(sv);
+      if (!maybe_label.has_value()) {
         strm.clear(std::ios::badbit);
         break;
       }
-      weight.PushBack(label);
+      weight.PushBack(*maybe_label);
     }
   }
   return strm;

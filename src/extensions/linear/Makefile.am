@@ -15,7 +15,7 @@ if HAVE_SCRIPT
 lib_LTLIBRARIES = libfstlinearscript.la
 
 libfstlinearscript_la_SOURCES = linearscript.cc
-libfstlinearscript_la_LDFLAGS = -version-info 23:0:0
+libfstlinearscript_la_LDFLAGS = -version-info 24:0:0
 libfstlinearscript_la_LIBADD = ../../script/libfstscript.la
 endif
 

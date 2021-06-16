@@ -53,7 +53,7 @@ int fstreverse_main(int argc, char **argv) {
 
   VectorFstClass ofst(ifst->ArcType());
 
-  s::Reverse(*ifst, &ofst, FLAGS_require_superinitial);
+  s::Reverse(*ifst, &ofst, FST_FLAGS_require_superinitial);
 
   return !ofst.Write(out_name);
 }

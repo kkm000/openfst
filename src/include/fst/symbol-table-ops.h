@@ -19,13 +19,13 @@
 #define FST_SYMBOL_TABLE_OPS_H_
 
 #include <string>
-#include <unordered_set>
 #include <vector>
 
 
 #include <fst/fst.h>
 #include <fst/symbol-table.h>
 
+#include <unordered_set>
 
 namespace fst {
 

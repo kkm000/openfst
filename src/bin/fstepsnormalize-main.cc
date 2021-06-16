@@ -54,7 +54,7 @@ int fstepsnormalize_main(int argc, char **argv) {
   VectorFstClass ofst(ifst->ArcType());
 
   s::EpsNormalize(*ifst, &ofst,
-                  s::GetEpsNormalizeType(FLAGS_eps_norm_output));
+                  s::GetEpsNormalizeType(FST_FLAGS_eps_norm_output));
 
   return !ofst.Write(out_name);
 }

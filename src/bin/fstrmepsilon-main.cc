@@ -58,20 +58,20 @@ int fstrmepsilon_main(int argc, char **argv) {
   if (!fst) return 1;
 
   const auto weight_threshold =
-      FLAGS_weight.empty()
+      FST_FLAGS_weight.empty()
           ? WeightClass::Zero(fst->WeightType())
-          : WeightClass(fst->WeightType(), FLAGS_weight);
+          : WeightClass(fst->WeightType(), FST_FLAGS_weight);
 
   QueueType queue_type;
-  if (!s::GetQueueType(FLAGS_queue_type, &queue_type)) {
-    LOG(ERROR) << argv[0]
-               << ": Unknown or unsupported queue type: " << FLAGS_queue_type;
+  if (!s::GetQueueType(FST_FLAGS_queue_type, &queue_type)) {
+    LOG(ERROR) << argv[0] << ": Unknown or unsupported queue type: "
+               << FST_FLAGS_queue_type;
     return 1;
   }
 
-  const s::RmEpsilonOptions opts(queue_type, FLAGS_connect,
-                                 weight_threshold, FLAGS_nstate,
-                                 FLAGS_delta);
+  const s::RmEpsilonOptions opts(queue_type, FST_FLAGS_connect,
+                                 weight_threshold, FST_FLAGS_nstate,
+                                 FST_FLAGS_delta);
 
   s::RmEpsilon(fst.get(), opts);
 

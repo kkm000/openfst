@@ -23,7 +23,6 @@
 #define FST_ARC_MAP_H_
 
 #include <string>
-#include <unordered_map>
 #include <utility>
 
 #include <fst/types.h>
@@ -641,7 +640,7 @@ class ArcIterator<ArcMapFst<A, B, C>>
 template <class A, class B, class C>
 inline void ArcMapFst<A, B, C>::InitStateIterator(
     StateIteratorData<B> *data) const {
-  data->base = fst::make_unique<StateIterator<ArcMapFst<A, B, C>>>(*this);
+  data->base = std::make_unique<StateIterator<ArcMapFst<A, B, C>>>(*this);
 }
 
 // Constructs and returns an ArcMapFst. This allows constructing ArcMapFsts

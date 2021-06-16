@@ -436,7 +436,7 @@ template <class ArcCompactor>
 CompactArcStore<Element, Unsigned> *CompactArcStore<Element, Unsigned>::Read(
     std::istream &strm, const FstReadOptions &opts, const FstHeader &hdr,
     const ArcCompactor &arc_compactor) {
-  auto data = fst::make_unique<CompactArcStore>();
+  auto data = std::make_unique<CompactArcStore>();
   data->start_ = hdr.Start();
   data->nstates_ = hdr.NumStates();
   data->narcs_ = hdr.NumArcs();
@@ -447,7 +447,7 @@ CompactArcStore<Element, Unsigned> *CompactArcStore<Element, Unsigned>::Read(
     }
     auto b = (data->nstates_ + 1) * sizeof(Unsigned);
     data->states_region_.reset(MappedFile::Map(
-        &strm, opts.mode == FstReadOptions::MAP, opts.source, b));
+        strm, opts.mode == FstReadOptions::MAP, opts.source, b));
     if (!strm || !data->states_region_) {
       LOG(ERROR) << "CompactArcStore::Read: Read failed: " << opts.source;
       return nullptr;
@@ -466,7 +466,7 @@ CompactArcStore<Element, Unsigned> *CompactArcStore<Element, Unsigned>::Read(
   }
   size_t b = data->ncompacts_ * sizeof(Element);
   data->compacts_region_.reset(
-      MappedFile::Map(&strm, opts.mode == FstReadOptions::MAP, opts.source, b));
+      MappedFile::Map(strm, opts.mode == FstReadOptions::MAP, opts.source, b));
   if (!strm || !data->compacts_region_) {
     LOG(ERROR) << "CompactArcStore::Read: Read failed: " << opts.source;
     return nullptr;
@@ -982,7 +982,7 @@ class CompactFstImpl
   }
 
   static CompactFstImpl *Read(std::istream &strm, const FstReadOptions &opts) {
-    auto impl = fst::make_unique<CompactFstImpl>();
+    auto impl = std::make_unique<CompactFstImpl>();
     FstHeader hdr;
     if (!impl->ReadHeader(strm, opts, kMinFileVersion, &hdr)) {
       return nullptr;

@@ -21,6 +21,7 @@
 #ifndef FST_LABEL_REACHABLE_H_
 #define FST_LABEL_REACHABLE_H_
 
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -85,14 +86,15 @@ class LabelReachableData {
 
   static LabelReachableData *Read(std::istream &istrm,
                                   const FstReadOptions &opts) {
-    auto *data = new LabelReachableData();
+    // NB: Using `new` to access private constructor.
+    auto data = fst::WrapUnique(new LabelReachableData());
     ReadType(istrm, &data->reach_input_);
     ReadType(istrm, &data->keep_relabel_data_);
     data->have_relabel_data_ = data->keep_relabel_data_;
     if (data->keep_relabel_data_) ReadType(istrm, &data->label2index_);
     ReadType(istrm, &data->final_label_);
     ReadType(istrm, &data->interval_sets_);
-    return data;
+    return data.release();
   }
 
   bool Write(std::ostream &ostrm, const FstWriteOptions &opts) const {
@@ -187,12 +189,13 @@ class LabelReachable {
   using Interval = typename LabelIntervalSet::Interval;
 
   LabelReachable(const Fst<Arc> &fst, bool reach_input,
-                 Accumulator *accumulator = nullptr,
+                 std::unique_ptr<Accumulator> accumulator = nullptr,
                  bool keep_relabel_data = true)
-      : fst_(new VectorFst<Arc>(fst)),
+      : fst_(std::make_unique<VectorFst<Arc>>(fst)),
         s_(kNoStateId),
         data_(std::make_shared<Data>(reach_input, keep_relabel_data)),
-        accumulator_(accumulator ? accumulator : new Accumulator()),
+        accumulator_(accumulator ? std::move(accumulator)
+                                 : std::make_unique<Accumulator>()),
         ncalls_(0),
         nintervals_(0),
         reach_fst_input_(false),
@@ -204,10 +207,11 @@ class LabelReachable {
   }
 
   explicit LabelReachable(std::shared_ptr<Data> data,
-                          Accumulator *accumulator = nullptr)
+                          std::unique_ptr<Accumulator> accumulator = nullptr)
       : s_(kNoStateId),
         data_(std::move(data)),
-        accumulator_(accumulator ? accumulator : new Accumulator()),
+        accumulator_(accumulator ? std::move(accumulator)
+                                 : std::make_unique<Accumulator>()),
         ncalls_(0),
         nintervals_(0),
         reach_fst_input_(false),
@@ -217,7 +221,8 @@ class LabelReachable {
                  bool safe = false)
       : s_(kNoStateId),
         data_(reachable.data_),
-        accumulator_(new Accumulator(*reachable.accumulator_, safe)),
+        accumulator_(
+            std::make_unique<Accumulator>(*reachable.accumulator_, safe)),
         ncalls_(0),
         nintervals_(0),
         reach_fst_input_(reachable.reach_fst_input_),

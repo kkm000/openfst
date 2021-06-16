@@ -196,7 +196,7 @@ ConstFstImpl<Arc, Unsigned>::ConstFstImpl(const Fst<Arc> &fst) {
 template <class Arc, class Unsigned>
 ConstFstImpl<Arc, Unsigned> *ConstFstImpl<Arc, Unsigned>::Read(
     std::istream &strm, const FstReadOptions &opts) {
-  auto impl = fst::make_unique<ConstFstImpl>();
+  auto impl = std::make_unique<ConstFstImpl>();
   FstHeader hdr;
   if (!impl->ReadHeader(strm, opts, kMinFileVersion, &hdr)) return nullptr;
   impl->start_ = hdr.Start();
@@ -212,7 +212,7 @@ ConstFstImpl<Arc, Unsigned> *ConstFstImpl<Arc, Unsigned>::Read(
   }
   size_t b = impl->nstates_ * sizeof(ConstState);
   impl->states_region_.reset(
-      MappedFile::Map(&strm, opts.mode == FstReadOptions::MAP, opts.source, b));
+      MappedFile::Map(strm, opts.mode == FstReadOptions::MAP, opts.source, b));
   if (!strm || !impl->states_region_) {
     LOG(ERROR) << "ConstFst::Read: Read failed: " << opts.source;
     return nullptr;
@@ -225,7 +225,7 @@ ConstFstImpl<Arc, Unsigned> *ConstFstImpl<Arc, Unsigned>::Read(
   }
   b = impl->narcs_ * sizeof(Arc);
   impl->arcs_region_.reset(
-      MappedFile::Map(&strm, opts.mode == FstReadOptions::MAP, opts.source, b));
+      MappedFile::Map(strm, opts.mode == FstReadOptions::MAP, opts.source, b));
   if (!strm || !impl->arcs_region_) {
     LOG(ERROR) << "ConstFst::Read: Read failed: " << opts.source;
     return nullptr;

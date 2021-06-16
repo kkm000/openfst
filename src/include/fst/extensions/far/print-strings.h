@@ -78,10 +78,12 @@ void FarPrintStrings(const std::vector<std::string> &isources,
                                      /*omit_epsilon=*/false);
     printer(*fst, &str);
     if (entry_type == FarEntryType::LINE) {
-      if (print_key) std::cout << key << FLAGS_far_field_separator[0];
+      if (print_key)
+        std::cout << key << FST_FLAGS_far_field_separator[0];
       std::cout << str;
       if (print_weight) {
-        std::cout << FLAGS_far_field_separator[0] << ShortestDistance(*fst);
+        std::cout << FST_FLAGS_far_field_separator[0]
+                  << ShortestDistance(*fst);
       }
       std::cout << std::endl;
     } else if (entry_type == FarEntryType::FILE) {

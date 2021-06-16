@@ -22,13 +22,14 @@
 
 #include <algorithm>
 #include <memory>
-#include <unordered_map>
 #include <utility>
 
 #include <fst/types.h>
 #include <fst/log.h>
 
 #include <fst/mutable-fst.h>  // for all internal FST accessors.
+
+#include <unordered_map>
 
 namespace fst {
 
@@ -540,14 +541,14 @@ void HashMatcher<FST>::SetState(typename FST::Arc::StateId s) {
   // Resets everything for the state.
   state_ = s;
   loop_.nextstate = state_;
-  aiter_ = fst::make_unique<ArcIterator<FST>>(fst_, state_);
+  aiter_ = std::make_unique<ArcIterator<FST>>(fst_, state_);
   if (match_type_ == MATCH_NONE) {
     FSTERROR() << "HashMatcher: Bad match type";
     error_ = true;
   }
   // Attempts to insert a new label table.
   auto it_and_success = state_table_->emplace(
-      state_, fst::make_unique<LabelTable>());
+      state_, std::make_unique<LabelTable>());
   // Sets instance's pointer to the label table for this state.
   label_table_ = it_and_success.first->second.get();
   // If it already exists, no additional work is done and we simply return.
@@ -1525,13 +1526,13 @@ class Matcher {
       : owned_fst_(fst.Copy()), base_(owned_fst_->InitMatcher(match_type)) {
     if (!base_)
       base_ =
-          fst::make_unique<SortedMatcher<FST>>(owned_fst_.get(), match_type);
+          std::make_unique<SortedMatcher<FST>>(owned_fst_.get(), match_type);
   }
 
   // This doesn't copy the FST.
   Matcher(const FST *fst, MatchType match_type)
       : base_(fst->InitMatcher(match_type)) {
-    if (!base_) base_ = fst::make_unique<SortedMatcher<FST>>(fst, match_type);
+    if (!base_) base_ = std::make_unique<SortedMatcher<FST>>(fst, match_type);
   }
 
   // This makes a copy of the FST.

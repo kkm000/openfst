@@ -48,8 +48,8 @@ int farinfo_main(int argc, char **argv) {
   const auto arc_type = s::LoadArcTypeFromFar(in_sources[0]);
   if (arc_type.empty()) return 1;
 
-  s::FarInfo(in_sources, arc_type, FLAGS_begin_key, FLAGS_end_key,
-             FLAGS_list_fsts);
+  s::FarInfo(in_sources, arc_type, FST_FLAGS_begin_key,
+             FST_FLAGS_end_key, FST_FLAGS_list_fsts);
 
   return 0;
 }

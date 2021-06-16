@@ -57,21 +57,21 @@ int fstmap_main(int argc, char **argv) {
   if (!ifst) return 1;
 
   s::MapType map_type;
-  if (!s::GetMapType(FLAGS_map_type, &map_type)) {
+  if (!s::GetMapType(FST_FLAGS_map_type, &map_type)) {
     LOG(ERROR) << argv[0] << ": Unknown or unsupported map type "
-               << FLAGS_map_type;
+               << FST_FLAGS_map_type;
     return 1;
   }
 
-  const auto weight_param =
-      !FLAGS_weight.empty()
-          ? WeightClass(ifst->WeightType(), FLAGS_weight)
-          : (FLAGS_map_type == "times" ? WeightClass::One(ifst->WeightType())
+  const auto weight_param = !FST_FLAGS_weight.empty()
+                                ? WeightClass(ifst->WeightType(), FST_FLAGS_weight)
+                                : (FST_FLAGS_map_type == "times"
+                                       ? WeightClass::One(ifst->WeightType())
                                        : WeightClass::Zero(ifst->WeightType()));
 
   std::unique_ptr<FstClass> ofst(
-      s::Map(*ifst, map_type, FLAGS_delta,
-             FLAGS_power, weight_param));
+      s::Map(*ifst, map_type, FST_FLAGS_delta,
+             FST_FLAGS_power, weight_param));
 
   return !ofst->Write(out_name);
 }

@@ -43,7 +43,7 @@ namespace fst {
 // of the two FSTs the sum of the weights of all the successful paths
 // sharing the same input and output labels as the considered randomly
 // generated path and checks that these two values are within a user-specified
-// delta. Returns optional error value (when FLAGS_error_fatal = false).
+// delta. Returns optional error value (when FST_FLAGS_error_fatal = false).
 template <class Arc, class ArcSelector>
 bool RandEquivalent(const Fst<Arc> &fst1, const Fst<Arc> &fst2, int32 npath,
                     const RandGenOptions<ArcSelector> &opts,

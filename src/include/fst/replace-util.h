@@ -21,8 +21,6 @@
 #define FST_REPLACE_UTIL_H_
 
 #include <map>
-#include <unordered_map>
-#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -34,6 +32,8 @@
 #include <fst/topsort.h>
 #include <fst/vector-fst.h>
 
+#include <unordered_map>
+#include <unordered_set>
 
 namespace fst {
 

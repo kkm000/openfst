@@ -36,8 +36,13 @@ void Prune(PruneArgs1 *args) {
   using Weight = typename Arc::Weight;
   const Fst<Arc> &ifst = *std::get<0>(*args).GetFst<Arc>();
   MutableFst<Arc> *ofst = std::get<1>(*args)->GetMutableFst<Arc>();
-  const auto weight_threshold = *std::get<2>(*args).GetWeight<Weight>();
-  Prune(ifst, ofst, weight_threshold, std::get<3>(*args), std::get<4>(*args));
+  if constexpr (IsPath<Weight>::value) {
+    const auto weight_threshold = *std::get<2>(*args).GetWeight<Weight>();
+    Prune(ifst, ofst, weight_threshold, std::get<3>(*args), std::get<4>(*args));
+  } else {
+    FSTERROR() << "Prune: Weight must have path property: " << Weight::Type();
+    ofst->SetProperties(kError, kError);
+  }
 }
 
 using PruneArgs2 =
@@ -47,8 +52,13 @@ template <class Arc>
 void Prune(PruneArgs2 *args) {
   using Weight = typename Arc::Weight;
   MutableFst<Arc> *fst = std::get<0>(*args)->GetMutableFst<Arc>();
-  const auto weight_threshold = *std::get<1>(*args).GetWeight<Weight>();
-  Prune(fst, weight_threshold, std::get<2>(*args), std::get<3>(*args));
+  if constexpr (IsPath<Weight>::value) {
+    const auto weight_threshold = *std::get<1>(*args).GetWeight<Weight>();
+    Prune(fst, weight_threshold, std::get<2>(*args), std::get<3>(*args));
+  } else {
+    FSTERROR() << "Prune: Weight must have path property: " << Weight::Type();
+    fst->SetProperties(kError, kError);
+  }
 }
 
 void Prune(const FstClass &ifst, MutableFstClass *ofst,

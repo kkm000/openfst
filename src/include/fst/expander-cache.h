@@ -45,12 +45,12 @@
 
 #include <deque>
 #include <memory>
-#include <unordered_map>
 #include <utility>
 #include <vector>
 
 #include <fst/cache.h>
 #include <fst/fst.h>
+#include <unordered_map>
 #include <unordered_map>
 
 namespace fst {
@@ -148,7 +148,7 @@ class NoGcKeepOneExpanderCache {
     auto i = cache_.find(state_id_);
     if (i != cache_.end()) state_ = std::move(i->second);
     if (state_ == nullptr) {
-      state_ = fst::make_unique<State>();
+      state_ = std::make_unique<State>();
       expander.Expand(state_id_, state_.get());
     }
     return state_.get();
@@ -170,26 +170,26 @@ class HashExpanderCache {
   HashExpanderCache(const HashExpanderCache &copy) { *this = copy; }
 
   HashExpanderCache &operator=(const HashExpanderCache &copy) {
-    for (const auto &kv : copy.cache_) cache_[kv.first] = new State(*kv.second);
+    for (const auto &[id, state] : copy.cache_) {
+      cache_[id] = std::make_unique<State>(*state);
+    }
     return *this;
   }
 
-  ~HashExpanderCache() {
-    for (auto i : cache_) delete i.second;
-  }
+  ~HashExpanderCache() = default;
 
   template <class Expander>
   State *FindOrExpand(Expander &expander, StateId state_id) {
-    auto it = cache_.insert(std::pair<StateId, State *>(state_id, nullptr));
-    if (!it.second) return it.first->second;
-    auto *state = new State;
-    it.first->second = state;
-    expander.Expand(state_id, state);
-    return state;
+    auto [it, inserted] = cache_.emplace(state_id, nullptr);
+    if (inserted) {
+      it->second = std::make_unique<State>();
+      expander.Expand(state_id, it->second.get());
+    }
+    return it->second.get();
   }
 
  private:
-  std::unordered_map<StateId, State *> cache_;
+  std::unordered_map<StateId, std::unique_ptr<State>> cache_;
 };
 
 template <class A>

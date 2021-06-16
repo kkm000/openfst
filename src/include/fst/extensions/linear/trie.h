@@ -18,12 +18,13 @@
 #ifndef FST_EXTENSIONS_LINEAR_TRIE_H_
 #define FST_EXTENSIONS_LINEAR_TRIE_H_
 
-#include <unordered_map>
+#include <memory>
 #include <utility>
 #include <vector>
 
 #include <fst/compat.h>
 #include <fst/util.h>
+#include <unordered_map>
 
 namespace fst {
 
@@ -135,7 +136,7 @@ class NestedTrieTopology {
 
   NestedTrieTopology();
   NestedTrieTopology(const NestedTrieTopology &that);
-  ~NestedTrieTopology();
+  ~NestedTrieTopology() = default;
   void swap(NestedTrieTopology &that);
   NestedTrieTopology &operator=(const NestedTrieTopology &that);
   bool operator==(const NestedTrieTopology &that) const;
@@ -154,29 +155,20 @@ class NestedTrieTopology {
   const_iterator end() const { return const_iterator(this, NumNodes()); }
 
  private:
-  std::vector<NextMap *> nodes_;  // Use pointers to avoid copying the maps when
-                                  // the vector grows
+  // Use pointers to avoid copying the maps when the vector grows
+  std::vector<std::unique_ptr<NextMap>> nodes_;
 };
 
 template <class L, class H>
 NestedTrieTopology<L, H>::NestedTrieTopology() {
-  nodes_.push_back(new NextMap);
+  nodes_.push_back(std::make_unique<NextMap>());
 }
 
 template <class L, class H>
 NestedTrieTopology<L, H>::NestedTrieTopology(const NestedTrieTopology &that) {
   nodes_.reserve(that.nodes_.size());
-  for (size_t i = 0; i < that.nodes_.size(); ++i) {
-    NextMap *node = that.nodes_[i];
-    nodes_.push_back(new NextMap(*node));
-  }
-}
-
-template <class L, class H>
-NestedTrieTopology<L, H>::~NestedTrieTopology() {
-  for (size_t i = 0; i < nodes_.size(); ++i) {
-    NextMap *node = nodes_[i];
-    delete node;
+  for (const auto &node : that.nodes_) {
+    nodes_.push_back(std::make_unique<NextMap>(*node));
   }
 }
 
@@ -215,7 +207,7 @@ inline int NestedTrieTopology<L, H>::Insert(int parent, const L &label) {
   if (ret == kNoTrieNodeId) {
     ret = NumNodes();
     (*nodes_[parent])[label] = ret;
-    nodes_.push_back(new NextMap);
+    nodes_.push_back(std::make_unique<NextMap>());
   }
   return ret;
 }
@@ -231,8 +223,12 @@ inline std::istream &NestedTrieTopology<L, H>::Read(std::istream &strm) {
   NestedTrieTopology new_trie;
   size_t num_nodes;
   if (!ReadType(strm, &num_nodes)) return strm;
-  for (size_t i = 1; i < num_nodes; ++i) new_trie.nodes_.push_back(new NextMap);
-  for (size_t i = 0; i < num_nodes; ++i) ReadType(strm, new_trie.nodes_[i]);
+  for (size_t i = 1; i < num_nodes; ++i) {
+    new_trie.nodes_.push_back(std::make_unique<NextMap>());
+  }
+  for (size_t i = 0; i < num_nodes; ++i) {
+    ReadType(strm, new_trie.nodes_[i].get());
+  }
   if (strm) swap(new_trie);
   return strm;
 }

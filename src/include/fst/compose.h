@@ -719,7 +719,7 @@ template <class Arc, class CacheStore>
 inline void ComposeFst<Arc, CacheStore>::InitStateIterator(
     StateIteratorData<Arc> *data) const {
   data->base =
-      fst::make_unique<StateIterator<ComposeFst<Arc, CacheStore>>>(*this);
+      std::make_unique<StateIterator<ComposeFst<Arc, CacheStore>>>(*this);
 }
 
 // Specialized matcher for ComposeFst. Supports MATCH_INPUT or MATCH_OUTPUT,
@@ -963,7 +963,7 @@ struct ComposeOptions {
 // the composed FST into a MutableFst. If FST1 transduces string x to
 // y with weight a and FST2 transduces y to z with weight b, then
 // their composition transduces string x to z with weight
-// Times(x, z).
+// Times(a, b).
 //
 // The output labels of the first transducer or the input labels of
 // the second transducer must be sorted. The weights need to form a

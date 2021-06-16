@@ -276,7 +276,7 @@ class StateMapFstImpl : public CacheImpl<B> {
   void InitStateIterator(StateIteratorData<B> *datb) const {
     StateIteratorData<A> data;
     fst_->InitStateIterator(&data);
-    datb->base = data.base ? fst::make_unique<StateMapStateIteratorBase<A, B>>(
+    datb->base = data.base ? std::make_unique<StateMapStateIteratorBase<A, B>>(
                                  std::move(data.base))
                            : nullptr;
     datb->nstates = data.nstates;
@@ -422,7 +422,7 @@ class IdentityStateMapper {
   Weight Final(StateId state) const { return fst_.Final(state); }
 
   void SetState(StateId state) {
-    aiter_ = fst::make_unique<ArcIterator<Fst<Arc>>>(fst_, state);
+    aiter_ = std::make_unique<ArcIterator<Fst<Arc>>>(fst_, state);
   }
 
   bool Done() const { return aiter_->Done(); }

@@ -297,7 +297,7 @@ class ArcIterator<PdtExpandFst<Arc>>
 template <class Arc>
 inline void PdtExpandFst<Arc>::InitStateIterator(
     StateIteratorData<Arc> *data) const {
-  data->base = fst::make_unique<StateIterator<PdtExpandFst<Arc>>>(*this);
+  data->base = std::make_unique<StateIterator<PdtExpandFst<Arc>>>(*this);
 }
 
 // PrunedExpand prunes the delayed expansion of a pushdown transducer (PDT)

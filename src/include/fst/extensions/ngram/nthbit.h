@@ -83,7 +83,7 @@ inline uint32 nth_bit(const uint64 v, const uint32 r) {
 #if defined(__aarch64__)
   // Use the ARM64 CNT instruction to compute a byte-wise popcount.
   const uint64 s =
-      reinterpret_cast<uint64>(vcnt_s8(reinterpret_cast<uint8x8_t>(v)));
+      reinterpret_cast<uint64>(vcnt_u8(reinterpret_cast<uint8x8_t>(v)));
 #else
   constexpr uint64 kOnesStep4 = 0x1111111111111111;
   uint64 s = v;

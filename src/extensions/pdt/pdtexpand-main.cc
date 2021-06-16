@@ -60,21 +60,24 @@ int pdtexpand_main(int argc, char **argv) {
   std::unique_ptr<FstClass> ifst(FstClass::Read(in_name));
   if (!ifst) return 1;
 
-  if (FLAGS_pdt_parentheses.empty()) {
+  if (FST_FLAGS_pdt_parentheses.empty()) {
     LOG(ERROR) << argv[0] << ": No PDT parenthesis label pairs provided";
     return 1;
   }
 
   std::vector<std::pair<int64, int64>> parens;
-  if (!ReadLabelPairs(FLAGS_pdt_parentheses, &parens, false)) return 1;
+  if (!ReadLabelPairs(FST_FLAGS_pdt_parentheses, &parens, false))
+    return 1;
 
   const auto weight_threshold =
-      FLAGS_weight.empty() ? WeightClass::Zero(ifst->WeightType())
-                           : WeightClass(ifst->WeightType(), FLAGS_weight);
+      FST_FLAGS_weight.empty()
+          ? WeightClass::Zero(ifst->WeightType())
+          : WeightClass(ifst->WeightType(), FST_FLAGS_weight);
 
   VectorFstClass ofst(ifst->ArcType());
   s::PdtExpand(*ifst, parens, &ofst,
-               s::PdtExpandOptions(FLAGS_connect, FLAGS_keep_parentheses,
+               s::PdtExpandOptions(FST_FLAGS_connect,
+                                   FST_FLAGS_keep_parentheses,
                                    weight_threshold));
 
   return !ofst.Write(out_name);

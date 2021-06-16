@@ -114,10 +114,12 @@ void DfsVisit(const FST &fst, Visitor *visitor, ArcFilter filter,
     return;
   }
   // An FST state's DFS status
-  static constexpr uint8 kDfsWhite = 0;  // Undiscovered.
-  static constexpr uint8 kDfsGrey = 1;   // Discovered but unfinished.
-  static constexpr uint8 kDfsBlack = 2;  // Finished.
-  std::vector<uint8> state_color;
+  enum class StateColor : uint8 {
+    kWhite = 0,  // Undiscovered.
+    kGrey = 1,   // Discovered but unfinished.
+    kBlack = 2,  // Finished.
+  };
+  std::vector<StateColor> state_color;
   std::stack<internal::DfsState<FST> *> state_stack;  // DFS execution stack.
   MemoryPool<internal::DfsState<FST>> state_pool;     // Pool for DFSStates.
   auto nstates = start + 1;  // Number of known states in general case.
@@ -126,13 +128,13 @@ void DfsVisit(const FST &fst, Visitor *visitor, ArcFilter filter,
     nstates = CountStates(fst);            // uses ExpandedFst::NumStates().
     expanded = true;
   }
-  state_color.resize(nstates, kDfsWhite);
+  state_color.resize(nstates, StateColor::kWhite);
   StateIterator<FST> siter(fst);
   // Continue DFS while true.
   bool dfs = true;
   // Iterate over trees in DFS forest.
   for (auto root = start; dfs && root < nstates;) {
-    state_color[root] = kDfsGrey;
+    state_color[root] = StateColor::kGrey;
     state_stack.push(new (&state_pool) internal::DfsState<FST>(fst, root));
     dfs = visitor->InitState(root, root);
     while (!state_stack.empty()) {
@@ -140,11 +142,11 @@ void DfsVisit(const FST &fst, Visitor *visitor, ArcFilter filter,
       const auto s = dfs_state->state_id;
       if (s >= static_cast<decltype(s)>(state_color.size())) {
         nstates = s + 1;
-        state_color.resize(nstates, kDfsWhite);
+        state_color.resize(nstates, StateColor::kWhite);
       }
       ArcIterator<FST> &aiter = dfs_state->arc_iter;
       if (!dfs || aiter.Done()) {
-        state_color[s] = kDfsBlack;
+        state_color[s] = StateColor::kBlack;
         internal::DfsState<FST>::Destroy(dfs_state, &state_pool);
         state_stack.pop();
         if (!state_stack.empty()) {
@@ -161,7 +163,7 @@ void DfsVisit(const FST &fst, Visitor *visitor, ArcFilter filter,
       if (arc.nextstate >=
           static_cast<decltype(arc.nextstate)>(state_color.size())) {
         nstates = arc.nextstate + 1;
-        state_color.resize(nstates, kDfsWhite);
+        state_color.resize(nstates, StateColor::kWhite);
       }
       if (!filter(arc)) {
         aiter.Next();
@@ -169,20 +171,19 @@ void DfsVisit(const FST &fst, Visitor *visitor, ArcFilter filter,
       }
       const auto next_color = state_color[arc.nextstate];
       switch (next_color) {
-        default:
-        case kDfsWhite:
+        case StateColor::kWhite:
           dfs = visitor->TreeArc(s, arc);
           if (!dfs) break;
-          state_color[arc.nextstate] = kDfsGrey;
+          state_color[arc.nextstate] = StateColor::kGrey;
           state_stack.push(new (&state_pool)
                                internal::DfsState<FST>(fst, arc.nextstate));
           dfs = visitor->InitState(arc.nextstate, root);
           break;
-        case kDfsGrey:
+        case StateColor::kGrey:
           dfs = visitor->BackArc(s, arc);
           aiter.Next();
           break;
-        case kDfsBlack:
+        case StateColor::kBlack:
           dfs = visitor->ForwardOrCrossArc(s, arc);
           aiter.Next();
           break;
@@ -191,14 +192,14 @@ void DfsVisit(const FST &fst, Visitor *visitor, ArcFilter filter,
     if (access_only) break;
     // Finds next tree root.
     for (root = root == start ? 0 : root + 1;
-         root < nstates && state_color[root] != kDfsWhite; ++root) {
+         root < nstates && state_color[root] != StateColor::kWhite; ++root) {
     }
     // Checks for a state beyond the largest known state.
     if (!expanded && root == nstates) {
       for (; !siter.Done(); siter.Next()) {
         if (siter.Value() == nstates) {
           ++nstates;
-          state_color.push_back(kDfsWhite);
+          state_color.push_back(StateColor::kWhite);
           break;
         }
       }

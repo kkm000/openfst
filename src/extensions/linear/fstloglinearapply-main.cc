@@ -57,7 +57,8 @@ int fstloglinearapply_main(int argc, char **argv) {
 
   fst::StdVectorFst ofst;
 
-  fst::LogLinearApply(*ifst1, *ifst2, &ofst, FLAGS_normalize);
+  fst::LogLinearApply(*ifst1, *ifst2, &ofst,
+                          FST_FLAGS_normalize);
 
   return !ofst.Write(out_name);
 }

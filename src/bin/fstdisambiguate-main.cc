@@ -57,13 +57,13 @@ int fstdisambiguate_main(int argc, char **argv) {
   VectorFstClass ofst(ifst->ArcType());
 
   const auto weight_threshold =
-      FLAGS_weight.empty()
+      FST_FLAGS_weight.empty()
           ? WeightClass::Zero(ifst->WeightType())
-          : WeightClass(ifst->WeightType(), FLAGS_weight);
+          : WeightClass(ifst->WeightType(), FST_FLAGS_weight);
 
   const s::DisambiguateOptions opts(
-      FLAGS_delta, weight_threshold, FLAGS_nstate,
-      FLAGS_subsequential_label);
+      FST_FLAGS_delta, weight_threshold, FST_FLAGS_nstate,
+      FST_FLAGS_subsequential_label);
 
   s::Disambiguate(*ifst, &ofst, opts);
 

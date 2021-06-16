@@ -61,12 +61,12 @@ int fstminimize_main(int argc, char **argv) {
 
   if (argc > 3) {
     std::unique_ptr<MutableFstClass> fst2(new VectorFstClass(fst1->ArcType()));
-    s::Minimize(fst1.get(), fst2.get(), FLAGS_delta,
-                FLAGS_allow_nondet);
+    s::Minimize(fst1.get(), fst2.get(), FST_FLAGS_delta,
+                FST_FLAGS_allow_nondet);
     if (!fst2->Write(out2_name)) return 1;
   } else {
-    s::Minimize(fst1.get(), nullptr, FLAGS_delta,
-                FLAGS_allow_nondet);
+    s::Minimize(fst1.get(), nullptr, FST_FLAGS_delta,
+                FST_FLAGS_allow_nondet);
   }
 
   return !fst1->Write(out1_name);

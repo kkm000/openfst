@@ -54578,10 +54578,10 @@ if (!__Pyx_RefNanny) {
   /* "pywrapfst.pyx":4704
  * 
  * # Masks fst_error_fatal in-module.
- * fst.FLAGS_fst_error_fatal = False             # <<<<<<<<<<<<<<
+ * fst.FST_FLAGS_fst_error_fatal = False             # <<<<<<<<<<<<<<
  * 
  */
-  FLAGS_fst_error_fatal = 0;
+  FST_FLAGS_fst_error_fatal = 0;
 
   /* "pywrapfst.pyx":1
  * #cython: c_string_encoding=utf8, c_string_type=unicode, language_level=3, nonecheck=True             # <<<<<<<<<<<<<<

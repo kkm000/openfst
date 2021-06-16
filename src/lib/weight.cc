@@ -43,24 +43,25 @@ CompositeWeightIO::CompositeWeightIO(char separator,
 }
 
 CompositeWeightIO::CompositeWeightIO()
-    : CompositeWeightIO(FLAGS_fst_weight_separator.empty()
-                            ? 0
-                            : FLAGS_fst_weight_separator.front(),
-                        {FLAGS_fst_weight_parentheses.empty()
-                             ? 0
-                             : FLAGS_fst_weight_parentheses[0],
-                         FLAGS_fst_weight_parentheses.size() < 2
-                             ? 0
-                             : FLAGS_fst_weight_parentheses[1]}) {
-  if (FLAGS_fst_weight_separator.size() != 1) {
+    : CompositeWeightIO(
+          FST_FLAGS_fst_weight_separator.empty()
+              ? 0
+              : FST_FLAGS_fst_weight_separator.front(),
+          {FST_FLAGS_fst_weight_parentheses.empty()
+               ? 0
+               : FST_FLAGS_fst_weight_parentheses[0],
+           FST_FLAGS_fst_weight_parentheses.size() < 2
+               ? 0
+               : FST_FLAGS_fst_weight_parentheses[1]}) {
+  if (FST_FLAGS_fst_weight_separator.size() != 1) {
     FSTERROR() << "CompositeWeight: "
-               << "FLAGS_fst_weight_separator.size() is not equal to 1";
+               << "FST_FLAGS_fst_weight_separator.size() is not equal to 1";
     error_ = true;
   }
-  if (!FLAGS_fst_weight_parentheses.empty() &&
-      FLAGS_fst_weight_parentheses.size() != 2) {
+  if (!FST_FLAGS_fst_weight_parentheses.empty() &&
+      FST_FLAGS_fst_weight_parentheses.size() != 2) {
     FSTERROR() << "CompositeWeight: "
-               << "FLAGS_fst_weight_parentheses.size() is not equal to 2";
+               << "FST_FLAGS_fst_weight_parentheses.size() is not equal to 2";
     error_ = true;
   }
 }

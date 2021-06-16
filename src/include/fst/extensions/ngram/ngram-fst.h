@@ -111,7 +111,7 @@ class NGramFstImpl : public FstImpl<A> {
   }
 
   static NGramFstImpl<A> *Read(std::istream &strm, const FstReadOptions &opts) {
-    auto impl = fst::make_unique<NGramFstImpl<A>>();
+    auto impl = std::make_unique<NGramFstImpl<A>>();
     FstHeader hdr;
     if (!impl->ReadHeader(strm, opts, kMinFileVersion, &hdr)) return nullptr;
     uint64 num_states, num_futures, num_final;
@@ -480,7 +480,7 @@ inline void NGramFst<A>::InitArcIterator(StateId s,
                                          ArcIteratorData<A> *data) const {
   GetImpl()->SetInstFuture(s, &inst_);
   GetImpl()->SetInstNode(&inst_);
-  data->base = fst::make_unique<ArcIterator<NGramFst<A>>>(*this, s);
+  data->base = std::make_unique<ArcIterator<NGramFst<A>>>(*this, s);
 }
 
 namespace internal {

@@ -66,18 +66,18 @@ int fstreplace_main(int argc, char **argv) {
   }
 
   ReplaceLabelType call_label_type;
-  if (!s::GetReplaceLabelType(FLAGS_call_arc_labeling,
-                              FLAGS_epsilon_on_replace,
+  if (!s::GetReplaceLabelType(FST_FLAGS_call_arc_labeling,
+                              FST_FLAGS_epsilon_on_replace,
                               &call_label_type)) {
     LOG(ERROR) << argv[0] << ": Unknown or unsupported call arc replace "
-               << "label type: " << FLAGS_call_arc_labeling;
+               << "label type: " << FST_FLAGS_call_arc_labeling;
   }
   ReplaceLabelType return_label_type;
-  if (!s::GetReplaceLabelType(FLAGS_return_arc_labeling,
-                              FLAGS_epsilon_on_replace,
+  if (!s::GetReplaceLabelType(FST_FLAGS_return_arc_labeling,
+                              FST_FLAGS_epsilon_on_replace,
                               &return_label_type)) {
     LOG(ERROR) << argv[0] << ": Unknown or unsupported return arc replace "
-               << "label type: " << FLAGS_return_arc_labeling;
+               << "label type: " << FST_FLAGS_return_arc_labeling;
   }
   if (pairs.empty()) {
     LOG(ERROR) << argv[0] << "At least one replace pair must be provided.";
@@ -85,7 +85,7 @@ int fstreplace_main(int argc, char **argv) {
   }
   const auto root = pairs.front().first;
   const s::ReplaceOptions opts(root, call_label_type, return_label_type,
-                               FLAGS_return_label);
+                               FST_FLAGS_return_label);
 
   VectorFstClass ofst(pairs.back().second->ArcType());
   s::Replace(s::BorrowPairs(pairs), &ofst, opts);

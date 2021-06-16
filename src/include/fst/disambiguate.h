@@ -398,20 +398,26 @@ void Disambiguator<Arc>::PreDisambiguate(const ExpandedFst<Arc> &ifst,
   nopts.gc_limit = 0;  // Cache only the last state for fastest copy.
   if (opts.weight_threshold != Weight::Zero() ||
       opts.state_threshold != kNoStateId) {
-    /* TODO(riley): fails regression test; understand why
-    if (ifst.Properties(kAcceptor, true)) {
-      std::vector<Weight> idistance, odistance;
-      ShortestDistance(ifst, &idistance, true);
-      DeterminizeFst<Arc> dfst(ifst, &idistance, &odistance, nopts);
-      PruneOptions< Arc, AnyArcFilter<Arc>> popts(opts.weight_threshold,
-                                                   opts.state_threshold,
-                                                   AnyArcFilter<Arc>(),
-                                                   &odistance);
-      Prune(dfst, ofst, popts);
-      } else */
-    {
-      *ofst = DeterminizeFst<Arc>(ifst, nopts);
-      Prune(ofst, opts.weight_threshold, opts.state_threshold);
+    if constexpr (IsPath<Weight>::value) {
+      /* TODO(riley): fails regression test; understand why
+      if (ifst.Properties(kAcceptor, true)) {
+        std::vector<Weight> idistance, odistance;
+        ShortestDistance(ifst, &idistance, true);
+        DeterminizeFst<Arc> dfst(ifst, &idistance, &odistance, nopts);
+        PruneOptions< Arc, AnyArcFilter<Arc>> popts(opts.weight_threshold,
+                                                     opts.state_threshold,
+                                                     AnyArcFilter<Arc>(),
+                                                     &odistance);
+        Prune(dfst, ofst, popts);
+        } else */
+      {
+        *ofst = DeterminizeFst<Arc>(ifst, nopts);
+        Prune(ofst, opts.weight_threshold, opts.state_threshold);
+      }
+    } else {
+      FSTERROR() << "Disambiguate: Weight must have path property to use "
+                 << "pruning options: " << Weight::Type();
+      error_ = true;
     }
   } else {
     *ofst = DeterminizeFst<Arc>(ifst, nopts);
@@ -422,7 +428,7 @@ void Disambiguator<Arc>::PreDisambiguate(const ExpandedFst<Arc> &ifst,
 template <class Arc>
 void Disambiguator<Arc>::FindAmbiguities(const ExpandedFst<Arc> &fst) {
   if (fst.Start() == kNoStateId) return;
-  candidates_ = fst::make_unique<ArcIdMap>(ArcIdCompare(head_));
+  candidates_ = std::make_unique<ArcIdMap>(ArcIdCompare(head_));
   const auto start_pr = std::make_pair(fst.Start(), fst.Start());
   coreachable_.insert(start_pr);
   queue_.push_back(start_pr);
@@ -463,7 +469,7 @@ void Disambiguator<Arc>::FindAmbiguousPairs(const ExpandedFst<Arc> &fst,
           if (spr.first != spr.second &&
               head_[spr.first] == head_[spr.second]) {
             if (!merge_) {
-              merge_ = fst::make_unique<UnionFind<StateId>>(fst.NumStates(),
+              merge_ = std::make_unique<UnionFind<StateId>>(fst.NumStates(),
                                                              kNoStateId);
               merge_->MakeAllSet(fst.NumStates());
             }

@@ -22,7 +22,7 @@
 
 #include <algorithm>
 #include <functional>
-#include <unordered_map>
+#include <memory>
 #include <vector>
 
 #include <fst/log.h>
@@ -32,6 +32,8 @@
 #include <fst/dfs-visit.h>
 #include <fst/expanded-fst.h>
 #include <fst/replace.h>
+
+#include <unordered_map>
 
 namespace fst {
 
@@ -666,13 +668,8 @@ class ReplaceAccumulatorData {
   ReplaceAccumulatorData() : state_table_(nullptr) {}
 
   explicit ReplaceAccumulatorData(
-      const std::vector<Accumulator *> &accumulators)
-      : state_table_(nullptr) {
-    accumulators_.reserve(accumulators.size());
-    for (const auto accumulator : accumulators) {
-      accumulators_.emplace_back(accumulator);
-    }
-  }
+      std::vector<std::unique_ptr<Accumulator>> &&accumulators)
+      : state_table_(nullptr), accumulators_(std::move(accumulators)) {}
 
   void Init(const std::vector<std::pair<Label, const Fst<Arc> *>> &fst_tuples,
             const StateTable *state_table) {
@@ -680,7 +677,7 @@ class ReplaceAccumulatorData {
     accumulators_.resize(fst_tuples.size());
     for (Label i = 0; i < accumulators_.size(); ++i) {
       if (!accumulators_[i]) {
-        accumulators_[i] = fst::make_unique<Accumulator>();
+        accumulators_[i] = std::make_unique<Accumulator>();
         accumulators_[i]->Init(*(fst_tuples[i].second));
       }
       fst_array_.emplace_back(fst_tuples[i].second->Copy());
@@ -719,10 +716,11 @@ class ReplaceAccumulator {
               ReplaceAccumulatorData<Accumulator, StateTable>>()),
         error_(false) {}
 
-  explicit ReplaceAccumulator(const std::vector<Accumulator *> &accumulators)
+  explicit ReplaceAccumulator(
+      std::vector<std::unique_ptr<Accumulator>> &&accumulators)
       : init_(false),
         data_(std::make_shared<ReplaceAccumulatorData<Accumulator, StateTable>>(
-            accumulators)),
+            std::move(accumulators))),
         error_(false) {}
 
   ReplaceAccumulator(const ReplaceAccumulator<Accumulator, StateTable> &acc,
@@ -892,7 +890,7 @@ class SafeReplaceAccumulator {
     ArcIteratorPtr(const ArcIteratorPtr &copy) {}
 
     void Set(const Fst<Arc> &fst, StateId state_id) {
-      ptr_ = fst::make_unique<ArcIterator<Fst<Arc>>>(fst, state_id);
+      ptr_ = std::make_unique<ArcIterator<Fst<Arc>>>(fst, state_id);
     }
 
     ArcIterator<Fst<Arc>> *get() { return ptr_.get(); }

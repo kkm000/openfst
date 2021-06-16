@@ -51,9 +51,9 @@ int fstdeterminize_main(int argc, char **argv) {
   }
 
   DeterminizeType det_type;
-  if (!s::GetDeterminizeType(FLAGS_det_type, &det_type)) {
+  if (!s::GetDeterminizeType(FST_FLAGS_det_type, &det_type)) {
     LOG(ERROR) << argv[0] << ": Unknown or unsupported determinization type: "
-               << FLAGS_det_type;
+               << FST_FLAGS_det_type;
     return 1;
   }
 
@@ -68,14 +68,14 @@ int fstdeterminize_main(int argc, char **argv) {
   VectorFstClass ofst(ifst->ArcType());
 
   const auto weight_threshold =
-      FLAGS_weight.empty()
+      FST_FLAGS_weight.empty()
           ? WeightClass::Zero(ifst->WeightType())
-          : WeightClass(ifst->WeightType(), FLAGS_weight);
+          : WeightClass(ifst->WeightType(), FST_FLAGS_weight);
 
   const s::DeterminizeOptions opts(
-      FLAGS_delta, weight_threshold, FLAGS_nstate,
-      FLAGS_subsequential_label, det_type,
-      FLAGS_increment_subsequential_label);
+      FST_FLAGS_delta, weight_threshold, FST_FLAGS_nstate,
+      FST_FLAGS_subsequential_label, det_type,
+      FST_FLAGS_increment_subsequential_label);
 
   s::Determinize(*ifst, &ofst, opts);
 

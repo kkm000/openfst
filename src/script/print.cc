@@ -26,7 +26,7 @@ void Print(const FstClass &fst, std::ostream &ostrm, const std::string &dest,
            const SymbolTable *isyms, const SymbolTable *osyms,
            const SymbolTable *ssyms, bool accept, bool show_weight_one,
            const std::string &missing_sym) {
-  const auto sep = FLAGS_fst_field_separator.substr(0, 1);
+  const auto sep = FST_FLAGS_fst_field_separator.substr(0, 1);
   PrintArgs args{fst, isyms, osyms, ssyms, accept, show_weight_one, ostrm, dest,
                  sep, missing_sym};
   Apply<Operation<PrintArgs>>("Print", fst.ArcType(), &args);

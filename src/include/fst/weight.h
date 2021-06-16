@@ -297,8 +297,8 @@ class CompositeWeightIO {
 // Helper class for writing textual composite weights.
 class CompositeWeightWriter : public internal::CompositeWeightIO {
  public:
-  // Uses configuration from flags (FLAGS_fst_weight_separator,
-  // FLAGS_fst_weight_parentheses).
+  // Uses configuration from flags (FST_FLAGS_fst_weight_separator,
+  // FST_FLAGS_fst_weight_parentheses).
   explicit CompositeWeightWriter(std::ostream &ostrm);
 
   // parentheses defines the opening and closing parenthesis characters.
@@ -333,8 +333,8 @@ class CompositeWeightWriter : public internal::CompositeWeightIO {
 // weights themselves contain composite weights to ensure proper parsing.
 class CompositeWeightReader : public internal::CompositeWeightIO {
  public:
-  // Uses configuration from flags (FLAGS_fst_weight_separator,
-  // FLAGS_fst_weight_parentheses).
+  // Uses configuration from flags (FST_FLAGS_fst_weight_separator,
+  // FST_FLAGS_fst_weight_parentheses).
   explicit CompositeWeightReader(std::istream &istrm);
 
   // parentheses defines the opening and closing parenthesis characters.

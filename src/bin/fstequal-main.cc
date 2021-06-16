@@ -57,7 +57,7 @@ int fstequal_main(int argc, char **argv) {
   std::unique_ptr<FstClass> ifst2(FstClass::Read(in2_name));
   if (!ifst2) return 1;
 
-  bool result = s::Equal(*ifst1, *ifst2, FLAGS_delta);
+  bool result = s::Equal(*ifst1, *ifst2, FST_FLAGS_delta);
   if (!result) VLOG(1) << "FSTs are not equal.";
 
   return result ? 0 : 2;

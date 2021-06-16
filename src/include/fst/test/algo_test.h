@@ -827,37 +827,39 @@ class WeightedTester {
       }
     }
 
-    if ((wprops & (kPath | kCommutative)) == (kPath | kCommutative)) {
-      VLOG(1) << "Check pruning algorithm";
-      {
-        VLOG(1) << "Check equiv. of constructive and destructive algorithms";
-        const Weight threshold = generate_();
-        VectorFst<Arc> P1(T);
-        Prune(&P1, threshold);
-        VectorFst<Arc> P2;
-        Prune(T, &P2, threshold);
-        CHECK(Equiv(P1, P2));
-      }
+    if constexpr (IsPath<Weight>::value) {
+      if ((wprops & (kPath | kCommutative)) == (kPath | kCommutative)) {
+        VLOG(1) << "Check pruning algorithm";
+        {
+          VLOG(1) << "Check equiv. of constructive and destructive algorithms";
+          const Weight threshold = generate_();
+          VectorFst<Arc> P1(T);
+          Prune(&P1, threshold);
+          VectorFst<Arc> P2;
+          Prune(T, &P2, threshold);
+          CHECK(Equiv(P1, P2));
+        }
 
-      {
-        VLOG(1) << "Check prune(reverse) equiv reverse(prune)";
-        const Weight threshold = generate_();
-        VectorFst<ReverseArc<Arc>> R;
-        VectorFst<Arc> P1(T);
-        VectorFst<Arc> P2;
-        Prune(&P1, threshold);
-        Reverse(T, &R);
-        Prune(&R, threshold.Reverse());
-        Reverse(R, &P2);
-        CHECK(Equiv(P1, P2));
-      }
-      {
-        VLOG(1) << "Check: ShortestDistance(A - prune(A))"
-                << " > ShortestDistance(A) times Threshold";
-        const Weight threshold = generate_();
-        VectorFst<Arc> P;
-        Prune(A, &P, threshold);
-        CHECK(PruneEquiv(A, P, threshold));
+        {
+          VLOG(1) << "Check prune(reverse) equiv reverse(prune)";
+          const Weight threshold = generate_();
+          VectorFst<ReverseArc<Arc>> R;
+          VectorFst<Arc> P1(T);
+          VectorFst<Arc> P2;
+          Prune(&P1, threshold);
+          Reverse(T, &R);
+          Prune(&R, threshold.Reverse());
+          Reverse(R, &P2);
+          CHECK(Equiv(P1, P2));
+        }
+        {
+          VLOG(1) << "Check: ShortestDistance(A - prune(A))"
+                  << " > ShortestDistance(A) times Threshold";
+          const Weight threshold = generate_();
+          VectorFst<Arc> P;
+          Prune(A, &P, threshold);
+          CHECK(PruneEquiv(A, P, threshold));
+        }
       }
     }
     if (tprops & kAcyclic) {
@@ -869,49 +871,52 @@ class WeightedTester {
 
   // Tests search operations
   void TestSearch(const Fst<Arc> &T) {
-    uint64 wprops = Weight::Properties();
+    if constexpr (IsPath<Weight>::value) {
+      uint64 wprops = Weight::Properties();
 
-    VectorFst<Arc> A(T);
-    Project(&A, ProjectType::INPUT);
+      VectorFst<Arc> A(T);
+      Project(&A, ProjectType::INPUT);
 
-    if ((wprops & (kPath | kRightSemiring)) == (kPath | kRightSemiring)) {
-      VLOG(1) << "Check 1-best weight.";
-      VectorFst<Arc> path;
-      ShortestPath(T, &path);
-      Weight tsum = ShortestDistance(T);
-      Weight psum = ShortestDistance(path);
-      CHECK(ApproxEqual(tsum, psum, kTestDelta));
-    }
+      if ((wprops & (kPath | kRightSemiring)) == (kPath | kRightSemiring)) {
+        VLOG(1) << "Check 1-best weight.";
+        VectorFst<Arc> path;
+        ShortestPath(T, &path);
+        Weight tsum = ShortestDistance(T);
+        Weight psum = ShortestDistance(path);
+        CHECK(ApproxEqual(tsum, psum, kTestDelta));
+      }
 
-    if ((wprops & (kPath | kSemiring)) == (kPath | kSemiring)) {
-      VLOG(1) << "Check n-best weights";
-      VectorFst<Arc> R(A);
-      RmEpsilon(&R, /*connect=*/true, Arc::Weight::Zero(), kNoStateId, kDelta);
-      const int nshortest = std::uniform_int_distribution<>(
-          0, kNumRandomShortestPaths + 1)(rand_);
-      VectorFst<Arc> paths;
-      ShortestPath(R, &paths, nshortest, /*unique=*/true,
-                   /*first_path=*/false, Weight::Zero(), kNumShortestStates,
-                   kDelta);
-      std::vector<Weight> distance;
-      ShortestDistance(paths, &distance, true, kDelta);
-      StateId pstart = paths.Start();
-      if (pstart != kNoStateId) {
-        ArcIterator<Fst<Arc>> piter(paths, pstart);
-        for (; !piter.Done(); piter.Next()) {
-          StateId s = piter.Value().nextstate;
-          Weight nsum = s < distance.size()
-                            ? Times(piter.Value().weight, distance[s])
-                            : Weight::Zero();
-          VectorFst<Arc> path;
-          ShortestPath(R, &path, 1, false, false, Weight::Zero(), kNoStateId,
-                       kDelta);
-          Weight dsum = ShortestDistance(path, kDelta);
-          CHECK(ApproxEqual(nsum, dsum, kTestDelta));
-          ArcMap(&path, RmWeightMapper<Arc>());
-          VectorFst<Arc> S;
-          Difference(R, path, &S);
-          R = S;
+      if ((wprops & (kPath | kSemiring)) == (kPath | kSemiring)) {
+        VLOG(1) << "Check n-best weights";
+        VectorFst<Arc> R(A);
+        RmEpsilon(&R, /*connect=*/true, Arc::Weight::Zero(), kNoStateId,
+                  kDelta);
+        const int nshortest = std::uniform_int_distribution<>(
+            0, kNumRandomShortestPaths + 1)(rand_);
+        VectorFst<Arc> paths;
+        ShortestPath(R, &paths, nshortest, /*unique=*/true,
+                     /*first_path=*/false, Weight::Zero(), kNumShortestStates,
+                     kDelta);
+        std::vector<Weight> distance;
+        ShortestDistance(paths, &distance, true, kDelta);
+        StateId pstart = paths.Start();
+        if (pstart != kNoStateId) {
+          ArcIterator<Fst<Arc>> piter(paths, pstart);
+          for (; !piter.Done(); piter.Next()) {
+            StateId s = piter.Value().nextstate;
+            Weight nsum = s < distance.size()
+                              ? Times(piter.Value().weight, distance[s])
+                              : Weight::Zero();
+            VectorFst<Arc> path;
+            ShortestPath(R, &path, 1, false, false, Weight::Zero(), kNoStateId,
+                         kDelta);
+            Weight dsum = ShortestDistance(path, kDelta);
+            CHECK(ApproxEqual(nsum, dsum, kTestDelta));
+            ArcMap(&path, RmWeightMapper<Arc>());
+            VectorFst<Arc> S;
+            Difference(R, path, &S);
+            R = S;
+          }
         }
       }
     }
@@ -1349,7 +1354,7 @@ class AlgoTester {
   void Test() {
     VLOG(1) << "weight type = " << Weight::Type();
 
-    for (int i = 0; i < FLAGS_repeat; ++i) {
+    for (int i = 0; i < FST_FLAGS_repeat; ++i) {
       // Random transducers
       VectorFst<Arc> T1;
       VectorFst<Arc> T2;

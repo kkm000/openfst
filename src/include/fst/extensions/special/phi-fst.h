@@ -36,9 +36,10 @@ template <class Label>
 class PhiFstMatcherData {
  public:
   explicit PhiFstMatcherData(
-      Label phi_label = FLAGS_phi_fst_phi_label,
-      bool phi_loop = FLAGS_phi_fst_phi_loop,
-      MatcherRewriteMode rewrite_mode = RewriteMode(FLAGS_phi_fst_rewrite_mode))
+      Label phi_label = FST_FLAGS_phi_fst_phi_label,
+      bool phi_loop = FST_FLAGS_phi_fst_phi_loop,
+      MatcherRewriteMode rewrite_mode =
+          RewriteMode(FST_FLAGS_phi_fst_rewrite_mode))
       : phi_label_(phi_label),
         phi_loop_(phi_loop),
         rewrite_mode_(rewrite_mode) {}

@@ -40,7 +40,7 @@ void Convert(ConvertArgs *args) {
   const std::string &new_type = std::get<1>(args->args);
   std::unique_ptr<Fst<Arc>> result(Convert(fst, new_type));
   args->retval =
-      result ? fst::make_unique<FstClass>(std::move(result)) : nullptr;
+      result ? std::make_unique<FstClass>(std::move(result)) : nullptr;
 }
 
 std::unique_ptr<FstClass> Convert(const FstClass &fst,

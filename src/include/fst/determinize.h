@@ -993,7 +993,7 @@ void DeterminizeFstImpl<A, G, D, F, T>::Init(const Fst<A> &fst, F *filter) {
       subsequential_label_, increment_subsequential_label_,
       increment_subsequential_label_);
   const FactorWeightFst<ToArc, FactorIterator> factored_fst(det_fsa, fopts);
-  from_fst_ = fst::make_unique<FromFst>(factored_fst,
+  from_fst_ = std::make_unique<FromFst>(factored_fst,
                                          FromMapper(subsequential_label_));
 }
 
@@ -1024,7 +1024,7 @@ class ArcIterator<DeterminizeFst<Arc>>
 template <class Arc>
 inline void DeterminizeFst<Arc>::InitStateIterator(
     StateIteratorData<Arc> *data) const {
-  data->base = fst::make_unique<StateIterator<DeterminizeFst<Arc>>>(*this);
+  data->base = std::make_unique<StateIterator<DeterminizeFst<Arc>>>(*this);
 }
 
 // Useful aliases when using StdArc.
@@ -1087,18 +1087,24 @@ void Determinize(
   nopts.gc_limit = 0;  // Caches only the last state for fastest copy.
   if (opts.weight_threshold != Weight::Zero() ||
       opts.state_threshold != kNoStateId) {
-    if (ifst.Properties(kAcceptor, false)) {
-      std::vector<Weight> idistance;
-      std::vector<Weight> odistance;
-      ShortestDistance(ifst, &idistance, true);
-      DeterminizeFst<Arc> dfst(ifst, &idistance, &odistance, nopts);
-      PruneOptions<Arc, AnyArcFilter<Arc>> popts(
-          opts.weight_threshold, opts.state_threshold, AnyArcFilter<Arc>(),
-          &odistance);
-      Prune(dfst, ofst, popts);
+    if constexpr (IsPath<Weight>::value) {
+      if (ifst.Properties(kAcceptor, false)) {
+        std::vector<Weight> idistance;
+        std::vector<Weight> odistance;
+        ShortestDistance(ifst, &idistance, true);
+        DeterminizeFst<Arc> dfst(ifst, &idistance, &odistance, nopts);
+        PruneOptions<Arc, AnyArcFilter<Arc>> popts(
+            opts.weight_threshold, opts.state_threshold, AnyArcFilter<Arc>(),
+            &odistance);
+        Prune(dfst, ofst, popts);
+      } else {
+        *ofst = DeterminizeFst<Arc>(ifst, nopts);
+        Prune(ofst, opts.weight_threshold, opts.state_threshold);
+      }
     } else {
-      *ofst = DeterminizeFst<Arc>(ifst, nopts);
-      Prune(ofst, opts.weight_threshold, opts.state_threshold);
+      FSTERROR() << "Determinize: Weight needs to have the path "
+                 << "property to use pruning options: " << Weight::Type();
+      ofst->SetProperties(kError, kError);
     }
   } else {
     *ofst = DeterminizeFst<Arc>(ifst, nopts);

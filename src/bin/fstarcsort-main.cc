@@ -53,9 +53,9 @@ int fstarcsort_main(int argc, char **argv) {
   if (!fst) return 1;
 
   s::ArcSortType sort_type;
-  if (!s::GetArcSortType(FLAGS_sort_type, &sort_type)) {
-    LOG(ERROR) << argv[0]
-               << ": Unknown or unsupported sort type: " << FLAGS_sort_type;
+  if (!s::GetArcSortType(FST_FLAGS_sort_type, &sort_type)) {
+    LOG(ERROR) << argv[0] << ": Unknown or unsupported sort type: "
+               << FST_FLAGS_sort_type;
     return 1;
   }
 

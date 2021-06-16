@@ -21,9 +21,10 @@
 #define FST_SYNCHRONIZE_H_
 
 #include <algorithm>
+#include <functional>
+#include <memory>
 #include <string>
-#include <unordered_map>
-#include <unordered_set>
+#include <string_view>
 #include <vector>
 
 #include <fst/types.h>
@@ -31,6 +32,8 @@
 #include <fst/cache.h>
 #include <fst/test-properties.h>
 
+#include <unordered_map>
+#include <unordered_set>
 
 namespace fst {
 
@@ -62,19 +65,19 @@ class SynchronizeFstImpl : public CacheImpl<Arc> {
   using CacheBaseImpl<CacheState<Arc>>::SetStart;
 
   using String = std::basic_string<Label>;
+  using StringView = std::basic_string_view<Label>;
 
   struct Element {
     Element() {}
 
-    Element(StateId state_, const String *i, const String *o)
+    Element(StateId state_, StringView i, StringView o)
         : state(state_), istring(i), ostring(o) {}
 
-    StateId state;          // Input state ID.
-    const String *istring;  // Residual input labels.
-    const String *ostring;  // Residual output labels.
-    // Residual strings are represented by const pointers to
-    // basic_string<Label> and are stored in a hash_set. The pointed
-    // memory is owned by the hash_set string_set_.
+    StateId state;       // Input state ID.
+    StringView istring;  // Residual input labels.
+    StringView ostring;  // Residual output labels.
+    // Residual strings are represented by std::basic_string_view<Label> whose
+    // values are owned by the hash set string_set_.
   };
 
   SynchronizeFstImpl(const Fst<Arc> &fst, const SynchronizeFstOptions &opts)
@@ -94,15 +97,11 @@ class SynchronizeFstImpl : public CacheImpl<Arc> {
     SetOutputSymbols(impl.OutputSymbols());
   }
 
-  ~SynchronizeFstImpl() override {
-    for (const auto *ptr : string_set_) delete ptr;
-  }
-
   StateId Start() {
     if (!HasStart()) {
       auto start = fst_->Start();
       if (start == kNoStateId) return kNoStateId;
-      const auto *empty = FindString(new String());
+      const StringView empty = FindString(String());
       start = FindState(Element(fst_->Start(), empty, empty));
       SetStart(start);
     }
@@ -115,8 +114,8 @@ class SynchronizeFstImpl : public CacheImpl<Arc> {
       const auto weight = element.state == kNoStateId
                               ? Weight::One()
                               : fst_->Final(element.state);
-      if ((weight != Weight::Zero()) && (element.istring)->empty() &&
-          (element.ostring)->empty()) {
+      if ((weight != Weight::Zero()) && element.istring.empty() &&
+          element.ostring.empty()) {
         SetFinal(s, weight);
       } else {
         SetFinal(s, Weight::Zero());
@@ -157,9 +156,9 @@ class SynchronizeFstImpl : public CacheImpl<Arc> {
 
   // Returns the first character of the string obtained by concatenating the
   // string and the label.
-  Label Car(const String *str, Label label = 0) const {
-    if (!str->empty()) {
-      return (*str)[0];
+  Label Car(StringView str, Label label = 0) const {
+    if (!str.empty()) {
+      return str[0];
     } else {
       return label;
     }
@@ -167,37 +166,29 @@ class SynchronizeFstImpl : public CacheImpl<Arc> {
 
   // Computes the residual string obtained by removing the first
   // character in the concatenation of the string and the label.
-  const String *Cdr(const String *str, Label label = 0) {
-    auto *r = new String();
-    for (size_t i = 1; i < str->size(); ++i) r->push_back((*str)[i]);
-    if (label && !(str->empty())) r->push_back(label);
-    return FindString(r);
+  StringView Cdr(StringView str, Label label = 0) {
+    if (str.empty()) return FindString(String());
+    return Concat(str.substr(1), label);
   }
 
   // Computes the concatenation of the string and the label.
-  const String *Concat(const String *str, Label label = 0) {
-    auto *r = new String();
-    for (size_t i = 0; i < str->size(); ++i) r->push_back((*str)[i]);
-    if (label) r->push_back(label);
-    return FindString(r);
+  StringView Concat(StringView str, Label label = 0) {
+    String r(str);
+    if (label) r.push_back(label);
+    return FindString(std::move(r));
   }
 
   // Tests if the concatenation of the string and label is empty.
-  bool Empty(const String *str, Label label = 0) const {
-    if (str->empty()) {
+  bool Empty(StringView str, Label label = 0) const {
+    if (str.empty()) {
       return label == 0;
     } else {
       return false;
     }
   }
 
-  // Finds the string pointed by s in the hash set. Transfers the pointer
-  // ownership to the hash set.
-  const String *FindString(const String *str) {
-    const auto insert_result = string_set_.insert(str);
-    if (!insert_result.second) {
-      delete str;
-    }
+  StringView FindString(String &&str) {
+    const auto insert_result = string_set_.insert(std::forward<String>(str));
     return *insert_result.first;
   }
 
@@ -221,14 +212,14 @@ class SynchronizeFstImpl : public CacheImpl<Arc> {
         const auto &arc = aiter.Value();
         if (!Empty(element.istring, arc.ilabel) &&
             !Empty(element.ostring, arc.olabel)) {
-          const auto *istring = Cdr(element.istring, arc.ilabel);
-          const auto *ostring = Cdr(element.ostring, arc.olabel);
+          StringView istring = Cdr(element.istring, arc.ilabel);
+          StringView ostring = Cdr(element.ostring, arc.olabel);
           EmplaceArc(s, Car(element.istring, arc.ilabel),
                      Car(element.ostring, arc.olabel), arc.weight,
                      FindState(Element(arc.nextstate, istring, ostring)));
         } else {
-          const auto *istring = Concat(element.istring, arc.ilabel);
-          const auto *ostring = Concat(element.ostring, arc.olabel);
+          StringView istring = Concat(element.istring, arc.ilabel);
+          StringView ostring = Concat(element.ostring, arc.olabel);
           EmplaceArc(s, 0, 0, arc.weight,
                      FindState(Element(arc.nextstate, istring, ostring)));
         }
@@ -238,9 +229,9 @@ class SynchronizeFstImpl : public CacheImpl<Arc> {
                             ? Weight::One()
                             : fst_->Final(element.state);
     if ((weight != Weight::Zero()) &&
-        ((element.istring)->size() + (element.ostring)->size() > 0)) {
-      const auto *istring = Cdr(element.istring);
-      const auto *ostring = Cdr(element.ostring);
+        (element.istring.size() + element.ostring.size() > 0)) {
+      StringView istring = Cdr(element.istring);
+      StringView ostring = Cdr(element.ostring);
       EmplaceArc(s, Car(element.istring), Car(element.ostring), weight,
                  FindState(Element(kNoStateId, istring, ostring)));
     }
@@ -252,8 +243,8 @@ class SynchronizeFstImpl : public CacheImpl<Arc> {
   class ElementEqual {
    public:
     bool operator()(const Element &x, const Element &y) const {
-      return x.state == y.state && x.istring == y.istring &&
-             x.ostring == y.ostring;
+      return x.state == y.state && x.istring.data() == y.istring.data() &&
+             x.ostring.data() == y.ostring.data();
     }
   };
 
@@ -262,43 +253,34 @@ class SynchronizeFstImpl : public CacheImpl<Arc> {
    public:
     size_t operator()(const Element &x) const {
       size_t key = x.state;
-      key = (key << 1) ^ (x.istring)->size();
-      for (size_t i = 0; i < (x.istring)->size(); ++i) {
-        key = (key << 1) ^ (*x.istring)[i];
+      key = (key << 1) ^ x.istring.size();
+      for (Label label : x.istring) {
+        key = (key << 1) ^ label;
       }
-      key = (key << 1) ^ (x.ostring)->size();
-      for (size_t i = 0; i < (x.ostring)->size(); ++i) {
-        key = (key << 1) ^ (*x.ostring)[i];
+      key = (key << 1) ^ x.ostring.size();
+      for (Label label : x.ostring) {
+        key = (key << 1) ^ label;
       }
       return key;
     }
   };
 
-  // Equality function for strings.
-  class StringEqual {
-   public:
-    bool operator()(const String *const &x, const String *const &y) const {
-      if (x->size() != y->size()) return false;
-      for (size_t i = 0; i < x->size(); ++i) {
-        if ((*x)[i] != (*y)[i]) return false;
-      }
-      return true;
-    }
-  };
-
-  // Hash function for set of strings
+  // Hash function for set of strings. This only has to be specified since
+  // `std::hash<std::basic_string<T>>` is only guaranteed to be defined for
+  // certain values of `T`. Not defining this works fine on clang, but fails
+  // under GCC.
   class StringKey {
    public:
-    size_t operator()(const String *const &x) const {
-      size_t key = x->size();
-      for (size_t i = 0; i < x->size(); ++i) key = (key << 1) ^ (*x)[i];
+    size_t operator()(StringView x) const {
+      size_t key = x.size();
+      for (Label label : x) key = (key << 1) ^ label;
       return key;
     }
   };
 
   using ElementMap =
       std::unordered_map<Element, StateId, ElementKey, ElementEqual>;
-  using StringSet = std::unordered_set<const String *, StringKey, StringEqual>;
+  using StringSet = std::unordered_set<String, StringKey>;
 
   std::unique_ptr<const Fst<Arc>> fst_;
   std::vector<Element> elements_;  // Maps FST state to Elements.
@@ -394,7 +376,7 @@ class ArcIterator<SynchronizeFst<Arc>>
 template <class Arc>
 inline void SynchronizeFst<Arc>::InitStateIterator(
     StateIteratorData<Arc> *data) const {
-  data->base = fst::make_unique<StateIterator<SynchronizeFst<Arc>>>(*this);
+  data->base = std::make_unique<StateIterator<SynchronizeFst<Arc>>>(*this);
 }
 
 // Synchronizes a transducer. This version writes the synchronized result to a
@@ -418,7 +400,8 @@ inline void SynchronizeFst<Arc>::InitStateIterator(
 template <class Arc>
 void Synchronize(const Fst<Arc> &ifst, MutableFst<Arc> *ofst) {
   // Caches only the last state for fastest copy.
-  const SynchronizeFstOptions opts(FLAGS_fst_default_cache_gc, 0);
+  const SynchronizeFstOptions opts(FST_FLAGS_fst_default_cache_gc,
+                                   0);
   *ofst = SynchronizeFst<Arc>(ifst, opts);
 }
 

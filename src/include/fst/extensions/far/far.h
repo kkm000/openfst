@@ -30,6 +30,7 @@
 #include <fstream>
 #include <fst/fst.h>
 #include <fst/vector-fst.h>
+#include <string_view>
 
 namespace fst {
 
@@ -137,7 +138,7 @@ class FarReader {
   virtual void Reset() = 0;
 
   // Sets current position to first entry >= key. Returns true if a match.
-  virtual bool Find(const std::string &key) = 0;
+  virtual bool Find(std::string_view key) = 0;
 
   // Current position at end of archive?
   virtual bool Done() const = 0;
@@ -303,7 +304,7 @@ class STTableFarReader : public FarReader<A> {
 
   void Reset() final { reader_->Reset(); }
 
-  bool Find(const std::string &key) final { return reader_->Find(key); }
+  bool Find(std::string_view key) final { return reader_->Find(key); }
 
   bool Done() const final { return reader_->Done(); }
 
@@ -346,7 +347,7 @@ class STListFarReader : public FarReader<A> {
 
   void Reset() final { reader_->Reset(); }
 
-  bool Find(const std::string &key) final { return reader_->Find(key); }
+  bool Find(std::string_view key) final { return reader_->Find(key); }
 
   bool Done() const final { return reader_->Done(); }
 
@@ -424,7 +425,7 @@ class FstFarReader final : public FarReader<A> {
     ReadFst();
   }
 
-  bool Find(const std::string &key) final {
+  bool Find(std::string_view key) final {
     if (has_stdin_) {
       FSTERROR()
           << "FstFarReader::Find: Operation not supported on standard input";

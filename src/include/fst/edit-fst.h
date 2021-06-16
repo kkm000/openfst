@@ -20,7 +20,7 @@
 //
 // The EditFst class enables non-destructive edit operations on a wrapped
 // ExpandedFst. The implementation uses copy-on-write semantics at the node
-// level: if a user has an underlying FST on which he or she wants to perform a
+// level: if a user has an underlying FST on which they want to perform a
 // relatively small number of edits (read: mutations), then this implementation
 // will copy the edited node to an internal MutableFst and perform any edits in
 // situ on that copied node. This class supports all the methods of MutableFst
@@ -40,13 +40,14 @@
 #define FST_EDIT_FST_H_
 
 #include <string>
-#include <unordered_map>
 #include <vector>
 
 #include <fst/types.h>
 #include <fst/log.h>
 
 #include <fst/cache.h>
+
+#include <unordered_map>
 
 namespace fst {
 namespace internal {
@@ -224,7 +225,7 @@ class EditFstData {
   // Provides information for the generic mutable arc iterator.
   void InitMutableArcIterator(StateId s, MutableArcIteratorData<Arc> *data,
                               const WrappedFstT *wrapped) {
-    data->base = fst::make_unique<MutableArcIterator<MutableFstT>>(
+    data->base = std::make_unique<MutableArcIterator<MutableFstT>>(
         &edits_, GetEditableInternalId(s, wrapped));
   }
 
@@ -246,8 +247,8 @@ class EditFstData {
     return external_to_internal_ids_.find(s);
   }
 
-  typename std::unordered_map<StateId, StateId>::const_iterator NotInEditedMap()
-      const {
+  typename std::unordered_map<StateId, StateId>::const_iterator
+  NotInEditedMap() const {
     return external_to_internal_ids_.end();
   }
 
@@ -341,7 +342,7 @@ EditFstData<A, WrappedFstT, MutableFstT>::Read(std::istream &strm,
 
 // This class enables non-destructive edit operations on a wrapped ExpandedFst.
 // The implementation uses copy-on-write semantics at the node level: if a user
-// has an underlying FST on which he or she wants to perform a relatively small
+// has an underlying FST on which they want to perform a relatively small
 // number of edits (read: mutations), then this implementation will copy the
 // edited node to an internal MutableFst and perform any edits in situ on that
 // copied node. This class supports all the methods of MutableFst except for
@@ -601,7 +602,7 @@ inline void EditFstImpl<Arc, WrappedFstT, MutableFstT>::DeleteStates() {
   data_->DeleteStates();
   // we are deleting all states, so just forget about pointer to wrapped_
   // and do what default constructor does: set wrapped_ to a new VectorFst
-  wrapped_ = fst::make_unique<MutableFstT>();
+  wrapped_ = std::make_unique<MutableFstT>();
   const auto new_props =
       DeleteAllStatesProperties(FstImpl<Arc>::Properties(), kStaticProperties);
   FstImpl<Arc>::SetProperties(new_props);

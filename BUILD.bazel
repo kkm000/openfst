@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_test")
+
 package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])  # Apache 2.0
@@ -22,6 +24,11 @@ config_setting(
     name = "has_absl",
     values = {"define": "absl=1"},
 )
+
+DEFINES = select({
+    "@bazel_tools//src/conditions:windows": ["FST_NO_DYNAMIC_LINKING"],
+    "//conditions:default": [],
+})
 
 prefix_dir = "src/"
 
@@ -130,6 +137,7 @@ cc_library(
     ],
     hdrs = PUBLIC_HEADERS,
     copts = ["-Wno-sign-compare"],
+    defines = DEFINES,
     includes = [prefix_dir + "include"],
     linkopts = ["-lm"],
     deps = [
@@ -148,6 +156,7 @@ cc_library(
 cc_library(
     name = "fst",
     hdrs = PUBLIC_HEADERS,
+    defines = DEFINES,
     includes = [prefix_dir + "include"],
     deps = [
         ":fst-types",
@@ -164,6 +173,7 @@ cc_library(
 cc_library(
     name = "fst-types",
     srcs = [prefix_dir + "lib/fst-types.cc"],
+    defines = DEFINES,
     deps = [":lib_lite"],
     alwayslink = 1,  # because of registration
 )
@@ -171,11 +181,9 @@ cc_library(
 cc_library(
     name = "symbol-table",
     srcs = [prefix_dir + "lib/symbol-table.cc"],
-    hdrs = [
-        prefix_dir + "include/fst/symbol-table.h",
-        prefix_dir + "include/fst/windows_defs.inc",
-    ],
+    hdrs = [prefix_dir + "include/fst/symbol-table.h"],
     copts = ["-Wno-sign-compare"],
+    defines = DEFINES,
     includes = [prefix_dir + "include"],
     deps = [
         ":base",
@@ -203,6 +211,7 @@ cc_library(
         prefix_dir + "include/fst/union-weight.h",
         prefix_dir + "include/fst/weight.h",
     ],
+    defines = DEFINES,
     includes = [prefix_dir + "include"],
     linkopts = ["-lm"],
     deps = [
@@ -277,6 +286,7 @@ cc_library(
         prefix_dir + "include/fst/lock.h",
         prefix_dir + "include/fst/log.h",
         prefix_dir + "include/fst/types.h",
+        prefix_dir + "include/fst/windows_defs.inc",
     ],
     defines = select({
         ":has_absl": ["OPENFST_HAS_ABSL=1"],
@@ -284,7 +294,7 @@ cc_library(
     }),
     includes = [prefix_dir + "include"],
     deps = select({
-        ":has_absl": ["@io_abseil_cpp//absl/synchronization"],
+        ":has_absl": ["@com_google_absl//absl/synchronization"],
         "//conditions:default": [],
     }),
 )
@@ -713,7 +723,6 @@ cc_binary(
     deps = [":fstscript_verify"],
 )
 
-
 # Extension: Fst ARchive a/k/a FAR (extensions/far/)
 
 cc_library(
@@ -971,7 +980,7 @@ cc_library(
     cc_library(
         name = "%s-fst" % type,
         srcs = [
-            prefix_dir + "extensions/compact/%s-fst.cc" % type
+            prefix_dir + "extensions/compact/%s-fst.cc" % type,
         ],
         linkstatic = 1,
         deps = [":fst"],
@@ -1041,7 +1050,7 @@ cc_binary(
     cc_library(
         name = "const%s-fst" % type,
         srcs = [
-            prefix_dir + "extensions/const/const%s-fst.cc" % type
+            prefix_dir + "extensions/const/const%s-fst.cc" % type,
         ],
         linkstatic = 1,
         deps = [":fst"],
@@ -1057,16 +1066,16 @@ cc_binary(
 
 cc_library(
     name = "linear-fst",
+    srcs = [
+        prefix_dir + "extensions/linear/linear-classifier-fst.cc",
+        prefix_dir + "extensions/linear/linear-tagger-fst.cc",
+    ],
     hdrs = [
         prefix_dir + "include/fst/extensions/linear/linear-fst-data-builder.h",
         prefix_dir + "include/fst/extensions/linear/linear-fst-data.h",
         prefix_dir + "include/fst/extensions/linear/linear-fst.h",
         prefix_dir + "include/fst/extensions/linear/loglinear-apply.h",
         prefix_dir + "include/fst/extensions/linear/trie.h",
-    ],
-    srcs = [
-        prefix_dir + "extensions/linear/linear-classifier-fst.cc",
-        prefix_dir + "extensions/linear/linear-tagger-fst.cc",
     ],
     linkstatic = 1,
     deps = [
@@ -1085,8 +1094,8 @@ cc_library(
     includes = [prefix_dir + "include"],
     deps = [
         ":base",
-        ":linear-fst",
         ":fstscript_base",
+        ":linear-fst",
     ],
 )
 
@@ -1112,7 +1121,7 @@ cc_library(
     cc_library(
         name = "%s_lookahead-fst" % type,
         srcs = [
-            prefix_dir + "extensions/lookahead/%s_lookahead-fst.cc" % type
+            prefix_dir + "extensions/lookahead/%s_lookahead-fst.cc" % type,
         ],
         linkstatic = 1,
         deps = [":fst"],
@@ -1130,10 +1139,10 @@ cc_library(
     cc_library(
         name = "%s-fst" % type,
         srcs = [
-            prefix_dir + "include/fst/extensions/special/%s-fst.h" % type
+            prefix_dir + "include/fst/extensions/special/%s-fst.h" % type,
         ],
         hdrs = [
-            prefix_dir + "extensions/special/%s-fst.cc" % type
+            prefix_dir + "extensions/special/%s-fst.cc" % type,
         ],
         linkstatic = 1,
         deps = [":fst"],

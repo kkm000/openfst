@@ -35,7 +35,7 @@
 //
 //    DEFINE_int32(length, 0, "length");
 //
-// This defines variable FLAGS_length, initialized to 0.
+// This defines variable FST_FLAGS_length, initialized to 0.
 //
 // Declaration example:
 //
@@ -46,12 +46,12 @@
 //
 // ShowUsage() can be used to print out command and flag usage.
 
-#define DECLARE_bool(name) extern bool FLAGS_ ## name
-#define DECLARE_string(name) extern std::string FLAGS_##name
-#define DECLARE_int32(name) extern int32 FLAGS_ ## name
-#define DECLARE_int64(name) extern int64 FLAGS_ ## name
-#define DECLARE_uint64(name) extern uint64 FLAGS_##name
-#define DECLARE_double(name) extern double FLAGS_ ## name
+#define DECLARE_bool(name) extern bool FST_FLAGS_ ## name
+#define DECLARE_string(name) extern std::string FST_FLAGS_##name
+#define DECLARE_int32(name) extern int32 FST_FLAGS_ ## name
+#define DECLARE_int64(name) extern int64 FST_FLAGS_ ## name
+#define DECLARE_uint64(name) extern uint64 FST_FLAGS_##name
+#define DECLARE_double(name) extern double FST_FLAGS_ ## name
 
 template <typename T>
 struct FlagDescription {
@@ -189,13 +189,13 @@ class FlagRegisterer {
 };
 
 
-#define DEFINE_VAR(type, name, value, doc)                                \
-  type FLAGS_ ## name = value;                                            \
-  static FlagRegisterer<type>                                             \
-  name ## _flags_registerer(#name, FlagDescription<type>(&FLAGS_ ## name, \
-                                                         doc,             \
-                                                         #type,           \
-                                                         __FILE__,        \
+#define DEFINE_VAR(type, name, value, doc)                                    \
+  type FST_FLAGS_ ## name = value;                                            \
+  static FlagRegisterer<type>                                                 \
+  name ## _flags_registerer(#name, FlagDescription<type>(&FST_FLAGS_ ## name, \
+                                                         doc,                 \
+                                                         #type,               \
+                                                         __FILE__,            \
                                                          value))
 
 #define DEFINE_bool(name, value, doc) DEFINE_VAR(bool, name, value, doc)
@@ -212,6 +212,12 @@ DECLARE_string(tmpdir);
 
 void SetFlags(const char *usage, int *argc, char ***argv, bool remove_flags,
               const char *src = "");
+
+// This is an unpleasant hack around absl::SetFlag API.
+template <typename Type, typename Value>
+void SetFlag(Type *flag, Value value) {
+  *flag = Type(value);
+}
 
 #define SET_FLAGS(usage, argc, argv, rmflags) \
 SetFlags(usage, argc, argv, rmflags, __FILE__)

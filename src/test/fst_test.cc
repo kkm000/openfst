@@ -87,7 +87,7 @@ using fst::TrivialCompactor;
 using fst::VectorFst;
 
 int main(int argc, char **argv) {
-  FLAGS_fst_verify_properties = true;
+  SetFlag(&FST_FLAGS_fst_verify_properties, true);
   std::set_new_handler(FailedNewHandler);
   SET_FLAGS(argv[0], &argc, &argv, true);
 

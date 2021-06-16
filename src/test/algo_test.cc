@@ -53,58 +53,60 @@ using ::fst::WeightGenerate;
 }  // namespace
 
 int main(int argc, char **argv) {
-  FLAGS_fst_verify_properties = true;
+  SetFlag(&FST_FLAGS_fst_verify_properties, true);
   std::set_new_handler(FailedNewHandler);
   SET_FLAGS(argv[0], &argc, &argv, true);
 
   static const int kCacheGcLimit = 20;
 
-  LOG(INFO) << "Seed = " << FLAGS_seed;
+  LOG(INFO) << "Seed = " << FST_FLAGS_seed;
 
-  std::mt19937_64 rand(FLAGS_seed);
+  std::mt19937_64 rand(FST_FLAGS_seed);
 
-  FLAGS_fst_default_cache_gc = std::bernoulli_distribution(.5)(rand);
-  FLAGS_fst_default_cache_gc_limit =
-      std::uniform_int_distribution<>(0, kCacheGcLimit)(rand);
-  VLOG(1) << "default_cache_gc:" << FLAGS_fst_default_cache_gc;
-  VLOG(1) << "default_cache_gc_limit:" << FLAGS_fst_default_cache_gc_limit;
+  SetFlag(&FST_FLAGS_fst_default_cache_gc,
+                std::bernoulli_distribution(.5)(rand));
+  SetFlag(&FST_FLAGS_fst_default_cache_gc_limit,
+                std::uniform_int_distribution<>(0, kCacheGcLimit)(rand));
+  VLOG(1) << "default_cache_gc:" << FST_FLAGS_fst_default_cache_gc;
+  VLOG(1) << "default_cache_gc_limit:"
+          << FST_FLAGS_fst_default_cache_gc_limit;
 
 #ifdef TEST_TROPICAL
   using TropicalWeightGenerate = WeightGenerate<TropicalWeight>;
-  TropicalWeightGenerate tropical_generator(FLAGS_seed, false);
+  TropicalWeightGenerate tropical_generator(FST_FLAGS_seed, false);
   AlgoTester<StdArc, TropicalWeightGenerate> tropical_tester(tropical_generator,
-                                                             FLAGS_seed);
+                                                             FST_FLAGS_seed);
   tropical_tester.Test();
 #endif  // TEST_TROPICAL
 
 #ifdef TEST_LOG
   using LogWeightGenerate = WeightGenerate<LogWeight>;
-  LogWeightGenerate log_generator(FLAGS_seed, false);
-  AlgoTester<LogArc, LogWeightGenerate> log_tester(log_generator, FLAGS_seed);
+  LogWeightGenerate log_generator(FST_FLAGS_seed, false);
+  AlgoTester<LogArc, LogWeightGenerate> log_tester(log_generator, FST_FLAGS_seed);
   log_tester.Test();
 #endif  // TEST_LOG
 
 #ifdef TEST_MINMAX
   using MinMaxWeightGenerate = WeightGenerate<MinMaxWeight>;
-  MinMaxWeightGenerate minmax_generator(FLAGS_seed, false);
+  MinMaxWeightGenerate minmax_generator(FST_FLAGS_seed, false);
   AlgoTester<MinMaxArc, MinMaxWeightGenerate> minmax_tester(minmax_generator,
-                                                            FLAGS_seed);
+                                                            FST_FLAGS_seed);
   minmax_tester.Test();
 #endif
 
 #ifdef TEST_LEFT_STRING
   using StringWeightGenerate = WeightGenerate<StringWeight<int, STRING_LEFT>>;
-  StringWeightGenerate left_string_generator(FLAGS_seed, false);
+  StringWeightGenerate left_string_generator(FST_FLAGS_seed, false);
   AlgoTester<StringArc<>, StringWeightGenerate> left_string_tester(
-      left_string_generator, FLAGS_seed);
+      left_string_generator, FST_FLAGS_seed);
   left_string_tester.Test();
 #endif  // TEST_LEFT_STRING
 
 #ifdef TEST_RIGHT_STRING
   using StringWeightGenerate = WeightGenerate<StringWeight<int, STRING_RIGHT>>;
-  StringWeightGenerate right_string_generator(FLAGS_seed, false);
+  StringWeightGenerate right_string_generator(FST_FLAGS_seed, false);
   AlgoTester<StringArc<STRING_RIGHT>, StringWeightGenerate> right_string_tester(
-      right_string_generator, FLAGS_seed);
+      right_string_generator, FST_FLAGS_seed);
   right_string_tester.Test();
 #endif  // TEST_RIGHT_STRING
 
@@ -112,9 +114,9 @@ int main(int argc, char **argv) {
   using StdGallicArc = GallicArc<StdArc>;
   using TropicalGallicWeightGenerate =
       WeightGenerate<GallicWeight<int, TropicalWeight>>;
-  TropicalGallicWeightGenerate tropical_gallic_generator(FLAGS_seed, false);
+  TropicalGallicWeightGenerate tropical_gallic_generator(FST_FLAGS_seed, false);
   AlgoTester<StdGallicArc, TropicalGallicWeightGenerate> gallic_tester(
-      tropical_gallic_generator, FLAGS_seed);
+      tropical_gallic_generator, FST_FLAGS_seed);
   gallic_tester.Test();
 #endif  // TEST_GALLIC
 
@@ -123,10 +125,10 @@ int main(int argc, char **argv) {
       LexicographicArc<TropicalWeight, TropicalWeight>;
   using TropicalLexicographicWeightGenerate =
       WeightGenerate<LexicographicWeight<TropicalWeight, TropicalWeight>>;
-  TropicalLexicographicWeightGenerate lexicographic_generator(FLAGS_seed,
-                                                              false);
+  TropicalLexicographicWeightGenerate lexicographic_generator(
+      FST_FLAGS_seed, false);
   AlgoTester<TropicalLexicographicArc, TropicalLexicographicWeightGenerate>
-      lexicographic_tester(lexicographic_generator, FLAGS_seed);
+      lexicographic_tester(lexicographic_generator, FST_FLAGS_seed);
   lexicographic_tester.Test();
 #endif  // TEST_LEXICOGRAPHIC
 
@@ -134,9 +136,9 @@ int main(int argc, char **argv) {
   using TropicalCubeWeight = PowerWeight<TropicalWeight, 3>;
   using TropicalCubeArc = ArcTpl<TropicalCubeWeight>;
   using TropicalCubeWeightGenerate = WeightGenerate<TropicalCubeWeight>;
-  TropicalCubeWeightGenerate tropical_cube_generator(FLAGS_seed, false);
+  TropicalCubeWeightGenerate tropical_cube_generator(FST_FLAGS_seed, false);
   AlgoTester<TropicalCubeArc, TropicalCubeWeightGenerate> tropical_cube_tester(
-      tropical_cube_generator, FLAGS_seed);
+      tropical_cube_generator, FST_FLAGS_seed);
   tropical_cube_tester.Test();
 #endif  // TEST_POWER
 

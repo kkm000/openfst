@@ -58,9 +58,10 @@ int pdtreplace_main(int argc, char **argv) {
   const std::string out_name = argc % 2 == 0 ? argv[argc - 1] : "";
 
   PdtParserType parser_type;
-  if (!s::GetPdtParserType(FLAGS_pdt_parser_type, &parser_type)) {
-    LOG(ERROR) << argv[0]
-               << ": Unknown PDT parser type: " << FLAGS_pdt_parser_type;
+  if (!s::GetPdtParserType(FST_FLAGS_pdt_parser_type,
+                           &parser_type)) {
+    LOG(ERROR) << argv[0] << ": Unknown PDT parser type: "
+               << FST_FLAGS_pdt_parser_type;
     return 1;
   }
 
@@ -82,11 +83,13 @@ int pdtreplace_main(int argc, char **argv) {
   VectorFstClass ofst(pairs.back().second->ArcType());
   std::vector<std::pair<int64, int64>> parens;
   s::PdtReplace(s::BorrowPairs(pairs), &ofst, &parens, root, parser_type,
-                FLAGS_start_paren_labels, FLAGS_left_paren_prefix,
-                FLAGS_right_paren_prefix);
+                FST_FLAGS_start_paren_labels,
+                FST_FLAGS_left_paren_prefix,
+                FST_FLAGS_right_paren_prefix);
 
-  if (!FLAGS_pdt_parentheses.empty()) {
-    if (!WriteLabelPairs(FLAGS_pdt_parentheses, parens)) return 1;
+  if (!FST_FLAGS_pdt_parentheses.empty()) {
+    if (!WriteLabelPairs(FST_FLAGS_pdt_parentheses, parens))
+      return 1;
   }
 
   return !ofst.Write(out_name);

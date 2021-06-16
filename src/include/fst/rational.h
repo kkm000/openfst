@@ -241,7 +241,7 @@ class RationalFstImpl : public FstImpl<A> {
     if (!replace_) {
       fst_tuples_[0].second = rfst_.Copy();
       replace_ =
-          fst::make_unique<ReplaceFst<Arc>>(fst_tuples_, replace_options_);
+          std::make_unique<ReplaceFst<Arc>>(fst_tuples_, replace_options_);
     }
     return replace_.get();
   }

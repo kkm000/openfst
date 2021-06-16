@@ -58,16 +58,16 @@ int fstpush_main(int argc, char **argv) {
   std::unique_ptr<FstClass> ifst(FstClass::Read(in_name));
   if (!ifst) return 1;
 
-  const auto flags = s::GetPushFlags(FLAGS_push_weights,
-                                     FLAGS_push_labels,
-                                     FLAGS_remove_total_weight,
-                                     FLAGS_remove_common_affix);
+  const auto flags = s::GetPushFlags(FST_FLAGS_push_weights,
+                                     FST_FLAGS_push_labels,
+                                     FST_FLAGS_remove_total_weight,
+                                     FST_FLAGS_remove_common_affix);
 
   VectorFstClass ofst(ifst->ArcType());
 
   s::Push(*ifst, &ofst, flags,
-          s::GetReweightType(FLAGS_to_final),
-          FLAGS_delta);
+          s::GetReweightType(FST_FLAGS_to_final),
+          FST_FLAGS_delta);
 
   return !ofst.Write(out_name);
 }

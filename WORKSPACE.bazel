@@ -19,7 +19,9 @@ workspace(name = "openfst")
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 http_archive(
-    name = "io_abseil_cpp",
+    # Name has to match workspace name in:
+    #   https://github.com/abseil/abseil-cpp/blob/master/WORKSPACE
+    name = "com_google_absl",
     strip_prefix = "abseil-cpp-master",
     urls = ["https://github.com/abseil/abseil-cpp/archive/master.zip"],
 )

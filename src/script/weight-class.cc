@@ -17,6 +17,8 @@
 
 #include <fst/script/weight-class.h>
 
+#include <string_view>
+
 namespace fst {
 namespace script {
 
@@ -25,7 +27,7 @@ REGISTER_FST_WEIGHT(LogArc::Weight);
 REGISTER_FST_WEIGHT(Log64Arc::Weight);
 
 WeightClass::WeightClass(const std::string &weight_type,
-                         const std::string &weight_str) {
+                         std::string_view weight_str) {
   static const auto *reg = WeightClassRegister::GetRegister();
   const auto stw = reg->GetEntry(weight_type);
   if (!stw) {

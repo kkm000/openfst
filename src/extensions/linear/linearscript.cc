@@ -43,13 +43,14 @@ namespace fst {
 namespace script {
 
 bool ValidateDelimiter() {
-  return FLAGS_delimiter.size() == 1 && !std::isspace(FLAGS_delimiter[0]);
+  return FST_FLAGS_delimiter.size() == 1 &&
+         !std::isspace(FST_FLAGS_delimiter[0]);
 }
 
 bool ValidateEmptySymbol() {
-  bool okay = !FLAGS_empty_symbol.empty();
-  for (size_t i = 0; i < FLAGS_empty_symbol.size(); ++i) {
-    char c = FLAGS_empty_symbol[i];
+  bool okay = !FST_FLAGS_empty_symbol.empty();
+  for (size_t i = 0; i < FST_FLAGS_empty_symbol.size(); ++i) {
+    char c = FST_FLAGS_empty_symbol[i];
     if (std::isspace(c)) okay = false;
   }
   return okay;

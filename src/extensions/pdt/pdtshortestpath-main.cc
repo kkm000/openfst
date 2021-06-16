@@ -60,30 +60,31 @@ int pdtshortestpath_main(int argc, char **argv) {
   std::unique_ptr<FstClass> ifst(FstClass::Read(in_name));
   if (!ifst) return 1;
 
-  if (FLAGS_pdt_parentheses.empty()) {
+  if (FST_FLAGS_pdt_parentheses.empty()) {
     LOG(ERROR) << argv[0] << ": No PDT parenthesis label pairs provided";
     return 1;
   }
 
   std::vector<std::pair<int64, int64>> parens;
-  if (!ReadLabelPairs(FLAGS_pdt_parentheses, &parens, false)) return 1;
+  if (!ReadLabelPairs(FST_FLAGS_pdt_parentheses, &parens, false))
+    return 1;
 
   VectorFstClass ofst(ifst->ArcType());
 
   QueueType qt;
-  if (FLAGS_queue_type == "fifo") {
+  if (FST_FLAGS_queue_type == "fifo") {
     qt = fst::FIFO_QUEUE;
-  } else if (FLAGS_queue_type == "lifo") {
+  } else if (FST_FLAGS_queue_type == "lifo") {
     qt = fst::LIFO_QUEUE;
-  } else if (FLAGS_queue_type == "state") {
+  } else if (FST_FLAGS_queue_type == "state") {
     qt = fst::STATE_ORDER_QUEUE;
   } else {
-    LOG(ERROR) << "Unknown queue type: " << FLAGS_queue_type;
+    LOG(ERROR) << "Unknown queue type: " << FST_FLAGS_queue_type;
     return 1;
   }
 
-  const s::PdtShortestPathOptions opts(qt, FLAGS_keep_parentheses,
-                                       FLAGS_path_gc);
+  const s::PdtShortestPathOptions opts(
+      qt, FST_FLAGS_keep_parentheses, FST_FLAGS_path_gc);
 
   s::PdtShortestPath(*ifst, parens, &ofst, opts);
 

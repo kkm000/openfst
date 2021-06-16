@@ -1,4 +1,7 @@
-OpenFst: Release 1.7
+OpenFst: Release 1.8
+   * Expands smart-pointer use (1.8.1)
+   * Expands std::string_view use (1.8.1)
+   * Removes SymbolTableReadOptions (1.8.1)
    * Adds farconvert (1.8.0)
    * Migration to C++17 (1.8.0)
    * Updates Bazel build (1.8.0)
@@ -7,6 +10,8 @@ OpenFst: Release 1.7
    * Improves display of properties masks in pywrapfst (1.8.0) 
    * Internal reference-counting/smart pointer improvements (1.8.0)
    * Deprecates PROJECT_(IN|OUT)PUT in favor of scoped enum ProjectType (1.8.0)
+
+OpenFst: Release 1.7
    * TokenType is now a scoped enum (1.7.8)
    * pywrapfst is now Python 3-only (1.7.8)
    * fstproject now has --project_type flag (1.7.8)

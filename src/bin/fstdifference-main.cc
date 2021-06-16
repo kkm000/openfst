@@ -66,13 +66,14 @@ int fstdifference_main(int argc, char **argv) {
   VectorFstClass ofst(ifst1->ArcType());
 
   ComposeFilter compose_filter;
-  if (!s::GetComposeFilter(FLAGS_compose_filter, &compose_filter)) {
+  if (!s::GetComposeFilter(FST_FLAGS_compose_filter,
+                           &compose_filter)) {
     LOG(ERROR) << argv[0] << ": Unknown or unsupported compose filter type: "
-               << FLAGS_compose_filter;
+               << FST_FLAGS_compose_filter;
     return 1;
   }
 
-  const DifferenceOptions opts(FLAGS_connect, compose_filter);
+  const DifferenceOptions opts(FST_FLAGS_connect, compose_filter);
 
   s::Difference(*ifst1, *ifst2, &ofst, opts);
 

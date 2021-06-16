@@ -20,6 +20,7 @@
 #ifndef FST_MEMORY_H_
 #define FST_MEMORY_H_
 
+#include <cstddef>
 #include <list>
 #include <memory>
 #include <utility>
@@ -57,25 +58,23 @@ class MemoryArenaImpl : public MemoryArenaBase {
 
   explicit MemoryArenaImpl(size_t block_size = kAllocSize)
       : block_size_(block_size * kObjectSize), block_pos_(0) {
-    blocks_.emplace_front(new char[block_size_]);
+    blocks_.emplace_front(std::make_unique<std::byte[]>(block_size_));
   }
 
   void *Allocate(size_t size) {
     const auto byte_size = size * kObjectSize;
     if (byte_size * kAllocFit > block_size_) {
       // Large block; adds new large block.
-      auto *ptr = new char[byte_size];
-      blocks_.emplace_back(ptr);
-      return ptr;
-    }
+      blocks_.emplace_back(std::make_unique<std::byte[]>(byte_size));
+      return blocks_.back().get();
+  }
     if (block_pos_ + byte_size > block_size_) {
       // Doesn't fit; adds new standard block.
-      auto *ptr = new char[block_size_];
       block_pos_ = 0;
-      blocks_.emplace_front(ptr);
+      blocks_.emplace_front(std::make_unique<std::byte[]>(block_size_));
     }
     // Fits; uses current block.
-    auto *ptr = blocks_.front().get() + block_pos_;
+    auto *ptr = &blocks_.front()[block_pos_];
     block_pos_ += byte_size;
     return ptr;
   }
@@ -85,7 +84,7 @@ class MemoryArenaImpl : public MemoryArenaBase {
  private:
   const size_t block_size_;  // Default block size in bytes.
   size_t block_pos_;         // Current position in block in bytes.
-  std::list<std::unique_ptr<char[]>> blocks_;  // List of allocated blocks.
+  std::list<std::unique_ptr<std::byte[]>> blocks_;  // List of allocated blocks.
 };
 
 }  // namespace internal
@@ -113,7 +112,7 @@ class MemoryPoolImpl : public MemoryPoolBase {
   enum { kObjectSize = object_size };
 
   struct Link {
-    char buf[kObjectSize];
+    std::byte buf[kObjectSize];
     Link *next;
   };
 
@@ -144,7 +143,7 @@ class MemoryPoolImpl : public MemoryPoolBase {
 
  private:
   MemoryArena<Link> mem_arena_;
-  Link *free_list_;
+  Link *free_list_;  // Not owned.
 
   MemoryPoolImpl(const MemoryPoolImpl &) = delete;
   MemoryPoolImpl &operator=(const MemoryPoolImpl &) = delete;
@@ -162,7 +161,7 @@ template <typename T>
 class MemoryPool : public internal::MemoryPoolImpl<sizeof(T)> {
  public:
   // 'pool_size' specifies the size of the initial pool and how it is extended.
-  MemoryPool(size_t pool_size = kAllocSize)
+  explicit MemoryPool(size_t pool_size = kAllocSize)
       : internal::MemoryPoolImpl<sizeof(T)>(pool_size) {}
 };
 
@@ -176,12 +175,11 @@ class MemoryArenaCollection {
   template <typename T>
   MemoryArena<T> *Arena() {
     if (sizeof(T) >= arenas_.size()) arenas_.resize(sizeof(T) + 1);
-    MemoryArenaBase *arena = arenas_[sizeof(T)].get();
+    auto &arena = arenas_[sizeof(T)];
     if (arena == nullptr) {
-      arena = new MemoryArena<T>(block_size_);
-      arenas_[sizeof(T)].reset(arena);
+      arena = std::make_unique<MemoryArena<T>>(block_size_);
     }
-    return static_cast<MemoryArena<T> *>(arena);
+    return static_cast<MemoryArena<T> *>(arena.get());
   }
 
   size_t BlockSize() const { return block_size_; }
@@ -201,12 +199,9 @@ class MemoryPoolCollection {
   template <typename T>
   MemoryPool<T> *Pool() {
     if (sizeof(T) >= pools_.size()) pools_.resize(sizeof(T) + 1);
-    MemoryPoolBase *pool = pools_[sizeof(T)].get();
-    if (pool == nullptr) {
-      pool = new MemoryPool<T>(pool_size_);
-      pools_[sizeof(T)].reset(pool);
-    }
-    return static_cast<MemoryPool<T> *>(pool);
+    auto &pool = pools_[sizeof(T)];
+    if (pool == nullptr) pool = std::make_unique<MemoryPool<T>>(pool_size_);
+    return static_cast<MemoryPool<T> *>(pool.get());
   }
 
   size_t PoolSize() const { return pool_size_; }

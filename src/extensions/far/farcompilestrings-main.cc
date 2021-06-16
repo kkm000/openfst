@@ -53,7 +53,7 @@ int farcompilestrings_main(int argc, char **argv) {
   s::ExpandArgs(argc, argv, &argc, &argv);
 
   std::vector<std::string> in_sources;
-  if (FLAGS_file_list_input) {
+  if (FST_FLAGS_file_list_input) {
     for (int i = 1; i < argc - 1; ++i) {
       std::ifstream istrm(argv[i]);
       std::string str;
@@ -75,33 +75,39 @@ int farcompilestrings_main(int argc, char **argv) {
       argc > 2 && strcmp(argv[argc - 1], "-") != 0 ? argv[argc - 1] : "";
 
   fst::FarEntryType entry_type;
-  if (!s::GetFarEntryType(FLAGS_entry_type, &entry_type)) {
-    LOG(ERROR) << "Unknown or unsupported FAR entry type: " << FLAGS_entry_type;
+  if (!s::GetFarEntryType(FST_FLAGS_entry_type, &entry_type)) {
+    LOG(ERROR) << "Unknown or unsupported FAR entry type: "
+               << FST_FLAGS_entry_type;
     return 1;
   }
 
   fst::TokenType token_type;
-  if (!s::GetTokenType(FLAGS_token_type, &token_type)) {
-    LOG(ERROR) << "Unknown or unsupported FAR token type: " << FLAGS_token_type;
+  if (!s::GetTokenType(FST_FLAGS_token_type, &token_type)) {
+    LOG(ERROR) << "Unknown or unsupported FAR token type: "
+               << FST_FLAGS_token_type;
     return 1;
   }
 
   fst::FarType far_type;
-  if (!s::GetFarType(FLAGS_far_type, &far_type)) {
-    LOG(ERROR) << "Unknown or unsupported FAR type: " << FLAGS_far_type;
+  if (!s::GetFarType(FST_FLAGS_far_type, &far_type)) {
+    LOG(ERROR) << "Unknown or unsupported FAR type: "
+               << FST_FLAGS_far_type;
     return 1;
   }
 
   // Empty fst_type means vector for farcompilestrings, but "input FST type"
   // for farconvert.
-  const std::string fst_type =
-      FLAGS_fst_type.empty() ? "vector" : FLAGS_fst_type;
+  const std::string fst_type = FST_FLAGS_fst_type.empty()
+                                   ? "vector"
+                                   : FST_FLAGS_fst_type;
 
-  s::FarCompileStrings(in_sources, out_source, FLAGS_arc_type, fst_type,
-                       far_type, FLAGS_generate_keys, entry_type, token_type,
-                       FLAGS_symbols, FLAGS_unknown_symbol, FLAGS_keep_symbols,
-                       FLAGS_initial_symbols, FLAGS_allow_negative_labels,
-                       FLAGS_key_prefix, FLAGS_key_suffix);
+  s::FarCompileStrings(
+      in_sources, out_source, FST_FLAGS_arc_type, fst_type, far_type,
+      FST_FLAGS_generate_keys, entry_type, token_type,
+      FST_FLAGS_symbols, FST_FLAGS_unknown_symbol,
+      FST_FLAGS_keep_symbols, FST_FLAGS_initial_symbols,
+      FST_FLAGS_allow_negative_labels,
+      FST_FLAGS_key_prefix, FST_FLAGS_key_suffix);
 
   return 0;
 }

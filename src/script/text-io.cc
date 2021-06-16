@@ -26,6 +26,7 @@
 #include <fstream>
 #include <fst/util.h>
 #include <fst/windows_defs.inc>
+#include <string_view>
 
 namespace fst {
 namespace script {
@@ -44,9 +45,8 @@ bool ReadPotentials(const std::string &weight_type, const std::string &source,
   potentials->clear();
   while (!istrm.getline(line, kLineLen).fail()) {
     ++nline;
-    std::vector<char *> col;
-    SplitString(line, "\n\t ", &col, true);
-    if (col.empty() || col[0][0] == '\0') continue;
+    std::vector<std::string_view> col = SplitString(line, "\n\t ", true);
+    if (col.empty() || col[0].empty()) continue;
     if (col.size() != 2) {
       FSTERROR() << "ReadPotentials: Bad number of columns, "
                  << "file = " << source << ", line = " << nline;

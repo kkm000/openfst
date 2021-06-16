@@ -34,6 +34,7 @@
 
 #include <fstream>
 #include <fst/util.h>
+#include <string_view>
 
 namespace fst {
 
@@ -191,7 +192,7 @@ class STListReader {
     error_ = true;
   }
 
-  bool Find(const std::string &key) {
+  bool Find(std::string_view key) {
     FSTERROR() << "STListReader::Find: Operation not supported";
     error_ = true;
     return false;
