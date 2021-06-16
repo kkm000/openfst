@@ -1,3 +1,17 @@
+// Copyright 2005-2020 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the 'License');
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an 'AS IS' BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
 // See www.openfst.org for extensive documentation on this weighted
 // finite-state transducer library.
 //
@@ -48,17 +62,18 @@ constexpr int64 kNoSymbol = -1;
 
 class SymbolTable;
 
-// WARNING: Reading via symbol table read options should
-//          not be used. This is a temporary work around for
-//          reading symbol ranges of previously stored symbol sets.
-struct SymbolTableReadOptions {
+struct OPENFST_DEPRECATED(
+    "Reading via SymbolTableReadOptions is deprecated. Please directly provide "
+    "source string instead.") SymbolTableReadOptions {
   SymbolTableReadOptions() {}
 
   SymbolTableReadOptions(
+      OPENFST_DEPRECATED("Do not use `string_hash_ranges`; it is ignored.")
       std::vector<std::pair<int64, int64>> string_hash_ranges,
       const std::string &source)
       : string_hash_ranges(std::move(string_hash_ranges)), source(source) {}
 
+  OPENFST_DEPRECATED("Do not use `string_hash_ranges`; it is ignored.")
   std::vector<std::pair<int64, int64>> string_hash_ranges;
   std::string source;
 };
@@ -137,9 +152,14 @@ class SymbolTableImplBase {
   virtual int64 AddSymbol(SymbolType symbol, int64 key) = 0;
   virtual int64 AddSymbol(SymbolType symbol) = 0;
 
+  // Removes the symbol with the specified key. Subsequent Find() calls
+  // for this key will return the empty string. Does not affect the keys
+  // of other symbols.
   virtual void RemoveSymbol(int64 key) = 0;
 
+  // Returns the symbol for the specified key, or the empty string if not found.
   virtual std::string Find(int64 key) const = 0;
+  // Returns the key for the specified symbol, or kNoSymbol if not found.
   virtual int64 Find(SymbolType symbol) const = 0;
 
   virtual bool Member(int64 key) const { return !Find(key).empty(); }
@@ -205,7 +225,7 @@ class SymbolTableImpl final : public MutableSymbolTableImpl {
         check_sum_finalized_(false) {}
 
   std::unique_ptr<SymbolTableImplBase> Copy() const override {
-    return std::unique_ptr<SymbolTableImplBase>(new SymbolTableImpl(*this));
+    return fst::make_unique<SymbolTableImpl>(*this);
   }
 
   int64 AddSymbol(SymbolType symbol, int64 key) override;
@@ -386,9 +406,9 @@ class SymbolTable {
   static SymbolTable *ReadText(
       std::istream &strm, const std::string &name,
       const SymbolTableTextOptions &opts = SymbolTableTextOptions()) {
-    std::shared_ptr<internal::SymbolTableImpl> impl(
-        internal::SymbolTableImpl::ReadText(strm, name, opts));
-    return impl ? new SymbolTable(impl) : nullptr;
+    auto impl =
+        fst::WrapUnique(internal::SymbolTableImpl::ReadText(strm, name, opts));
+    return impl ? new SymbolTable(std::move(impl)) : nullptr;
   }
 
   // Reads a text representation of the symbol table.
@@ -396,13 +416,11 @@ class SymbolTable {
       const std::string &source,
       const SymbolTableTextOptions &opts = SymbolTableTextOptions());
 
-  // WARNING: Reading via symbol table read options should not be used. This is
-  // a temporary work-around.
+  OPENFST_DEPRECATED("Use `Read(std::istream&, const std::string&)` instead.")
   static SymbolTable *Read(std::istream &strm,
                            const SymbolTableReadOptions &opts) {
-    std::shared_ptr<internal::SymbolTableImpl> impl(
-        internal::SymbolTableImpl::Read(strm, opts));
-    return impl ? new SymbolTable(impl) : nullptr;
+    auto impl = fst::WrapUnique(internal::SymbolTableImpl::Read(strm, opts));
+    return impl ? new SymbolTable(std::move(impl)) : nullptr;
   }
 
   // Reads a binary dump of the symbol table from a stream.
@@ -454,7 +472,8 @@ class SymbolTable {
   int64 AvailableKey() const { return impl_->AvailableKey(); }
 
   // Return the label-agnostic MD5 check-sum for this table. All new symbols
-  // added to the table will result in an updated checksum. Deprecated.
+  // added to the table will result in an updated checksum.
+  OPENFST_DEPRECATED("Use `LabeledCheckSum()` instead.")
   const std::string &CheckSum() const { return impl_->CheckSum(); }
 
   int64 GetNthKey(ssize_t pos) const { return impl_->GetNthKey(pos); }
@@ -515,17 +534,17 @@ class SymbolTable {
 
  protected:
   explicit SymbolTable(std::shared_ptr<internal::SymbolTableImplBase> impl)
-      : impl_(impl) {}
+      : impl_(std::move(impl)) {}
 
   template <class T = internal::SymbolTableImplBase>
   const T *Impl() const {
-    return static_cast<const T *>(impl_.get());
+    return fst::down_cast<const T *>(impl_.get());
   }
 
   template <class T = internal::SymbolTableImplBase>
   T *MutableImpl() {
     MutateCheck();
-    return static_cast<T *>(impl_.get());
+    return fst::down_cast<T *>(impl_.get());
   }
 
  private:

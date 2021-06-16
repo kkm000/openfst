@@ -1,3 +1,17 @@
+// Copyright 2005-2020 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the 'License');
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an 'AS IS' BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
 // See www.openfst.org for extensive documentation on this weighted
 // finite-state transducer library.
 //
@@ -11,6 +25,7 @@
 
 #include <cstddef>
 #include <istream>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -126,7 +141,7 @@ class MutableFst : public ExpandedFst<A> {
     }
     auto *fst = reader(strm, ropts);
     if (!fst) return nullptr;
-    return static_cast<MutableFst *>(fst);
+    return fst::down_cast<MutableFst *>(fst);
   }
 
   // Reads a MutableFst from a file; returns nullptr on error. An empty
@@ -151,7 +166,7 @@ class MutableFst : public ExpandedFst<A> {
       std::unique_ptr<Fst<Arc>> ifst(Fst<Arc>::Read(source));
       if (!ifst) return nullptr;
       if (ifst->Properties(kMutable, false)) {
-        return static_cast<MutableFst *>(ifst.release());
+        return fst::down_cast<MutableFst *>(ifst.release());
       } else {
         std::unique_ptr<Fst<Arc>> ofst(Convert(*ifst, convert_type));
         ifst.reset();
@@ -159,7 +174,7 @@ class MutableFst : public ExpandedFst<A> {
         if (!ofst->Properties(kMutable, false)) {
           LOG(ERROR) << "MutableFst: Bad convert type: " << convert_type;
         }
-        return static_cast<MutableFst *>(ofst.release());
+        return fst::down_cast<MutableFst *>(ofst.release());
       }
     }
   }
@@ -182,7 +197,7 @@ class MutableArcIteratorBase : public ArcIteratorBase<Arc> {
 
 template <class Arc>
 struct MutableArcIteratorData {
-  MutableArcIteratorBase<Arc> *base;  // Specific iterator.
+  std::unique_ptr<MutableArcIteratorBase<Arc>> base;  // Specific iterator.
 };
 
 // Generic mutable arc iterator, templated on the FST definition; a wrapper
@@ -209,8 +224,6 @@ class MutableArcIterator {
   MutableArcIterator(FST *fst, StateId s) {
     fst->InitMutableArcIterator(s, &data_);
   }
-
-  ~MutableArcIterator() { delete data_.base; }
 
   bool Done() const { return data_.base->Done(); }
 

@@ -1,3 +1,17 @@
+// Copyright 2005-2020 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the 'License');
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an 'AS IS' BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
 // See www.openfst.org for extensive documentation on this weighted
 // finite-state transducer library.
 //
@@ -253,9 +267,6 @@ void TestSparsePowerWeightGetSetValue() {
 // If this test fails, it is possible that x == x will not
 // hold for FloatWeight, breaking NaturalLess and probably more.
 // To trigger these failures, use g++ -O -m32 -mno-sse.
-// Google-only...
-// This will never fail in google3, as those options aren't used.
-// ...Google-only
 template <class T>
 bool FloatEqualityIsReflexive(T m) {
   // The idea here is that x is spilled to memory, but
@@ -452,6 +463,13 @@ int main(int argc, char **argv) {
   WeightTester<LogLogExpectationWeight, LogLogExpectationWeightGenerate>
       log_log_expectation_tester(log_log_expectation_generate);
 
+  using RealRealExpectationWeight = ExpectationWeight<LogWeight, LogWeight>;
+  using RealRealExpectationWeightGenerate =
+      WeightGenerate<RealRealExpectationWeight>;
+  RealRealExpectationWeightGenerate real_real_expectation_generate(FLAGS_seed);
+  WeightTester<RealRealExpectationWeight, RealRealExpectationWeightGenerate>
+      real_real_expectation_tester(real_real_expectation_generate);
+
   using LogLogSparseExpectationWeight =
       ExpectationWeight<LogWeight, LogSparsePowerWeight>;
   using LogLogSparseExpectationWeightGenerate =
@@ -493,15 +511,16 @@ int main(int argc, char **argv) {
   tropical_lexicographic_tester.Test(FLAGS_repeat);
   tropical_cube_tester.Test(FLAGS_repeat);
   log_sparse_power_tester.Test(FLAGS_repeat);
-  log_log_expectation_tester.Test(FLAGS_repeat, false);
-  tropical_union_tester.Test(FLAGS_repeat, false);
+  log_log_expectation_tester.Test(FLAGS_repeat);
+  real_real_expectation_tester.Test(FLAGS_repeat);
+  tropical_union_tester.Test(FLAGS_repeat);
 
   // Nested composite.
   first_nested_product_tester.Test(FLAGS_repeat);
   second_nested_product_tester.Test(5);
   nested_product_cube_tester.Test(FLAGS_repeat);
   sparse_nested_product_cube_tester.Test(FLAGS_repeat);
-  log_log_sparse_expectation_tester.Test(FLAGS_repeat, false);
+  log_log_sparse_expectation_tester.Test(FLAGS_repeat);
 
   // ... and tests composite weight I/O without parentheses.
   FLAGS_fst_weight_parentheses = "";
@@ -512,12 +531,12 @@ int main(int argc, char **argv) {
   tropical_lexicographic_tester.Test(FLAGS_repeat);
   tropical_cube_tester.Test(FLAGS_repeat);
   log_sparse_power_tester.Test(FLAGS_repeat);
-  log_log_expectation_tester.Test(FLAGS_repeat, false);
-  tropical_union_tester.Test(FLAGS_repeat, false);
+  log_log_expectation_tester.Test(FLAGS_repeat);
+  tropical_union_tester.Test(FLAGS_repeat);
 
   // Nested composite.
   second_nested_product_tester.Test(FLAGS_repeat);
-  log_log_sparse_expectation_tester.Test(FLAGS_repeat, false);
+  log_log_sparse_expectation_tester.Test(FLAGS_repeat);
 
   TestPowerWeightGetSetValue();
   TestSparsePowerWeightGetSetValue();

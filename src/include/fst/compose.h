@@ -1,3 +1,17 @@
+// Copyright 2005-2020 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the 'License');
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an 'AS IS' BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
 // See www.openfst.org for extensive documentation on this weighted
 // finite-state transducer library.
 //
@@ -25,7 +39,7 @@
 namespace fst {
 
 // Delayed composition options templated on the arc type, the matcher,
-// the composition filter, and the composition state table.  By
+// the composition filter, and the composition state table. By
 // default, the matchers, filter, and state table are constructed by
 // composition. If set below, the user can instead pass in these
 // objects; in that case, ComposeFst takes their ownership. This
@@ -704,7 +718,8 @@ class ArcIterator<ComposeFst<Arc, CacheStore>>
 template <class Arc, class CacheStore>
 inline void ComposeFst<Arc, CacheStore>::InitStateIterator(
     StateIteratorData<Arc> *data) const {
-  data->base = new StateIterator<ComposeFst<Arc, CacheStore>>(*this);
+  data->base =
+      fst::make_unique<StateIterator<ComposeFst<Arc, CacheStore>>>(*this);
 }
 
 // Specialized matcher for ComposeFst. Supports MATCH_INPUT or MATCH_OUTPUT,
@@ -731,7 +746,7 @@ class ComposeFstMatcher : public MatcherBase<typename CacheStore::Arc> {
                     MatchType match_type)
       : owned_fst_(fst.Copy()),
         fst_(*owned_fst_),
-        impl_(static_cast<const Impl *>(fst_.GetImpl())),
+        impl_(fst::down_cast<const Impl *>(fst_.GetImpl())),
         s_(kNoStateId),
         match_type_(match_type),
         matcher1_(impl_->matcher1_->Copy()),
@@ -746,7 +761,7 @@ class ComposeFstMatcher : public MatcherBase<typename CacheStore::Arc> {
   ComposeFstMatcher(const ComposeFst<Arc, CacheStore> *fst,
                     MatchType match_type)
       : fst_(*fst),
-        impl_(static_cast<const Impl *>(fst_.GetImpl())),
+        impl_(fst::down_cast<const Impl *>(fst_.GetImpl())),
         s_(kNoStateId),
         match_type_(match_type),
         matcher1_(impl_->matcher1_->Copy()),
@@ -762,7 +777,7 @@ class ComposeFstMatcher : public MatcherBase<typename CacheStore::Arc> {
       bool safe = false)
       : owned_fst_(matcher.fst_.Copy(safe)),
         fst_(*owned_fst_),
-        impl_(static_cast<const Impl *>(fst_.GetImpl())),
+        impl_(fst::down_cast<const Impl *>(fst_.GetImpl())),
         s_(kNoStateId),
         match_type_(matcher.match_type_),
         matcher1_(matcher.matcher1_->Copy(safe)),
@@ -951,7 +966,7 @@ struct ComposeOptions {
 // Times(x, z).
 //
 // The output labels of the first transducer or the input labels of
-// the second transducer must be sorted.  The weights need to form a
+// the second transducer must be sorted. The weights need to form a
 // commutative semiring (valid for TropicalWeight and LogWeight).
 //
 // Complexity:

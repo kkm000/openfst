@@ -1,3 +1,17 @@
+// Copyright 2005-2020 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the 'License');
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an 'AS IS' BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
 // See www.openfst.org for extensive documentation on this weighted
 // finite-state transducer library.
 //
@@ -210,7 +224,7 @@ class EditFstData {
   // Provides information for the generic mutable arc iterator.
   void InitMutableArcIterator(StateId s, MutableArcIteratorData<Arc> *data,
                               const WrappedFstT *wrapped) {
-    data->base = new MutableArcIterator<MutableFstT>(
+    data->base = fst::make_unique<MutableArcIterator<MutableFstT>>(
         &edits_, GetEditableInternalId(s, wrapped));
   }
 
@@ -378,10 +392,10 @@ class EditFstImpl : public FstImpl<A> {
   // As it happens, the API for the ImplToMutableFst<I,F> class requires that
   // the implementation class--the template parameter "I"--have a constructor
   // taking a const Fst<A> reference. Accordingly, the constructor here must
-  // perform a static_cast to the WrappedFstT type required by EditFst and
+  // perform a fst::down_cast to the WrappedFstT type required by EditFst and
   // therefore EditFstImpl.
   explicit EditFstImpl(const Fst<Arc> &wrapped)
-      : wrapped_(static_cast<WrappedFstT *>(wrapped.Copy())) {
+      : wrapped_(fst::down_cast<WrappedFstT *>(wrapped.Copy())) {
     FstImpl<Arc>::SetType("edit");
     data_ = std::make_shared<EditFstData<Arc, WrappedFstT, MutableFstT>>();
     // have edits_ inherit all properties from wrapped_
@@ -394,7 +408,7 @@ class EditFstImpl : public FstImpl<A> {
   // the Copy() method of the Fst interface.
   EditFstImpl(const EditFstImpl &impl)
       : FstImpl<Arc>(),
-        wrapped_(static_cast<WrappedFstT *>(impl.wrapped_->Copy(true))),
+        wrapped_(fst::down_cast<WrappedFstT *>(impl.wrapped_->Copy(true))),
         data_(impl.data_) {
     SetProperties(impl.Properties());
   }
@@ -607,7 +621,7 @@ EditFstImpl<Arc, WrappedFstT, MutableFstT>::Read(std::istream &strm,
   wrapped_opts.header = nullptr;
   std::unique_ptr<Fst<Arc>> wrapped_fst(Fst<Arc>::Read(strm, wrapped_opts));
   if (!wrapped_fst) return nullptr;
-  impl->wrapped_.reset(static_cast<WrappedFstT *>(wrapped_fst.release()));
+  impl->wrapped_.reset(fst::down_cast<WrappedFstT *>(wrapped_fst.release()));
   impl->data_ = std::shared_ptr<EditFstData<Arc, WrappedFstT, MutableFstT>>(
       EditFstData<Arc, WrappedFstT, MutableFstT>::Read(strm, opts));
   if (!impl->data_) return nullptr;

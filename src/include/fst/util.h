@@ -1,3 +1,17 @@
+// Copyright 2005-2020 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the 'License');
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an 'AS IS' BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
 // See www.openfst.org for extensive documentation on this weighted
 // finite-state transducer library.
 //
@@ -57,7 +71,7 @@ inline std::istream &ReadType(std::istream &strm, T *t) {
 }
 
 // String case.
-inline std::istream &ReadType(std::istream &strm, std::string *s) {  // NOLINT
+inline std::istream &ReadType(std::istream &strm, std::string *s) {
   s->clear();
   int32 ns = 0;
   ReadType(strm, &ns);
@@ -172,8 +186,7 @@ inline std::ostream &WriteType(std::ostream &strm, const T t) {
 }
 
 // String case.
-inline std::ostream &WriteType(std::ostream &strm,  // NOLINT
-                               const std::string &s) {
+inline std::ostream &WriteType(std::ostream &strm, const std::string &s) {
   int32 ns = s.size();
   WriteType(strm, ns);
   return strm.write(s.data(), ns);
@@ -202,7 +215,7 @@ std::ostream &WriteType(std::ostream &strm, const std::unordered_set<T...> &c);
 // Pair case.
 template <typename S, typename T>
 inline std::ostream &WriteType(std::ostream &strm,
-                               const std::pair<S, T> &p) {  // NOLINT
+                               const std::pair<S, T> &p) {
   WriteType(strm, p.first);
   WriteType(strm, p.second);
   return strm;
@@ -380,10 +393,7 @@ class CompactSet {
 
   CompactSet() : min_key_(NoKey), max_key_(NoKey) {}
 
-  CompactSet(const CompactSet<Key, NoKey> &compact_set)
-      : set_(compact_set.set_),
-        min_key_(compact_set.min_key_),
-        max_key_(compact_set.max_key_) {}
+  CompactSet(const CompactSet &) = default;
 
   void Insert(Key key) {
     set_.insert(key);

@@ -1,3 +1,17 @@
+// Copyright 2005-2020 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the 'License');
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an 'AS IS' BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
 // See www.openfst.org for extensive documentation on this weighted
 // finite-state transducer library.
 //
@@ -28,6 +42,9 @@ namespace fst {
 template <class W1, class W2>
 class LexicographicWeight : public PairWeight<W1, W2> {
  public:
+  static_assert(IsPath<W1>::value, "W1 must have path property.");
+  static_assert(IsPath<W2>::value, "W2 must have path property.");
+
   using ReverseWeight = LexicographicWeight<typename W1::ReverseWeight,
                                             typename W2::ReverseWeight>;
 
@@ -46,18 +63,7 @@ class LexicographicWeight : public PairWeight<W1, W2> {
   explicit LexicographicWeight(const PairWeight<W1, W2> &w)
       : PairWeight<W1, W2>(w) {}
 
-  LexicographicWeight(W1 w1, W2 w2) : PairWeight<W1, W2>(w1, w2) {
-    if ((W1::Properties() & kPath) != kPath) {
-      FSTERROR() << "LexicographicWeight must "
-                 << "have the path property: " << W1::Type();
-      SetValue1(W1::NoWeight());
-    }
-    if ((W2::Properties() & kPath) != kPath) {
-      FSTERROR() << "LexicographicWeight must "
-                 << "have the path property: " << W2::Type();
-      SetValue2(W2::NoWeight());
-    }
-  }
+  LexicographicWeight(W1 w1, W2 w2) : PairWeight<W1, W2>(w1, w2) {}
 
   static const LexicographicWeight &Zero() {
     static const LexicographicWeight zero(PairWeight<W1, W2>::Zero());

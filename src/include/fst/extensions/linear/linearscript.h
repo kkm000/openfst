@@ -1,3 +1,17 @@
+// Copyright 2005-2020 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the 'License');
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an 'AS IS' BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
 // See www.openfst.org for extensive documentation on this weighted
 // finite-state transducer library.
 
@@ -86,7 +100,7 @@ size_t ReplaceCopy(InputIterator first, InputIterator last,
 }
 
 template <class Arc>
-bool GetVocabRecord(const std::string &vocab, std::istream &strm,  // NOLINT
+bool GetVocabRecord(const std::string &vocab, std::istream &strm,
                     SymbolTable *isyms, SymbolTable *fsyms, SymbolTable *osyms,
                     typename Arc::Label *word,
                     std::vector<typename Arc::Label> *feature_labels,
@@ -94,7 +108,7 @@ bool GetVocabRecord(const std::string &vocab, std::istream &strm,  // NOLINT
                     size_t *num_line);
 
 template <class Arc>
-bool GetModelRecord(const std::string &model, std::istream &strm,  // NOLINT
+bool GetModelRecord(const std::string &model, std::istream &strm,
                     SymbolTable *fsyms, SymbolTable *osyms,
                     std::vector<typename Arc::Label> *input_labels,
                     std::vector<typename Arc::Label> *output_labels,
@@ -336,7 +350,7 @@ void LinearCompile(const std::string &arc_type,
                    const std::string &save_osymbols);
 
 template <class Arc>
-bool GetVocabRecord(const std::string &vocab, std::istream &strm,  // NOLINT
+bool GetVocabRecord(const std::string &vocab, std::istream &strm,
                     SymbolTable *isyms, SymbolTable *fsyms, SymbolTable *osyms,
                     typename Arc::Label *word,
                     std::vector<typename Arc::Label> *feature_labels,
@@ -366,7 +380,7 @@ bool GetVocabRecord(const std::string &vocab, std::istream &strm,  // NOLINT
 }
 
 template <class Arc>
-bool GetModelRecord(const std::string &model, std::istream &strm,  // NOLINT
+bool GetModelRecord(const std::string &model, std::istream &strm,
                     SymbolTable *fsyms, SymbolTable *osyms,
                     std::vector<typename Arc::Label> *input_labels,
                     std::vector<typename Arc::Label> *output_labels,

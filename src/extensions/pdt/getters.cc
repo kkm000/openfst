@@ -1,3 +1,17 @@
+// Copyright 2005-2020 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the 'License');
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an 'AS IS' BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
 // See www.openfst.org for extensive documentation on this weighted
 // finite-state transducer library.
 
@@ -8,11 +22,11 @@ namespace script {
 
 bool GetPdtComposeFilter(const std::string &str, PdtComposeFilter *cf) {
   if (str == "expand") {
-    *cf = EXPAND_FILTER;
+    *cf = PdtComposeFilter::EXPAND;
   } else if (str == "expand_paren") {
-    *cf = EXPAND_PAREN_FILTER;
+    *cf = PdtComposeFilter::EXPAND_PAREN;
   } else if (str == "paren") {
-    *cf = PAREN_FILTER;
+    *cf = PdtComposeFilter::PAREN;
   } else {
     return false;
   }
@@ -21,9 +35,9 @@ bool GetPdtComposeFilter(const std::string &str, PdtComposeFilter *cf) {
 
 bool GetPdtParserType(const std::string &str, PdtParserType *pt) {
   if (str == "left") {
-    *pt = PDT_LEFT_PARSER;
+    *pt = PdtParserType::LEFT;
   } else if (str == "left_sr") {
-    *pt = PDT_LEFT_SR_PARSER;
+    *pt = PdtParserType::LEFT_SR;
   } else {
     return false;
   }

@@ -1,3 +1,17 @@
+// Copyright 2005-2020 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the 'License');
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an 'AS IS' BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
 // See www.openfst.org for extensive documentation on this weighted
 // finite-state transducer library.
 
@@ -15,23 +29,23 @@
 // seeking to the Nth set or clear bit in time O(Log(N)) (or
 // O(log(1/density) if the relevant select index is enabled) where N is the
 // length of the bit vector, and density is the block density of zeros/ones
-// (for Select0/Select1 respectively).  The block density is for block i is
+// (for Select0/Select1 respectively). The block density is for block i is
 // B / span_i, where B is the block size in bits (512); and span_i is
 // Select(B * (i + 1)) - Select(B * i), the range of the bitstring that
-// select index block i indexes.  That is, B 0 (or 1) bits occur over
+// select index block i indexes. That is, B 0 (or 1) bits occur over
 // span_i bits of the bit string.
 //
 // To turn this into the "standard"constant time select, there would need
-// to be a span size threshold.  Block spanning more than this would need
-// to have the position of each bit explicitly recorded.  8k is a typical
+// to be a span size threshold. Block spanning more than this would need
+// to have the position of each bit explicitly recorded. 8k is a typical
 // value for this threshold, but I saw no spans larger than ~6k.
 //
 // In addition, this class allows counting set or clear bits over ranges in
 // constant time.
 //
 // This is accomplished by maintaining an index of the running popcounts
-// of the bitstring.  The index is divided into blocks that cover the
-// size of a cache line (8 64-bit words).  Each entry has one absolute count
+// of the bitstring. The index is divided into blocks that cover the
+// size of a cache line (8 64-bit words). Each entry has one absolute count
 // of all the 1s that appear before the block and 7 relative counts since the
 // beginning of the block.
 //
@@ -53,7 +67,7 @@
 //     Rank1(512 * i + 64 * k) - Rank1(512 * i).
 //
 // This index is queried directly for Rank0 and Rank1 and binary searched
-// for Select0 and Select1.  If configured in the constructor or via
+// for Select0 and Select1. If configured in the constructor or via
 // BuildIndex, additional indices for Select0 and Select1 can be built
 // to reduce these operations to O(log(1/density)) as explained above.
 //
@@ -63,7 +77,7 @@
 // select_0_index_[i] == Select0(512 * i).
 // Similarly for select_1_index_.
 //
-// To save space, the absolute counts are stored as uint32.  Therefore,
+// To save space, the absolute counts are stored as uint32. Therefore,
 // only bitstrings with < 2**32 ones are supported.
 //
 // For each 64 bytes of input (8 8-byte words) there are 12 bytes of index
@@ -147,7 +161,7 @@ class BitmapIndex {
   }
 
   // Return true if any bit between begin inclusive and end exclusive
-  // is set.  0 <= begin <= end <= Bits() is required.
+  // is set. 0 <= begin <= end <= Bits() is required.
   //
   bool TestRange(size_t start, size_t end) const {
     // Rank1 will DCHECK the other requirements.
@@ -193,17 +207,17 @@ class BitmapIndex {
   // If this many or fewer RankIndexEntry blocks need to be searched by
   // FindRankIndexEntry use a linear search instead of a binary search.
   // FindInvertedRankIndexEntry always uses binary search, since linear
-  // search never showed improvements on benchmarks.  The value of 8 was
+  // search never showed improvements on benchmarks. The value of 8 was
   // faster than smaller values on benchmarks, but I do not feel comfortable
   // raising it because there are very few times a higher value would
-  // make a difference.  Thus, whether a higher value helps or hurts is harder
-  // to measure.  TODO(jrosenstock): Try to measure with low bit density.
+  // make a difference. Thus, whether a higher value helps or hurts is harder
+  // to measure. TODO(jrosenstock): Try to measure with low bit density.
   static constexpr uint32 kMaxLinearSearchBlocks = 8;
 
   // A RankIndexEntry covers a block of 8 64-bit words (one cache line on
-  // x86_64 and ARM).  It consists of an absolute count of all the 1s that
+  // x86_64 and ARM). It consists of an absolute count of all the 1s that
   // appear before this block, and 7 relative counts for the 1s within
-  // the block.  relative_ones_count_k = popcount(block[0:k]).
+  // the block. relative_ones_count_k = popcount(block[0:k]).
   // The relative counts are stored in bitfields.
   // A RankIndexEntry takes 12 bytes, for 12/64 = 18.75% overhead.
   // See also documentation at the top of the file.
@@ -314,15 +328,15 @@ class BitmapIndex {
   // Index of positions for Select0
   // select_0_index_[i] == Select0(kBitsPerSelect0Block * i).
   // Empty means there is no index, otherwise, we always add an extra entry
-  // with num_bits_.  Overhead is 4 bytes / 64 bytes of zeros,
-  // so 4/64 times the density of zeros.  This is 6.25% * zeros_density.
+  // with num_bits_. Overhead is 4 bytes / 64 bytes of zeros,
+  // so 4/64 times the density of zeros. This is 6.25% * zeros_density.
   std::vector<uint32> select_0_index_;
 
   // Index of positions for Select1
   // select_1_index_[i] == Select1(kBitsPerSelect1Block * i).
   // Empty means there is no index, otherwise, we always add an extra entry
-  // with num_bits_.  Overhead is 4 bytes / 64 bytes of ones,
-  // so 4/64 times the density of ones.  This is 6.25% * ones_density.
+  // with num_bits_. Overhead is 4 bytes / 64 bytes of ones,
+  // so 4/64 times the density of ones. This is 6.25% * ones_density.
   std::vector<uint32> select_1_index_;
 };
 

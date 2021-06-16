@@ -1,3 +1,17 @@
+// Copyright 2005-2020 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the 'License');
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an 'AS IS' BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
 // See www.openfst.org for extensive documentation on this weighted
 // finite-state transducer library.
 //
@@ -9,6 +23,7 @@
 #define FST_STATE_MAP_H_
 
 #include <algorithm>
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -162,8 +177,8 @@ class StateMapStateIteratorBase : public StateIteratorBase<B> {
   using Arc = B;
   using StateId = typename Arc::StateId;
 
-  explicit StateMapStateIteratorBase(StateIteratorBase<A> *base)
-      : base_(base) {}
+  explicit StateMapStateIteratorBase(std::unique_ptr<StateIteratorBase<A>> base)
+      : base_(std::move(base)) {}
 
   bool Done() const final { return base_->Done(); }
 
@@ -261,8 +276,9 @@ class StateMapFstImpl : public CacheImpl<B> {
   void InitStateIterator(StateIteratorData<B> *datb) const {
     StateIteratorData<A> data;
     fst_->InitStateIterator(&data);
-    datb->base =
-        data.base ? new StateMapStateIteratorBase<A, B>(data.base) : nullptr;
+    datb->base = data.base ? fst::make_unique<StateMapStateIteratorBase<A, B>>(
+                                 std::move(data.base))
+                           : nullptr;
     datb->nstates = data.nstates;
   }
 

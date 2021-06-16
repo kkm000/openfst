@@ -1,3 +1,17 @@
+// Copyright 2005-2020 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the 'License');
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an 'AS IS' BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
 // See www.openfst.org for extensive documentation on this weighted
 // finite-state transducer library.
 //
@@ -94,14 +108,16 @@ int fstsymbols_main(int argc, char **argv) {
   using Label = int64;
   if (!FLAGS_relabel_ipairs.empty()) {
     std::vector<std::pair<Label, Label>> ipairs;
-    ReadLabelPairs(FLAGS_relabel_ipairs, &ipairs, FLAGS_allow_negative_labels);
+    ReadLabelPairs(FLAGS_relabel_ipairs, &ipairs,
+                   FLAGS_allow_negative_labels);
     std::unique_ptr<SymbolTable> isyms_relabel(
         RelabelSymbolTable(fst->InputSymbols(), ipairs));
     fst->SetInputSymbols(isyms_relabel.get());
   }
   if (!FLAGS_relabel_opairs.empty()) {
     std::vector<std::pair<Label, Label>> opairs;
-    ReadLabelPairs(FLAGS_relabel_opairs, &opairs, FLAGS_allow_negative_labels);
+    ReadLabelPairs(FLAGS_relabel_opairs, &opairs,
+                   FLAGS_allow_negative_labels);
     std::unique_ptr<SymbolTable> osyms_relabel(
         RelabelSymbolTable(fst->OutputSymbols(), opairs));
     fst->SetOutputSymbols(osyms_relabel.get());

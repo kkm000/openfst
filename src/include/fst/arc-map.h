@@ -1,3 +1,17 @@
+// Copyright 2005-2020 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the 'License');
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an 'AS IS' BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
 // See www.openfst.org for extensive documentation on this weighted
 // finite-state transducer library.
 //
@@ -17,6 +31,7 @@
 
 #include <fst/cache.h>
 #include <fst/mutable-fst.h>
+#include <unordered_map>
 
 
 namespace fst {
@@ -85,12 +100,12 @@ enum MapSymbolsAction {
 // whether the mapping mutates its input, writes to a new result FST, or is an
 // on-the-fly FST. Another dimension is how we pass the mapper. We allow passing
 // the mapper by pointer for cases that we need to change the state of the
-// user's mapper.  This is the case with the EncodeMapper, which is reused
+// user's mapper. This is the case with the EncodeMapper, which is reused
 // during decoding. We also include map versions that pass the mapper by value
 // or const reference when this suffices.
 
 // Maps an arc type A using a mapper function object C, passed
-// by pointer.  This version modifies its Fst input.
+// by pointer. This version modifies its Fst input.
 template <class A, class C>
 void ArcMap(MutableFst<A> *fst, C *mapper) {
   using FromArc = A;
@@ -626,10 +641,10 @@ class ArcIterator<ArcMapFst<A, B, C>>
 template <class A, class B, class C>
 inline void ArcMapFst<A, B, C>::InitStateIterator(
     StateIteratorData<B> *data) const {
-  data->base = new StateIterator<ArcMapFst<A, B, C>>(*this);
+  data->base = fst::make_unique<StateIterator<ArcMapFst<A, B, C>>>(*this);
 }
 
-// Constructs and returns an ArcMapFst.  This allows constructing ArcMapFsts
+// Constructs and returns an ArcMapFst. This allows constructing ArcMapFsts
 // without specifying all the types. The template argument is typically
 // not specified, so a call looks like: MakeArcMapFst(fst, Mapper(...)).
 template <class ArcMapper>
@@ -640,7 +655,7 @@ MakeArcMapFst(const Fst<typename ArcMapper::FromArc> &fst,
                    ArcMapper>(fst, mapper);
 }
 
-// Constructs and returns an ArcMapFst.  As above, but using the
+// Constructs and returns an ArcMapFst. As above, but using the
 // ArcMapFst(..., ArcMapper *) constructor.
 template <class ArcMapper>
 ArcMapFst<typename ArcMapper::FromArc, typename ArcMapper::ToArc, ArcMapper>

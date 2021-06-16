@@ -1,3 +1,17 @@
+// Copyright 2005-2020 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the 'License');
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an 'AS IS' BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
 // See www.openfst.org for extensive documentation on this weighted
 // finite-state transducer library.
 //
@@ -16,6 +30,7 @@
 
 #include <fst/types.h>
 #include <fst/log.h>
+#include <fst/const-fst.h>
 
 #include <fst/arc-map.h>
 #include <fst/bi-table.h>
@@ -928,16 +943,20 @@ class DeterminizeFst : public ImplToFst<internal::DeterminizeFstImplBase<A>> {
           internal::DeterminizeFsaImpl<Arc, CommonDivisor, Filter, StateTable>>(
           fst, nullptr, nullptr, opts);
     } else if (opts.type == DETERMINIZE_DISAMBIGUATE) {
-      auto rv = std::make_shared<internal::DeterminizeFstImpl<
-          Arc, GALLIC_MIN, CommonDivisor, Filter, StateTable>>(fst, opts);
-      if (!(Weight::Properties() & kPath)) {
-        FSTERROR() << "DeterminizeFst: Weight needs to have the "
-                   << "path property to disambiguate output: "
-                   << Weight::Type();
+      if constexpr (IsPath<Weight>::value) {
+        // Calls disambiguating implementation for non-functional transducers.
+        return std::make_shared<internal::DeterminizeFstImpl<
+            Arc, GALLIC_MIN, CommonDivisor, Filter, StateTable>>(fst, opts);
+      } else {
+        FSTERROR() << "DeterminizeFst: Weight needs to have the path "
+                   << "property to disambiguate output: " << Weight::Type();
+        // Return an error Impl.
+        const ConstFst<Arc> empty_fst;
+        auto rv = std::make_shared<internal::DeterminizeFstImpl<
+            Arc, GALLIC, CommonDivisor, Filter, StateTable>>(empty_fst, opts);
         rv->SetProperties(kError, kError);
+        return rv;
       }
-      // Calls disambiguating implementation for non-functional transducers.
-      return rv;
     } else if (opts.type == DETERMINIZE_FUNCTIONAL) {
       // Calls implementation for functional transducers.
       return std::make_shared<internal::DeterminizeFstImpl<
@@ -1005,7 +1024,7 @@ class ArcIterator<DeterminizeFst<Arc>>
 template <class Arc>
 inline void DeterminizeFst<Arc>::InitStateIterator(
     StateIteratorData<Arc> *data) const {
-  data->base = new StateIterator<DeterminizeFst<Arc>>(*this);
+  data->base = fst::make_unique<StateIterator<DeterminizeFst<Arc>>>(*this);
 }
 
 // Useful aliases when using StdArc.

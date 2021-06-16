@@ -1,3 +1,17 @@
+// Copyright 2005-2020 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the 'License');
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an 'AS IS' BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
 // See www.openfst.org for extensive documentation on this weighted
 // finite-state transducer library.
 //
@@ -31,12 +45,27 @@
 #include <fst/symbol-table.h>
 #include <fst/util.h>
 
+#ifndef OPENFST_HAVE_STD_STRING_VIEW
+#ifdef __has_include
+#if __has_include(<string_view>) && __cplusplus >= 201703L
+#define OPENFST_HAVE_STD_STRING_VIEW 1
+#endif
+#endif
+#endif
+#ifdef OPENFST_HAVE_STD_STRING_VIEW
+#include <string_view>
+#else
+#include <string>
+#endif
+
+
 
 DECLARE_bool(fst_align);
 
 namespace fst {
 
-bool IsFstHeader(std::istream &, const std::string &);
+// Identifies stream data as an FST (and its endianity).
+constexpr int32 kFstMagicNumber = 2125659606;
 
 class FstHeader;
 
@@ -66,12 +95,12 @@ struct FstReadOptions {
   bool read_isymbols;           // Read isymbols, if any (default: true).
   bool read_osymbols;           // Read osymbols, if any (default: true).
 
-  explicit FstReadOptions(const std::string &source = "<unspecified>",
+  explicit FstReadOptions(const std::string_view source = "<unspecified>",
                           const FstHeader *header = nullptr,
                           const SymbolTable *isymbols = nullptr,
                           const SymbolTable *osymbols = nullptr);
 
-  explicit FstReadOptions(const std::string &source,
+  explicit FstReadOptions(const std::string_view source,
                           const SymbolTable *isymbols,
                           const SymbolTable *osymbols = nullptr);
 
@@ -90,7 +119,7 @@ struct FstWriteOptions {
   bool align;           // Write data aligned (may fail on pipes)?
   bool stream_write;    // Avoid seek operations in writing.
 
-  explicit FstWriteOptions(const std::string &source = "<unspecifed>",
+  explicit FstWriteOptions(std::string_view source = "<unspecified>",
                            bool write_header = true, bool write_isymbols = true,
                            bool write_osymbols = true,
                            bool align = FLAGS_fst_align,
@@ -187,7 +216,7 @@ constexpr int kNoStateId = -1;  // Not a valid state ID.
 
 // A generic FST, templated on the arc definition, with common-demoninator
 // methods (use StateIterator and ArcIterator to iterate over its states and
-// arcs).  Derived classes should be assumed to be thread-unsafe unless
+// arcs). Derived classes should be assumed to be thread-unsafe unless
 // otherwise specified.
 template <class A>
 class Fst {
@@ -362,8 +391,8 @@ template <class Arc>
 struct StateIteratorData {
   using StateId = typename Arc::StateId;
 
-  // Specialized iterator if non-zero.
-  StateIteratorBase<Arc> *base;
+  // Specialized iterator if non-null.
+  std::unique_ptr<StateIteratorBase<Arc>> base;
   // Otherwise, the total number of states.
   StateId nstates;
 
@@ -395,8 +424,6 @@ class StateIterator {
   explicit StateIterator(const FST &fst) : s_(0) {
     fst.InitStateIterator(&data_);
   }
-
-  ~StateIterator() { delete data_.base; }
 
   bool Done() const {
     return data_.base ? data_.base->Done() : s_ >= data_.nstates;
@@ -477,10 +504,12 @@ struct ArcIteratorData {
 
   ArcIteratorData &operator=(const ArcIteratorData &) = delete;
 
-  ArcIteratorBase<Arc> *base;  // Specialized iterator if non-zero.
-  const Arc *arcs;             // O.w. arcs pointer
-  size_t narcs;                // ... and arc count.
-  int *ref_count;              // ... and reference count if non-zero.
+  std::unique_ptr<ArcIteratorBase<Arc>>
+      base;         // Specialized iterator if non-null.
+  const Arc *arcs;  // O.w. arcs pointer
+  size_t narcs;     // ... and arc count.
+  int *ref_count;   // ... and a reference count of the `narcs`-length `arcs`
+                    //     array if non-null.
 };
 
 // Generic arc iterator, templated on the FST definition (a wrapper around a
@@ -506,14 +535,10 @@ class ArcIterator {
     fst.InitArcIterator(s, &data_);
   }
 
-  explicit ArcIterator(const ArcIteratorData<Arc> &data) : data_(data), i_(0) {
-    if (data_.ref_count) ++(*data_.ref_count);
-  }
+  explicit ArcIterator(const ArcIteratorData<Arc> &data) = delete;
 
   ~ArcIterator() {
-    if (data_.base) {
-      delete data_.base;
-    } else if (data_.ref_count) {
+    if (data_.ref_count) {
       --(*data_.ref_count);
     }
   }
@@ -651,8 +676,8 @@ inline size_t NumOutputEpsilons(const Fst<Arc> &fst, typename Arc::StateId s) {
 // FST library.
 //
 // This class is thread-compatible except for the const SetProperties
-// overload.  Derived classes should be assumed to be thread-unsafe unless
-// otherwise specified.  Derived-class copy constructors must produce a
+// overload. Derived classes should be assumed to be thread-unsafe unless
+// otherwise specified. Derived-class copy constructors must produce a
 // thread-safe copy.
 template <class Arc>
 class FstImpl {
@@ -726,7 +751,7 @@ class FstImpl {
     // If properties_ and props are compatible (for example kAcceptor and
     // kNoAcceptor cannot both be set), the props can be or-ed in.
     // Compatibility is ensured if props comes from ComputeProperties
-    // and properties_ is set correctly initially.  However
+    // and properties_ is set correctly initially. However
     // relying on properties to be set correctly is too large an
     // assumption, as many places set them incorrectly.
     // Therefore, we or in only the newly discovered properties.
@@ -926,7 +951,7 @@ uint64 TestProperties(const Fst<Arc> &fst, uint64 mask, uint64 *known);
 // This is a helper class template useful for attaching an FST interface to
 // its implementation, handling reference counting.
 // Thread-unsafe due to Properties (a const function) calling
-// Impl::SetProperties.  TODO(jrosenstock): Make thread-compatible.
+// Impl::SetProperties. TODO(jrosenstock): Make thread-compatible.
 // Impl's copy constructor must produce a thread-safe copy.
 template <class Impl, class FST = Fst<typename Impl::Arc>>
 class ImplToFst : public FST {
@@ -956,7 +981,7 @@ class ImplToFst : public FST {
       uint64 knownprops,
           testprops = internal::TestProperties(*this, mask, &knownprops);
       // Properties is a const member function, but can set the cached
-      // properties.  UpdateProperties does this thread-safely via atomics.
+      // properties. UpdateProperties does this thread-safely via atomics.
       impl_->UpdateProperties(testprops, knownprops);
       return testprops & mask;
     } else {

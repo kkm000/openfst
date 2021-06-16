@@ -1,4 +1,18 @@
 #cython: language_level=3
+# Copyright 2005-2020 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the 'License');
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an 'AS IS' BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
 # See www.openfst.org for extensive documentation on this weighted
 # finite-state transducer library.
 
@@ -54,7 +68,7 @@ cdef fst.WeightClass _get_WeightClass_or_zero(const string &weight_type,
                                               weight_string) except *
 
 
-cdef class Weight(object):
+cdef class Weight:
 
   cdef unique_ptr[fst.WeightClass] _weight
 
@@ -90,7 +104,7 @@ ctypedef fst.SymbolTable * SymbolTable_ptr
 ctypedef const fst.SymbolTable * const_SymbolTable_ptr
 
 
-cdef class SymbolTableView(object):
+cdef class SymbolTableView:
 
   cdef const fst.SymbolTable *_raw(self)
 
@@ -181,7 +195,7 @@ cdef SymbolTable _init_SymbolTable(unique_ptr[fst.SymbolTable] table)
 cpdef SymbolTable _read_SymbolTable_from_string(string state)
 
 
-cdef class _SymbolTableIterator(object):
+cdef class _SymbolTableIterator:
 
   cdef SymbolTableView _table
   cdef unique_ptr[fst.SymbolTableIterator] _siter
@@ -193,7 +207,7 @@ cdef class _SymbolTableIterator(object):
 ctypedef fst.EncodeMapperClass * EncodeMapperClass_ptr
 
 
-cdef class EncodeMapper(object):
+cdef class EncodeMapper:
 
   cdef shared_ptr[fst.EncodeMapperClass] _mapper
 
@@ -230,21 +244,16 @@ ctypedef fst.MutableFstClass * MutableFstClass_ptr
 ctypedef fst.VectorFstClass * VectorFstClass_ptr
 
 
-cdef class Fst(object):
+cdef class Fst:
 
   cdef shared_ptr[fst.FstClass] _fst
-
-  # Google-only...
-  @staticmethod
-  cdef string _server_render_svg(const string &)
-  # ...Google-only.
 
   @staticmethod
   cdef string _local_render_svg(const string &)
 
   cpdef string arc_type(self)
 
-  cpdef ArcIterator arcs(self, int64 state)
+  cpdef _ArcIterator arcs(self, int64 state)
 
   cpdef Fst copy(self)
 
@@ -290,7 +299,7 @@ cdef class Fst(object):
 
   cpdef int64 start(self)
 
-  cpdef StateIterator states(self)
+  cpdef _StateIterator states(self)
 
   cpdef bool verify(self)
 
@@ -333,7 +342,7 @@ cdef class MutableFst(Fst):
 
   cdef void _minimize(self, float delta=?, bool allow_nondet=?) except *
 
-  cpdef MutableArcIterator mutable_arcs(self, int64 state)
+  cpdef _MutableArcIterator mutable_arcs(self, int64 state)
 
   cpdef int64 num_states(self)
 
@@ -404,7 +413,7 @@ cpdef Fst _read_Fst_from_string(string state)
 # Iterators.
 
 
-cdef class Arc(object):
+cdef class Arc:
 
   cdef unique_ptr[fst.ArcClass] _arc
 
@@ -414,7 +423,7 @@ cdef class Arc(object):
 cdef Arc _init_Arc(const fst.ArcClass &arc)
 
 
-cdef class ArcIterator(object):
+cdef class _ArcIterator:
 
   cdef shared_ptr[fst.FstClass] _fst
   cdef unique_ptr[fst.ArcIteratorClass] _aiter
@@ -436,7 +445,7 @@ cdef class ArcIterator(object):
   cpdef object value(self)
 
 
-cdef class MutableArcIterator(object):
+cdef class _MutableArcIterator:
 
   cdef shared_ptr[fst.MutableFstClass] _mfst
   cdef unique_ptr[fst.MutableArcIteratorClass] _aiter
@@ -460,7 +469,7 @@ cdef class MutableArcIterator(object):
   cpdef object value(self)
 
 
-cdef class StateIterator(object):
+cdef class _StateIterator:
 
   cdef shared_ptr[fst.FstClass] _fst
   cdef unique_ptr[fst.StateIteratorClass] _siter
@@ -580,7 +589,7 @@ cpdef MutableFst synchronize(Fst ifst)
 # Compiler.
 
 
-cdef class Compiler(object):
+cdef class Compiler:
 
   cdef unique_ptr[stringstream] _sstrm
   cdef string _fst_type
@@ -601,7 +610,7 @@ cdef class Compiler(object):
 
 # FarReader.
 
-cdef class FarReader(object):
+cdef class FarReader:
 
   cdef unique_ptr[fst.FarReaderClass] _reader
 
@@ -626,7 +635,7 @@ cdef class FarReader(object):
 
 # FarWriter.
 
-cdef class FarWriter(object):
+cdef class FarWriter:
 
   cdef unique_ptr[fst.FarWriterClass] _writer
 

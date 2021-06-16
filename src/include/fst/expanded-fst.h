@@ -1,3 +1,17 @@
+// Copyright 2005-2020 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the 'License');
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an 'AS IS' BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
 // See www.openfst.org for extensive documentation on this weighted
 // finite-state transducer library.
 //
@@ -56,7 +70,7 @@ class ExpandedFst : public Fst<A> {
     }
     auto *fst = reader(strm, ropts);
     if (!fst) return nullptr;
-    return static_cast<ExpandedFst *>(fst);
+    return fst::down_cast<ExpandedFst *>(fst);
   }
 
   // Read an ExpandedFst from a file; return NULL on error.
@@ -154,7 +168,7 @@ class ImplToExpandedFst : public ImplToFst<Impl, FST> {
 template <class Arc>
 typename Arc::StateId CountStates(const Fst<Arc> &fst) {
   if (fst.Properties(kExpanded, false)) {
-    const auto *efst = static_cast<const ExpandedFst<Arc> *>(&fst);
+    const auto *efst = fst::down_cast<const ExpandedFst<Arc> *>(&fst);
     return efst->NumStates();
   } else {
     typename Arc::StateId nstates = 0;

@@ -1,3 +1,17 @@
+// Copyright 2005-2020 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the 'License');
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an 'AS IS' BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
 // See www.openfst.org for extensive documentation on this weighted
 // finite-state transducer library.
 //
@@ -6,21 +20,24 @@
 #ifndef FST_EXTENSIONS_MPDT_MPDT_H_
 #define FST_EXTENSIONS_MPDT_MPDT_H_
 
+#include <algorithm>
 #include <array>
 #include <functional>
 #include <map>
+#include <memory>
 #include <vector>
 
 #include <fst/compat.h>
+#include <fst/types.h>
 #include <fst/extensions/pdt/pdt.h>
 #include <unordered_map>
 
 namespace fst {
 
-enum MPdtType {
-  MPDT_READ_RESTRICT,   // Can only read from first empty stack
-  MPDT_WRITE_RESTRICT,  // Can only write to first empty stack
-  MPDT_NO_RESTRICT,     // No read-write restrictions
+enum class MPdtType : uint8 {
+  READ_RESTRICT,   // Can only read from first empty stack
+  WRITE_RESTRICT,  // Can only write to first empty stack
+  NO_RESTRICT,     // No read-write restrictions
 };
 
 namespace internal {
@@ -39,82 +56,98 @@ namespace internal {
 // were wondering, clearing the map at the end does not help.
 
 template <typename StackId, typename Level, Level nlevels>
-struct StackConfig {
+class StackConfig {
+ public:
   StackConfig() : array_() {}
 
-  StackConfig(const StackConfig<StackId, Level, nlevels> &config) {
-    array_ = config.array_;
-  }
+  StackConfig(const StackConfig &config) { array_ = config.array_; }
 
   StackId &operator[](const int index) { return array_[index]; }
 
   const StackId &operator[](const int index) const { return array_[index]; }
 
-  StackConfig &operator=(const StackConfig<StackId, Level, nlevels> &config) {
+  StackConfig &operator=(const StackConfig &config) {
     if (this == &config) return *this;
     array_ = config.array_;
     return *this;
   }
 
+  friend bool operator<(const StackConfig &config1,
+                        const StackConfig &config2) {
+    return config1.array_ < config2.array_;
+  }
+
+ private:
   std::array<StackId, nlevels> array_;
 };
 
-template <typename StackId, typename Level, Level nlevels>
-class CompConfig {
- public:
-  using Config = StackConfig<StackId, Level, nlevels>;
-
-  bool operator()(const Config &x, const Config &y) const {
-    for (Level level = 0; level < nlevels; ++level) {
-      if (x.array_[level] < y.array_[level]) {
-        return true;
-      } else if (x.array_[level] > y.array_[level]) {
-        return false;
-      }
-    }
-    return false;
-  }
-};
+// Forward declaration so `KeyPair` can declare `KeyPairHasher` its friend.
+template <typename Level>
+class KeyPairHasher;
 
 // Defines the KeyPair type used as the key to MPdtStack.paren_id_map_. The hash
 // function is provided as a separate struct to match templating syntax.
 template <typename Level>
-struct KeyPair {
-  Level level;
-  size_t underlying_id;
+class KeyPair {
+ public:
+  KeyPair(Level level, size_t id) : level_(level), underlying_id_(id) {}
 
-  KeyPair(Level level, size_t id) : level(level), underlying_id(id) {}
-
-  inline bool operator==(const KeyPair<Level> &rhs) const {
-    return level == rhs.level && underlying_id == rhs.underlying_id;
+  inline bool operator==(const KeyPair &rhs) const {
+    return level_ == rhs.level_ && underlying_id_ == rhs.underlying_id_;
   }
+
+ private:
+  friend KeyPairHasher<Level>;
+  Level level_;
+  size_t underlying_id_;
 };
 
 template <typename Level>
 struct KeyPairHasher {
   inline size_t operator()(const KeyPair<Level> &keypair) const {
-    return std::hash<Level>()(keypair.level) ^
-           (std::hash<size_t>()(keypair.underlying_id) << 1);
+    return std::hash<Level>()(keypair.level_) ^
+           (std::hash<size_t>()(keypair.underlying_id_) << 1);
   }
 };
 
 template <typename StackId, typename Level, Level nlevels = 2,
-          MPdtType restrict = MPDT_READ_RESTRICT>
+          MPdtType restrict = MPdtType::READ_RESTRICT>
 class MPdtStack {
  public:
   using Label = Level;
   using Config = StackConfig<StackId, Level, nlevels>;
-  using ConfigToStackId =
-      std::map<Config, StackId, CompConfig<StackId, Level, nlevels>>;
+  using ConfigToStackId = std::map<Config, StackId>;
 
   MPdtStack(const std::vector<std::pair<Label, Label>> &parens,
             const std::vector<Level> &assignments);
 
-  MPdtStack(const MPdtStack &mstack);
+  ~MPdtStack() = default;
 
-  ~MPdtStack() {
-    for (Level level = 0; level < nlevels; ++level) delete stacks_[level];
+  MPdtStack(const MPdtStack &other)
+      : error_(other.error_),
+        min_paren_(other.min_paren_),
+        max_paren_(other.max_paren_),
+        paren_levels_(other.paren_levels_),
+        parens_(other.parens_),
+        paren_map_(other.paren_map_),
+        paren_id_map_(other.paren_id_map_),
+        config_to_stack_id_map_(other.config_to_stack_id_map_),
+        stack_id_to_config_map_(other.stack_id_to_config_map_),
+        next_stack_id_(other.next_stack_id_) {
+    std::transform(other.stacks_.begin(), other.stacks_.end(), stacks_.begin(),
+                   [](const std::unique_ptr<PdtStack<StackId, Label>> &ptr) {
+                     return fst::make_unique<PdtStack<StackId, Label>>(*ptr);
+                   });
   }
+
+  MPdtStack &operator=(const MPdtStack &other) {
+    *this = MPdtStack(other);
+    return *this;
+  }
+
+  MPdtStack(MPdtStack &&) = default;
+
+  MPdtStack &operator=(MPdtStack &&) = default;
 
   StackId Find(StackId stack_id, Label label);
 
@@ -198,6 +231,7 @@ class MPdtStack {
     return true;
   }
 
+ private:
   bool error_;
   Label min_paren_;
   Label max_paren_;
@@ -213,7 +247,7 @@ class MPdtStack {
   std::unordered_map<StackId, Config> stack_id_to_config_map_;
   StackId next_stack_id_;
   // Array of stacks.
-  PdtStack<StackId, Label> *stacks_[nlevels];
+  std::array<std::unique_ptr<PdtStack<StackId, Label>>, nlevels> stacks_;
 };
 
 template <typename StackId, typename Level, Level nlevels, MPdtType restrict>
@@ -231,7 +265,7 @@ MPdtStack<StackId, Level, nlevels, restrict>::MPdtStack(
     error_ = true;
     return;
   }
-  std::vector<std::pair<Label, Label>> vectors[nlevels];
+  std::array<std::vector<std::pair<Label, Label>>, nlevels> vectors;
   for (Level i = 0; i < assignments.size(); ++i) {
     // Assignments here start at 0, so assuming the human-readable version has
     // them starting at 1, we should subtract 1 here
@@ -262,7 +296,8 @@ MPdtStack<StackId, Level, nlevels, restrict>::MPdtStack(
   Config neg_one;
   Config zero;
   for (Level level = 0; level < nlevels; ++level) {
-    stacks_[level] = new PdtStack<StackId, Label>(vectors[level]);
+    stacks_[level] =
+        fst::make_unique<PdtStack<StackId, Label>>(vectors[level]);
     neg_one[level] = -1;
     zero[level] = 0;
   }
@@ -270,37 +305,6 @@ MPdtStack<StackId, Level, nlevels, restrict>::MPdtStack(
   config_to_stack_id_map_[zero] = 0;
   stack_id_to_config_map_[-1] = neg_one;
   stack_id_to_config_map_[0] = zero;
-}
-
-template <typename StackId, typename Level, Level nlevels, MPdtType restrict>
-MPdtStack<StackId, Level, nlevels, restrict>::MPdtStack(
-    const MPdtStack<StackId, Level, nlevels, restrict> &mstack)
-    : error_(mstack.error_),
-      min_paren_(mstack.min_paren_),
-      max_paren_(mstack.max_paren_),
-      parens_(mstack.parens_),
-      next_stack_id_(mstack.next_stack_id_) {
-  for (const auto &kv : mstack.paren_levels_) {
-    paren_levels_[kv.first] = kv.second;
-  }
-  for (const auto &paren : mstack.parens_) parens_.push_back(paren);
-  for (const auto &kv : mstack.paren_map_) {
-    paren_map_[kv.first] = kv.second;
-  }
-  for (const auto &kv : mstack.paren_id_map_) {
-    paren_id_map_[kv.first] = kv.second;
-  }
-  for (auto it = mstack.config_to_stack_id_map_.begin();
-       it != mstack.config_to_stack_id_map_.end(); ++it) {
-    config_to_stack_id_map_[it->first] = it->second;
-  }
-  for (const auto &kv : mstack.stack_id_to_config_map_) {
-    using Config = StackConfig<StackId, Level, nlevels>;
-    const Config config(kv.second);
-    stack_id_to_config_map_[kv.first] = config;
-  }
-  for (Level level = 0; level < nlevels; ++level)
-    stacks_[level] = mstack.stacks_[level];
 }
 
 template <typename StackId, typename Level, Level nlevels, MPdtType restrict>
@@ -320,21 +324,21 @@ StackId MPdtStack<StackId, Level, nlevels, restrict>::Find(StackId stack_id,
   const auto level = paren_levels_.find(label)->second;
   // If the label is an open paren we push:
   //
-  // 1) if the restrict type is not MPDT_WRITE_RESTRICT, or
-  // 2) the restrict type is MPDT_WRITE_RESTRICT, and all the stacks above the
-  // level are empty.
+  // 1) if the restrict type is not MPdtType::WRITE_RESTRICT, or
+  // 2) the restrict type is MPdtType::WRITE_RESTRICT, and all the stacks above
+  // the level are empty.
   if (label == parens_[paren_id].first) {  // Open paren.
-    if (restrict == MPDT_WRITE_RESTRICT) {
+    if (restrict == MPdtType::WRITE_RESTRICT) {
       for (Level upper_level = 0; upper_level < level; ++upper_level) {
         if (!Empty(config, upper_level)) return -1;  // Non-empty stack blocks.
       }
     }
     // If the label is an close paren we pop:
     //
-    // 1) if the restrict type is not MPDT_READ_RESTRICT, or
-    // 2) the restrict type is MPDT_READ_RESTRICT, and all the stacks above the
-    // level are empty.
-  } else if (restrict == MPDT_READ_RESTRICT) {
+    // 1) if the restrict type is not MPdtType::READ_RESTRICT, or
+    // 2) the restrict type is MPdtType::READ_RESTRICT, and all the stacks above
+    // the level are empty.
+  } else if (restrict == MPdtType::READ_RESTRICT) {
     for (Level lower_level = 0; lower_level < level; ++lower_level) {
       if (!Empty(config, lower_level)) return -1;  // Non-empty stack blocks.
     }

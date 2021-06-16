@@ -1,3 +1,17 @@
+// Copyright 2005-2020 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the 'License');
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an 'AS IS' BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
 // See www.openfst.org for extensive documentation on this weighted
 // finite-state transducer library.
 //
@@ -141,8 +155,7 @@ class LinearTaggerFstImpl : public CacheImpl<A> {
   static LinearTaggerFstImpl *Read(std::istream &strm,
                                    const FstReadOptions &opts);
 
-  bool Write(std::ostream &strm,  // NOLINT
-             const FstWriteOptions &opts) const {
+  bool Write(std::ostream &strm, const FstWriteOptions &opts) const {
     FstHeader header;
     header.SetStart(kNoStateId);
     WriteHeader(strm, opts, kFileVersion, &header);
@@ -428,7 +441,7 @@ void LinearTaggerFstImpl<A>::MatchInput(StateId s, Label ilabel,
 
 template <class A>
 inline LinearTaggerFstImpl<A> *LinearTaggerFstImpl<A>::Read(
-    std::istream &strm, const FstReadOptions &opts) {  // NOLINT
+    std::istream &strm, const FstReadOptions &opts) {
   std::unique_ptr<LinearTaggerFstImpl<A>> impl(new LinearTaggerFstImpl<A>());
   FstHeader header;
   if (!impl->ReadHeader(strm, opts, kMinFileVersion, &header)) {
@@ -508,7 +521,7 @@ class LinearTaggerFst : public ImplToFst<internal::LinearTaggerFstImpl<A>> {
     }
   }
 
-  static LinearTaggerFst<A> *Read(std::istream &in,  // NOLINT
+  static LinearTaggerFst<A> *Read(std::istream &in,
                                   const FstReadOptions &opts) {
     auto *impl = Impl::Read(in, opts);
     return impl ? new LinearTaggerFst<A>(std::shared_ptr<Impl>(impl)) : nullptr;
@@ -567,7 +580,7 @@ class ArcIterator<LinearTaggerFst<Arc>>
 template <class Arc>
 inline void LinearTaggerFst<Arc>::InitStateIterator(
     StateIteratorData<Arc> *data) const {
-  data->base = new StateIterator<LinearTaggerFst<Arc>>(*this);
+  data->base = fst::make_unique<StateIterator<LinearTaggerFst<Arc>>>(*this);
 }
 
 namespace internal {
@@ -709,10 +722,10 @@ class LinearClassifierFstImpl : public CacheImpl<A> {
   //
   // - [internal] is the internal state tuple for `LinearFstData` of
   //   the given class; or kNoTrieNodeId's if in start state.
-  Label &Prediction(std::vector<Label> &state) { return state[0]; }  // NOLINT
+  Label &Prediction(std::vector<Label> &state) { return state[0]; }
   Label Prediction(const std::vector<Label> &state) const { return state[0]; }
 
-  Label &InternalAt(std::vector<Label> &state, int index) {  // NOLINT
+  Label &InternalAt(std::vector<Label> &state, int index) {
     return state[index + 1];
   }
   Label InternalAt(const std::vector<Label> &state, int index) const {
@@ -1026,7 +1039,8 @@ class ArcIterator<LinearClassifierFst<Arc>>
 template <class Arc>
 inline void LinearClassifierFst<Arc>::InitStateIterator(
     StateIteratorData<Arc> *data) const {
-  data->base = new StateIterator<LinearClassifierFst<Arc>>(*this);
+  data->base =
+      fst::make_unique<StateIterator<LinearClassifierFst<Arc>>>(*this);
 }
 
 // Specialized Matcher for LinearFsts. This matcher only supports

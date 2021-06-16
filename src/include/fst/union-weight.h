@@ -1,3 +1,17 @@
+// Copyright 2005-2020 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the 'License');
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an 'AS IS' BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
 // See www.openfst.org for extensive documentation on this weighted
 // finite-state transducer library.
 //
@@ -78,8 +92,6 @@ class UnionWeight {
 
   friend class UnionWeightIterator<W, O>;
   friend class UnionWeightReverseIterator<W, O>;
-  friend bool operator==
-      <>(const UnionWeight<W, O> &, const UnionWeight<W, O> &);
 
   // Sets represented as first_ weight + rest_ weights. Uses first_ as
   // NoWeight() to indicate the union weight Zero() as the empty set. Uses
@@ -90,19 +102,20 @@ class UnionWeight {
     if (!weight.Member()) rest_.push_back(W::NoWeight());
   }
 
-  static const UnionWeight<W, O> &Zero() {
-    static const UnionWeight<W, O> zero{};
-    return zero;
+  static const UnionWeight &Zero() {
+    static const auto *const zero = new UnionWeight;
+    return *zero;
   }
 
-  static const UnionWeight<W, O> &One() {
-    static const UnionWeight<W, O> one(W::One());
-    return one;
+  static const UnionWeight &One() {
+    static const auto *const one = new UnionWeight(W::One());
+    return *one;
   }
 
-  static const UnionWeight<W, O> &NoWeight() {
-    static const UnionWeight<W, O> no_weight(W::Zero(), W::NoWeight());
-    return no_weight;
+  static const UnionWeight &NoWeight() {
+    static const auto *const no_weight =
+        new UnionWeight(W::Zero(), W::NoWeight());
+    return *no_weight;
   }
 
   static const std::string &Type() {
@@ -124,7 +137,7 @@ class UnionWeight {
 
   size_t Hash() const;
 
-  UnionWeight<W, O> Quantize(float delta = kDelta) const;
+  UnionWeight Quantize(float delta = kDelta) const;
 
   ReverseWeight Reverse() const;
 
@@ -294,7 +307,7 @@ inline bool UnionWeight<W, O>::Member() const {
 
 template <class W, class O>
 inline UnionWeight<W, O> UnionWeight<W, O>::Quantize(float delta) const {
-  UnionWeight<W, O> weight;
+  UnionWeight weight;
   for (UnionWeightIterator<W, O> it(*this); !it.Done(); it.Next()) {
     weight.PushBack(it.Value().Quantize(delta), true);
   }

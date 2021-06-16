@@ -1,3 +1,17 @@
+// Copyright 2005-2020 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the 'License');
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an 'AS IS' BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
 // See www.openfst.org for extensive documentation on this weighted
 // finite-state transducer library.
 //
@@ -462,7 +476,7 @@ class CacheLogAccumulatorData {
 // WeightConvert specialization to and from log64 weights. It is similar to the
 // FastLogAccumator. However here, the accumulated weights are pre-computed and
 // stored only for the states that are visited. The member function Init(fst)
-// has to be called to setup this accumulator.  Space complexity is O(gc_limit).
+// has to be called to setup this accumulator. Space complexity is O(gc_limit).
 template <class Arc>
 class CacheLogAccumulator {
  public:
@@ -685,7 +699,7 @@ class ReplaceAccumulatorData {
   std::vector<std::unique_ptr<const Fst<Arc>>> fst_array_;
 };
 
-// This class accumulates weights in a ReplaceFst.  The 'Init' method takes as
+// This class accumulates weights in a ReplaceFst. The 'Init' method takes as
 // input the argument used to build the ReplaceFst and the ReplaceFst state
 // table. It uses accumulators of type 'Accumulator' in the underlying FSTs.
 template <class Accumulator,

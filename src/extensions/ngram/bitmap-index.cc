@@ -1,3 +1,17 @@
+// Copyright 2005-2020 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the 'License');
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an 'AS IS' BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
 // See www.openfst.org for extensive documentation on this weighted
 // finite-state transducer library.
 
@@ -19,7 +33,7 @@ size_t BitmapIndex::Rank1(size_t end) const {
   DCHECK_LE(end, Bits());
   // TODO(jrosenstock): Remove nullptr support and this special case.
   if (end == 0) return 0;
-  // Without this special case, we'd go past the end.  It's questionable
+  // Without this special case, we'd go past the end. It's questionable
   // whether we should support end == Bits().
   if (end >= num_bits_) return GetOnesCount();
   const uint32 end_word = end / kStorageBitSize;
@@ -173,13 +187,13 @@ std::pair<size_t, size_t> BitmapIndex::Select0s(size_t bit_index) const {
   const int nth = nth_bit(inv_word, remzeros);
 
   // Then, we want to "1-out" everything below that position, and count trailing
-  // ones on the result.  This gives us the position of the next zero.
+  // ones on the result. This gives us the position of the next zero.
   // There is no count trailing ones builtin, so we invert and use count
   // trailing zeros.
 
   // This mask has 1s in the nth+1 low order bits; it is equivalent to
   // (1 << (nth + 1)) - 1, but doesn't need a special case when nth == 63.
-  // We want ~0 in this case anyway.  We want nth+1 because if the bit_index-th
+  // We want ~0 in this case anyway. We want nth+1 because if the bit_index-th
   // zero is in position nth, we need to skip nth+1 positions.
   const uint64 mask = -(uint64{0x2} << nth);  // == ~((2 << nth) - 1)
   const uint64 masked_inv_word = inv_word & mask;
@@ -192,7 +206,7 @@ std::pair<size_t, size_t> BitmapIndex::Select0s(size_t bit_index) const {
             kStorageBitSize * word_index + next_nth};
   } else {
     // TODO(jrosenstock): Try other words in the block.
-    // This should not be massively important.  With a bit density of 1/2,
+    // This should not be massively important. With a bit density of 1/2,
     // 31/32 zeros in a word have the next zero in the same word.
     return {kStorageBitSize * word_index + nth, Select0(bit_index + 1)};
   }
@@ -233,7 +247,7 @@ void BitmapIndex::BuildIndex(const uint64* bits, size_t num_bits,
                              bool enable_select_0_index,
                              bool enable_select_1_index) {
   // Absolute counts are uint32s, so this is the most *set* bits we support
-  // for now.  Just check the number of *input* bits is less than this
+  // for now. Just check the number of *input* bits is less than this
   // to keep things simple.
   DCHECK_LT(num_bits, uint64{1} << 32);
   bits_ = bits;
@@ -297,17 +311,17 @@ void BitmapIndex::BuildIndex(const uint64* bits, size_t num_bits,
 
     if (enable_select_0_index) {
       // Zeros count is somewhat move involved to compute, so only do it
-      // if we need it.  The last word has zeros in the high bits, so
+      // if we need it. The last word has zeros in the high bits, so
       // that needs to be accounted for when computing the zeros count
       // from the ones count.
       const uint32 bits_remaining = num_bits - bit_offset;
       const int word_zeros_count =
           std::min(bits_remaining, kStorageBitSize) - word_ones_count;
 
-      // We record a 0 every kBitsPerSelect0Block bits.  So, if zeros_count
-      // is 0 mod kBitsPerSelect0Block, we record the next zero.  If
+      // We record a 0 every kBitsPerSelect0Block bits. So, if zeros_count
+      // is 0 mod kBitsPerSelect0Block, we record the next zero. If
       // zeros_count is 1 mod kBitsPerSelect0Block, we need to skip
-      // kBitsPerSelect0Block - 1 zeros, then record a zero.  And so on.
+      // kBitsPerSelect0Block - 1 zeros, then record a zero. And so on.
       // What function is this?  It's -zeros_count % kBitsPerSelect0Block.
       const uint32 zeros_to_skip = -zeros_count % kBitsPerSelect0Block;
       if (word_zeros_count > zeros_to_skip) {
@@ -333,8 +347,8 @@ void BitmapIndex::BuildIndex(const uint64* bits, size_t num_bits,
   // We already recorded all the lower relative positions,
   // so we need to do the higher ones.
   // This is only necessary if num_bits % kBitsPerRankIndexEntry != 0,
-  // but if it is 0, we end up in case 7 and do nothing.  This also
-  // holds for num_bits == 0.  If we do have an if statement guarding
+  // but if it is 0, we end up in case 7 and do nothing. This also
+  // holds for num_bits == 0. If we do have an if statement guarding
   // this, mutants complains that it can be changed to if (true).
   // Therefore, we complicate the understanding of the code to please the
   // tools.
@@ -455,7 +469,7 @@ const BitmapIndex::RankIndexEntry& BitmapIndex::FindInvertedRankIndexEntry(
   }
 
   DCHECK_LT(hi, rank_index_.size());
-  // Linear search never showed an advantage when benchmarking.  This may be
+  // Linear search never showed an advantage when benchmarking. This may be
   // because the linear search is more complex with the zeros_count computation,
   // or because the ranges are larger, so linear search is triggered less often,
   // and the difference is harder to measure.

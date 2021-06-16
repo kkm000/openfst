@@ -1,3 +1,17 @@
+// Copyright 2005-2020 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the 'License');
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an 'AS IS' BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
 // See www.openfst.org for extensive documentation on this weighted
 // finite-state transducer library.
 //
@@ -97,7 +111,7 @@ constexpr bool operator==(const FloatWeightTpl<T> &w1,
 #if (defined(__i386__) || defined(__x86_64__)) && !defined(__SSE2_MATH__)
 // With i387 instructions, excess precision on a weight in an 80-bit
 // register may cause it to compare unequal to that same weight when
-// stored to memory.  This breaks =='s reflexivity, in turn breaking
+// stored to memory. This breaks =='s reflexivity, in turn breaking
 // NaturalLess.
 #error "Please compile with -msse -mfpmath=sse, or equivalent."
 #endif
@@ -105,7 +119,7 @@ constexpr bool operator==(const FloatWeightTpl<T> &w1,
 }
 
 // These seemingly unnecessary overloads are actually needed to make
-// comparisons like FloatWeightTpl<float> == float compile.  If only the
+// comparisons like FloatWeightTpl<float> == float compile. If only the
 // templated version exists, the FloatWeightTpl<float>(float) conversion
 // won't be found.
 constexpr bool operator==(const FloatWeightTpl<float> &w1,
@@ -451,15 +465,15 @@ using Log64Weight = LogWeightTpl<double>;
 
 namespace internal {
 
-// -log(e^-x + e^-y) = x - LogPosExp(y - x), assuming x >= 0.0.
+// -log(e^-x + e^-y) = x - LogPosExp(y - x), assuming y >= x.
 inline double LogPosExp(double x) {
   DCHECK(!(x < 0));  // NB: NaN values are allowed.
   return log1p(exp(-x));
 }
 
-// -log(e^-x - e^-y) = x - LogNegExp(y - x), assuming x > 0.0.
+// -log(e^-x - e^-y) = x - LogNegExp(y - x), assuming y >= x.
 inline double LogNegExp(double x) {
-  DCHECK_GT(x, 0);
+  DCHECK(!(x < 0));  // NB: NaN values are allowed.
   return log1p(-exp(-x));
 }
 
@@ -514,6 +528,30 @@ inline LogWeightTpl<float> Plus(const LogWeightTpl<float> &w1,
 inline LogWeightTpl<double> Plus(const LogWeightTpl<double> &w1,
                                  const LogWeightTpl<double> &w2) {
   return Plus<double>(w1, w2);
+}
+
+// Returns NoWeight if w1 < w2 (w1.Value() > w2.Value()).
+template <class T>
+inline LogWeightTpl<T> Minus(const LogWeightTpl<T> &w1,
+                             const LogWeightTpl<T> &w2) {
+  using Limits = FloatLimits<T>;
+  const T f1 = w1.Value();
+  const T f2 = w2.Value();
+  if (f1 > f2) return LogWeightTpl<T>::NoWeight();
+  if (f2 == Limits::PosInfinity()) return f1;
+  const T d = f2 - f1;
+  if (d == Limits::PosInfinity()) return f1;
+  return f1 - internal::LogNegExp(d);
+}
+
+inline LogWeightTpl<float> Minus(const LogWeightTpl<float> &w1,
+                                 const LogWeightTpl<float> &w2) {
+  return Minus<float>(w1, w2);
+}
+
+inline LogWeightTpl<double> Minus(const LogWeightTpl<double> &w1,
+                                  const LogWeightTpl<double> &w2) {
+  return Minus<double>(w1, w2);
 }
 
 template <class T>

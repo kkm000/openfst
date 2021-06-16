@@ -1,3 +1,17 @@
+// Copyright 2005-2020 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the 'License');
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an 'AS IS' BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
 // See www.openfst.org for extensive documentation on this weighted
 // finite-state transducer library.
 //
@@ -934,7 +948,7 @@ class ReplaceFstImpl
 //
 // Observe that Matcher<Fst<A>> will use the optionally caching arc iterator
 // when available (the FST is ilabel-sorted and matching on the input, or the
-// FST is olabel -orted and matching on the output).  In order to obtain the
+// FST is olabel -orted and matching on the output). In order to obtain the
 // most efficient behaviour, it is recommended to set call_label_type to
 // REPLACE_LABEL_INPUT or REPLACE_LABEL_BOTH and return_label_type to
 // REPLACE_LABEL_OUTPUT or REPLACE_LABEL_NEITHER. This means that the call arc
@@ -1431,7 +1445,8 @@ template <class Arc, class StateTable, class CacheStore>
 inline void ReplaceFst<Arc, StateTable, CacheStore>::InitStateIterator(
     StateIteratorData<Arc> *data) const {
   data->base =
-      new StateIterator<ReplaceFst<Arc, StateTable, CacheStore>>(*this);
+      fst::make_unique<StateIterator<ReplaceFst<Arc, StateTable, CacheStore>>>(
+          *this);
 }
 
 using StdReplaceFst = ReplaceFst<StdArc>;

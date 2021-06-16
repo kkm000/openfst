@@ -1,3 +1,17 @@
+// Copyright 2005-2020 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the 'License');
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an 'AS IS' BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
 // See www.openfst.org for extensive documentation on this weighted
 // finite-state transducer library.
 //
@@ -13,7 +27,11 @@
 //    Zero: <Zero, Zero>
 //    Plus: <a1, b1> + <a2, b2> = <(a1 + a2), (b1 + b2)>
 //    Times: <a1, b1> + <a2, b2> = <(a1 * a2), [(a1 * b2) + (a2 * b1)]>
-//    Division: Undefined.
+//    Division (see Divide() for proof):
+//      For a left-semiring:
+//        <a1, b1> / <a2, b2> = <a1 / a2, (b1 - b2 * (a1 / a2)) / a2>
+//      For a right-semiring:
+//        <a1, b1> / <a2, b2> = <a1 / a2, (b1 - (a1 / a2) * b2) / a2>
 //
 // It is commonly used to store a probability, random variable pair so that
 // the shortest distance gives the posterior probability and the associated
@@ -37,7 +55,8 @@ namespace fst {
 // SparsePowerWeight).
 //
 // If W1 is distinct from W2, it is required that there is an external product
-// between W1 and W2 and if both semriring are commutative, or left or right
+// between W1 and W2 (that is, both Times(W1, W2) -> W2 and Times(W2, W1) -> W2
+// must be defined) and if both semirings are commutative, or left or right
 // semirings, then the result must have those properties.
 template <class W1, class W2>
 class ExpectationWeight : public PairWeight<W1, W2> {
@@ -111,15 +130,54 @@ inline ExpectationWeight<W1, W2> Times(const ExpectationWeight<W1, W2> &w1,
       Plus(Times(w1.Value1(), w2.Value2()), Times(w1.Value2(), w2.Value1())));
 }
 
+// Requires
+// * Divide(W1, W1) -> W1
+// * Divide(W2, W1) -> W2
+// * Times(W1, W2) -> W2
+//   (already required by Times(ExpectationWeight, ExpectationWeight).)
+// * Minus(W2, W2) -> W2
+//   (not part of the Weight interface, so Divide will not compile if
+//    Minus is not defined).
 template <class W1, class W2>
 inline ExpectationWeight<W1, W2> Divide(const ExpectationWeight<W1, W2> &w1,
                                         const ExpectationWeight<W1, W2> &w2,
-                                        DivideType typ = DIVIDE_ANY) {
-  FSTERROR() << "ExpectationWeight::Divide: Not implemented";
-  return ExpectationWeight<W1, W2>::NoWeight();
+                                        DivideType typ) {
+  // No special cases are required for !w1.Member(), !w2.Member(), or
+  // w2 == Zero(), since Minus and Divide will already return NoWeight()
+  // in these cases.
+
+  // For a right-semiring, by the definition of Divide, we are looking for
+  // z = x / y such that (x / y) * y = x.
+  // Let <x1, x2> = x, <y1, y2> = y, <z1, z2> = z.
+  // <z1, z2> * <y1, y2> = <x1, x2>.
+  // By the definition of Times:
+  // z1 * y1 = x1 and
+  // z1 * y2 + z2 * y1 = x2.
+  // So z1 = x1 / y1, and
+  // z2 * y2 = x2 - z1 * y2
+  // z2 = (x2 - z1 * y2) / y2.
+  // The left-semiring case is symmetric. The commutative case allows
+  // additional simplification to
+  // z2 = z1 * (x2 / x1 - y2 / y1) if x1 != 0
+  // z2 = x2 / y1 if x1 == 0, but this requires testing against 0
+  // with ApproxEquals. We just use the right-semiring result in
+  // this case.
+  const auto w11 = w1.Value1();
+  const auto w12 = w1.Value2();
+  const auto w21 = w2.Value1();
+  const auto w22 = w2.Value2();
+  const W1 q1 = Divide(w11, w21, typ);
+  if (typ == DIVIDE_LEFT) {
+    const W2 q2 = Divide(Minus(w12, Times(w22, q1)), w21, typ);
+    return ExpectationWeight<W1, W2>(q1, q2);
+  } else {
+    // Right or commutative semiring.
+    const W2 q2 = Divide(Minus(w12, Times(q1, w22)), w21, typ);
+    return ExpectationWeight<W1, W2>(q1, q2);
+  }
 }
 
-// Specialization for enpectation weight.
+// Specialization for expectation weight.
 template <class W1, class W2>
 class Adder<ExpectationWeight<W1, W2>> {
  public:

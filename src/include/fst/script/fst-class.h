@@ -1,3 +1,17 @@
+// Copyright 2005-2020 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the 'License');
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an 'AS IS' BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
 // See www.openfst.org for extensive documentation on this weighted
 // finite-state transducer library.
 
@@ -7,6 +21,7 @@
 #include <algorithm>
 #include <istream>
 #include <limits>
+#include <memory>
 #include <string>
 #include <type_traits>
 
@@ -84,8 +99,8 @@ class FstClassImplBase : public FstClassBase {
 template <class Arc>
 class FstClassImpl : public FstClassImplBase {
  public:
-  explicit FstClassImpl(Fst<Arc> *impl, bool should_own = false)
-      : impl_(should_own ? impl : impl->Copy()) {}
+  explicit FstClassImpl(std::unique_ptr<Fst<Arc>> impl)
+      : impl_(std::move(impl)) {}
 
   explicit FstClassImpl(const Fst<Arc> &impl) : impl_(impl.Copy()) {}
 
@@ -97,35 +112,35 @@ class FstClassImpl : public FstClassImplBase {
     // used to determine whether any arc has a nonexisting destination.
     Arc arc(ac.ilabel, ac.olabel, *ac.weight.GetWeight<typename Arc::Weight>(),
             ac.nextstate);
-    static_cast<MutableFst<Arc> *>(impl_.get())->AddArc(s, arc);
+    fst::down_cast<MutableFst<Arc> *>(impl_.get())->AddArc(s, arc);
     return true;
   }
 
   // Warning: calling this method casts the FST to a mutable FST.
   int64 AddState() final {
-    return static_cast<MutableFst<Arc> *>(impl_.get())->AddState();
+    return fst::down_cast<MutableFst<Arc> *>(impl_.get())->AddState();
   }
 
   // Warning: calling this method casts the FST to a mutable FST.
   void AddStates(size_t n) final {
-    return static_cast<MutableFst<Arc> *>(impl_.get())->AddStates(n);
+    return fst::down_cast<MutableFst<Arc> *>(impl_.get())->AddStates(n);
   }
 
   const std::string &ArcType() const final { return Arc::Type(); }
 
-  FstClassImpl *Copy() final { return new FstClassImpl<Arc>(impl_.get()); }
+  FstClassImpl *Copy() final { return new FstClassImpl<Arc>(*impl_); }
 
   // Warning: calling this method casts the FST to a mutable FST.
   bool DeleteArcs(int64 s, size_t n) final {
     if (!ValidStateId(s)) return false;
-    static_cast<MutableFst<Arc> *>(impl_.get())->DeleteArcs(s, n);
+    fst::down_cast<MutableFst<Arc> *>(impl_.get())->DeleteArcs(s, n);
     return true;
   }
 
   // Warning: calling this method casts the FST to a mutable FST.
   bool DeleteArcs(int64 s) final {
     if (!ValidStateId(s)) return false;
-    static_cast<MutableFst<Arc> *>(impl_.get())->DeleteArcs(s);
+    fst::down_cast<MutableFst<Arc> *>(impl_.get())->DeleteArcs(s);
     return true;
   }
 
@@ -137,13 +152,13 @@ class FstClassImpl : public FstClassImplBase {
     // the underlying FST will result in truncation.
     std::vector<typename Arc::StateId> typed_dstates(dstates.size());
     std::copy(dstates.begin(), dstates.end(), typed_dstates.begin());
-    static_cast<MutableFst<Arc> *>(impl_.get())->DeleteStates(typed_dstates);
+    fst::down_cast<MutableFst<Arc> *>(impl_.get())->DeleteStates(typed_dstates);
     return true;
   }
 
   // Warning: calling this method casts the FST to a mutable FST.
   void DeleteStates() final {
-    static_cast<MutableFst<Arc> *>(impl_.get())->DeleteStates();
+    fst::down_cast<MutableFst<Arc> *>(impl_.get())->DeleteStates();
   }
 
   WeightClass Final(int64 s) const final {
@@ -160,12 +175,12 @@ class FstClassImpl : public FstClassImplBase {
 
   // Warning: calling this method casts the FST to a mutable FST.
   SymbolTable *MutableInputSymbols() final {
-    return static_cast<MutableFst<Arc> *>(impl_.get())->MutableInputSymbols();
+    return fst::down_cast<MutableFst<Arc> *>(impl_.get())->MutableInputSymbols();
   }
 
   // Warning: calling this method casts the FST to a mutable FST.
   SymbolTable *MutableOutputSymbols() final {
-    return static_cast<MutableFst<Arc> *>(impl_.get())->MutableOutputSymbols();
+    return fst::down_cast<MutableFst<Arc> *>(impl_.get())->MutableOutputSymbols();
   }
 
   // Signals failure by returning size_t max.
@@ -188,7 +203,7 @@ class FstClassImpl : public FstClassImplBase {
 
   // Warning: calling this method casts the FST to a mutable FST.
   int64 NumStates() const final {
-    return static_cast<MutableFst<Arc> *>(impl_.get())->NumStates();
+    return fst::down_cast<MutableFst<Arc> *>(impl_.get())->NumStates();
   }
 
   uint64 Properties(uint64 mask, bool test) const final {
@@ -198,13 +213,13 @@ class FstClassImpl : public FstClassImplBase {
   // Warning: calling this method casts the FST to a mutable FST.
   bool ReserveArcs(int64 s, size_t n) final {
     if (!ValidStateId(s)) return false;
-    static_cast<MutableFst<Arc> *>(impl_.get())->ReserveArcs(s, n);
+    fst::down_cast<MutableFst<Arc> *>(impl_.get())->ReserveArcs(s, n);
     return true;
   }
 
   // Warning: calling this method casts the FST to a mutable FST.
   void ReserveStates(int64 n) final {
-    static_cast<MutableFst<Arc> *>(impl_.get())->ReserveStates(n);
+    fst::down_cast<MutableFst<Arc> *>(impl_.get())->ReserveStates(n);
   }
 
   const SymbolTable *OutputSymbols() const final {
@@ -213,31 +228,31 @@ class FstClassImpl : public FstClassImplBase {
 
   // Warning: calling this method casts the FST to a mutable FST.
   void SetInputSymbols(const SymbolTable *isyms) final {
-    static_cast<MutableFst<Arc> *>(impl_.get())->SetInputSymbols(isyms);
+    fst::down_cast<MutableFst<Arc> *>(impl_.get())->SetInputSymbols(isyms);
   }
 
   // Warning: calling this method casts the FST to a mutable FST.
   bool SetFinal(int64 s, const WeightClass &weight) final {
     if (!ValidStateId(s)) return false;
-    static_cast<MutableFst<Arc> *>(impl_.get())
+    fst::down_cast<MutableFst<Arc> *>(impl_.get())
         ->SetFinal(s, *weight.GetWeight<typename Arc::Weight>());
     return true;
   }
 
   // Warning: calling this method casts the FST to a mutable FST.
   void SetOutputSymbols(const SymbolTable *osyms) final {
-    static_cast<MutableFst<Arc> *>(impl_.get())->SetOutputSymbols(osyms);
+    fst::down_cast<MutableFst<Arc> *>(impl_.get())->SetOutputSymbols(osyms);
   }
 
   // Warning: calling this method casts the FST to a mutable FST.
   void SetProperties(uint64 props, uint64 mask) final {
-    static_cast<MutableFst<Arc> *>(impl_.get())->SetProperties(props, mask);
+    fst::down_cast<MutableFst<Arc> *>(impl_.get())->SetProperties(props, mask);
   }
 
   // Warning: calling this method casts the FST to a mutable FST.
   bool SetStart(int64 s) final {
     if (!ValidStateId(s)) return false;
-    static_cast<MutableFst<Arc> *>(impl_.get())->SetStart(s);
+    fst::down_cast<MutableFst<Arc> *>(impl_.get())->SetStart(s);
     return true;
   }
 
@@ -285,7 +300,12 @@ class FstClass : public FstClassBase {
   FstClass() : impl_(nullptr) {}
 
   template <class Arc>
-  explicit FstClass(const Fst<Arc> &fst) : impl_(new FstClassImpl<Arc>(fst)) {}
+  explicit FstClass(std::unique_ptr<Fst<Arc>> fst)
+      : impl_(fst::make_unique<FstClassImpl<Arc>>(std::move(fst))) {}
+
+  template <class Arc>
+  explicit FstClass(const Fst<Arc> &fst)
+      : impl_(fst::make_unique<FstClassImpl<Arc>>(fst)) {}
 
   FstClass(const FstClass &other)
       : impl_(other.impl_ == nullptr ? nullptr : other.impl_->Copy()) {}
@@ -372,7 +392,7 @@ class FstClass : public FstClassBase {
       return nullptr;
     } else {
       FstClassImpl<Arc> *typed_impl =
-          static_cast<FstClassImpl<Arc> *>(impl_.get());
+          fst::down_cast<FstClassImpl<Arc> *>(impl_.get());
       return typed_impl->GetImpl();
     }
   }
@@ -392,20 +412,21 @@ class FstClass : public FstClassBase {
   }
 
  protected:
-  explicit FstClass(FstClassImplBase *impl) : impl_(impl) {}
+  explicit FstClass(std::unique_ptr<FstClassImplBase> impl)
+      : impl_(std::move(impl)) {}
 
   const FstClassImplBase *GetImpl() const { return impl_.get(); }
 
   FstClassImplBase *GetImpl() { return impl_.get(); }
 
   // Generic template method for reading an arc-templated FST of type
-  // UnderlyingT, and returning it wrapped as FstClassT, with appropriat
+  // UnderlyingT, and returning it wrapped as FstClassT, with appropriate
   // error checking. Called from arc-templated Read() static methods.
   template <class FstClassT, class UnderlyingT>
   static FstClassT *ReadTypedFst(std::istream &stream,
                                  const FstReadOptions &opts) {
     std::unique_ptr<UnderlyingT> u(UnderlyingT::Read(stream, opts));
-    return u ? new FstClassT(*u) : nullptr;
+    return u ? new FstClassT(std::move(u)) : nullptr;
   }
 
  private:
@@ -471,6 +492,13 @@ class MutableFstClass : public FstClass {
   bool SetStart(int64 s) { return GetImpl()->SetStart(s); }
 
   template <class Arc>
+  explicit MutableFstClass(std::unique_ptr<MutableFst<Arc>> fst)
+      // NB: The natural cast-less way to do this doesn't compile for some
+      // arcane reason.
+      : FstClass(
+            fst::implicit_cast<std::unique_ptr<Fst<Arc>>>(std::move(fst))) {}
+
+  template <class Arc>
   explicit MutableFstClass(const MutableFst<Arc> &fst) : FstClass(fst) {}
 
   // These methods are required by IO registration.
@@ -492,7 +520,7 @@ class MutableFstClass : public FstClass {
   template <class Arc>
   MutableFst<Arc> *GetMutableFst() {
     Fst<Arc> *fst = const_cast<Fst<Arc> *>(this->GetFst<Arc>());
-    MutableFst<Arc> *mfst = static_cast<MutableFst<Arc> *>(fst);
+    MutableFst<Arc> *mfst = fst::down_cast<MutableFst<Arc> *>(fst);
     return mfst;
   }
 
@@ -504,12 +532,14 @@ class MutableFstClass : public FstClass {
   }
 
  protected:
-  explicit MutableFstClass(FstClassImplBase *impl) : FstClass(impl) {}
+  explicit MutableFstClass(std::unique_ptr<FstClassImplBase> impl)
+      : FstClass(std::move(impl)) {}
 };
 
 class VectorFstClass : public MutableFstClass {
  public:
-  explicit VectorFstClass(FstClassImplBase *impl) : MutableFstClass(impl) {}
+  explicit VectorFstClass(std::unique_ptr<FstClassImplBase> impl)
+      : MutableFstClass(std::move(impl)) {}
 
   explicit VectorFstClass(const FstClass &other);
 
@@ -525,17 +555,24 @@ class VectorFstClass : public MutableFstClass {
   }
 
   template <class Arc>
+  explicit VectorFstClass(std::unique_ptr<VectorFst<Arc>> fst)
+      // NB: The natural cast-less way to do this doesn't compile for some
+      // arcane reason.
+      : MutableFstClass(fst::implicit_cast<std::unique_ptr<MutableFst<Arc>>>(
+            std::move(fst))) {}
+
+  template <class Arc>
   explicit VectorFstClass(const VectorFst<Arc> &fst) : MutableFstClass(fst) {}
 
   template <class Arc>
   static FstClassImplBase *Convert(const FstClass &other) {
-    return new FstClassImpl<Arc>(new VectorFst<Arc>(*other.GetFst<Arc>()),
-                                 true);
+    return new FstClassImpl<Arc>(
+        fst::make_unique<VectorFst<Arc>>(*other.GetFst<Arc>()));
   }
 
   template <class Arc>
   static FstClassImplBase *Create() {
-    return new FstClassImpl<Arc>(new VectorFst<Arc>(), true);
+    return new FstClassImpl<Arc>(fst::make_unique<VectorFst<Arc>>());
   }
 };
 

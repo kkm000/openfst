@@ -1,3 +1,17 @@
+// Copyright 2005-2020 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the 'License');
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an 'AS IS' BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
 // See www.openfst.org for extensive documentation on this weighted
 // finite-state transducer library.
 //
@@ -36,24 +50,6 @@ namespace fst {
 const char arc_lookahead_fst_type[] = "arc_lookahead";
 const char ilabel_lookahead_fst_type[] = "ilabel_lookahead";
 const char olabel_lookahead_fst_type[] = "olabel_lookahead";
-
-// Identifies stream data as an FST (and its endianity).
-constexpr int32 kFstMagicNumber = 2125659606;
-
-// Checks for FST magic number in stream, to indicate caller function that the
-// stream content is an FST header.
-bool IsFstHeader(std::istream &strm, const std::string &) {
-  int64 pos = strm.tellg();
-  bool match = true;
-  int32 magic_number = 0;
-  ReadType(strm, &magic_number);
-  if (magic_number != kFstMagicNumber) {
-    LOG(WARNING) << "Magic number not matched. Got: " << magic_number;
-    match = false;
-  }
-  strm.seekg(pos);
-  return match;
-}
 
 // Checks FST magic number and reads in the header; if rewind = true,
 // the stream is repositioned before call if possible.
@@ -109,7 +105,7 @@ std::string FstHeader::DebugString() const {
   return ostrm.str();
 }
 
-FstReadOptions::FstReadOptions(const std::string &source,
+FstReadOptions::FstReadOptions(const std::string_view source,
                                const FstHeader *header,
                                const SymbolTable *isymbols,
                                const SymbolTable *osymbols)
@@ -122,7 +118,7 @@ FstReadOptions::FstReadOptions(const std::string &source,
   mode = ReadMode(FLAGS_fst_read_mode);
 }
 
-FstReadOptions::FstReadOptions(const std::string &source,
+FstReadOptions::FstReadOptions(const std::string_view source,
                                const SymbolTable *isymbols,
                                const SymbolTable *osymbols)
     : source(source),

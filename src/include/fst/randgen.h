@@ -1,3 +1,17 @@
+// Copyright 2005-2020 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the 'License');
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an 'AS IS' BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
 // See www.openfst.org for extensive documentation on this weighted
 // finite-state transducer library.
 //
@@ -261,7 +275,7 @@ template <class Result, class RNG>
 void OneMultinomialSample(const std::vector<double> &probs,
                           size_t num_to_sample, Result *result, RNG *rng) {
   using distribution = std::binomial_distribution<size_t>;
-  // Left-over probability mass.  Keep an array of the partial sums because
+  // Left-over probability mass. Keep an array of the partial sums because
   // keeping a scalar and modifying norm -= probs[i] in the loop will result
   // in round-off error and can have probs[i] > norm.
   std::vector<double> norm(probs.size());
@@ -631,7 +645,9 @@ class ArcIterator<RandGenFst<FromArc, ToArc, Sampler>>
 template <class FromArc, class ToArc, class Sampler>
 inline void RandGenFst<FromArc, ToArc, Sampler>::InitStateIterator(
     StateIteratorData<ToArc> *data) const {
-  data->base = new StateIterator<RandGenFst<FromArc, ToArc, Sampler>>(*this);
+  data->base =
+      fst::make_unique<StateIterator<RandGenFst<FromArc, ToArc, Sampler>>>(
+          *this);
 }
 
 // Options for random path generation.

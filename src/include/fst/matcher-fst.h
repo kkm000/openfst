@@ -1,3 +1,17 @@
+// Copyright 2005-2020 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the 'License');
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an 'AS IS' BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
 // See www.openfst.org for extensive documentation on this weighted
 // finite-state transducer library.
 //
@@ -95,7 +109,7 @@ class MatcherFst : public ImplToExpandedFst<internal::AddOnImpl<F, Data>> {
 
   // Constructs a MatcherFst from an Fst<Arc>, which is *not* the underlying
   // FST type used by this class. Uses the existing Data if present, and
-  // runs Init on it.  Stores fst internally, converting Fst<Arc> to FST and
+  // runs Init on it. Stores fst internally, converting Fst<Arc> to FST and
   // therefore making a deep copy.
   explicit MatcherFst(const Fst<Arc> &fst, std::shared_ptr<Data> data = nullptr)
       : ImplToExpandedFst<Impl>(data ? CreateImpl(fst, Name, data)

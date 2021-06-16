@@ -1,3 +1,17 @@
+// Copyright 2005-2020 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the 'License');
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an 'AS IS' BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
 // See www.openfst.org for extensive documentation on this weighted
 // finite-state transducer library.
 //
@@ -23,7 +37,7 @@ class WeightTester {
   explicit WeightTester(WeightGenerator generator)
       : weight_generator_(std::move(generator)) {}
 
-  void Test(int iterations, bool test_division = true) {
+  void Test(int iterations) {
     for (int i = 0; i < iterations; ++i) {
       // Selects the test weights.
       const Weight w1(weight_generator_());
@@ -36,7 +50,7 @@ class WeightTester {
       VLOG(1) << "w3 = " << w3;
 
       TestSemiring(w1, w2, w3);
-      if (test_division) TestDivision(w1, w2);
+      TestDivision(w1, w2);
       TestReverse(w1, w2);
       TestEquality(w1, w2, w3);
       TestIO(w1);
@@ -118,6 +132,7 @@ class WeightTester {
   // Tests division operation.
   void TestDivision(Weight w1, Weight w2) {
     Weight p = Times(w1, w2);
+    VLOG(1) << "TestDivision: p = " << p;
 
     if (Weight::Properties() & kLeftSemiring) {
       Weight d = Divide(p, w1, DIVIDE_LEFT);
@@ -134,8 +149,10 @@ class WeightTester {
     }
 
     if (Weight::Properties() & kCommutative) {
-      Weight d = Divide(p, w1, DIVIDE_RIGHT);
-      if (d.Member()) CHECK(ApproxEqual(p, Times(d, w1)));
+      Weight d1 = Divide(p, w1, DIVIDE_ANY);
+      if (d1.Member()) CHECK(ApproxEqual(p, Times(d1, w1)));
+      Weight d2 = Divide(p, w2, DIVIDE_ANY);
+      if (d2.Member()) CHECK(ApproxEqual(p, Times(w2, d2)));
     }
   }
 

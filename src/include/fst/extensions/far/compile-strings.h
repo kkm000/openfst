@@ -1,3 +1,17 @@
+// Copyright 2005-2020 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the 'License');
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an 'AS IS' BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
 // See www.openfst.org for extensive documentation on this weighted
 // finite-state transducer library.
 
@@ -174,7 +188,7 @@ void FarCompileStrings(const std::vector<std::string> &in_sources,
                                               ? 1
                                               : KeySize(in_source.c_str()));
     if (key_size == 0) {
-      FSTERROR() << "FarCompileStrings: " << in_source << " is not seekable.  "
+      FSTERROR() << "FarCompileStrings: " << in_source << " is not seekable. "
                  << "Read from a file instead or set the --generate_keys flag.";
       return;
     }
@@ -203,13 +217,7 @@ void FarCompileStrings(const std::vector<std::string> &in_sources,
       if (!fst) {
         FSTERROR()
             << "FarCompileStrings: Compiling string number " << n << " in file "
-            << in_source << " failed with token_type = "
-            << (token_type == TokenType::BYTE
-                    ? "byte"
-                    : (token_type == TokenType::UTF8
-                           ? "utf8"
-                           : (token_type == TokenType::SYMBOL ? "symbol"
-                                                              : "unknown")))
+            << in_source << " failed with token_type = " << token_type
             << " and entry_type = "
             << (entry_type == FarEntryType::LINE
                     ? "line"

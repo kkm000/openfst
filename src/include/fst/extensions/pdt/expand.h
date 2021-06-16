@@ -1,3 +1,17 @@
+// Copyright 2005-2020 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the 'License');
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an 'AS IS' BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
 // See www.openfst.org for extensive documentation on this weighted
 // finite-state transducer library.
 //
@@ -283,7 +297,7 @@ class ArcIterator<PdtExpandFst<Arc>>
 template <class Arc>
 inline void PdtExpandFst<Arc>::InitStateIterator(
     StateIteratorData<Arc> *data) const {
-  data->base = new StateIterator<PdtExpandFst<Arc>>(*this);
+  data->base = fst::make_unique<StateIterator<PdtExpandFst<Arc>>>(*this);
 }
 
 // PrunedExpand prunes the delayed expansion of a pushdown transducer (PDT)
@@ -296,6 +310,7 @@ inline void PdtExpandFst<Arc>::InitStateIterator(
 // The algorithm works by visiting the delayed ExpandFst using a shortest-stack
 // first queue discipline and relies on the shortest-distance information
 // computed using a reverse shortest-path call to perform the pruning.
+// Requires Arc::Weight is idempotent.
 //
 // The algorithm maintains the same state ordering between the ExpandFst being
 // visited (efst_) and the result of pruning written into the MutableFst (ofst_)
@@ -306,6 +321,7 @@ class PdtPrunedExpand {
   using Label = typename Arc::Label;
   using StateId = typename Arc::StateId;
   using Weight = typename Arc::Weight;
+  static_assert(IsIdempotent<Weight>::value, "Weight must be idempotent.");
 
   using StackId = StateId;
   using Stack = PdtStack<StackId, Label>;
@@ -399,6 +415,7 @@ class PdtPrunedExpand {
     const NaturalLess<Weight> less_;
   };
 
+  // Requires Weight is idempotent.
   class ShortestStackFirstQueue
       : public ShortestFirstQueue<StateId, StackCompare> {
    public:
@@ -773,7 +790,7 @@ bool PdtPrunedExpand<Arc>::ProcOpenParen(StateId s, const Arc &arc, StackId si,
     const auto nd = Times(Distance(s), arc.weight);
     if (less_(nd, Distance(arc.nextstate))) SetDistance(arc.nextstate, nd);
     // FinalDistance not necessary for source state since pruning decided using
-    // meta-arcs above.  But this is a problem with A*, hence the following.
+    // meta-arcs above. But this is a problem with A*, hence the following.
     if (less_(fd, FinalDistance(arc.nextstate)))
       SetFinalDistance(arc.nextstate, fd);
     SetFlags(arc.nextstate, kSourceState, kSourceState);
@@ -902,14 +919,19 @@ void Expand(
     const std::vector<std::pair<typename Arc::Label, typename Arc::Label>>
         &parens,
     MutableFst<Arc> *ofst, const PdtExpandOptions<Arc> &opts) {
+  using Weight = typename Arc::Weight;
   PdtExpandFstOptions<Arc> eopts;
   eopts.gc_limit = 0;
   if (opts.weight_threshold == Arc::Weight::Zero()) {
     eopts.keep_parentheses = opts.keep_parentheses;
     *ofst = PdtExpandFst<Arc>(ifst, parens, eopts);
-  } else {
+  } else if constexpr (IsIdempotent<Weight>::value) {
     PdtPrunedExpand<Arc> pruned_expand(ifst, parens, opts.keep_parentheses);
     pruned_expand.Expand(ofst, opts.weight_threshold);
+  } else {
+    FSTERROR() << "Expand: non-Zero weight_threshold with non-idempotent"
+               << " Weight " << Weight::Type();
+    ofst->SetProperties(kError, kError);
   }
   if (opts.connect) Connect(ofst);
 }

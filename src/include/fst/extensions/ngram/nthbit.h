@@ -1,3 +1,17 @@
+// Copyright 2005-2020 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the 'License');
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an 'AS IS' BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
 // See www.openfst.org for extensive documentation on this weighted
 // finite-state transducer library.
 
@@ -5,6 +19,10 @@
 #define FST_EXTENSIONS_NGRAM_NTHBIT_H_
 
 #include <cstdint>
+
+#if defined(__aarch64__)
+#include <arm_neon.h>
+#endif
 
 #include <fst/types.h>
 #include <fst/log.h>
@@ -16,13 +34,15 @@
 
 namespace fst {
 // Returns the position (0-63) of the r-th 1 bit in v.
-// 0 <= r < CountOnes(v) <= 64.  Therefore, v must not be 0.
+// 0 <= r < CountOnes(v) <= 64. Therefore, v must not be 0.
 inline uint32 nth_bit(uint64 v, uint32 r) {
   DCHECK_NE(v, 0);
   DCHECK_LE(0, r);
   DCHECK_LT(r, __builtin_popcountll(v));
 
   // PDEP example from https://stackoverflow.com/a/27453505
+  // __builtin_ctzll is UB for 0, but the conditions above ensure that can't
+  // happen.
   return __builtin_ctzll(_pdep_u64(uint64{1} << r, v));
 }
 }  // namespace fst
@@ -32,7 +52,7 @@ inline uint32 nth_bit(uint64 v, uint32 r) {
 
 namespace fst {
 // Returns the position (0-63) of the r-th 1 bit in v.
-// 0 <= r < CountOnes(v) <= 64.  Therefore, v must not be 0.
+// 0 <= r < CountOnes(v) <= 64. Therefore, v must not be 0.
 uint32 nth_bit(uint64 v, uint32 r);
 }  // namespace fst
 
@@ -46,14 +66,13 @@ extern const uint8 kSelectInByte[2048];
 }  // namespace internal
 
 // Returns the position (0-63) of the r-th 1 bit in v.
-// 0 <= r < CountOnes(v) <= 64.  Therefore, v must not be 0.
+// 0 <= r < CountOnes(v) <= 64. Therefore, v must not be 0.
 //
 // This version is based on the paper "Broadword Implementation of
 // Rank/Select Queries" by Sebastiano Vigna, p. 5, Algorithm 2, with
 // improvements from "Optimized Succinct Data Structures for Massive Data"
 // by Gog & Petri, 2014.
 inline uint32 nth_bit(const uint64 v, const uint32 r) {
-  constexpr uint64 kOnesStep4 = 0x1111111111111111;
   constexpr uint64 kOnesStep8 = 0x0101010101010101;
   constexpr uint64 kMSBsStep8 = 0x80 * kOnesStep8;
 
@@ -61,10 +80,17 @@ inline uint32 nth_bit(const uint64 v, const uint32 r) {
   DCHECK_LE(0, r);
   DCHECK_LT(r, __builtin_popcountll(v));
 
+#if defined(__aarch64__)
+  // Use the ARM64 CNT instruction to compute a byte-wise popcount.
+  const uint64 s =
+      reinterpret_cast<uint64>(vcnt_s8(reinterpret_cast<uint8x8_t>(v)));
+#else
+  constexpr uint64 kOnesStep4 = 0x1111111111111111;
   uint64 s = v;
   s = s - ((s >> 1) & (0x5 * kOnesStep4));
   s = (s & (0x3 * kOnesStep4)) + ((s >> 2) & (0x3 * kOnesStep4));
   s = (s + (s >> 4)) & (0xF * kOnesStep8);
+#endif
   // s now contains the byte-wise popcounts of v.
 
   // byte_sums contains partial sums of the byte-wise popcounts.
@@ -72,7 +98,7 @@ inline uint32 nth_bit(const uint64 v, const uint32 r) {
   uint64 byte_sums = s * kOnesStep8;
 
   // kPrefixSumOverflow[r] == (0x7F - r) * kOnesStep8, so the high bit is
-  // still set if byte_sums - r > 0, or byte_sums > r.  The first one set
+  // still set if byte_sums - r > 0, or byte_sums > r. The first one set
   // is in the byte with the sum larger than r (since r is 0-based),
   // so this is the byte we need.
   const uint64 b = (byte_sums + internal::kPrefixSumOverflow[r]) & kMSBsStep8;

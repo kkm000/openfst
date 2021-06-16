@@ -1,3 +1,17 @@
+// Copyright 2005-2020 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the 'License');
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an 'AS IS' BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
 // See www.openfst.org for extensive documentation on this weighted
 // finite-state transducer library.
 //
@@ -66,7 +80,6 @@ using fst::ConstFst;
 using fst::CustomArc;
 using fst::EditFst;
 using fst::FstTester;
-using fst::MatcherFst;
 using fst::StdArc;
 using fst::StdArcLookAheadFst;
 using fst::TrivialArcCompactor;
@@ -78,7 +91,7 @@ int main(int argc, char **argv) {
   std::set_new_handler(FailedNewHandler);
   SET_FLAGS(argv[0], &argc, &argv, true);
 
-  // VectorFst<StdArc> tests
+  LOG(INFO) << "Testing VectorFst<StdArc>.";
   {
     for (const size_t num_states : {0, 1, 2, 3, 128}) {
       FstTester<VectorFst<StdArc>> std_vector_tester(num_states);
@@ -90,7 +103,7 @@ int main(int argc, char **argv) {
       std_vector_tester.TestMutable();
     }
 
-    // Test with a default-constructed Fst, not a copied Fst.
+    LOG(INFO) << "Testing empty StdVectorFst.";
     FstTester<VectorFst<StdArc>> empty_tester(/*num_states=*/0);
     {
       const VectorFst<StdArc> empty_fst;
@@ -106,7 +119,7 @@ int main(int argc, char **argv) {
     }
   }
 
-  // ConstFst<StdArc> tests
+  LOG(INFO) << "Testing ConstFst<StdArc>.";
   {
     FstTester<ConstFst<StdArc>> std_const_tester;
     std_const_tester.TestBase();
@@ -115,7 +128,7 @@ int main(int argc, char **argv) {
     std_const_tester.TestIO();
   }
 
-  // CompactArcFst<StdArc, TrivialArcCompactor<StdArc>>
+  LOG(INFO) << "Testing CompactArcFst<StdArc, TrivialArcCompactor<StdArc>>.";
   {
     FstTester<CompactArcFst<StdArc, TrivialArcCompactor<StdArc>>>
         std_compact_tester;
@@ -125,7 +138,7 @@ int main(int argc, char **argv) {
     std_compact_tester.TestIO();
   }
 
-  // CompactFst<StdArc, TrivialArcCompactor<StdArc>>
+  LOG(INFO) << "Testing CompactFst<StdArc, TrivialArcCompactor<StdArc>>.";
   {
     for (const size_t num_states : {0, 1, 2, 3, 128}) {
       FstTester<CompactFst<StdArc, TrivialCompactor<StdArc>>>
@@ -136,7 +149,16 @@ int main(int argc, char **argv) {
       std_compact_tester.TestIO();
     }
 
-    // TODO(jrosenstock): Add tests on default-constructed Fst.
+    LOG(INFO) << "Testing empty CompactFst.";
+    FstTester<CompactFst<StdArc, TrivialCompactor<StdArc>>> empty_tester(
+        /*num_states=*/0);
+    {
+      const CompactFst<StdArc, TrivialCompactor<StdArc>> empty_fst;
+      empty_tester.TestBase(empty_fst);
+      empty_tester.TestExpanded(empty_fst);
+      empty_tester.TestCopy(empty_fst);
+      empty_tester.TestIO(empty_fst);
+    }
   }
 
   // VectorFst<CustomArc> tests

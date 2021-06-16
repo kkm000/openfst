@@ -1,3 +1,17 @@
+// Copyright 2005-2020 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the 'License');
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an 'AS IS' BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
 // See www.openfst.org for extensive documentation on this weighted
 // finite-state transducer library.
 //
@@ -533,7 +547,7 @@ void HashMatcher<FST>::SetState(typename FST::Arc::StateId s) {
   }
   // Attempts to insert a new label table.
   auto it_and_success = state_table_->emplace(
-      state_, std::unique_ptr<LabelTable>(new LabelTable()));
+      state_, fst::make_unique<LabelTable>());
   // Sets instance's pointer to the label table for this state.
   label_table_ = it_and_success.first->second.get();
   // If it already exists, no additional work is done and we simply return.
@@ -571,14 +585,14 @@ enum MatcherRewriteMode {
 // For any requested label that doesn't match at a state, this matcher
 // considers the *unique* transition that matches the label 'phi_label'
 // (phi = 'fail'), and recursively looks for a match at its
-// destination.  When 'phi_loop' is true, if no match is found but a
+// destination. When 'phi_loop' is true, if no match is found but a
 // phi self-loop is found, then the phi transition found is returned
 // with the phi_label rewritten as the requested label (both sides if
 // an acceptor, or if 'rewrite_both' is true and both input and output
-// labels of the found transition are 'phi_label').  If 'phi_label' is
-// kNoLabel, this special matching is not done.  PhiMatcher is
+// labels of the found transition are 'phi_label'). If 'phi_label' is
+// kNoLabel, this special matching is not done. PhiMatcher is
 // templated itself on a matcher, which is used to perform the
-// underlying matching.  By default, the underlying matcher is
+// underlying matching. By default, the underlying matcher is
 // constructed by PhiMatcher. The user can instead pass in this
 // object; in that case, PhiMatcher takes its ownership.
 // Phi non-determinism not supported. No non-consuming symbols other
@@ -831,14 +845,14 @@ inline uint64 PhiMatcher<M>::Properties(uint64 inprops) const {
 
 // For any requested label that doesn't match at a state, this matcher
 // considers all transitions that match the label 'rho_label' (rho =
-// 'rest').  Each such rho transition found is returned with the
+// 'rest'). Each such rho transition found is returned with the
 // rho_label rewritten as the requested label (both sides if an
 // acceptor, or if 'rewrite_both' is true and both input and output
-// labels of the found transition are 'rho_label').  If 'rho_label' is
-// kNoLabel, this special matching is not done.  RhoMatcher is
+// labels of the found transition are 'rho_label'). If 'rho_label' is
+// kNoLabel, this special matching is not done. RhoMatcher is
 // templated itself on a matcher, which is used to perform the
-// underlying matching.  By default, the underlying matcher is
-// constructed by RhoMatcher.  The user can instead pass in this
+// underlying matching. By default, the underlying matcher is
+// constructed by RhoMatcher. The user can instead pass in this
 // object; in that case, RhoMatcher takes its ownership.
 // No non-consuming symbols other than epsilon supported with
 // the underlying template argument matcher.
@@ -1020,16 +1034,16 @@ inline uint64 RhoMatcher<M>::Properties(uint64 inprops) const {
 
 // For any requested label, this matcher considers all transitions
 // that match the label 'sigma_label' (sigma = "any"), and this in
-// additions to transitions with the requested label.  Each such sigma
+// additions to transitions with the requested label. Each such sigma
 // transition found is returned with the sigma_label rewritten as the
 // requested label (both sides if an acceptor, or if 'rewrite_both' is
 // true and both input and output labels of the found transition are
-// 'sigma_label').  If 'sigma_label' is kNoLabel, this special
-// matching is not done.  SigmaMatcher is templated itself on a
-// matcher, which is used to perform the underlying matching.  By
+// 'sigma_label'). If 'sigma_label' is kNoLabel, this special
+// matching is not done. SigmaMatcher is templated itself on a
+// matcher, which is used to perform the underlying matching. By
 // default, the underlying matcher is constructed by SigmaMatcher.
 // The user can instead pass in this object; in that case,
-// SigmaMatcher takes its ownership.  No non-consuming symbols other
+// SigmaMatcher takes its ownership. No non-consuming symbols other
 // than epsilon supported with the underlying template argument matcher.
 template <class M>
 class SigmaMatcher : public MatcherBase<typename M::Arc> {
@@ -1541,7 +1555,7 @@ class Matcher {
 
   void Next() { base_->Next(); }
 
-  const FST &GetFst() const { return static_cast<const FST &>(base_->GetFst()); }
+  const FST &GetFst() const { return fst::down_cast<const FST &>(base_->GetFst()); }
 
   uint64 Properties(uint64 props) const { return base_->Properties(props); }
 

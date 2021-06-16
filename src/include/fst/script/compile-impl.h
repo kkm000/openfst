@@ -1,3 +1,17 @@
+// Copyright 2005-2020 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the 'License');
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an 'AS IS' BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
 // See www.openfst.org for extensive documentation on this weighted
 // finite-state transducer library.
 //
@@ -36,7 +50,7 @@ class FstCompiler {
   // symbol tables. This is only useful if you set the (i/o)keep flag to attach
   // the final symbol table, or use the accessors. (The input symbol tables are
   // const and therefore not changed.)
-  FstCompiler(std::istream &istrm, const std::string &source,  // NOLINT
+  FstCompiler(std::istream &istrm, const std::string &source,
               const SymbolTable *isyms, const SymbolTable *osyms,
               const SymbolTable *ssyms, bool accep, bool ikeep, bool okeep,
               bool nkeep, bool allow_negative_labels = false) {
@@ -47,7 +61,7 @@ class FstCompiler {
          okeep, nkeep, allow_negative_labels, false);
   }
 
-  FstCompiler(std::istream &istrm, const std::string &source,  // NOLINT
+  FstCompiler(std::istream &istrm, const std::string &source,
               SymbolTable *isyms, SymbolTable *osyms, SymbolTable *ssyms,
               bool accep, bool ikeep, bool okeep, bool nkeep,
               bool allow_negative_labels, bool add_symbols) {
@@ -55,10 +69,10 @@ class FstCompiler {
          allow_negative_labels, add_symbols);
   }
 
-  void Init(std::istream &istrm, const std::string &source,  // NOLINT
-            SymbolTable *isyms, SymbolTable *osyms, SymbolTable *ssyms,
-            bool accep, bool ikeep, bool okeep, bool nkeep,
-            bool allow_negative_labels, bool add_symbols) {
+  void Init(std::istream &istrm, const std::string &source, SymbolTable *isyms,
+            SymbolTable *osyms, SymbolTable *ssyms, bool accep, bool ikeep,
+            bool okeep, bool nkeep, bool allow_negative_labels,
+            bool add_symbols) {
     nline_ = 0;
     source_ = source;
     isyms_ = isyms;

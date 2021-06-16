@@ -1,3 +1,17 @@
+// Copyright 2005-2020 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the 'License');
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an 'AS IS' BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
 // See www.openfst.org for extensive documentation on this weighted
 // finite-state transducer library.
 //
@@ -263,27 +277,36 @@ class StateWeightCompare {
   const Less &less_;
 };
 
+// Comparison that can never be instantiated. Useful only to pass a pointer to
+// this to a function that needs a comparison when it is known that the pointer
+// will always be null.
+template <class W>
+struct ErrorLess {
+  using Weight = W;
+  ErrorLess() {
+    FSTERROR() << "ErrorLess: instantiated for Weight " << Weight::Type();
+  }
+  bool operator()(const Weight &, const Weight &) const { return false; }
+};
+
 }  // namespace internal
 
 // Shortest-first queue discipline, templated on the StateId and Weight, is
 // specialized to use the weight's natural order for the comparison function.
+// Requires Weight is idempotent (due to use of NaturalLess).
 template <typename S, typename Weight>
 class NaturalShortestFirstQueue
     : public ShortestFirstQueue<
           S, internal::StateWeightCompare<S, NaturalLess<Weight>>> {
  public:
   using StateId = S;
-  using Compare = internal::StateWeightCompare<StateId, NaturalLess<Weight>>;
+  using Less = NaturalLess<Weight>;
+  using Compare = internal::StateWeightCompare<StateId, Less>;
 
   explicit NaturalShortestFirstQueue(const std::vector<Weight> &distance)
-      : ShortestFirstQueue<StateId, Compare>(Compare(distance, less_)) {}
+      : ShortestFirstQueue<StateId, Compare>(Compare(distance, Less())) {}
 
   ~NaturalShortestFirstQueue() override = default;
-
- private:
-  // This is non-static because the constructor for non-idempotent weights will
-  // result in an error.
-  const NaturalLess<Weight> less_{};
 };
 
 // In a shortest path computation on a lattice-like FST, we may keep many old
@@ -617,7 +640,11 @@ class AutoQueue : public QueueBase<S> {
             const std::vector<typename Arc::Weight> *distance, ArcFilter filter)
       : QueueBase<StateId>(AUTO_QUEUE) {
     using Weight = typename Arc::Weight;
-    using Less = NaturalLess<Weight>;
+    // We need to have variables of type Less and Compare, so we use
+    // ErrorLess if the type NaturalLess<Weight> cannot be instantiated due
+    // to lack of path property.
+    using Less = std::conditional_t<IsPath<Weight>::value, NaturalLess<Weight>,
+                                    internal::ErrorLess<Weight>>;
     using Compare = internal::StateWeightCompare<StateId, Less>;
     // First checks if the FST is known to have these properties.
     const auto props =
@@ -640,9 +667,11 @@ class AutoQueue : public QueueBase<S> {
       std::vector<QueueType> queue_types(nscc);
       std::unique_ptr<Less> less;
       std::unique_ptr<Compare> comp;
-      if (distance && (Weight::Properties() & kPath) == kPath) {
-        less = fst::make_unique<Less>();
-        comp = fst::make_unique<Compare>(*distance, *less);
+      if constexpr (IsPath<Weight>::value) {
+        if (distance) {
+          less = fst::make_unique<Less>();
+          comp = fst::make_unique<Compare>(*distance, *less);
+        }
       }
       // Finds the queue type to use per SCC.
       bool unweighted;
@@ -671,10 +700,19 @@ class AutoQueue : public QueueBase<S> {
             VLOG(3) << "AutoQueue: SCC #" << i << ": using trivial discipline";
             break;
           case SHORTEST_FIRST_QUEUE:
-            queues_[i].reset(
-                new ShortestFirstQueue<StateId, Compare, false>(*comp));
-            VLOG(3) << "AutoQueue: SCC #" << i
-                    << ": using shortest-first discipline";
+            // The IsPath test is not needed for correctness. It just saves
+            // instantiating a ShortestFirstQueue that can never be called.
+            if constexpr (IsPath<Weight>::value) {
+              queues_[i].reset(
+                  new ShortestFirstQueue<StateId, Compare, false>(*comp));
+              VLOG(3) << "AutoQueue: SCC #" << i
+                      << ": using shortest-first discipline";
+            } else {
+              // SccQueueType should ensure this can never happen.
+              FSTERROR() << "Got SHORTEST_FIRST_QUEUE for non-Path Weight "
+                         << Weight::Type();
+              queues_[i].reset();
+            }
             break;
           case LIFO_QUEUE:
             queues_[i] = fst::make_unique<LifoQueue<StateId>>();
@@ -746,7 +784,9 @@ void AutoQueue<StateId>::SccQueueType(const Fst<Arc> &fst,
       if (!filter(arc)) continue;
       if (scc[state] == scc[arc.nextstate]) {
         auto &type = (*queue_type)[scc[state]];
-        if (!less || ((*less)(arc.weight, Weight::One()))) {
+        if constexpr (!IsPath<Weight>::value) {
+          type = FIFO_QUEUE;
+        } else if (!less || (*less)(arc.weight, Weight::One())) {
           type = FIFO_QUEUE;
         } else if ((type == TRIVIAL_QUEUE) || (type == LIFO_QUEUE)) {
           if (!(Weight::Properties() & kIdempotent) ||

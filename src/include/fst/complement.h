@@ -1,3 +1,17 @@
+// Copyright 2005-2020 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the 'License');
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an 'AS IS' BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
 // See www.openfst.org for extensive documentation on this weighted
 // finite-state transducer library.
 //
@@ -262,13 +276,13 @@ class ArcIterator<ComplementFst<Arc>> : public ArcIteratorBase<Arc> {
 template <class Arc>
 inline void ComplementFst<Arc>::InitStateIterator(
     StateIteratorData<Arc> *data) const {
-  data->base = new StateIterator<ComplementFst<Arc>>(*this);
+  data->base = fst::make_unique<StateIterator<ComplementFst<Arc>>>(*this);
 }
 
 template <class Arc>
 inline void ComplementFst<Arc>::InitArcIterator(
     StateId s, ArcIteratorData<Arc> *data) const {
-  data->base = new ArcIterator<ComplementFst<Arc>>(*this, s);
+  data->base = fst::make_unique<ArcIterator<ComplementFst<Arc>>>(*this, s);
 }
 
 // Useful alias when using StdArc.

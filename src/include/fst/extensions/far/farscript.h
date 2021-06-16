@@ -1,3 +1,17 @@
+// Copyright 2005-2020 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the 'License');
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an 'AS IS' BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
 // See www.openfst.org for extensive documentation on this weighted
 // finite-state transducer library.
 //
@@ -12,6 +26,7 @@
 
 #include <fst/types.h>
 #include <fst/extensions/far/compile-strings.h>
+#include <fst/extensions/far/convert.h>
 #include <fst/extensions/far/create.h>
 #include <fst/extensions/far/equal.h>
 #include <fst/extensions/far/extract.h>
@@ -44,30 +59,6 @@ struct FarCompileStringsArgs {
   const bool allow_negative_labels;
   const std::string &key_prefix;
   const std::string &key_suffix;
-
-  FarCompileStringsArgs(const std::vector<std::string> &in_sources,
-                        const std::string &out_source,
-                        const std::string &fst_type, const FarType &far_type,
-                        int32 generate_keys, FarEntryType fet, TokenType tt,
-                        const std::string &symbols_source,
-                        const std::string &unknown_symbol, bool keep_symbols,
-                        bool initial_symbols, bool allow_negative_labels,
-                        const std::string &key_prefix,
-                        const std::string &key_suffix)
-      : in_sources(in_sources),
-        out_source(out_source),
-        fst_type(fst_type),
-        far_type(far_type),
-        generate_keys(generate_keys),
-        fet(fet),
-        tt(tt),
-        symbols_source(symbols_source),
-        unknown_symbol(unknown_symbol),
-        keep_symbols(keep_symbols),
-        initial_symbols(initial_symbols),
-        allow_negative_labels(allow_negative_labels),
-        key_prefix(key_prefix),
-        key_suffix(key_suffix) {}
 };
 
 template <class Arc>
@@ -90,6 +81,23 @@ void FarCompileStrings(const std::vector<std::string> &in_sources,
                        const std::string &key_prefix,
                        const std::string &key_suffix);
 
+struct FarConvertArgs {
+  const std::string &in_source;
+  const std::string &out_source;
+  const std::string &fst_type;
+  const FarType &far_type;
+};
+
+template <class Arc>
+void FarConvert(FarConvertArgs *args) {
+  FarConvert<Arc>(args->in_source, args->out_source, args->fst_type,
+                  args->far_type);
+}
+
+void FarConvert(const std::string &in_source, const std::string &out_source,
+                const std::string &arc_type, const std::string &fst_type,
+                const FarType &far_type);
+
 // Note: it is safe to pass these strings as references because this struct is
 // only used to pass them deeper in the call graph. Be sure you understand why
 // this is so before using this struct for anything else!
@@ -100,17 +108,6 @@ struct FarCreateArgs {
   const FarType &far_type;
   const std::string &key_prefix;
   const std::string &key_suffix;
-
-  FarCreateArgs(const std::vector<std::string> &in_sources,
-                const std::string &out_source, const int32 generate_keys,
-                const FarType &far_type, const std::string &key_prefix,
-                const std::string &key_suffix)
-      : in_sources(in_sources),
-        out_source(out_source),
-        generate_keys(generate_keys),
-        far_type(far_type),
-        key_prefix(key_prefix),
-        key_suffix(key_suffix) {}
 };
 
 template <class Arc>
@@ -223,27 +220,6 @@ struct FarPrintStringsArgs {
   const int32 generate_sources;
   const std::string &source_prefix;
   const std::string &source_suffix;
-
-  FarPrintStringsArgs(const std::vector<std::string> &isources,
-                      const FarEntryType entry_type, const TokenType token_type,
-                      const std::string &begin_key, const std::string &end_key,
-                      const bool print_key, const bool print_weight,
-                      const std::string &symbols_source,
-                      const bool initial_symbols, const int32 generate_sources,
-                      const std::string &source_prefix,
-                      const std::string &source_suffix)
-      : isources(isources),
-        entry_type(entry_type),
-        token_type(token_type),
-        begin_key(begin_key),
-        end_key(end_key),
-        print_key(print_key),
-        print_weight(print_weight),
-        symbols_source(symbols_source),
-        initial_symbols(initial_symbols),
-        generate_sources(generate_sources),
-        source_prefix(source_prefix),
-        source_suffix(source_suffix) {}
 };
 
 template <class Arc>

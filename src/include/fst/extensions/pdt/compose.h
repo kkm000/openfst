@@ -1,3 +1,17 @@
+// Copyright 2005-2020 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the 'License');
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an 'AS IS' BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
 // See www.openfst.org for extensive documentation on this weighted
 // finite-state transducer library.
 //
@@ -8,6 +22,7 @@
 
 #include <list>
 
+#include <fst/types.h>
 #include <fst/extensions/pdt/pdt.h>
 #include <fst/compose.h>
 
@@ -433,18 +448,18 @@ class PdtComposeFstOptions<Arc, false>
   }
 };
 
-enum PdtComposeFilter {
-  PAREN_FILTER,         // Bar-Hillel construction; keeps parentheses.
-  EXPAND_FILTER,        // Bar-Hillel + expansion; removes parentheses.
-  EXPAND_PAREN_FILTER,  // Bar-Hillel + expansion; keeps parentheses.
+enum class PdtComposeFilter : uint8 {
+  PAREN,         // Bar-Hillel construction; keeps parentheses.
+  EXPAND,        // Bar-Hillel + expansion; removes parentheses.
+  EXPAND_PAREN,  // Bar-Hillel + expansion; keeps parentheses.
 };
 
 struct PdtComposeOptions {
   bool connect;                  // Connect output?
   PdtComposeFilter filter_type;  // Pre-defined filter to use.
 
-  explicit PdtComposeOptions(bool connect = true,
-                             PdtComposeFilter filter_type = PAREN_FILTER)
+  explicit PdtComposeOptions(bool connect = true, PdtComposeFilter filter_type =
+                                                      PdtComposeFilter::PAREN)
       : connect(connect), filter_type(filter_type) {}
 };
 
@@ -460,8 +475,8 @@ void Compose(
         &parens,
     const Fst<Arc> &ifst2, MutableFst<Arc> *ofst,
     const PdtComposeOptions &opts = PdtComposeOptions()) {
-  bool expand = opts.filter_type != PAREN_FILTER;
-  bool keep_parens = opts.filter_type != EXPAND_FILTER;
+  bool expand = opts.filter_type != PdtComposeFilter::PAREN;
+  bool keep_parens = opts.filter_type != PdtComposeFilter::EXPAND;
   PdtComposeFstOptions<Arc, true> copts(ifst1, parens, ifst2, expand,
                                         keep_parens);
   copts.gc_limit = 0;
@@ -481,8 +496,8 @@ void Compose(
         &parens,
     MutableFst<Arc> *ofst,
     const PdtComposeOptions &opts = PdtComposeOptions()) {
-  bool expand = opts.filter_type != PAREN_FILTER;
-  bool keep_parens = opts.filter_type != EXPAND_FILTER;
+  bool expand = opts.filter_type != PdtComposeFilter::PAREN;
+  bool keep_parens = opts.filter_type != PdtComposeFilter::EXPAND;
   PdtComposeFstOptions<Arc, false> copts(ifst1, ifst2, parens, expand,
                                          keep_parens);
   copts.gc_limit = 0;

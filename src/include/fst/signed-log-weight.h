@@ -1,3 +1,17 @@
+// Copyright 2005-2020 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the 'License');
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an 'AS IS' BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
 // See www.openfst.org for extensive documentation on this weighted
 // finite-state transducer library.
 //
@@ -32,6 +46,10 @@ class SignedLogWeightTpl : public PairWeight<TropicalWeight, LogWeightTpl<T>> {
   using PairWeight<W1, W2>::Value2;
 
   SignedLogWeightTpl() noexcept : PairWeight<W1, W2>() {}
+
+  // Conversion from plain LogWeightTpl.
+  // NOLINTNEXTLINE(google-explicit-constructor)
+  SignedLogWeightTpl(const W2 &w2) : PairWeight<W1, W2>(W1(1.0), w2) {}
 
   explicit SignedLogWeightTpl(const PairWeight<W1, W2> &weight)
       : PairWeight<W1, W2>(weight) {}
@@ -203,6 +221,96 @@ template <class T>
 inline bool operator!=(const SignedLogWeightTpl<T> &w1,
                        const SignedLogWeightTpl<T> &w2) {
   return !(w1 == w2);
+}
+
+// All functions and operators with a LogWeightTpl arg need to be
+// explicitly specified since the implicit constructor will not be
+// tried in conjunction with function overloading.
+
+template <class T>
+inline SignedLogWeightTpl<T> Plus(const LogWeightTpl<T> &w1,
+                                  const SignedLogWeightTpl<T> &w2) {
+  return Plus(SignedLogWeightTpl<T>(w1), w2);
+}
+
+template <class T>
+inline SignedLogWeightTpl<T> Plus(const SignedLogWeightTpl<T> &w1,
+                                  const LogWeightTpl<T> &w2) {
+  return Plus(w1, SignedLogWeightTpl<T>(w2));
+}
+
+template <class T>
+inline SignedLogWeightTpl<T> Minus(const LogWeightTpl<T> &w1,
+                                   const SignedLogWeightTpl<T> &w2) {
+  return Minus(SignedLogWeightTpl<T>(w1), w2);
+}
+
+template <class T>
+inline SignedLogWeightTpl<T> Minus(const SignedLogWeightTpl<T> &w1,
+                                   const LogWeightTpl<T> &w2) {
+  return Minus(w1, SignedLogWeightTpl<T>(w2));
+}
+
+template <class T>
+inline SignedLogWeightTpl<T> Times(const LogWeightTpl<T> &w1,
+                                   const SignedLogWeightTpl<T> &w2) {
+  return Times(SignedLogWeightTpl<T>(w1), w2);
+}
+
+template <class T>
+inline SignedLogWeightTpl<T> Times(const SignedLogWeightTpl<T> &w1,
+                                   const LogWeightTpl<T> &w2) {
+  return Times(w1, SignedLogWeightTpl<T>(w2));
+}
+
+template <class T>
+inline SignedLogWeightTpl<T> Divide(const LogWeightTpl<T> &w1,
+                                    const SignedLogWeightTpl<T> &w2,
+                                    DivideType typ = DIVIDE_ANY) {
+  return Divide(SignedLogWeightTpl<T>(w1), w2, typ);
+}
+
+template <class T>
+inline SignedLogWeightTpl<T> Divide(const SignedLogWeightTpl<T> &w1,
+                                    const LogWeightTpl<T> &w2,
+                                    DivideType typ = DIVIDE_ANY) {
+  return Divide(w1, SignedLogWeightTpl<T>(w2), typ);
+}
+
+template <class T>
+inline bool ApproxEqual(const LogWeightTpl<T> &w1,
+                        const SignedLogWeightTpl<T> &w2, float delta = kDelta) {
+  return ApproxEqual(LogWeightTpl<T>(w1), w2, delta);
+}
+
+template <class T>
+inline bool ApproxEqual(const SignedLogWeightTpl<T> &w1,
+                        const LogWeightTpl<T> &w2, float delta = kDelta) {
+  return ApproxEqual(w1, LogWeightTpl<T>(w2), delta);
+}
+
+template <class T>
+inline bool operator==(const LogWeightTpl<T> &w1,
+                       const SignedLogWeightTpl<T> &w2) {
+  return SignedLogWeightTpl<T>(w1) == w2;
+}
+
+template <class T>
+inline bool operator==(const SignedLogWeightTpl<T> &w1,
+                       const LogWeightTpl<T> &w2) {
+  return w1 == SignedLogWeightTpl<T>(w2);
+}
+
+template <class T>
+inline bool operator!=(const LogWeightTpl<T> &w1,
+                       const SignedLogWeightTpl<T> &w2) {
+  return SignedLogWeightTpl<T>(w1) != w2;
+}
+
+template <class T>
+inline bool operator!=(const SignedLogWeightTpl<T> &w1,
+                       const LogWeightTpl<T> &w2) {
+  return w1 != SignedLogWeightTpl<T>(w2);
 }
 
 // Single-precision signed-log weight.

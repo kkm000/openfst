@@ -1,5 +1,12 @@
 OpenFst: Release 1.7
-   * Compatibility release for Thrax and Pynini improvements (1.7.9)
+   * Adds farconvert (1.8.0)
+   * Migration to C++17 (1.8.0)
+   * Updates Bazel build (1.8.0)
+   * Better handling for empty FARs (1.8.0)
+   * Improves to ExpectationWeight (1.8.0)
+   * Improves display of properties masks in pywrapfst (1.8.0) 
+   * Internal reference-counting/smart pointer improvements (1.8.0)
+   * Deprecates PROJECT_(IN|OUT)PUT in favor of scoped enum ProjectType (1.8.0)
    * TokenType is now a scoped enum (1.7.8)
    * pywrapfst is now Python 3-only (1.7.8)
    * fstproject now has --project_type flag (1.7.8)

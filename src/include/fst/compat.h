@@ -46,8 +46,14 @@ void FailedNewHandler();
 namespace fst {
 
 // Downcasting.
+
 template <typename To, typename From>
 inline To down_cast(From *f) {
+  return static_cast<To>(f);
+}
+
+template <typename To, typename From>
+inline To down_cast(From &f) {
   return static_cast<To>(f);
 }
 
@@ -59,6 +65,23 @@ inline Dest bit_cast(const Source &source) {
   Dest dest;
   memcpy(&dest, &source, sizeof(dest));
   return dest;
+}
+
+namespace internal {
+
+template <typename T>
+struct identity {
+  typedef T type;
+};
+
+template <typename T>
+using identity_t = typename identity<T>::type;
+
+}  // namespace internal
+
+template <typename To>
+constexpr To implicit_cast(typename internal::identity_t<To> to) {
+  return to;
 }
 
 // Checksums.

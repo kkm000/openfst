@@ -1,3 +1,17 @@
+// Copyright 2005-2020 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the 'License');
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an 'AS IS' BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
 // See www.openfst.org for extensive documentation on this weighted
 // finite-state transducer library.
 //
@@ -158,7 +172,8 @@ class AddOnImpl : public FstImpl<typename FST::Arc> {
       hdr.Read(strm, nopts.source);
       nopts.header = &hdr;
     }
-    std::unique_ptr<AddOnImpl> impl(new AddOnImpl(nopts.header->FstType()));
+    // Using `new` to access private constructor for `AddOnImpl`.
+    auto impl = fst::WrapUnique(new AddOnImpl(nopts.header->FstType()));
     if (!impl->ReadHeader(strm, nopts, kMinFileVersion, &hdr)) return nullptr;
     impl.reset();
     int32 magic_number = 0;

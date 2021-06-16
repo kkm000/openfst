@@ -1,8 +1,22 @@
+// Copyright 2005-2020 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the 'License');
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an 'AS IS' BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
 // See www.openfst.org for extensive documentation on this weighted
 // finite-state transducer library.
 //
 // NgramFst implements a n-gram language model based upon the LOUDS data
-// structure.  Please refer to "Unary Data Structures for Language Models"
+// structure. Please refer to "Unary Data Structures for Language Models"
 // http://research.google.com/pubs/archive/37218.pdf
 
 #ifndef FST_EXTENSIONS_NGRAM_NGRAM_FST_H_
@@ -96,8 +110,7 @@ class NGramFstImpl : public FstImpl<A> {
     }
   }
 
-  static NGramFstImpl<A> *Read(std::istream &strm,  // NOLINT
-                               const FstReadOptions &opts) {
+  static NGramFstImpl<A> *Read(std::istream &strm, const FstReadOptions &opts) {
     auto impl = fst::make_unique<NGramFstImpl<A>>();
     FstHeader hdr;
     if (!impl->ReadHeader(strm, opts, kMinFileVersion, &hdr)) return nullptr;
@@ -123,8 +136,7 @@ class NGramFstImpl : public FstImpl<A> {
     return impl.release();
   }
 
-  bool Write(std::ostream &strm,  // NOLINT
-             const FstWriteOptions &opts) const {
+  bool Write(std::ostream &strm, const FstWriteOptions &opts) const {
     FstHeader hdr;
     hdr.SetStart(Start());
     hdr.SetNumStates(num_states_);
@@ -276,8 +288,8 @@ class NGramFstImpl : public FstImpl<A> {
   BitmapIndex context_index_;
   // Uses Select0 and Rank1.
   BitmapIndex future_index_;
-  // Uses Get and Rank1.  This wastes space if there are no or few final
-  // states, but it's also small.  TODO(jrosenstock): Look at EliasFanoArray.
+  // Uses Get and Rank1. This wastes space if there are no or few final
+  // states, but it's also small. TODO(jrosenstock): Look at EliasFanoArray.
   BitmapIndex final_index_;
 };
 
@@ -468,7 +480,7 @@ inline void NGramFst<A>::InitArcIterator(StateId s,
                                          ArcIteratorData<A> *data) const {
   GetImpl()->SetInstFuture(s, &inst_);
   GetImpl()->SetInstNode(&inst_);
-  data->base = new ArcIterator<NGramFst<A>>(*this, s);
+  data->base = fst::make_unique<ArcIterator<NGramFst<A>>>(*this, s);
 }
 
 namespace internal {

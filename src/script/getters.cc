@@ -1,3 +1,17 @@
+// Copyright 2005-2020 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the 'License');
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an 'AS IS' BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
 // See www.openfst.org for extensive documentation on this weighted
 // finite-state transducer library.
 
@@ -8,9 +22,9 @@ namespace script {
 
 bool GetArcSortType(const std::string &str, ArcSortType *sort_type) {
   if (str == "ilabel") {
-    *sort_type = ILABEL_SORT;
+    *sort_type = ArcSortType::ILABEL;
   } else if (str == "olabel") {
-    *sort_type = OLABEL_SORT;
+    *sort_type = ArcSortType::OLABEL;
   } else {
     return false;
   }
@@ -53,35 +67,35 @@ bool GetDeterminizeType(const std::string &str, DeterminizeType *det_type) {
 
 bool GetMapType(const std::string &str, MapType *map_type) {
   if (str == "arc_sum") {
-    *map_type = ARC_SUM_MAPPER;
+    *map_type = MapType::ARC_SUM;
   } else if (str == "arc_unique") {
-    *map_type = ARC_UNIQUE_MAPPER;
+    *map_type = MapType::ARC_UNIQUE;
   } else if (str == "identity") {
-    *map_type = IDENTITY_MAPPER;
+    *map_type = MapType::IDENTITY;
   } else if (str == "input_epsilon") {
-    *map_type = INPUT_EPSILON_MAPPER;
+    *map_type = MapType::INPUT_EPSILON;
   } else if (str == "invert") {
-    *map_type = INVERT_MAPPER;
+    *map_type = MapType::INVERT;
   } else if (str == "output_epsilon") {
-    *map_type = OUTPUT_EPSILON_MAPPER;
+    *map_type = MapType::OUTPUT_EPSILON;
   } else if (str == "plus") {
-    *map_type = PLUS_MAPPER;
+    *map_type = MapType::PLUS;
   } else if (str == "power") {
-    *map_type = POWER_MAPPER;
+    *map_type = MapType::POWER;
   } else if (str == "quantize") {
-    *map_type = QUANTIZE_MAPPER;
+    *map_type = MapType::QUANTIZE;
   } else if (str == "rmweight") {
-    *map_type = RMWEIGHT_MAPPER;
+    *map_type = MapType::RMWEIGHT;
   } else if (str == "superfinal") {
-    *map_type = SUPERFINAL_MAPPER;
+    *map_type = MapType::SUPERFINAL;
   } else if (str == "times") {
-    *map_type = TIMES_MAPPER;
+    *map_type = MapType::TIMES;
   } else if (str == "to_log") {
-    *map_type = TO_LOG_MAPPER;
+    *map_type = MapType::TO_LOG;
   } else if (str == "to_log64") {
-    *map_type = TO_LOG64_MAPPER;
+    *map_type = MapType::TO_LOG64;
   } else if (str == "to_std" || str == "to_standard") {
-    *map_type = TO_STD_MAPPER;
+    *map_type = MapType::TO_STD;
   } else {
     return false;
   }
@@ -101,11 +115,11 @@ bool GetProjectType(const std::string &str, ProjectType *project_type) {
 
 bool GetRandArcSelection(const std::string &str, RandArcSelection *ras) {
   if (str == "uniform") {
-    *ras = UNIFORM_ARC_SELECTOR;
+    *ras = RandArcSelection::UNIFORM;
   } else if (str == "log_prob") {
-    *ras = LOG_PROB_ARC_SELECTOR;
+    *ras = RandArcSelection::LOG_PROB;
   } else if (str == "fast_log_prob") {
-    *ras = FAST_LOG_PROB_ARC_SELECTOR;
+    *ras = RandArcSelection::FAST_LOG_PROB;
   } else {
     return false;
   }
