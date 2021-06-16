@@ -18,7 +18,9 @@ set_target_properties(fst PROPERTIES
   SOVERSION "${SOVERSION}"
 )
 
-
+if(WIN32)
+  target_link_options(fst INTERFACE /WHOLEARCHIVE:$<TARGET_LINKER_FILE:fst>)
+endif()
 
 install(TARGETS fst
   LIBRARY DESTINATION lib

@@ -49,8 +49,11 @@ using std::string;
 void FailedNewHandler();
 
 #ifdef _MSC_VER
-#include <intrin.h>
 const char* basename(const char* path);
+#ifdef __clang__
+#include <x86intrin.h>
+#else
+#include <intrin.h>
 #define __builtin_popcount __popcnt
 
 #ifdef _M_X64
@@ -71,6 +74,7 @@ inline unsigned int __builtin_ctzll(std::uint64_t w) {
           _BitScanForward(&v, std::uint32_t(w >> 32)) ? v + 32 : 0);
 }
 #endif  // _M_X64
+#endif  // __clang__
 #endif  // _MSC_VER
 
 namespace fst {

@@ -38,7 +38,12 @@ target_link_libraries(fstspecial
   fst
 )
 
-install(TARGETS fstspecial fstspecial-bin
+set(FST_SPECIAL_INSTALL_TARGETS fstspecial)
+if(HAVE_BIN)
+  list(APPEND FST_SPECIAL_INSTALL_TARGETS fstspecial-bin)
+endif()
+
+install(TARGETS ${FST_SPECIAL_INSTALL_TARGETS}
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
   ARCHIVE DESTINATION lib
