@@ -6,6 +6,7 @@
 #ifndef FST_VECTOR_FST_H_
 #define FST_VECTOR_FST_H_
 
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -35,7 +36,7 @@ class VectorState {
   using Weight = typename Arc::Weight;
   using ArcAllocator = M;
   using StateAllocator =
-      typename ArcAllocator::template rebind<VectorState<Arc, M>>::other;
+      typename std::allocator_traits<ArcAllocator>::template rebind_alloc<VectorState<Arc, M>>;
 
   // Provide STL allocator for arcs.
   explicit VectorState(const ArcAllocator &alloc)

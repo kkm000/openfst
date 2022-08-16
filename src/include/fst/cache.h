@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <functional>
 #include <list>
+#include <memory>
 #include <vector>
 
 #include <fst/flags.h>
@@ -70,7 +71,7 @@ class CacheState {
 
   using ArcAllocator = M;
   using StateAllocator =
-      typename ArcAllocator::template rebind<CacheState<A, M>>::other;
+      typename std::allocator_traits<ArcAllocator>::template rebind_alloc<CacheState<A, M>>;
 
   // Provides STL allocator for arcs.
   explicit CacheState(const ArcAllocator &alloc)
