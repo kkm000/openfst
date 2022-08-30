@@ -38,11 +38,19 @@ target_link_libraries(fstspecial
   fst
 )
 
-install(TARGETS fstspecial fstspecial-bin
-  LIBRARY DESTINATION lib
-  RUNTIME DESTINATION bin
-  ARCHIVE DESTINATION lib
-)
+if (HAVE_BIN)
+    install(TARGETS fstspecial fstspecial-bin
+            LIBRARY DESTINATION lib
+            RUNTIME DESTINATION bin
+            ARCHIVE DESTINATION lib
+            )
+else()
+    install(TARGETS fstspecial
+      LIBRARY DESTINATION lib
+      RUNTIME DESTINATION bin
+      ARCHIVE DESTINATION lib
+    )
+endif()
 
 function (add_module _name)
     add_library(${ARGV})
