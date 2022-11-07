@@ -3,4 +3,4 @@ cmake
 
 [requires]
 zlib/1.2.11
-icu/71.1
+icu/[>65.0]
