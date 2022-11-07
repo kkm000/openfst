@@ -34,7 +34,7 @@ jobs:
     - name: Configure CMake
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
       # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{matrix.build_type}}
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{matrix.build_type}}  -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/${{matrix.os}}-${{matrix.build_type}}
 
     - name: Build
       # Build your program with the given configuration
@@ -47,6 +47,6 @@ jobs:
 #      # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
 #      run: ctest -C ${{env.BUILD_TYPE}}
     - name: Install
-      run: cmake -v --install . --config ${{matrix.build_type}} --prefix ${{github.workspace}}/${{matrix.os}}-${{matrix.build_type}}
+      run: cmake -v --install . --config ${{matrix.build_type}} 
       
       
