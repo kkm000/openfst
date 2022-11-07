@@ -41,10 +41,10 @@ jobs:
       run: cmake --build ${{github.workspace}}/build --config ${{matrix.build_type}}
       env:
         CMAKE_BUILD_PARALLEL_LEVEL: 4
-        
 #    - name: Test
 #      working-directory: ${{github.workspace}}/build
 #      # Execute tests defined by the CMake configuration.  
 #      # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
 #      run: ctest -C ${{env.BUILD_TYPE}}
-      
+    - name: Install
+      run: cmake --install . --config ${{matrix.build_type}} --prefix ${{matrix.os}}-${{matrix.build_type}}
