@@ -49,7 +49,8 @@ jobs:
     - name: Install
       run: |
         cmake --version
-        cmake --help
-        cmake -v --build ${{github.workspace}}/build --target INSTALL 
+        cmake --install
+        mkdir  ${{github.workspace}}\${{matrix.os}}-${{matrix.build_type}}
+        cmake --install ${{github.workspace}}/build --prefix ${{github.workspace}}\${{matrix.os}}-${{matrix.build_type}}
       
       
