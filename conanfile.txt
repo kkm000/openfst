@@ -2,5 +2,5 @@
 cmake
 
 [requires]
-zlib/1.2.11
-icu/71.1
+zlib/[>1.0.0]
+icu/[>65.0]
