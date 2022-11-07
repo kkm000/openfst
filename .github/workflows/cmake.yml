@@ -50,5 +50,31 @@ jobs:
       run: |
         mkdir  ${{github.workspace}}\${{matrix.os}}-${{matrix.build_type}}
         cmake --install ${{github.workspace}}/build --prefix ${{github.workspace}}\${{matrix.os}}-${{matrix.build_type}} --config ${{matrix.build_type}}
-       
+        tar czf ${{matrix.os}}-${{matrix.build_type}}.tar.gz ${{matrix.os}}-${{matrix.build_type}}/
+    
+    - name: Create Draft Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: 1
+        release_name:  ${{github.workspace}}\${{matrix.os}}-${{matrix.build_type}}
+        draft: true
+        prerelease: false
+
+    - uses: actions/upload-release-asset@v1.0.1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./${{matrix.os}}-${{matrix.build_type}}.tar.gz
+        asset_name: ${{matrix.os}}-${{matrix.build_type}}.tar.gz
+        asset_content_type: application/gzip
+
+    - uses: eregon/publish-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        release_id: ${{ steps.create_release.outputs.id }}
       
