@@ -47,6 +47,6 @@ jobs:
 #      # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
 #      run: ctest -C ${{env.BUILD_TYPE}}
     - name: Install
-      run: cmake -v --build ${{github.workspace}}/build  --target INSTALL --config ${{matrix.build_type}} 
+      run: cmake -v --build ${{github.workspace}}/build  --target INSTALL 
       
       
