@@ -1,5 +1,12 @@
 project(openfst)
 include(CTest)
+
+if (WIN32)
+  include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
+  conan_basic_setup()
+endif ()
+
+
 find_package(ICU COMPONENTS data i18n io  test tu uc)
 if (ICU_FOUND)
   include_directories(${ICU_INCLUDE_DIRS})
@@ -17,13 +24,13 @@ set(CMAKE_MACOSX_RPATH 1)
 set(CMAKE_CXX_STANDARD 11)
 
 if (WIN32)
-  add_definitions(/bigobj)
+  add_definitions(-DNOMINMAX -D_USE_MATH_DEFINES -DFST_NO_DYNAMIC_LINKING)
+  add_compile_options(/W0  /bigobj /wd4244 /wd4267 )
   set(WHOLEFST "/WHOLEARCHIVE:fst")
   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${WHOLEFST}")
-  #set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS 1)
-  #this must be disabled unless the previous option (CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS) is enabled
   option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
 else()
+  set(CMAKE_POSITION_INDEPENDENT_CODE ON)
   option(BUILD_SHARED_LIBS "Build shared libraries" ON)
 endif (WIN32)
 

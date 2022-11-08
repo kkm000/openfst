@@ -1,0 +1,99 @@
+name: CMake
+
+on:
+  push:
+    branches: [ "winport" ]
+  pull_request:
+    branches: [ "winport" ]
+
+env:
+  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
+  XX_BUILD_TYPE: Debug
+
+jobs:
+  create_github_release:
+    runs-on: ubuntu-latest
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+      id:  ${{ steps.create_release.outputs.id }}
+    steps:
+    - uses: actions/checkout@v3
+    - name: Get OpenFST version
+      id: get_openfst_version
+      run: |
+        OPENFST_VER_STRING=$(grep -E 'AC_INIT\(\[OpenFst\]' configure.ac | sed 's/.*\[\([0-9][0-9.]*\)\].*/\1/g')
+        echo "openfst_ver=${OPENFST_VER_STRING}" >> $GITHUB_OUTPUT
+    - name: Create Draft Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name:  autorelease/${{ github.run_number }}
+        release_name: Release ${{ steps.get_openfst_version.outputs.openfst_ver }}-${{ github.run_number }}
+        draft: true
+        prerelease: false
+        
+  job_matrix:
+    strategy:
+      matrix:
+        os: [windows-2019, windows-2022]
+        build_type: [Release, Debug]
+    runs-on: ${{ matrix.os }}
+    needs: [create_github_release]
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Get Conan
+      # You may pin to the exact commit or the version.
+      # uses: turtlebrowser/get-conan@368dfd1b36f811723d7db981352dd77cd69c2c9e
+      uses: turtlebrowser/get-conan@v1.1
+  
+    - name: Create default profile
+      run: conan profile new default --detect
+           
+    - name: Install dependencies
+      run: conan install . -s build_type=${{matrix.build_type}} --install-folder=${{github.workspace}}/build --build=missing
+
+    - name: Configure CMake
+      # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
+      # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{matrix.build_type}}  -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/${{matrix.os}}-${{matrix.build_type}}
+
+    - name: Build
+      # Build your program with the given configuration
+      run: cmake --build ${{github.workspace}}/build --config ${{matrix.build_type}}
+      env:
+        CMAKE_BUILD_PARALLEL_LEVEL: 4
+#    - name: Test
+#      working-directory: ${{github.workspace}}/build
+#      # Execute tests defined by the CMake configuration.  
+#      # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
+#      run: ctest -C ${{env.BUILD_TYPE}}
+    - name: Install
+      run: |
+        echo on
+        mkdir  ${{github.workspace}}/${{matrix.os}}-${{matrix.build_type}}
+        cmake --install ${{github.workspace}}/build --prefix ${{github.workspace}}/${{matrix.os}}-${{matrix.build_type}} --config ${{matrix.build_type}}
+        cd ${{github.workspace}}
+        tar -czf ${{matrix.os}}-${{matrix.build_type}}.tar.gz  ${{matrix.os}}-${{matrix.build_type}}
+  
+    - uses: actions/upload-release-asset@v1.0.1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ needs.create_github_release.outputs.upload_url}}
+        asset_path: ./${{matrix.os}}-${{matrix.build_type}}.tar.gz
+        asset_name: ${{matrix.os}}-${{matrix.build_type}}.tar.gz
+        asset_content_type: application/gzip
+
+  publish_github_release:
+    needs: [create_github_release, job_matrix]
+    runs-on: ubuntu-latest
+    steps:
+    - uses: eregon/publish-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        release_id: ${{ needs.create_github_release.outputs.id}}
+      
