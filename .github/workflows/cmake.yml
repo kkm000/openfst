@@ -22,7 +22,7 @@ jobs:
       id: get_openfst_version
       run: |
         OPENFST_VER_STRING=$(grep -E 'AC_INIT\(\[OpenFst\]' configure.ac | sed 's/.*\[\([0-9][0-9.]*\)\].*/\1/g')
-        echo "openfst_ver=${OPENFST_VER_STRING}" >> $GITHUB_ENV
+        echo "openfst_ver=${OPENFST_VER_STRING}" >> $GITHUB_OUTPUT
     - name: Create Draft Release
       id: create_release
       uses: actions/create-release@v1
