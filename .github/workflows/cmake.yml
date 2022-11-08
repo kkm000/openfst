@@ -22,8 +22,8 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: 1
-        release_name: ${{matrix.os}}-${{matrix.build_type}}
+        tag_name:  ${{ github.ref }}
+        release_name: Release  ${{ github.ref }}
         draft: true
         prerelease: false
         
