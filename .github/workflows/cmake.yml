@@ -54,30 +54,24 @@ jobs:
       # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
       run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{matrix.build_type}}  -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/${{matrix.os}}-${{matrix.build_type}}
 
-#    - name: Build
-#      # Build your program with the given configuration
-#      run: cmake --build ${{github.workspace}}/build --config ${{matrix.build_type}}
-#      env:
-#        CMAKE_BUILD_PARALLEL_LEVEL: 4
-##    - name: Test
-##      working-directory: ${{github.workspace}}/build
-##      # Execute tests defined by the CMake configuration.  
-##      # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
-##      run: ctest -C ${{env.BUILD_TYPE}}
-#    - name: Install
-#      run: |
-#        echo on
-#        mkdir  ${{github.workspace}}/${{matrix.os}}-${{matrix.build_type}}
-#        cmake --install ${{github.workspace}}/build --prefix ${{github.workspace}}/${{matrix.os}}-${{matrix.build_type}} --config ${{matrix.build_type}}
-#        cd ${{github.workspace}}
-#        tar -czf ${{matrix.os}}-${{matrix.build_type}}.tar.gz  ${{matrix.os}}-${{matrix.build_type}}
+    - name: Build
+      # Build your program with the given configuration
+      run: cmake --build ${{github.workspace}}/build --config ${{matrix.build_type}}
+      env:
+        CMAKE_BUILD_PARALLEL_LEVEL: 4
+#    - name: Test
+#      working-directory: ${{github.workspace}}/build
+#      # Execute tests defined by the CMake configuration.  
+#      # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
+#      run: ctest -C ${{env.BUILD_TYPE}}
     - name: Install
       run: |
         echo on
+        mkdir  ${{github.workspace}}/${{matrix.os}}-${{matrix.build_type}}
+        cmake --install ${{github.workspace}}/build --prefix ${{github.workspace}}/${{matrix.os}}-${{matrix.build_type}} --config ${{matrix.build_type}}
         cd ${{github.workspace}}
-        tar -czf ${{matrix.os}}-${{matrix.build_type}}.tar.gz build
-    
-
+        tar -czf ${{matrix.os}}-${{matrix.build_type}}.tar.gz  ${{matrix.os}}-${{matrix.build_type}}
+  
     - uses: actions/upload-release-asset@v1.0.1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
