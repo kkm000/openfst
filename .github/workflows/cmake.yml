@@ -17,14 +17,20 @@ jobs:
       upload_url: ${{ steps.create_release.outputs.upload_url }}
       id:  ${{ steps.create_release.outputs.id }}
     steps:
+    - uses: actions/checkout@v3
+    - name: Get OpenFST version
+      id: get_openfst_version
+      run: |
+        OPENFST_VER_STRING=$(grep -E 'AC_INIT\(\[OpenFst\]' configure.ac | sed 's/.*\[\([0-9][0-9.]*\)\].*/\1/g')
+        echo "openfst_ver=${OPENFST_VER_STRING}" >> $GITHUB_ENV
     - name: Create Draft Release
       id: create_release
       uses: actions/create-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name:  ${{ github.run_number }}
-        release_name: Release ${{ github.run_number }}  ${{ github.ref }}
+        tag_name:  autorelease/${{ github.run_number }}
+        release_name: Release ${{ steps.get_openfst_version.outputs.openfst_ver }}-${{ github.run_number }}
         draft: true
         prerelease: false
         
