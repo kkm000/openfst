@@ -15,6 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       upload_url: ${{ steps.create_release.outputs.upload_url }}
+      id:  ${{ steps.create_release.outputs.id }}
     steps:
     - name: Create Draft Release
       id: create_release
@@ -86,9 +87,13 @@ jobs:
         asset_name: ${{matrix.os}}-${{matrix.build_type}}.tar.gz
         asset_content_type: application/gzip
 
-    #- uses: eregon/publish-release@v1
-    #  env:
-    #    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    #  with:
-    #    release_id: ${{ steps.create_release.outputs.id }}
+  publish_github_release:
+    needs: [create_github_release, job_matrix]
+    runs-on: ubuntu-latest
+    steps:
+    - uses: eregon/publish-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        release_id: ${{ needs.create_github_release.outputs.id}}
       
