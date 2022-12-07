@@ -1,3 +1,4 @@
+cmake_minimum_required(VERSION 3.13)
 project(openfst)
 include(CTest)
 find_package(ICU COMPONENTS data i18n io  test tu uc)
@@ -12,14 +13,11 @@ if (ZLIB_FOUND)
   set(ZLIBS ${ZLIB_LIBRARIES})
 endif (ZLIB_FOUND)
 
-cmake_minimum_required(VERSION 3.1)
 set(CMAKE_MACOSX_RPATH 1)
 set(CMAKE_CXX_STANDARD 11)
 
 if (WIN32)
   add_definitions(/bigobj)
-  set(WHOLEFST "/WHOLEARCHIVE:fst")
-  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${WHOLEFST}")
   #set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS 1)
   #this must be disabled unless the previous option (CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS) is enabled
   option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
