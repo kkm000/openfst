@@ -20,19 +20,27 @@
 
   <!-- Toolset (default v141). Other compilers (Intel C++) may be specified. -->
   <PropertyGroup>
-    <!-- v140 = 14.0, comes with VS14 aka VS 2015 -->
-    <PlatformToolset Condition="false" >v140</PlatformToolset>
-    <!-- v141 = 14.1, comes with VS15 aka VS 2017. This is the default. -->
+    <!-- v141 = 14.1, comes with VS15 aka VS 2017. -->
     <PlatformToolset Condition="false" >v141</PlatformToolset>
     <!-- v142 = 14.2, comes with VS15 aka VS 2019. -->
     <PlatformToolset Condition="false" >v142</PlatformToolset>
+    <!-- v143 = 14.3, comes with VS17 aka VS 2022. -->
+    <PlatformToolset Condition="false" >v143</PlatformToolset>
+    <!-- ClangCL. Available starting with VS 2019. -->
+    <PlatformToolset>ClangCL</PlatformToolset>
   </PropertyGroup>
 
-  <!-- SDK version (default: toolset's default, likely 8.1). Note that v141 has
-       8.1 as the default SDK, but that SDK may not be installed with VS 2017
-       default C++ workload. If you get a message "MSB8036: The Windows SDK
-       version 8.1 was not found", check if you have any of Window 10 SDK
-       versions. Then change 'false' to 'true' for the version you have installed.
+  <!-- SDK version (default: toolset's default, originally 8.1, currently 10.0).
+
+       VS2019/2022 MSBuild tooling now uses the latest installed 10.x SDK
+       by default, so that you're unlikely to need to specify an exact version.
+       THE COMMENT BELOW IS LARGELY HISTORIC.
+
+
+       Note that v141 has 8.1 as the default SDK, but that SDK may not be installed
+       with VS 2017 default C++ workload. If you get a message "MSB8036: The Windows
+       SDK version 8.1 was not found", check if you have any of Window 10 SDK versions.
+       Then change 'false' to 'true' for the version you have installed.
 
        Run "x{86,64} Native Tools Command Prompt for VS 201{5,7}" from the
        Start Menu, and type "set WindowsSDKVersion". The value of the
@@ -46,6 +54,8 @@
        I am including a (possibly incomplete) list of released Windows 10 SDK
        versions (any one would work, as long as you have it installed). -->
   <PropertyGroup>
+    <!-- Windows 11 original -->
+    <WindowsTargetPlatformVersion Condition="false" >10.0.22000.0</WindowsTargetPlatformVersion>
     <!-- Windows 10 Update 1803 (April 2018) -->
     <WindowsTargetPlatformVersion Condition="false" >10.0.17134.0</WindowsTargetPlatformVersion>
     <!-- Windows 10 Fall Creators Update  -->
